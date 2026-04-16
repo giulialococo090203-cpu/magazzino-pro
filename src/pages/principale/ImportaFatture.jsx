@@ -35,114 +35,126 @@ export default function ImportaFatture() {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-
-        if (data.length < 2) throw new Error('File vuoto o senza intestazioni');
-
-        // Normalizzazione per confronto robusto (rimuove accenti, spazi, trim e lowercase)
-        const normalize = (str) => 
-          String(str || '').toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Rimuove accenti
-            .replace(/[^a-z0-9]/g, '') // Rimuove simboli e spazi
-            .trim();
-
-        // 1. TROVA LA RIGA DELLE INTESTAZIONI (cerca nelle prime 20 righe)
-        let headerRowIndex = -1;
-        let foundHeaders = [];
+        const dataBuffer = evt.target.result;
+        const wb = XLSX.read(dataBuffer, { type: 'array' });
         
-        const codeSyns = ['codice', 'code', 'sku', 'articolo', 'identificativo', 'idmateriale'];
-        const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'numero'];
+        let allProcessed = [];
+        let sheetFound = false;
 
-        for (let i = 0; i < Math.min(data.length, 20); i++) {
-          const normalizedRow = (data[i] || []).map(h => normalize(h));
-          const hasCode = normalizedRow.some(h => codeSyns.some(s => h.includes(s) || s.includes(h)));
-          const hasQty = normalizedRow.some(h => qtySyns.some(s => h.includes(s) || s.includes(h)));
+        // BRUTE FORCE: Prova ogni foglio finché non trova qualcosa
+        for (const wsname of wb.SheetNames) {
+          const ws = wb.Sheets[wsname];
+          const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          if (data.length < 1) continue;
+
+          // Normalizzazione per confronto robusto
+          const normalize = (str) => 
+            String(str || '').toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]/g, '')
+              .trim();
+
+          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'identificativo', 'idmateriale'];
+          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'numero'];
+
+          // 1. TENTA DI TROVARE LE INTESTAZIONI
+          let headerRowIndex = -1;
+          for (let i = 0; i < Math.min(data.length, 20); i++) {
+            const normalizedRow = (data[i] || []).map(h => normalize(h));
+            const hasCode = normalizedRow.some(h => codeSyns.some(s => h.includes(s) || s.includes(h)));
+            const hasQty = normalizedRow.some(h => qtySyns.some(s => h.includes(s) || s.includes(h)));
+            if (hasCode && hasQty) {
+              headerRowIndex = i;
+              break;
+            }
+          }
+
+          let idxCode, idxQty, idxDesc, idxUnit, idxBrand, idxCat, idxThresh, idxLoc, idxSupp, idxNote;
+          let headers = [];
+
+          if (headerRowIndex !== -1) {
+            headers = data[headerRowIndex].map(h => normalize(h));
+            const findCol = (synonyms) => headers.findIndex(h => synonyms.some(s => h.includes(normalize(s)) || normalize(s).includes(h)));
+            idxCode = findCol(codeSyns);
+            idxQty = findCol(qtySyns);
+            idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name', 'articolo']);
+            idxUnit = findCol(['unita', 'um', 'unit', 'misura', 'formato']);
+            idxBrand = findCol(['marca', 'brand', 'produttore', 'manuf']);
+            idxCat = findCol(['categoria', 'category', 'settore', 'gruppo']);
+            idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min']);
+            idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location', 'posto']);
+            idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
+            idxNote = findCol(['note', 'notes', 'osservazioni', 'commento']);
+          } else {
+            // FALLBACK FORZA BRUTA: Indovina le colonne se non ci sono intestazioni
+            console.log('Modalità Forza Bruta: Inferenziazione colonne per foglio', wsname);
+            const firstRow = data[0] || [];
+            // Assume Colonna 1 (indice 1) come codice e Colonna 5 (indice 5) come quantità se i nomi falliscono
+            // secondo lo schema standard dell'utente
+            idxCode = headers.length > 1 ? 1 : 0; 
+            idxQty = headers.length > 5 ? 5 : headers.length - 1;
+            idxDesc = 2;
+          }
+
+          const rows = headerRowIndex !== -1 ? data.slice(headerRowIndex + 1) : data;
           
-          if (hasCode && hasQty) {
-            headerRowIndex = i;
-            foundHeaders = normalizedRow;
-            break;
+          for (const row of rows) {
+            const rawCode = row[idxCode];
+            if (rawCode === undefined || rawCode === null) continue;
+            const code = String(rawCode).trim();
+            if (!code || code === 'codice' || code === 'id_materiale') continue;
+
+            const qtyStr = String(row[idxQty] || '0').replace(',', '.');
+            const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
+            
+            const desc = String(row[idxDesc] || 'Materiale senza descrizione').trim();
+            const unit = String(row[idxUnit] || 'pz').trim();
+            const brand = String(row[idxBrand] || '').trim();
+            const catName = String(row[idxCat] || '').trim();
+            const threshold = Number(row[idxThresh]) || 10;
+            const location = String(row[idxLoc] || '').trim();
+            const supplier = String(row[idxSupp] || '').trim();
+            const notes = String(row[idxNote] || '').trim();
+
+            const existing = await materialStore.getByCode(code);
+            let catId = existing?.category || '';
+            if (!catId && catName && categories.length > 0) {
+              const match = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+              if (match) catId = match.id;
+            }
+
+            allProcessed.push({
+              code,
+              description: existing ? existing.description : desc,
+              quantity: qty,
+              unit: existing ? existing.unit : unit,
+              isNew: !existing,
+              selected: qty > 0,
+              category: catId,
+              brand: brand || existing?.brand || 'Da assegnare',
+              minThreshold: threshold,
+              location: location || existing?.location || 'Da assegnare',
+              supplier: supplier || existing?.supplier || 'Da fattura',
+              notes: notes ? `${notes} (Extra)` : (existing?.notes || `Import: ${fileName}`),
+              existingMaterial: existing,
+            });
+          }
+
+          if (allProcessed.length > 0) {
+            sheetFound = true;
+            break; 
           }
         }
 
-        if (headerRowIndex === -1) {
-          throw new Error('Impossibile trovare le colonne "Codice" e "Quantità". Verifica che il file abbia le intestazioni corrette.');
-        }
-
-        const rows = data.slice(headerRowIndex + 1);
-
-        // 2. MAPPA GLI INDICI DELLE COLONNE
-        const findCol = (synonyms) => foundHeaders.findIndex(h => 
-          synonyms.some(s => h.includes(normalize(s)) || normalize(s).includes(h))
-        );
-        
-        const idxCode = findCol(codeSyns);
-        const idxQty = findCol(qtySyns);
-        const idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name', 'articolo']);
-        const idxUnit = findCol(['unita', 'um', 'unit', 'misura', 'formato']);
-        const idxBrand = findCol(['marca', 'brand', 'produttore', 'manuf']);
-        const idxCat = findCol(['categoria', 'category', 'settore', 'gruppo']);
-        const idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min']);
-        const idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location', 'posto']);
-        const idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
-        const idxNote = findCol(['note', 'notes', 'osservazioni', 'commento']);
-
-        const processed = [];
-        for (const row of rows) {
-          const code = String(row[idxCode] || '').trim();
-          if (!code) continue;
-
-          const qtyStr = String(row[idxQty] || '0').replace(',', '.');
-          const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
-          if (qty <= 0) continue;
-
-          const desc = String(row[idxDesc] || 'Senza descrizione').trim();
-          const unit = String(row[idxUnit] || 'pz').trim();
-          const brand = String(row[idxBrand] || '').trim();
-          const catName = String(row[idxCat] || '').trim();
-          const threshold = Number(row[idxThresh]) || 10;
-          const location = String(row[idxLoc] || '').trim();
-          const supplier = String(row[idxSupp] || '').trim();
-          const notes = String(row[idxNote] || '').trim();
-
-          const existing = await materialStore.getByCode(code);
-          
-          // Try to match category by name if provided
-          let catId = existing?.category || '';
-          if (!catId && catName && categories.length > 0) {
-            const match = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
-            if (match) catId = match.id;
-          }
-
-          processed.push({
-            code,
-            description: existing ? existing.description : desc,
-            quantity: qty,
-            unit: existing ? existing.unit : unit,
-            isNew: !existing,
-            selected: true,
-            category: catId,
-            brand: brand || existing?.brand || 'Da assegnare',
-            minThreshold: threshold,
-            location: location || existing?.location || 'Da assegnare',
-            supplier: supplier || existing?.supplier || 'Da fattura',
-            notes: notes ? `${notes} (Importato da file)` : (existing?.notes || `Importato da: ${fileName}`),
-            existingMaterial: existing,
-          });
-        }
-
-        setParsedItems(processed);
+        if (!sheetFound) throw new Error('Impossibile trovare materiali validi in nessun foglio del file.');
+        setParsedItems(allProcessed);
       } catch (err) {
-        console.error('Errore parsing file:', err);
-        alert(`Errore nel caricamento del file: ${err.message}`);
+        console.error('Errore Brute Force:', err);
+        alert(`Errore critico: ${err.message}`);
         setStep(1);
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const updateItem = (index, field, value) => {
