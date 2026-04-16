@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { materialStore, categoryStore, movementStore } from '../../data/store';
+import { Link } from 'react-router-dom';
+import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
+import * as XLSX from 'xlsx';
 
 export default function ImportaFatture() {
   const { user } = useAuth();
@@ -23,40 +25,75 @@ export default function ImportaFatture() {
     loadCats();
   }, []);
 
-  // Simulate parsing an invoice file
+  // Real parsing of invoice/excel file
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setFileName(file.name);
+    setStep(2); // Inizia elaborazione
 
-    // Simulate parsed data from invoice
-    const simulatedItems = [
-      { code: 'FER-001', description: 'Viti autofilettanti 4x30mm', quantity: 500, unit: 'pz', unitPrice: 0.03, isNew: false },
-      { code: 'ELE-005', description: 'Presa industriale CEE 16A', quantity: 10, unit: 'pz', unitPrice: 12.50, isNew: true },
-      { code: 'IDR-001', description: 'Tubo multistrato 20mm', quantity: 100, unit: 'm', unitPrice: 1.80, isNew: false },
-      { code: 'FER-NEW1', description: 'Rivetti in alluminio 4x12mm', quantity: 2000, unit: 'pz', unitPrice: 0.02, isNew: true },
-      { code: 'EDL-001', description: 'Cemento Portland 325 R', quantity: 40, unit: 'sac', unitPrice: 5.50, isNew: false },
-    ];
-
-    const processed = [];
-    for (const item of simulatedItems) {
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
       try {
-        const existing = await materialStore.getByCode(item.code);
-        processed.push({
-          ...item,
-          selected: true,
-          category: item.isNew ? '' : (existing?.category || ''),
-          brand: item.isNew ? '' : (existing?.brand || ''),
-          location: item.isNew ? '' : (existing?.location || ''),
-          supplier: item.isNew ? '' : (existing?.supplier || ''),
-          existingMaterial: existing,
-        });
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+        if (data.length < 2) throw new Error('File vuoto o senza intestazioni');
+
+        const headers = data[0].map(h => String(h).toLowerCase().trim());
+        const rows = data.slice(1);
+
+        // Find column indices
+        const findCol = (synonyms) => headers.findIndex(h => synonyms.some(s => h.includes(s)));
+        
+        const idxCode = findCol(['codice', 'code', 'sku', 'articolo', 'identificativo']);
+        const idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name']);
+        const idxQty = findCol(['quantità', 'qta', 'quantita', 'quantity', 'qty', 'pezzi']);
+        const idxUnit = findCol(['unità', 'um', 'unit', 'unita', 'misura']);
+
+        if (idxCode === -1 || idxQty === -1) {
+          throw new Error('Impossibile trovare le colonne "Codice" e "Quantità" nel file.');
+        }
+
+        const processed = [];
+        for (const row of rows) {
+          const code = String(row[idxCode] || '').trim();
+          if (!code) continue;
+
+          const qty = Number(row[idxQty]) || 0;
+          if (qty <= 0) continue;
+
+          const desc = String(row[idxDesc] || 'Senza descrizione').trim();
+          const unit = String(row[idxUnit] || 'pz').trim();
+
+          const existing = await materialStore.getByCode(code);
+          
+          processed.push({
+            code,
+            description: existing ? existing.description : desc,
+            quantity: qty,
+            unit: existing ? existing.unit : unit,
+            isNew: !existing,
+            selected: true,
+            category: existing?.category || '',
+            brand: existing?.brand || '',
+            location: existing?.location || '',
+            supplier: existing?.supplier || 'Da fattura',
+            existingMaterial: existing,
+          });
+        }
+
+        setParsedItems(processed);
       } catch (err) {
-        console.error('Errore check codice:', err);
+        console.error('Errore parsing file:', err);
+        alert(`Errore nel caricamento del file: ${err.message}`);
+        setStep(1);
       }
-    }
-    setParsedItems(processed);
-    setStep(2);
+    };
+    reader.readAsBinaryString(file);
   };
 
   const updateItem = (index, field, value) => {
@@ -109,6 +146,17 @@ export default function ImportaFatture() {
     }
 
     setResults({ loaded, created, errors });
+    
+    // Log final effort in administrative logs
+    if (created > 0 || loaded > 0) {
+      await adminLogStore.create({
+        userId: user.id,
+        entity: 'materiali',
+        action: 'importazione',
+        details: `Importazione completata: ${created} creati, ${loaded} aggiornati dal file ${fileName}.`
+      });
+    }
+    
     setStep(5);
   };
 
@@ -319,9 +367,14 @@ export default function ImportaFatture() {
                 ))}
               </div>
             )}
-            <button className="btn btn-primary btn-lg" onClick={() => { setStep(1); setParsedItems([]); setResults(null); setFileName(''); }}>
-              Importa un altro documento
-            </button>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button className="btn btn-primary btn-lg" onClick={() => { setStep(1); setParsedItems([]); setResults(null); setFileName(''); }}>
+                Importa un altro documento
+              </button>
+              <Link to="/inventario" className="btn btn-secondary btn-lg">
+                📦 Vai all'Inventario
+              </Link>
+            </div>
           </div>
         </div>
       )}
