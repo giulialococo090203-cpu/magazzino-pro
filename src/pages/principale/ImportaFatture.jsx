@@ -52,7 +52,13 @@ export default function ImportaFatture() {
         const idxCode = findCol(['codice', 'code', 'sku', 'articolo', 'identificativo']);
         const idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name']);
         const idxQty = findCol(['quantità', 'qta', 'quantita', 'quantity', 'qty', 'pezzi']);
-        const idxUnit = findCol(['unità', 'um', 'unit', 'unita', 'misura']);
+        const idxUnit = findCol(['unità', 'um', 'unit', 'unita', 'misura', 'misura']);
+        const idxBrand = findCol(['marca', 'brand', 'produttore']);
+        const idxCat = findCol(['categoria', 'category', 'settore']);
+        const idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min_threshold']);
+        const idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location']);
+        const idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
+        const idxNote = findCol(['note', 'notes', 'osservazioni']);
 
         if (idxCode === -1 || idxQty === -1) {
           throw new Error('Impossibile trovare le colonne "Codice" e "Quantità" nel file.');
@@ -68,9 +74,22 @@ export default function ImportaFatture() {
 
           const desc = String(row[idxDesc] || 'Senza descrizione').trim();
           const unit = String(row[idxUnit] || 'pz').trim();
+          const brand = String(row[idxBrand] || '').trim();
+          const catName = String(row[idxCat] || '').trim();
+          const threshold = Number(row[idxThresh]) || 10;
+          const location = String(row[idxLoc] || '').trim();
+          const supplier = String(row[idxSupp] || '').trim();
+          const notes = String(row[idxNote] || '').trim();
 
           const existing = await materialStore.getByCode(code);
           
+          // Try to match category by name if provided
+          let catId = existing?.category || '';
+          if (!catId && catName && categories.length > 0) {
+            const match = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+            if (match) catId = match.id;
+          }
+
           processed.push({
             code,
             description: existing ? existing.description : desc,
@@ -78,10 +97,12 @@ export default function ImportaFatture() {
             unit: existing ? existing.unit : unit,
             isNew: !existing,
             selected: true,
-            category: existing?.category || '',
-            brand: existing?.brand || '',
-            location: existing?.location || '',
-            supplier: existing?.supplier || 'Da fattura',
+            category: catId,
+            brand: brand || existing?.brand || 'Da assegnare',
+            minThreshold: threshold,
+            location: location || existing?.location || 'Da assegnare',
+            supplier: supplier || existing?.supplier || 'Da fattura',
+            notes: notes ? `${notes} (Importato da file)` : (existing?.notes || `Importato da: ${fileName}`),
             existingMaterial: existing,
           });
         }
@@ -117,14 +138,14 @@ export default function ImportaFatture() {
           await materialStore.create({
             code: item.code,
             description: item.description,
-            brand: item.brand || 'Da assegnare',
+            brand: item.brand,
             category: item.category,
             quantity: item.quantity,
             unit: item.unit,
-            minThreshold: 10,
-            location: item.location || 'Da assegnare',
-            supplier: item.supplier || 'Da fattura',
-            notes: `Importato da fattura: ${fileName}`,
+            minThreshold: item.minThreshold,
+            location: item.location,
+            supplier: item.supplier,
+            notes: item.notes,
           });
           created++;
         } else if (item.existingMaterial) {
@@ -236,9 +257,10 @@ export default function ImportaFatture() {
                   <th style={{ width: 40 }}>✓</th>
                   <th>Codice</th>
                   <th>Descrizione</th>
+                  <th>Marca</th>
                   <th>Qtà</th>
                   <th>UM</th>
-                  <th>Stato</th>
+                  <th>Posizione</th>
                   <th>Categoria</th>
                 </tr>
               </thead>
@@ -255,15 +277,10 @@ export default function ImportaFatture() {
                     </td>
                     <td><strong>{item.code}</strong></td>
                     <td>{item.description}</td>
+                    <td><span className="text-muted">{item.brand}</span></td>
                     <td style={{ fontWeight: 700 }}>{item.quantity}</td>
                     <td>{item.unit}</td>
-                    <td>
-                      {item.isNew ? (
-                        <span className="status-badge status-sotto_soglia">⚡ Nuovo codice</span>
-                      ) : (
-                        <span className="status-badge status-disponibile">✓ Esistente</span>
-                      )}
-                    </td>
+                    <td><span className="text-muted">{item.location}</span></td>
                     <td>
                       {item.isNew ? (
                         <select
