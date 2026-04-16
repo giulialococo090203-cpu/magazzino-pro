@@ -18,6 +18,9 @@ export default function GestioneMateriali() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmEmpty, setConfirmEmpty] = useState(false);
+  const [isNewCat, setIsNewCat] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
 
   const refresh = async () => {
     try {
@@ -46,6 +49,8 @@ export default function GestioneMateriali() {
     setEditItem(null);
     setForm({ ...EMPTY_FORM });
     setError('');
+    setIsNewCat(false);
+    setNewCatName('');
     setShowModal(true);
   };
 
@@ -58,24 +63,45 @@ export default function GestioneMateriali() {
       supplier: mat.supplier, notes: mat.notes || ''
     });
     setError('');
+    setIsNewCat(false);
+    setNewCatName('');
     setShowModal(true);
   };
 
   const handleSave = async () => {
-    if (!form.code.trim() || !form.description.trim() || !form.category) {
-      setError('Codice, descrizione e categoria sono obbligatori');
+    if (!form.code.trim() || !form.description.trim()) {
+      setError('Codice e descrizione sono obbligatori');
       return;
     }
+    if (isNewCat && !newCatName.trim()) {
+      setError('Inserisci il nome della nuova categoria');
+      return;
+    }
+    if (!isNewCat && !form.category) {
+      setError('Seleziona una categoria');
+      return;
+    }
+
     try {
+      let categoryId = form.category;
+      
+      // Se è una nuova categoria, creiamola prima
+      if (isNewCat) {
+        const newCat = await categoryStore.create({ name: newCatName.trim(), description: 'Creata durante inserimento materiale' });
+        categoryId = newCat.id;
+      }
+
       if (editItem) {
         await materialStore.update(editItem.id, {
           ...form,
+          category: categoryId,
           minThreshold: Number(form.minThreshold) || 0,
         });
         await adminLogStore.create({ action: 'Modifica materiale', entity: 'materiale', entityId: editItem.id, details: `Materiale "${form.code}" modificato`, userId: user.id, userName: user.fullName });
       } else {
         const created = await materialStore.create({
           ...form,
+          category: categoryId,
           quantity: 0,
           minThreshold: Number(form.minThreshold) || 0,
         });
@@ -112,6 +138,18 @@ export default function GestioneMateriali() {
     }
   };
 
+  const handleEmpty = async () => {
+    try {
+      await materialStore.deleteAll();
+      await adminLogStore.create({ action: 'Svuotamento anagrafica', entity: 'magazzino', details: `Tutti i materiali e i movimenti sono stati eliminati dall'utente.`, userId: user.id, userName: user.fullName });
+      setConfirmEmpty(false);
+      await refresh();
+    } catch (err) {
+      console.error('Errore svuotamento:', err);
+      setError('Errore durante lo svuotamento: ' + err.message);
+    }
+  };
+
   const updateForm = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   return (
@@ -121,7 +159,10 @@ export default function GestioneMateriali() {
           <h1 className="page-title">🔧 Gestione Materiali</h1>
           <p className="page-subtitle">Anagrafica completa dei materiali — {materials.length} registrati</p>
         </div>
-        <button className="btn btn-primary" onClick={openNew}>+ Nuovo Materiale</button>
+        <div className="btn-group">
+          <button className="btn btn-secondary text-danger" onClick={() => setConfirmEmpty(true)}>🗑️ Svuota Anagrafica</button>
+          <button className="btn btn-primary" onClick={openNew}>+ Nuovo Materiale</button>
+        </div>
       </div>
 
       <div className="filters-row" style={{ marginBottom: 16 }}>
@@ -203,11 +244,21 @@ export default function GestioneMateriali() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Categoria <span className="required">*</span></label>
-                  <select className="form-control" value={form.category} onChange={e => updateForm('category', e.target.value)}>
-                    <option value="">-- Seleziona --</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label className="form-label" style={{ marginBottom: 0 }}>Categoria <span className="required">*</span></label>
+                    <label style={{ fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary-600)' }}>
+                      <input type="checkbox" checked={isNewCat} onChange={e => setIsNewCat(e.target.checked)} />
+                      + Nuova
+                    </label>
+                  </div>
+                  {isNewCat ? (
+                    <input type="text" className="form-control" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="Nome nuova categoria..." autoFocus />
+                  ) : (
+                    <select className="form-control" value={form.category} onChange={e => updateForm('category', e.target.value)}>
+                      <option value="">-- Seleziona --</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Unità di Misura</label>
@@ -264,6 +315,30 @@ export default function GestioneMateriali() {
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>Annulla</button>
               <button className="btn btn-danger" onClick={() => handleDelete(confirmDelete)}>Elimina</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Empty All */}
+      {confirmEmpty && (
+        <div className="modal-overlay confirm-dialog" onClick={() => setConfirmEmpty(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Svuota Magazzino COMPLETAMENTE</h3>
+              <button className="modal-close" onClick={() => setConfirmEmpty(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ textAlign: 'center' }}>
+              <div className="confirm-icon danger">💥</div>
+              <p className="confirm-message">
+                <strong>ATTENZIONE!</strong><br />
+                Stai per eliminare <strong>TUTTI</strong> i materiali, i movimenti e le notifiche.<br />
+                Questa azione è assolutamente distruttiva e irreversibile.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setConfirmEmpty(false)}>Annulla</button>
+              <button className="btn btn-danger" onClick={handleEmpty}>SÌ, SVUOTA TUTTO</button>
             </div>
           </div>
         </div>

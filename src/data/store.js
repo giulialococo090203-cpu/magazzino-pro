@@ -179,6 +179,15 @@ export const materialStore = {
     const { error } = await supabase.from('materiali').delete().eq('id', id);
     if (error) throw error;
   },
+  async deleteAll() {
+    // Eliminiamo notifiche e movimenti (che dipendono dai materiali)
+    await supabase.from('notifiche').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('movimenti').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    
+    // Infine i materiali
+    const { error } = await supabase.from('materiali').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) throw error;
+  },
   async _checkThreshold(material) {
     if (material.quantity <= material.minThreshold && material.minThreshold > 0) {
       await notificationStore.create({

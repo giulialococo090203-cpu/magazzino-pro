@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore } from '../../data/store';
 import { MOVEMENT_TYPES } from '../../data/initialData';
 import * as XLSX from 'xlsx';
@@ -11,9 +12,10 @@ function formatStatus(status) {
 }
 
 export default function Inventario() {
+  const [searchParams] = useSearchParams();
   const [materials, setMaterials] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('q') || '');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [, setTick] = useState(0);
@@ -33,6 +35,12 @@ export default function Inventario() {
   };
 
   useEffect(() => { refresh(); }, []);
+
+  // Sync search with URL param 'q'
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) setSearch(q);
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadMovements() {

@@ -71,7 +71,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="kpi-card">
+        <div className={`kpi-card ${stats.belowThresholdCount > 0 ? 'warning' : ''}`}>
           <div className="kpi-icon yellow">⚠️</div>
           <div className="kpi-content">
             <div className="kpi-label">Sotto Soglia</div>
@@ -80,7 +80,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="kpi-card">
+        <div className={`kpi-card ${stats.exhaustedCount > 0 ? 'danger' : ''}`}>
           <div className="kpi-icon red">🚫</div>
           <div className="kpi-content">
             <div className="kpi-label">Esauriti</div>

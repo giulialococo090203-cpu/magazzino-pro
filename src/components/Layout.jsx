@@ -1,4 +1,4 @@
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { notificationStore } from '../data/store';
 import { useState, useEffect } from 'react';
@@ -77,8 +77,10 @@ function getSection(pathname) {
 
 export default function Layout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   useEffect(() => {
     const updateNotifs = () => setUnreadCount(notificationStore.getUnread().length);
@@ -172,6 +174,22 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="header-right">
+            <div className="global-search-container">
+              <span className="global-search-icon">🔍</span>
+              <input 
+                type="text" 
+                className="global-search-input" 
+                placeholder="Cerca codice materiale..." 
+                value={globalSearch}
+                onChange={e => setGlobalSearch(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && globalSearch.trim()) {
+                    navigate(`/inventario?q=${encodeURIComponent(globalSearch.trim())}`);
+                    setGlobalSearch('');
+                  }
+                }}
+              />
+            </div>
             <span className="header-date" style={{ textTransform: 'capitalize' }}>{today}</span>
             <Link to="/controllo/notifiche" className="header-notification-btn">
               🔔

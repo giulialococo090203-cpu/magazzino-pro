@@ -249,6 +249,8 @@ table {
 .sidebar-link.active {
   background: rgba(59, 130, 246, 0.15);
   color: var(--primary-400);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--primary-500);
 }
 
 .sidebar-link-icon {
@@ -386,18 +388,40 @@ table {
   color: var(--gray-700);
 }
 
-.header-notification-badge {
+/* Global Search Header */
+.global-search-container {
+  position: relative;
+  width: 320px;
+  margin-right: 20px;
+}
+
+.global-search-input {
+  width: 100%;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  padding: 10px 14px 10px 40px;
+  border-radius: var(--border-radius-lg);
+  font-size: 13px;
+  transition: all var(--transition-fast);
+}
+
+.global-search-input:focus {
+  background: white;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  outline: none;
+  width: 360px;
+}
+
+.global-search-icon {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--danger-500);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--gray-400);
+  pointer-events: none;
+}
   align-items: center;
   justify-content: center;
   border: 2px solid white;
@@ -476,6 +500,16 @@ table {
 .kpi-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+.kpi-card.warning {
+  border-left: 4px solid var(--warning-500);
+  background: var(--warning-50);
+}
+
+.kpi-card.danger {
+  border-left: 4px solid var(--danger-500);
+  background: var(--danger-50);
 }
 
 .kpi-icon {
@@ -846,9 +880,17 @@ textarea.form-control {
 .status-esaurito {
   background: var(--danger-50);
   color: var(--danger-700);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+  animation: pulse-danger 2s infinite;
 }
 .status-esaurito::before {
   background: var(--danger-500);
+}
+
+@keyframes pulse-danger {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 /* Movement type badges */
