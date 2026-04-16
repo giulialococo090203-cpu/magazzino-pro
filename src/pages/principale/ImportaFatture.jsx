@@ -43,26 +43,53 @@ export default function ImportaFatture() {
 
         if (data.length < 2) throw new Error('File vuoto o senza intestazioni');
 
-        const headers = data[0].map(h => String(h).toLowerCase().trim());
-        const rows = data.slice(1);
+        // Normalizzazione per confronto robusto (rimuove accenti, spazi, trim e lowercase)
+        const normalize = (str) => 
+          String(str || '').toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Rimuove accenti
+            .replace(/[^a-z0-9]/g, '') // Rimuove simboli e spazi
+            .trim();
 
-        // Find column indices
-        const findCol = (synonyms) => headers.findIndex(h => synonyms.some(s => h.includes(s)));
+        // 1. TROVA LA RIGA DELLE INTESTAZIONI (cerca nelle prime 20 righe)
+        let headerRowIndex = -1;
+        let foundHeaders = [];
         
-        const idxCode = findCol(['codice', 'code', 'sku', 'articolo', 'identificativo']);
-        const idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name']);
-        const idxQty = findCol(['quantità', 'qta', 'quantita', 'quantity', 'qty', 'pezzi']);
-        const idxUnit = findCol(['unità', 'um', 'unit', 'unita', 'misura', 'misura']);
-        const idxBrand = findCol(['marca', 'brand', 'produttore']);
-        const idxCat = findCol(['categoria', 'category', 'settore']);
-        const idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min_threshold']);
-        const idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location']);
-        const idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
-        const idxNote = findCol(['note', 'notes', 'osservazioni']);
+        const codeSyns = ['codice', 'code', 'sku', 'articolo', 'identificativo', 'idmateriale'];
+        const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'numero'];
 
-        if (idxCode === -1 || idxQty === -1) {
-          throw new Error('Impossibile trovare le colonne "Codice" e "Quantità" nel file.');
+        for (let i = 0; i < Math.min(data.length, 20); i++) {
+          const normalizedRow = (data[i] || []).map(h => normalize(h));
+          const hasCode = normalizedRow.some(h => codeSyns.some(s => h.includes(s) || s.includes(h)));
+          const hasQty = normalizedRow.some(h => qtySyns.some(s => h.includes(s) || s.includes(h)));
+          
+          if (hasCode && hasQty) {
+            headerRowIndex = i;
+            foundHeaders = normalizedRow;
+            break;
+          }
         }
+
+        if (headerRowIndex === -1) {
+          throw new Error('Impossibile trovare le colonne "Codice" e "Quantità". Verifica che il file abbia le intestazioni corrette.');
+        }
+
+        const rows = data.slice(headerRowIndex + 1);
+
+        // 2. MAPPA GLI INDICI DELLE COLONNE
+        const findCol = (synonyms) => foundHeaders.findIndex(h => 
+          synonyms.some(s => h.includes(normalize(s)) || normalize(s).includes(h))
+        );
+        
+        const idxCode = findCol(codeSyns);
+        const idxQty = findCol(qtySyns);
+        const idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name', 'articolo']);
+        const idxUnit = findCol(['unita', 'um', 'unit', 'misura', 'formato']);
+        const idxBrand = findCol(['marca', 'brand', 'produttore', 'manuf']);
+        const idxCat = findCol(['categoria', 'category', 'settore', 'gruppo']);
+        const idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min']);
+        const idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location', 'posto']);
+        const idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
+        const idxNote = findCol(['note', 'notes', 'osservazioni', 'commento']);
 
         const processed = [];
         for (const row of rows) {
