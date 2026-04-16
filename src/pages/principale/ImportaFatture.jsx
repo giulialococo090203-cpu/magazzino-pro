@@ -69,7 +69,8 @@ export default function ImportaFatture() {
           const code = String(row[idxCode] || '').trim();
           if (!code) continue;
 
-          const qty = Number(row[idxQty]) || 0;
+          const qtyStr = String(row[idxQty] || '0').replace(',', '.');
+          const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
           if (qty <= 0) continue;
 
           const desc = String(row[idxDesc] || 'Senza descrizione').trim();
