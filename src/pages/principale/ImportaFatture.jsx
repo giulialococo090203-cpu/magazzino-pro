@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
-import { normalize } from '../../utils/classificationEngine';
-import { predictCategory } from '../../utils/mlEngine';
+import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
+// import { predictCategory } from '../../utils/mlEngine';
+
 import { parseFile } from '../../utils/importer/OmniParser';
 import { findBestMapping } from '../../utils/importer/HeuristicAnalysis';
 
@@ -79,48 +80,43 @@ export default function ImportaFatture() {
 
       const existing = await materialStore.getByCode(code);
       
-      // ML: Predizione categoria avanzata
-      let suggestions = [];
-      let catId = existing?.category || '';
-      let isAutoAssigned = false;
+      // BRUTE FORCE ENGINE: Identificazione Materiale e Categoria
+      const recognition = aggressiveMatch(desc || code, { materials: trainingData, categories: categories });
       
-      if (!catId) {
-        if (explicitCat) {
-          const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
-          if (match) {
-            catId = match.id;
-            isAutoAssigned = true;
-          }
-        }
-        
-        // PREDICZIONE MACHINE LEARNING
-        const predictions = predictCategory(desc || code, categories, trainingData);
-        suggestions = predictions.slice(0, 3);
-        
-        // Auto-assegnazione se confidenza alta (> 50 con ML è già buona)
-        if (!catId && suggestions[0]?.score > 45) {
-          catId = suggestions[0].id;
+      let existing = recognition.bestMatch?.type === 'material' ? recognition.bestMatch.original : null;
+      let catId = existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
+      let isAutoAssigned = recognition.confidence === 'certi' || recognition.confidence === 'probabili';
+      let suggestions = recognition.allCandidates.slice(0, 5);
+
+      if (!existing && code) {
+        // Fallback: cerca comunque per codice esatto se il motore brute force non lo ha messo come primo
+        const fallbackExisting = trainingData.find(m => m.code.toLowerCase() === code.toLowerCase());
+        if (fallbackExisting) {
+          existing = fallbackExisting;
+          catId = existing.category;
           isAutoAssigned = true;
         }
       }
 
-        processed.push({
-          code,
-          description: existing ? existing.description : (desc || code),
-          quantity: qty,
-          unit: existing ? existing.unit : unit,
-          isNew: !existing,
-          selected: true,
-          category: catId,
-          isAutoAssigned,
-          suggestions: suggestions,
-          brand: brand || existing?.brand || 'Da assegnare',
-          minThreshold: 10,
-          location: String(row[mapping.location] || existing?.location || 'A1-01'),
-          supplier: 'Importato',
-          notes: `Import: ${fileName}`,
-          existingMaterial: existing,
-        });
+      processed.push({
+        code: existing?.code || code,
+        description: existing ? existing.description : (desc || code),
+        quantity: qty,
+        unit: existing ? existing.unit : unit,
+        isNew: !existing,
+        selected: true,
+        category: catId,
+        isAutoAssigned,
+        confidence: recognition.confidence,
+        suggestions: suggestions,
+        brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
+        minThreshold: 10,
+        location: String(row[mapping.location] || existing?.location || 'A1-01'),
+        supplier: 'Importato',
+        notes: `Import: ${fileName}`,
+        existingMaterial: existing,
+      });
+
     }
     setParsedItems(processed);
     setStep(2);
@@ -361,7 +357,14 @@ export default function ImportaFatture() {
               </thead>
               <tbody>
                 {parsedItems.map((item, idx) => (
-                  <tr key={idx} style={{ background: item.isNew ? 'var(--warning-50)' : 'transparent' }}>
+                  <tr key={idx} style={{ 
+                    background: item.confidence === 'certi' ? 'var(--success-25)' : 
+                               item.confidence === 'probabili' ? 'var(--primary-25)' : 
+                               item.isNew ? 'var(--warning-25)' : 'transparent',
+                    borderLeft: item.confidence === 'certi' ? '4px solid var(--success-500)' : 
+                               item.confidence === 'probabili' ? '4px solid var(--primary-500)' : 
+                               item.isNew ? '4px solid var(--warning-500)' : 'none'
+                  }}>
                     <td>
                       <input
                         type="checkbox"
@@ -370,51 +373,71 @@ export default function ImportaFatture() {
                         style={{ width: 18, height: 18 }}
                       />
                     </td>
-                    <td><strong>{item.code}</strong></td>
+                    <td>
+                      <div className="d-flex flex-column">
+                        <strong>{item.code}</strong>
+                        {item.confidence && (
+                          <span style={{ 
+                            fontSize: 9, 
+                            fontWeight: 800, 
+                            textTransform: 'uppercase', 
+                            color: item.confidence === 'certi' ? 'var(--success-700)' : 
+                                   item.confidence === 'probabili' ? 'var(--primary-700)' : 'var(--warning-700)'
+                          }}>
+                            {item.confidence.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td>{item.description}</td>
                     <td><span className="text-muted">{item.brand}</span></td>
                     <td style={{ fontWeight: 700 }}>{item.quantity}</td>
                     <td>{item.unit}</td>
                     <td><span className="text-muted">{item.location}</span></td>
                     <td>
-                      {item.isNew ? (
-                        <div className="suggestion-container">
-                          <select
-                            className="form-control"
-                            value={item.category}
-                            onChange={e => updateItem(idx, 'category', e.target.value)}
-                            style={{ 
-                              padding: '6px 10px', 
-                              fontSize: 12, 
-                              border: item.isAutoAssigned ? '2px solid var(--success-400)' : item.category ? '1px solid var(--gray-300)' : '1px solid var(--warning-400)',
-                              backgroundColor: item.isAutoAssigned ? 'var(--success-50)' : 'white'
-                            }}
-                          >
-                            <option value="">Seleziona...</option>
-                            {categories.map(c => (
-                              <option key={c.id} value={c.id}>{c.name}</option>
+                      <div className="suggestion-container">
+                        <select
+                          className="form-control"
+                          value={item.category}
+                          onChange={e => updateItem(idx, 'category', e.target.value)}
+                          style={{ 
+                            padding: '6px 10px', 
+                            fontSize: 12, 
+                            border: item.confidence === 'certi' ? '2px solid var(--success-400)' : 
+                                   item.confidence === 'probabili' ? '2px solid var(--primary-400)' : 
+                                   item.category ? '1px solid var(--gray-300)' : '2px solid var(--warning-400)',
+                            backgroundColor: 'white'
+                          }}
+                        >
+                          <option value="">Seleziona...</option>
+                          {categories.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                        {(item.confidence !== 'certi') && item.suggestions?.filter(s => s.type === 'category').length > 0 && (
+                          <div className="suggestions-list mt-1">
+                            {item.suggestions.filter(s => s.type === 'category').slice(0, 3).map(sug => (
+                              <button 
+                                key={sug.id}
+                                className="btn-suggestion"
+                                onClick={() => updateItem(idx, 'category', sug.id)}
+                                title={`Confidenza: ${Math.round(sug.score)}%`}
+                                style={{ 
+                                  opacity: sug.score / 100 + 0.3,
+                                  fontSize: 10,
+                                  padding: '2px 6px',
+                                  margin: '2px'
+                                }}
+                              >
+                                {sug.name}
+                              </button>
                             ))}
-                          </select>
-                          {item.category === '' && item.suggestions?.length > 0 && (
-                            <div className="suggestions-list mt-1">
-                              {item.suggestions.map(sug => (
-                                <button 
-                                  key={sug.id}
-                                  className="btn-suggestion"
-                                  onClick={() => updateItem(idx, 'category', sug.id)}
-                                  title={`Confidenza: ${Math.round(sug.score)}%`}
-                                >
-                                  {sug.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-sm">{categories.find(c => c.id === item.category)?.name || '—'}</span>
-                      )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
+
                 ))}
               </tbody>
             </table>
