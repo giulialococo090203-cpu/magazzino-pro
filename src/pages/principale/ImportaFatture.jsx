@@ -78,12 +78,12 @@ export default function ImportaFatture() {
       const brand = String(row[mapping.brand] || '').trim();
       const explicitCat = String(row[mapping.category] || '').trim();
 
-      const existing = await materialStore.getByCode(code);
-      
       // BRUTE FORCE ENGINE: Identificazione Materiale e Categoria
       const recognition = aggressiveMatch(desc || code, { materials: trainingData, categories: categories });
       
       let existing = recognition.bestMatch?.type === 'material' ? recognition.bestMatch.original : null;
+
+
       let catId = existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
       let isAutoAssigned = recognition.confidence === 'certi' || recognition.confidence === 'probabili';
       let suggestions = recognition.allCandidates.slice(0, 5);
