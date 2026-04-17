@@ -4,7 +4,7 @@ import { materialStore, categoryStore, movementStore, adminLogStore } from '../.
 import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
 import { normalize } from '../../utils/classificationEngine';
-import { predictCategory } from '../../utils/mlEngine';
+import { predictCategory, analyzeColumnType } from '../../utils/mlEngine';
 
 export default function ImportaFatture() {
   const { user } = useAuth();
@@ -44,20 +44,26 @@ export default function ImportaFatture() {
         const dataBuffer = evt.target.result;
         const wb = XLSX.read(dataBuffer, { type: 'array' });
         
-        // DEEP SCAN: Prova ogni foglio finché non trova qualcosa di valido
-        let bestData = null;
+        let bestSheetData = null;
         let bestMapping = null;
+
+        // 0. MEMORIA STORICA: Controlla se abbiamo già mappato file simili
+        const mappingMemory = JSON.parse(localStorage.getItem('import_mapping_memory') || '{}');
 
         for (const wsname of wb.SheetNames) {
           const ws = wb.Sheets[wsname];
           const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-          if (data.length < 1) continue;
+          if (data.length < 2) continue;
 
-          // TENTA AUTO-RILEVAMENTO
-          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale'];
-          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi'];
-
+          // ANALISI INTELLIGENTE COLONNE
+          const numCols = Math.max(...data.slice(0, 10).map(r => r.length));
+          const colScores = Array.from({ length: numCols }, () => ({ code: 0, quantity: 0, description: 0, category: 0 }));
+          
+          // A. Rilevamento Intestazioni (Sinonimi)
+          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale', 'id_art'];
+          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'n.um', 'mov'];
           let headerRowIndex = -1;
+
           for (let i = 0; i < Math.min(data.length, 25); i++) {
             const row = (data[i] || []).map(h => normalize(String(h)));
             const hasCode = row.some(h => codeSyns.some(s => h.includes(normalize(s))));
@@ -68,28 +74,41 @@ export default function ImportaFatture() {
             }
           }
 
+          const currentMapping = { code: -1, quantity: -1, description: -1, unit: -1, brand: -1, category: -1, location: -1 };
+
           if (headerRowIndex !== -1) {
             const headers = data[headerRowIndex].map(h => normalize(String(h)));
-            const findCol = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
-            
-            bestMapping = {
-              code: findCol(codeSyns),
-              quantity: findCol(qtySyns),
-              description: findCol(['descrizione', 'prodotto', 'nome', 'articolo', 'detail']),
-              unit: findCol(['unita', 'um', 'unit']),
-              brand: findCol(['marca', 'brand']),
-              category: findCol(['categoria', 'settore', 'gruppo']),
-              location: findCol(['posizione', 'scaffale'])
-            };
-            bestData = data.slice(headerRowIndex + 1);
-            break; // Trovato un foglio valido con intestazioni
+            const find = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
+            currentMapping.code = find(codeSyns);
+            currentMapping.quantity = find(qtySyns);
+            currentMapping.description = find(['descrizione', 'prodotto', 'nome', 'articolo', 'detail', 'denominazione']);
+            currentMapping.unit = find(['unita', 'um', 'unit', 'u.m.']);
+            currentMapping.brand = find(['marca', 'brand', 'produttore']);
+            currentMapping.category = find(['categoria', 'settore', 'gruppo']);
+            currentMapping.location = find(['posizione', 'scaffale', 'ubicazione']);
+          }
+
+          // B. AI PATTERN RECOGNITION (Se le intestazioni falliscono o sono incerte)
+          for (let c = 0; c < numCols; c++) {
+            const sample = data.slice(headerRowIndex + 1, headerRowIndex + 21).map(r => r[c]);
+            const scores = analyzeColumnType(sample);
+            if (currentMapping.code === -1 && scores.code > 0.4) currentMapping.code = c;
+            if (currentMapping.quantity === -1 && scores.quantity > 0.6) currentMapping.quantity = c;
+            if (currentMapping.description === -1 && scores.description > 0.5) currentMapping.description = c;
+          }
+
+          // VERIFICA SE ABBIAMO UNA MAPPATURA VALIDA
+          if (currentMapping.code !== -1 && currentMapping.quantity !== -1) {
+            bestMapping = currentMapping;
+            bestSheetData = data.slice(headerRowIndex + 1);
+            break; 
           }
         }
 
-        if (bestData) {
-          processItems(bestData, bestMapping);
+        if (bestSheetData && bestMapping) {
+          processItems(bestSheetData, bestMapping);
         } else {
-          // Se nessun foglio ha intestazioni, prendi il primo foglio e vai in Mappatura Manuale
+          // FAIL -> MANAUL MAPPING
           const firstWS = wb.Sheets[wb.SheetNames[0]];
           const firstData = XLSX.utils.sheet_to_json(firstWS, { header: 1 });
           setRawWorkbookData(firstData);
@@ -357,7 +376,15 @@ export default function ImportaFatture() {
             <button 
               className="btn btn-primary btn-lg w-100" 
               disabled={manualMapping.code === -1 || manualMapping.quantity === -1}
-              onClick={() => processItems(rawWorkbookData, manualMapping)}
+              onClick={() => {
+                // SALVA IN MEMORIA PER IL PROSSIMO FILE SIMILE
+                const memory = JSON.parse(localStorage.getItem('import_mapping_memory') || '{}');
+                const fingerprint = rawWorkbookData[0].join('|'); // Fingerprint della struttura
+                memory[fingerprint] = manualMapping;
+                localStorage.setItem('import_mapping_memory', JSON.stringify(memory));
+                
+                processItems(rawWorkbookData, manualMapping);
+              }}
             >
               {manualMapping.code === -1 || manualMapping.quantity === -1 
                 ? 'Seleziona almeno Codice e Quantità' 

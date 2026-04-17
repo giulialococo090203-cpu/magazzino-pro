@@ -102,3 +102,44 @@ export const predictCategory = (description, categories, trainedData = []) => {
       confidence: r.score > 75 ? 'ALTA' : r.score > 40 ? 'MEDIA' : 'BASSA'
     }));
 };
+
+/**
+ * AI COLUMN DETECTION
+ * Analizza il contenuto di una colonna per indovinarne il tipo
+ */
+export const analyzeColumnType = (dataSample) => {
+  const scores = { code: 0, quantity: 0, description: 0, category: 0 };
+  const items = dataSample.filter(v => v !== undefined && v !== null && v !== '');
+  if (items.length === 0) return scores;
+
+  items.forEach(val => {
+    const s = String(val).trim();
+    
+    // 1. QUANTITY (Numeri, spesso piccoli o con virgole)
+    if (/^-?\d+([.,]\d+)?$/.test(s)) {
+      scores.quantity += 10;
+      if (parseFloat(s.replace(',', '.')) < 1000) scores.quantity += 5;
+    }
+
+    // 2. CODE (Alfanumerici, spesso con trattini, lunghezza media 4-15)
+    if (/^[A-Z0-9.\-/]{4,20}$/i.test(s) && /[A-Z]/i.test(s) && /[0-9]/.test(s)) {
+      scores.code += 15;
+    }
+
+    // 3. DESCRIPTION (Più parole, spazi, lunghezza > 15)
+    if (s.includes(' ') && s.length > 15) {
+      scores.description += 12;
+    }
+
+    // 4. CATEGORY (Match con nomi categorie o parole chiave)
+    const normalized = normalize(s);
+    Object.keys(TECHNICAL_WEIGHTS).forEach(cat => {
+      if (normalized.includes(normalize(cat))) scores.category += 10;
+    });
+  });
+
+  // Normalizza i punteggi sulla base del numero di campioni
+  Object.keys(scores).forEach(k => scores[k] = (scores[k] / items.length));
+  
+  return scores;
+};
