@@ -107,46 +107,68 @@ export default function ImportaFatture() {
 
       const existing = await materialStore.getByCode(code);
       
-      // IBRIDO: Classificazione intelligente
-      let suggestions = [];
-      let catId = existing?.category || '';
-      
-      if (!catId) {
-        // Se c'è una categoria nel file, prova il match esatto
-        if (explicitCat) {
-          const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
-          if (match) catId = match.id;
-        }
+        // IBRIDO: Classificazione intelligente
+        let suggestions = [];
+        let catId = existing?.category || '';
+        let isAutoAssigned = false;
         
-        // Se ancora nulla, usa il motore di classificazione
-        const classification = classify(desc || code, categories);
-        suggestions = classification.slice(0, 3);
-        if (suggestions[0]?.score > 70) catId = suggestions[0].id; // Auto-assegna solo se molta confidenza
-      }
+        if (!catId) {
+          // Se c'è una categoria nel file, prova il match esatto
+          if (explicitCat) {
+            const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
+            if (match) {
+              catId = match.id;
+              isAutoAssigned = true;
+            }
+          }
+          
+          // Se ancora nulla, usa il motore di classificazione
+          const classification = classify(desc || code, categories);
+          suggestions = classification.slice(0, 3);
+          
+          // AUTO-ASSEGNAZIONE AGGRESSIVA: se score > 30 e c'è un distacco netto dal secondo
+          if (!catId && suggestions[0]?.score > 30) {
+            const secondScore = suggestions[1]?.score || 0;
+            if (suggestions[0].score - secondScore > 10) {
+              catId = suggestions[0].id;
+              isAutoAssigned = true;
+            }
+          }
+        }
 
-      processed.push({
-        code,
-        description: existing ? existing.description : (desc || code),
-        quantity: qty,
-        unit: existing ? existing.unit : unit,
-        isNew: !existing,
-        selected: true,
-        category: catId,
-        suggestions: suggestions,
-        brand: brand || existing?.brand || 'Da assegnare',
-        minThreshold: 10,
-        location: String(row[mapping.location] || existing?.location || 'A1-01'),
-        supplier: 'Importato',
-        notes: `Import: ${fileName}`,
-        existingMaterial: existing,
-      });
+        processed.push({
+          code,
+          description: existing ? existing.description : (desc || code),
+          quantity: qty,
+          unit: existing ? existing.unit : unit,
+          isNew: !existing,
+          selected: true,
+          category: catId,
+          isAutoAssigned,
+          suggestions: suggestions,
+          brand: brand || existing?.brand || 'Da assegnare',
+          minThreshold: 10,
+          location: String(row[mapping.location] || existing?.location || 'A1-01'),
+          supplier: 'Importato',
+          notes: `Import: ${fileName}`,
+          existingMaterial: existing,
+        });
     }
     setParsedItems(processed);
     setStep(2);
   };
 
   const updateItem = (index, field, value) => {
-    setParsedItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+    setParsedItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value, isAutoAssigned: false } : item));
+  };
+
+  const applyAllSuggestions = () => {
+    setParsedItems(prev => prev.map(item => {
+      if (item.isNew && !item.category && item.suggestions?.length > 0) {
+        return { ...item, category: item.suggestions[0].id, isAutoAssigned: true };
+      }
+      return item;
+    }));
   };
 
   const handleConfirmImport = async () => {
@@ -338,9 +360,12 @@ export default function ImportaFatture() {
       {/* Step 2: Preview */}
       {step === 2 && (
         <div className="card">
-          <div className="card-header">
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 className="card-title">📋 Materiali rilevati da: {fileName}</h3>
-            <div className="btn-group">
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-sm btn-outline-primary" onClick={applyAllSuggestions}>
+                🪄 Applica Suggerimenti Auto
+              </button>
               <button className="btn btn-sm btn-secondary" onClick={() => { setStep(1); setParsedItems([]); }}>← Indietro</button>
             </div>
           </div>
@@ -382,7 +407,12 @@ export default function ImportaFatture() {
                             className="form-control"
                             value={item.category}
                             onChange={e => updateItem(idx, 'category', e.target.value)}
-                            style={{ padding: '6px 10px', fontSize: 12, border: item.category ? '1px solid var(--success-300)' : '1px solid var(--warning-300)' }}
+                            style={{ 
+                              padding: '6px 10px', 
+                              fontSize: 12, 
+                              border: item.isAutoAssigned ? '2px solid var(--success-400)' : item.category ? '1px solid var(--gray-300)' : '1px solid var(--warning-400)',
+                              backgroundColor: item.isAutoAssigned ? 'var(--success-50)' : 'white'
+                            }}
                           >
                             <option value="">Seleziona...</option>
                             {categories.map(c => (
