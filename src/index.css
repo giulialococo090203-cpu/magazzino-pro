@@ -496,6 +496,49 @@ table {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+}/* --- Import & Classification UI --- */
+.suggestion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.btn-suggestion {
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  color: var(--primary-700);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-suggestion:hover {
+  background: var(--primary-100);
+  border-color: var(--primary-400);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.import-mapping-th {
+  background: var(--gray-50);
+}
+
+.mapping-select {
+  border: 2px solid var(--primary-200);
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  color: var(--primary-700);
 }
 
 .kpi-card {

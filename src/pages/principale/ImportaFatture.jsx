@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
+import { classify, normalize } from '../../utils/classificationEngine';
 
 export default function ImportaFatture() {
   const { user } = useAuth();
@@ -12,6 +13,10 @@ export default function ImportaFatture() {
   const [parsedItems, setParsedItems] = useState([]);
   const [results, setResults] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [rawWorkbookData, setRawWorkbookData] = useState(null);
+  const [manualMapping, setManualMapping] = useState({
+    code: -1, description: -1, quantity: -1, unit: -1, brand: -1, category: -1, location: -1
+  });
 
   useEffect(() => {
     async function loadCats() {
@@ -37,124 +42,107 @@ export default function ImportaFatture() {
       try {
         const dataBuffer = evt.target.result;
         const wb = XLSX.read(dataBuffer, { type: 'array' });
-        
-        let allProcessed = [];
-        let sheetFound = false;
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
-        // BRUTE FORCE: Prova ogni foglio finché non trova qualcosa
-        for (const wsname of wb.SheetNames) {
-          const ws = wb.Sheets[wsname];
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-          if (data.length < 1) continue;
+        if (data.length < 1) throw new Error('File vuoto');
+        setRawWorkbookData(data);
 
-          // Normalizzazione per confronto robusto
-          const normalize = (str) => 
-            String(str || '').toLowerCase()
-              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-              .replace(/[^a-z0-9]/g, '')
-              .trim();
+        // TENTA AUTO-RILEVAMENTO
+        const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale'];
+        const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi'];
 
-          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'identificativo', 'idmateriale'];
-          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'numero'];
-
-          // 1. TENTA DI TROVARE LE INTESTAZIONI
-          let headerRowIndex = -1;
-          for (let i = 0; i < Math.min(data.length, 20); i++) {
-            const normalizedRow = (data[i] || []).map(h => normalize(h));
-            const hasCode = normalizedRow.some(h => codeSyns.some(s => h.includes(s) || s.includes(h)));
-            const hasQty = normalizedRow.some(h => qtySyns.some(s => h.includes(s) || s.includes(h)));
-            if (hasCode && hasQty) {
-              headerRowIndex = i;
-              break;
-            }
-          }
-
-          let idxCode, idxQty, idxDesc, idxUnit, idxBrand, idxCat, idxThresh, idxLoc, idxSupp, idxNote;
-          let headers = [];
-
-          if (headerRowIndex !== -1) {
-            headers = data[headerRowIndex].map(h => normalize(h));
-            const findCol = (synonyms) => headers.findIndex(h => synonyms.some(s => h.includes(normalize(s)) || normalize(s).includes(h)));
-            idxCode = findCol(codeSyns);
-            idxQty = findCol(qtySyns);
-            idxDesc = findCol(['descrizione', 'prodotto', 'nome', 'description', 'name', 'articolo']);
-            idxUnit = findCol(['unita', 'um', 'unit', 'misura', 'formato']);
-            idxBrand = findCol(['marca', 'brand', 'produttore', 'manuf']);
-            idxCat = findCol(['categoria', 'category', 'settore', 'gruppo']);
-            idxThresh = findCol(['soglia', 'scorta', 'minimo', 'min']);
-            idxLoc = findCol(['posizione', 'scaffale', 'ubicazione', 'location', 'posto']);
-            idxSupp = findCol(['fornitore', 'supplier', 'vendor']);
-            idxNote = findCol(['note', 'notes', 'osservazioni', 'commento']);
-          } else {
-            // FALLBACK FORZA BRUTA: Indovina le colonne se non ci sono intestazioni
-            console.log('Modalità Forza Bruta: Inferenziazione colonne per foglio', wsname);
-            const firstRow = data[0] || [];
-            // Assume Colonna 1 (indice 1) come codice e Colonna 5 (indice 5) come quantità se i nomi falliscono
-            // secondo lo schema standard dell'utente
-            idxCode = headers.length > 1 ? 1 : 0; 
-            idxQty = headers.length > 5 ? 5 : headers.length - 1;
-            idxDesc = 2;
-          }
-
-          const rows = headerRowIndex !== -1 ? data.slice(headerRowIndex + 1) : data;
-          
-          for (const row of rows) {
-            const rawCode = row[idxCode];
-            if (rawCode === undefined || rawCode === null) continue;
-            const code = String(rawCode).trim();
-            if (!code || code === 'codice' || code === 'id_materiale') continue;
-
-            const qtyStr = String(row[idxQty] || '0').replace(',', '.');
-            const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
-            
-            const desc = String(row[idxDesc] || 'Materiale senza descrizione').trim();
-            const unit = String(row[idxUnit] || 'pz').trim();
-            const brand = String(row[idxBrand] || '').trim();
-            const catName = String(row[idxCat] || '').trim();
-            const threshold = Number(row[idxThresh]) || 10;
-            const location = String(row[idxLoc] || '').trim();
-            const supplier = String(row[idxSupp] || '').trim();
-            const notes = String(row[idxNote] || '').trim();
-
-            const existing = await materialStore.getByCode(code);
-            let catId = existing?.category || '';
-            if (!catId && catName && categories.length > 0) {
-              const match = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
-              if (match) catId = match.id;
-            }
-
-            allProcessed.push({
-              code,
-              description: existing ? existing.description : desc,
-              quantity: qty,
-              unit: existing ? existing.unit : unit,
-              isNew: !existing,
-              selected: qty > 0,
-              category: catId,
-              brand: brand || existing?.brand || 'Da assegnare',
-              minThreshold: threshold,
-              location: location || existing?.location || 'Da assegnare',
-              supplier: supplier || existing?.supplier || 'Da fattura',
-              notes: notes ? `${notes} (Extra)` : (existing?.notes || `Import: ${fileName}`),
-              existingMaterial: existing,
-            });
-          }
-
-          if (allProcessed.length > 0) {
-            sheetFound = true;
-            break; 
+        let headerRowIndex = -1;
+        for (let i = 0; i < Math.min(data.length, 20); i++) {
+          const row = (data[i] || []).map(h => normalize(h));
+          const hasCode = row.some(h => codeSyns.some(s => h.includes(normalize(s))));
+          const hasQty = row.some(h => qtySyns.some(s => h.includes(normalize(s))));
+          if (hasCode && hasQty) {
+            headerRowIndex = i;
+            break;
           }
         }
 
-        if (!sheetFound) throw new Error('Impossibile trovare materiali validi in nessun foglio del file.');
-        setParsedItems(allProcessed);
+        if (headerRowIndex !== -1) {
+          // AUTO-DETECTED
+          const headers = data[headerRowIndex].map(h => normalize(h));
+          const findCol = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
+          
+          const mapping = {
+            code: findCol(codeSyns),
+            quantity: findCol(qtySyns),
+            description: findCol(['descrizione', 'prodotto', 'nome', 'articolo']),
+            unit: findCol(['unita', 'um', 'unit']),
+            brand: findCol(['marca', 'brand']),
+            category: findCol(['categoria', 'settore']),
+            location: findCol(['posizione', 'scaffale'])
+          };
+          processItems(data.slice(headerRowIndex + 1), mapping);
+        } else {
+          // FAIL -> MANAUL MAPPING
+          setStep(3); 
+        }
       } catch (err) {
-        console.error('Errore Brute Force:', err);
-        alert(`Errore critico: ${err.message}`);
+        console.error('Upload error:', err);
+        alert(`Errore: ${err.message}`);
         setStep(1);
       }
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const processItems = async (rows, mapping) => {
+    const processed = [];
+    for (const row of rows) {
+      const code = String(row[mapping.code] || '').trim();
+      if (!code || code.toLowerCase() === 'codice') continue;
+
+      const qtyStr = String(row[mapping.quantity] || '0').replace(',', '.');
+      const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
+      const desc = String(row[mapping.description] || '').trim();
+      const unit = String(row[mapping.unit] || 'pz').trim();
+      const brand = String(row[mapping.brand] || '').trim();
+      const explicitCat = String(row[mapping.category] || '').trim();
+
+      const existing = await materialStore.getByCode(code);
+      
+      // IBRIDO: Classificazione intelligente
+      let suggestions = [];
+      let catId = existing?.category || '';
+      
+      if (!catId) {
+        // Se c'è una categoria nel file, prova il match esatto
+        if (explicitCat) {
+          const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
+          if (match) catId = match.id;
+        }
+        
+        // Se ancora nulla, usa il motore di classificazione
+        const classification = classify(desc || code, categories);
+        suggestions = classification.slice(0, 3);
+        if (suggestions[0]?.score > 70) catId = suggestions[0].id; // Auto-assegna solo se molta confidenza
+      }
+
+      processed.push({
+        code,
+        description: existing ? existing.description : (desc || code),
+        quantity: qty,
+        unit: existing ? existing.unit : unit,
+        isNew: !existing,
+        selected: true,
+        category: catId,
+        suggestions: suggestions,
+        brand: brand || existing?.brand || 'Da assegnare',
+        minThreshold: 10,
+        location: String(row[mapping.location] || existing?.location || 'A1-01'),
+        supplier: 'Importato',
+        notes: `Import: ${fileName}`,
+        existingMaterial: existing,
+      });
+    }
+    setParsedItems(processed);
+    setStep(2);
   };
 
   const updateItem = (index, field, value) => {
@@ -236,13 +224,13 @@ export default function ImportaFatture() {
         borderRadius: 'var(--border-radius-lg)', border: '1px solid var(--gray-200)',
         overflow: 'hidden'
       }}>
-        {['Caricamento', 'Anteprima', 'Conferma', 'Completato'].map((label, i) => (
+        {['Caricamento', 'Mappatura Manuale', 'Anteprima', 'Conferma', 'Completato'].map((label, i) => (
           <div key={i} style={{
             flex: 1, padding: '14px 16px', textAlign: 'center',
             background: step > i + 1 ? 'var(--success-50)' : step === i + 1 ? 'var(--primary-50)' : 'white',
-            borderRight: i < 3 ? '1px solid var(--gray-200)' : 'none',
+            borderRight: i < 4 ? '1px solid var(--gray-200)' : 'none',
             color: step > i + 1 ? 'var(--success-700)' : step === i + 1 ? 'var(--primary-700)' : 'var(--gray-400)',
-            fontWeight: step === i + 1 ? 700 : 500, fontSize: 13
+            fontWeight: (step === i + 1 || (step === 2 && i === 1)) ? 700 : 500, fontSize: 13
           }}>
             <span style={{ marginRight: 6 }}>{step > i + 1 ? '✓' : i + 1}</span>
             {label}
@@ -277,6 +265,72 @@ export default function ImportaFatture() {
               Il sistema analizzerà il documento e individuerà automaticamente i materiali contenuti.
               Potrai verificare e confermare tutto prima del caricamento.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Manual Mapping (Brute Force Mode) */}
+      {step === 3 && rawWorkbookData && (
+        <div className="card animate-fadeIn">
+          <div className="card-header" style={{ background: 'var(--warning-50)' }}>
+            <h3 className="card-title">🛡️ Mappatura Manuale (Forza Bruta)</h3>
+            <p className="text-sm mt-1">L'auto-rilevamento è fallito. Indica quali colonne contengono i dati cliccando sui pulsanti:</p>
+          </div>
+          <div className="card-body" style={{ overflowX: 'auto' }}>
+            <table className="data-table" style={{ fontSize: 12 }}>
+              <thead>
+                <tr>
+                  {rawWorkbookData[0].map((_, colIdx) => (
+                    <th key={colIdx} style={{ minWidth: 120, textAlign: 'center' }}>
+                      <select 
+                        className="form-control mb-2" 
+                        value={Object.keys(manualMapping).find(k => manualMapping[k] === colIdx) || ''}
+                        onChange={(e) => {
+                          const field = e.target.value;
+                          if (field) setManualMapping(prev => ({ ...prev, [field]: colIdx }));
+                        }}
+                        style={{ fontSize: 11, padding: 4 }}
+                      >
+                        <option value="">Ignora</option>
+                        <option value="code">Codice</option>
+                        <option value="description">Descrizione</option>
+                        <option value="quantity">Quantità</option>
+                        <option value="unit">U.M.</option>
+                        <option value="brand">Marca</option>
+                        <option value="category">Categoria</option>
+                        <option value="location">Posizione</option>
+                      </select>
+                      <div style={{ color: 'var(--gray-400)', fontSize: 10 }}>Col {colIdx + 1}</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rawWorkbookData.slice(0, 10).map((row, rIdx) => (
+                  <tr key={rIdx}>
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} style={{ 
+                        background: Object.values(manualMapping).includes(cIdx) ? 'var(--primary-50)' : 'transparent',
+                        whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis'
+                      }}>
+                        {String(cell || '')}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="card-footer">
+            <button 
+              className="btn btn-primary btn-lg w-100" 
+              disabled={manualMapping.code === -1 || manualMapping.quantity === -1}
+              onClick={() => processItems(rawWorkbookData, manualMapping)}
+            >
+              {manualMapping.code === -1 || manualMapping.quantity === -1 
+                ? 'Seleziona almeno Codice e Quantità' 
+                : 'Analizza con Mappatura Manuale →'}
+            </button>
           </div>
         </div>
       )}
@@ -323,17 +377,33 @@ export default function ImportaFatture() {
                     <td><span className="text-muted">{item.location}</span></td>
                     <td>
                       {item.isNew ? (
-                        <select
-                          className="form-control"
-                          value={item.category}
-                          onChange={e => updateItem(idx, 'category', e.target.value)}
-                          style={{ padding: '6px 10px', fontSize: 12 }}
-                        >
-                          <option value="">Seleziona...</option>
-                          {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        <div className="suggestion-container">
+                          <select
+                            className="form-control"
+                            value={item.category}
+                            onChange={e => updateItem(idx, 'category', e.target.value)}
+                            style={{ padding: '6px 10px', fontSize: 12, border: item.category ? '1px solid var(--success-300)' : '1px solid var(--warning-300)' }}
+                          >
+                            <option value="">Seleziona...</option>
+                            {categories.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                          {item.category === '' && item.suggestions?.length > 0 && (
+                            <div className="suggestions-list mt-1">
+                              {item.suggestions.map(sug => (
+                                <button 
+                                  key={sug.id}
+                                  className="btn-suggestion"
+                                  onClick={() => updateItem(idx, 'category', sug.id)}
+                                  title={`Confidenza: ${Math.round(sug.score)}%`}
+                                >
+                                  {sug.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-sm">{categories.find(c => c.id === item.category)?.name || '—'}</span>
                       )}
