@@ -116,47 +116,66 @@ export const calculateSemanticSimilarity = (s1, s2) => {
 /**
  * MOTORE AGGRESSIVO DI IDENTIFICAZIONE (BRUTE FORCE)
  */
-export const aggressiveMatch = (input, { materials = [], categories = [] }) => {
-  const rawInput = String(input || '').trim();
-  if (!rawInput) return { match: null, alternatives: [], confidence: 'none' };
+export const aggressiveMatch = (inputData, { materials = [], categories = [] }) => {
+  const { code: inputCode = '', description: inputDesc = '' } = 
+    typeof inputData === 'string' ? { description: inputData } : inputData;
 
-  const normInput = normalize(rawInput);
-  const inputTokens = normInput.split(' ');
+  const rawCode = String(inputCode || '').trim();
+  const rawDesc = String(inputDesc || '').trim();
+  
+  if (!rawCode && !rawDesc) return { match: null, alternatives: [], confidence: 'none' };
+
+  const normInputDesc = normalize(rawDesc);
+  const inputTokens = normInputDesc.split(' ');
   
   const candidates = [];
 
   // --- 1. BRUTE FORCE MATCH AGAINST MATERIALS ---
   materials.forEach(mat => {
     let score = 0;
-    const normCode = String(mat.code || '').toLowerCase();
-    const normDesc = normalize(mat.description);
-    const normBrand = normalize(mat.brand || '');
+    const matCode = String(mat.code || '').trim();
+    const normMatCode = matCode.toLowerCase();
+    const normMatDesc = normalize(mat.description);
+    const normMatBrand = normalize(mat.brand || '');
 
-    // A. Exact Code Match (Massima priorità)
-    if (rawInput.toLowerCase() === normCode) score += 100;
-    else if (normInput.includes(normCode) && normCode.length > 3) score += 80;
+    // A. EXACT CODE MATCH (Priorità Assoluta - 100+ punti per forzare il match)
+    if (rawCode && rawCode.toLowerCase() === normMatCode) {
+      score += 150; // Valore sopra 100 per garantire che vinca sempre
+    } else if (rawCode && normMatCode.includes(rawCode.toLowerCase()) && rawCode.length > 3) {
+      score += 80;
+    }
 
-    // B. Exact Description Match
-    if (normInput === normDesc) score += 95;
-    else if (normDesc.includes(normInput) || normInput.includes(normDesc)) score += 60;
+    // B. Description Matching
+    if (normInputDesc && normInputDesc === normMatDesc) score += 95;
+    else if (normInputDesc && (normMatDesc.includes(normInputDesc) || normInputDesc.includes(normMatDesc))) score += 60;
 
     // C. Keyword Matching
-    let keywordHits = 0;
-    inputTokens.forEach(t => {
-      if (normDesc.includes(t) || normCode.includes(t) || normBrand.includes(t)) keywordHits++;
-    });
-    score += (keywordHits / inputTokens.length) * 50;
+    if (inputTokens.length > 0 && inputTokens[0] !== '') {
+      let keywordHits = 0;
+      inputTokens.forEach(t => {
+        if (normMatDesc.includes(t) || normMatCode.includes(t) || normMatBrand.includes(t)) keywordHits++;
+      });
+      score += (keywordHits / inputTokens.length) * 50;
+    }
 
-    // D. Fuzzy Matching
-    const fuzzySim = calculateSimilarity(normInput, normDesc);
-    if (fuzzySim > 0.8) score += fuzzySim * 40;
+    // D. Fuzzy/Semantic
+    if (normInputDesc) {
+      const fuzzySim = calculateSimilarity(normInputDesc, normMatDesc);
+      if (fuzzySim > 0.8) score += fuzzySim * 40;
 
-    // E. Semantic Fallback
-    const semanticSim = calculateSemanticSimilarity(normInput, normDesc);
-    score += semanticSim * 30;
+      const semanticSim = calculateSemanticSimilarity(normInputDesc, normMatDesc);
+      score += semanticSim * 30;
+    }
 
     if (score > 15) {
-      candidates.push({ type: 'material', id: mat.id, name: mat.description, code: mat.code, score: Math.min(100, score), original: mat });
+      candidates.push({ 
+        type: 'material', 
+        id: mat.id, 
+        name: mat.description, 
+        code: mat.code, 
+        score: Math.min(200, score), // Cap a 200 per gestire la priorità codice
+        original: mat 
+      });
     }
   });
 
@@ -166,11 +185,11 @@ export const aggressiveMatch = (input, { materials = [], categories = [] }) => {
     const normName = normalize(cat.name);
     const keywords = KEYWORDS_DICTIONARY[cat.name] || [];
 
-    // A. Exact Name Match
-    if (normInput === normName) score += 90;
-    else if (normInput.includes(normName)) score += 70;
+    // Priorità se la descrizione dell'input contiene esattamente il nome categoria
+    if (normInputDesc === normName) score += 90;
+    else if (normInputDesc.includes(normName)) score += 70;
 
-    // B. Keyword dictionary match
+    // Keyword dictionary match
     let hitCount = 0;
     inputTokens.forEach(token => {
       if (keywords.includes(token)) hitCount += 40;
@@ -178,19 +197,14 @@ export const aggressiveMatch = (input, { materials = [], categories = [] }) => {
     });
     score += Math.min(80, hitCount);
 
-    // C. Fuzzy/Semantic
-    const fuzzySim = calculateSimilarity(normInput, normName);
-    score += fuzzySim * 30;
-
     if (score > 20) {
       candidates.push({ type: 'category', id: cat.id, name: cat.name, score: Math.min(100, score), original: cat });
     }
   });
 
-  // RAGGRUPPAMENTO E RANKING
+  // RANKING E FINALIZZAZIONE
   const sorted = candidates.sort((a, b) => b.score - a.score);
   
-  // Rimuovi duplicati (stesso ID e tipo)
   const unique = [];
   const seen = new Set();
   sorted.forEach(c => {
@@ -202,10 +216,15 @@ export const aggressiveMatch = (input, { materials = [], categories = [] }) => {
   });
 
   const bestMatch = unique[0] || null;
-  const confidence = !bestMatch ? 'none' : 
-                     bestMatch.score > 85 ? 'certi' : 
-                     bestMatch.score > 50 ? 'probabili' : 
-                     'da_confermare';
+  
+  // Confidenza basata sui nuovi punteggi
+  let confidence = 'none';
+  if (bestMatch) {
+    if (bestMatch.score >= 150) confidence = 'certi'; // Match codice
+    else if (bestMatch.score > 85) confidence = 'certi'; // Match descrizione perfetta
+    else if (bestMatch.score > 50) confidence = 'probabili';
+    else confidence = 'da_confermare';
+  }
 
   return {
     bestMatch,
@@ -214,6 +233,7 @@ export const aggressiveMatch = (input, { materials = [], categories = [] }) => {
     allCandidates: unique
   };
 };
+
 
 /**
  * BACKWARD COMPATIBILITY: CLASSIFY

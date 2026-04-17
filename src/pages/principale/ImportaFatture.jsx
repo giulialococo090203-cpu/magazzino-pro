@@ -21,6 +21,9 @@ export default function ImportaFatture() {
     code: -1, description: -1, quantity: -1, unit: -1, brand: -1, category: -1, location: -1
   });
 
+  const [loading, setLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0 });
+
   useEffect(() => {
     async function loadCats() {
       try {
@@ -60,6 +63,19 @@ export default function ImportaFatture() {
     }
   };
 
+  const updateItem = (index, field, value) => {
+    setParsedItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value, isAutoAssigned: false } : item));
+  };
+
+  const applyAllSuggestions = () => {
+    setParsedItems(prev => prev.map(item => {
+      if (item.isNew && !item.category && item.suggestions?.length > 0) {
+        return { ...item, category: item.suggestions[0].id, isAutoAssigned: true };
+      }
+      return item;
+    }));
+  };
+
   const processItems = async (rows, mapping) => {
     const processed = [];
     const trainingData = await materialStore.getAll();
@@ -68,7 +84,7 @@ export default function ImportaFatture() {
       if (!row || row.length === 0) continue;
       
       const code = String(row[mapping.code] || '').trim();
-      // Salta righe vuote o estetiche (es. separatori di pagina)
+      // Salta righe vuote o estetiche
       if (!code || code === '0' || code.length < 2 || code.toLowerCase() === 'codice') continue;
 
       const qtyStr = String(row[mapping.quantity] || '0').replace(',', '.');
@@ -78,25 +94,22 @@ export default function ImportaFatture() {
       const brand = String(row[mapping.brand] || '').trim();
       const explicitCat = String(row[mapping.category] || '').trim();
 
-      // BRUTE FORCE ENGINE: Identificazione Materiale e Categoria
-      const recognition = aggressiveMatch(desc || code, { materials: trainingData, categories: categories });
+      // BRUTE FORCE ENGINE: Identificazione passando sia descrizione che codice
+      const recognition = aggressiveMatch({ code, description: desc }, { materials: trainingData, categories: categories });
       
       let existing = recognition.bestMatch?.type === 'material' ? recognition.bestMatch.original : null;
 
+      // Fallback esteso: se il motore non ha dato un match certo per materiale, forza ricerca su trainingData per codice
+      if ((!existing || recognition.confidence !== 'certi') && code) {
+        const strictMatch = trainingData.find(m => m.code.toLowerCase() === code.toLowerCase());
+        if (strictMatch) {
+          existing = strictMatch;
+        }
+      }
 
       let catId = existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
       let isAutoAssigned = recognition.confidence === 'certi' || recognition.confidence === 'probabili';
       let suggestions = recognition.allCandidates.slice(0, 5);
-
-      if (!existing && code) {
-        // Fallback: cerca comunque per codice esatto se il motore brute force non lo ha messo come primo
-        const fallbackExisting = trainingData.find(m => m.code.toLowerCase() === code.toLowerCase());
-        if (fallbackExisting) {
-          existing = fallbackExisting;
-          catId = existing.category;
-          isAutoAssigned = true;
-        }
-      }
 
       processed.push({
         code: existing?.code || code,
@@ -116,35 +129,52 @@ export default function ImportaFatture() {
         notes: `Import: ${fileName}`,
         existingMaterial: existing,
       });
-
     }
     setParsedItems(processed);
     setStep(2);
   };
 
-  const updateItem = (index, field, value) => {
-    setParsedItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value, isAutoAssigned: false } : item));
-  };
-
-  const applyAllSuggestions = () => {
-    setParsedItems(prev => prev.map(item => {
-      if (item.isNew && !item.category && item.suggestions?.length > 0) {
-        return { ...item, category: item.suggestions[0].id, isAutoAssigned: true };
-      }
-      return item;
-    }));
-  };
-
   const handleConfirmImport = async () => {
+    setLoading(true);
     let loaded = 0;
     let created = 0;
     let errors = [];
 
     const selectedItems = parsedItems.filter(item => item.selected);
-    for (const item of selectedItems) {
+    
+    // GESTIONE DUPLICATI INTERNI: Raggruppa per codice
+    const groupedItems = {};
+    selectedItems.forEach(item => {
+      const key = item.code.toLowerCase();
+      if (!groupedItems[key]) {
+        groupedItems[key] = { ...item };
+      } else {
+        groupedItems[key].quantity += item.quantity;
+        // Se uno dei due era esistente, manteniamo il riferimento
+        if (!groupedItems[key].existingMaterial) {
+          groupedItems[key].existingMaterial = item.existingMaterial;
+        }
+      }
+    });
+
+    const itemsToProcess = Object.values(groupedItems);
+    setLoadingProgress({ current: 0, total: itemsToProcess.length });
+
+    for (let i = 0; i < itemsToProcess.length; i++) {
+      const item = itemsToProcess[i];
+      setLoadingProgress({ current: i + 1, total: itemsToProcess.length });
+      
       try {
         if (item.isNew && !item.existingMaterial) {
-          // Create new material
+          // Double check nel DB prima di creare (per sicurezza extra)
+          const dbCheck = await materialStore.getByCode(item.code);
+          if (dbCheck) {
+            item.isNew = false;
+            item.existingMaterial = dbCheck;
+          }
+        }
+
+        if (item.isNew && !item.existingMaterial) {
           if (!item.category) {
             errors.push(`${item.code}: categoria mancante`);
             continue;
@@ -163,7 +193,6 @@ export default function ImportaFatture() {
           });
           created++;
         } else if (item.existingMaterial) {
-          // Add quantity to existing material
           await movementStore.create({
             materialId: item.existingMaterial.id,
             type: 'entrata',
@@ -182,7 +211,6 @@ export default function ImportaFatture() {
 
     setResults({ loaded, created, errors });
     
-    // Log final effort in administrative logs
     if (created > 0 || loaded > 0) {
       await adminLogStore.create({
         userId: user.id,
@@ -192,11 +220,35 @@ export default function ImportaFatture() {
       });
     }
     
+    setLoading(false);
     setStep(5);
   };
 
+
   return (
-    <div className="animate-slideUp">
+    <div className="animate-slideUp" style={{ position: 'relative' }}>
+      {loading && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(255,255,255,0.85)', zIndex: 9999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }}></div>
+          <h3 style={{ marginTop: 24, fontWeight: 800 }}>Salvataggio in corso...</h3>
+          <p className="text-muted">Sto elaborando i materiali nel database</p>
+          <div style={{ width: 300, background: 'var(--gray-200)', height: 8, borderRadius: 4, marginTop: 12, overflow: 'hidden' }}>
+            <div style={{ 
+              width: `${(loadingProgress.current / loadingProgress.total) * 100}%`, 
+              height: '100%', background: 'var(--primary-600)', transition: 'width 0.3s' 
+            }}></div>
+          </div>
+          <div className="mt-2 text-sm fw-bold">
+            {loadingProgress.current} di {loadingProgress.total}
+          </div>
+        </div>
+      )}
+
       <div className="page-header">
         <div>
           <h1 className="page-title">📄 Importa da Fatture</h1>
