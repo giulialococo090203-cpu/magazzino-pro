@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
-import * as XLSX from 'xlsx';
 import { normalize } from '../../utils/classificationEngine';
-import { predictCategory, analyzeColumnType } from '../../utils/mlEngine';
+import { predictCategory } from '../../utils/mlEngine';
+import { parseFile } from '../../utils/importer/OmniParser';
+import { findBestMapping } from '../../utils/importer/HeuristicAnalysis';
 
 export default function ImportaFatture() {
   const { user } = useAuth();
@@ -31,105 +32,43 @@ export default function ImportaFatture() {
     loadCats();
   }, []);
 
-  // Real parsing of invoice/excel file
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setFileName(file.name);
-    setStep(2); // Inizia elaborazione
+    setStep(2); // Preview/Processing
 
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      try {
-        const dataBuffer = evt.target.result;
-        const wb = XLSX.read(dataBuffer, { type: 'array' });
-        
-        let bestSheetData = null;
-        let bestMapping = null;
+    try {
+      // 1. OMNI-PARSING (Acquisizione universale)
+      const data = await parseFile(file);
+      setRawWorkbookData(data);
 
-        // 0. MEMORIA STORICA: Controlla se abbiamo già mappato file simili
-        const mappingMemory = JSON.parse(localStorage.getItem('import_mapping_memory') || '{}');
-
-        for (const wsname of wb.SheetNames) {
-          const ws = wb.Sheets[wsname];
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-          if (data.length < 2) continue;
-
-          // ANALISI INTELLIGENTE COLONNE
-          const numCols = Math.max(...data.slice(0, 10).map(r => r.length));
-          const colScores = Array.from({ length: numCols }, () => ({ code: 0, quantity: 0, description: 0, category: 0 }));
-          
-          // A. Rilevamento Intestazioni (Sinonimi)
-          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale', 'id_art'];
-          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi', 'n.um', 'mov'];
-          let headerRowIndex = -1;
-
-          for (let i = 0; i < Math.min(data.length, 25); i++) {
-            const row = (data[i] || []).map(h => normalize(String(h)));
-            const hasCode = row.some(h => codeSyns.some(s => h.includes(normalize(s))));
-            const hasQty = row.some(h => qtySyns.some(s => h.includes(normalize(s))));
-            if (hasCode && hasQty) {
-              headerRowIndex = i;
-              break;
-            }
-          }
-
-          const currentMapping = { code: -1, quantity: -1, description: -1, unit: -1, brand: -1, category: -1, location: -1 };
-
-          if (headerRowIndex !== -1) {
-            const headers = data[headerRowIndex].map(h => normalize(String(h)));
-            const find = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
-            currentMapping.code = find(codeSyns);
-            currentMapping.quantity = find(qtySyns);
-            currentMapping.description = find(['descrizione', 'prodotto', 'nome', 'articolo', 'detail', 'denominazione']);
-            currentMapping.unit = find(['unita', 'um', 'unit', 'u.m.']);
-            currentMapping.brand = find(['marca', 'brand', 'produttore']);
-            currentMapping.category = find(['categoria', 'settore', 'gruppo']);
-            currentMapping.location = find(['posizione', 'scaffale', 'ubicazione']);
-          }
-
-          // B. AI PATTERN RECOGNITION (Se le intestazioni falliscono o sono incerte)
-          for (let c = 0; c < numCols; c++) {
-            const sample = data.slice(headerRowIndex + 1, headerRowIndex + 21).map(r => r[c]);
-            const scores = analyzeColumnType(sample);
-            if (currentMapping.code === -1 && scores.code > 0.4) currentMapping.code = c;
-            if (currentMapping.quantity === -1 && scores.quantity > 0.6) currentMapping.quantity = c;
-            if (currentMapping.description === -1 && scores.description > 0.5) currentMapping.description = c;
-          }
-
-          // VERIFICA SE ABBIAMO UNA MAPPATURA VALIDA
-          if (currentMapping.code !== -1 && currentMapping.quantity !== -1) {
-            bestMapping = currentMapping;
-            bestSheetData = data.slice(headerRowIndex + 1);
-            break; 
-          }
-        }
-
-        if (bestSheetData && bestMapping) {
-          processItems(bestSheetData, bestMapping);
-        } else {
-          // FAIL -> MANAUL MAPPING
-          const firstWS = wb.Sheets[wb.SheetNames[0]];
-          const firstData = XLSX.utils.sheet_to_json(firstWS, { header: 1 });
-          setRawWorkbookData(firstData);
-          setStep(3); 
-        }
-      } catch (err) {
-        console.error('Upload error:', err);
-        alert(`Errore: ${err.message}`);
-        setStep(1);
+      // 2. HEURISTIC ANALYSIS (Rilevamento intelligente)
+      const analysis = findBestMapping(data);
+      
+      if (analysis && analysis.confidence > 0.6) {
+        processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping);
+      } else {
+        // Se l'analisi è incerta, vai in Mappatura Manuale
+        setStep(3);
       }
-    };
-    reader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.error('OmniParser Error:', err);
+      alert(`Errore critico durante la lettura: ${err.message}`);
+      setStep(1);
+    }
   };
 
   const processItems = async (rows, mapping) => {
     const processed = [];
-    const trainingData = await materialStore.getAll(); // TRAINING SET REAL-TIME
+    const trainingData = await materialStore.getAll();
 
     for (const row of rows) {
+      if (!row || row.length === 0) continue;
+      
       const code = String(row[mapping.code] || '').trim();
-      if (!code || code.toLowerCase() === 'codice') continue;
+      // Salta righe vuote o estetiche (es. separatori di pagina)
+      if (!code || code === '0' || code.length < 2 || code.toLowerCase() === 'codice') continue;
 
       const qtyStr = String(row[mapping.quantity] || '0').replace(',', '.');
       const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
