@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
-import { classify, normalize } from '../../utils/classificationEngine';
+import { normalize } from '../../utils/classificationEngine';
+import { predictCategory } from '../../utils/mlEngine';
 
 export default function ImportaFatture() {
   const { user } = useAuth();
@@ -42,45 +43,56 @@ export default function ImportaFatture() {
       try {
         const dataBuffer = evt.target.result;
         const wb = XLSX.read(dataBuffer, { type: 'array' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        
+        // DEEP SCAN: Prova ogni foglio finché non trova qualcosa di valido
+        let bestData = null;
+        let bestMapping = null;
 
-        if (data.length < 1) throw new Error('File vuoto');
-        setRawWorkbookData(data);
+        for (const wsname of wb.SheetNames) {
+          const ws = wb.Sheets[wsname];
+          const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          if (data.length < 1) continue;
 
-        // TENTA AUTO-RILEVAMENTO
-        const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale'];
-        const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi'];
+          // TENTA AUTO-RILEVAMENTO
+          const codeSyns = ['codice', 'code', 'sku', 'articolo', 'idmateriale'];
+          const qtySyns = ['quantita', 'qta', 'quantity', 'qty', 'pezzi'];
 
-        let headerRowIndex = -1;
-        for (let i = 0; i < Math.min(data.length, 20); i++) {
-          const row = (data[i] || []).map(h => normalize(h));
-          const hasCode = row.some(h => codeSyns.some(s => h.includes(normalize(s))));
-          const hasQty = row.some(h => qtySyns.some(s => h.includes(normalize(s))));
-          if (hasCode && hasQty) {
-            headerRowIndex = i;
-            break;
+          let headerRowIndex = -1;
+          for (let i = 0; i < Math.min(data.length, 25); i++) {
+            const row = (data[i] || []).map(h => normalize(String(h)));
+            const hasCode = row.some(h => codeSyns.some(s => h.includes(normalize(s))));
+            const hasQty = row.some(h => qtySyns.some(s => h.includes(normalize(s))));
+            if (hasCode && hasQty) {
+              headerRowIndex = i;
+              break;
+            }
+          }
+
+          if (headerRowIndex !== -1) {
+            const headers = data[headerRowIndex].map(h => normalize(String(h)));
+            const findCol = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
+            
+            bestMapping = {
+              code: findCol(codeSyns),
+              quantity: findCol(qtySyns),
+              description: findCol(['descrizione', 'prodotto', 'nome', 'articolo', 'detail']),
+              unit: findCol(['unita', 'um', 'unit']),
+              brand: findCol(['marca', 'brand']),
+              category: findCol(['categoria', 'settore', 'gruppo']),
+              location: findCol(['posizione', 'scaffale'])
+            };
+            bestData = data.slice(headerRowIndex + 1);
+            break; // Trovato un foglio valido con intestazioni
           }
         }
 
-        if (headerRowIndex !== -1) {
-          // AUTO-DETECTED
-          const headers = data[headerRowIndex].map(h => normalize(h));
-          const findCol = (syns) => headers.findIndex(h => syns.some(s => h.includes(normalize(s))));
-          
-          const mapping = {
-            code: findCol(codeSyns),
-            quantity: findCol(qtySyns),
-            description: findCol(['descrizione', 'prodotto', 'nome', 'articolo']),
-            unit: findCol(['unita', 'um', 'unit']),
-            brand: findCol(['marca', 'brand']),
-            category: findCol(['categoria', 'settore']),
-            location: findCol(['posizione', 'scaffale'])
-          };
-          processItems(data.slice(headerRowIndex + 1), mapping);
+        if (bestData) {
+          processItems(bestData, bestMapping);
         } else {
-          // FAIL -> MANAUL MAPPING
+          // Se nessun foglio ha intestazioni, prendi il primo foglio e vai in Mappatura Manuale
+          const firstWS = wb.Sheets[wb.SheetNames[0]];
+          const firstData = XLSX.utils.sheet_to_json(firstWS, { header: 1 });
+          setRawWorkbookData(firstData);
           setStep(3); 
         }
       } catch (err) {
@@ -94,6 +106,8 @@ export default function ImportaFatture() {
 
   const processItems = async (rows, mapping) => {
     const processed = [];
+    const trainingData = await materialStore.getAll(); // TRAINING SET REAL-TIME
+
     for (const row of rows) {
       const code = String(row[mapping.code] || '').trim();
       if (!code || code.toLowerCase() === 'codice') continue;
@@ -107,34 +121,30 @@ export default function ImportaFatture() {
 
       const existing = await materialStore.getByCode(code);
       
-        // IBRIDO: Classificazione intelligente
-        let suggestions = [];
-        let catId = existing?.category || '';
-        let isAutoAssigned = false;
-        
-        if (!catId) {
-          // Se c'è una categoria nel file, prova il match esatto
-          if (explicitCat) {
-            const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
-            if (match) {
-              catId = match.id;
-              isAutoAssigned = true;
-            }
-          }
-          
-          // Se ancora nulla, usa il motore di classificazione
-          const classification = classify(desc || code, categories);
-          suggestions = classification.slice(0, 3);
-          
-          // AUTO-ASSEGNAZIONE AGGRESSIVA: se score > 30 e c'è un distacco netto dal secondo
-          if (!catId && suggestions[0]?.score > 30) {
-            const secondScore = suggestions[1]?.score || 0;
-            if (suggestions[0].score - secondScore > 10) {
-              catId = suggestions[0].id;
-              isAutoAssigned = true;
-            }
+      // ML: Predizione categoria avanzata
+      let suggestions = [];
+      let catId = existing?.category || '';
+      let isAutoAssigned = false;
+      
+      if (!catId) {
+        if (explicitCat) {
+          const match = categories.find(c => normalize(c.name) === normalize(explicitCat));
+          if (match) {
+            catId = match.id;
+            isAutoAssigned = true;
           }
         }
+        
+        // PREDICZIONE MACHINE LEARNING
+        const predictions = predictCategory(desc || code, categories, trainingData);
+        suggestions = predictions.slice(0, 3);
+        
+        // Auto-assegnazione se confidenza alta (> 50 con ML è già buona)
+        if (!catId && suggestions[0]?.score > 45) {
+          catId = suggestions[0].id;
+          isAutoAssigned = true;
+        }
+      }
 
         processed.push({
           code,
@@ -452,6 +462,7 @@ export default function ImportaFatture() {
             </div>
             <button 
               className="btn btn-primary" 
+              disabled={parsedItems.filter(i => i.selected).length === 0}
               onClick={() => {
                 const missing = parsedItems.some(i => i.isNew && i.selected && !i.category);
                 if (missing) {
@@ -461,7 +472,7 @@ export default function ImportaFatture() {
                 setStep(4);
               }}
             >
-              Procedi alla conferma →
+              {parsedItems.filter(i => i.selected).length === 0 ? 'Nessun materiale selezionato' : 'Procedi alla conferma →'}
             </button>
           </div>
         </div>
