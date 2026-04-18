@@ -1,10 +1,5 @@
 import * as XLSX from 'xlsx';
-import * as pdfjsLib from 'pdfjs-dist';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 /**
  * OMNI PARSER
@@ -14,7 +9,7 @@ export const parseFile = async (file) => {
   const extension = getFileExtension(file.name);
 
   if (extension === 'pdf') {
-    return await parsePdfFile(file);
+    return await parsePdfBruteForce(file);
   }
 
   return new Promise((resolve, reject) => {
@@ -46,9 +41,7 @@ export const parseFile = async (file) => {
           data = parseRawText(text);
         }
 
-        if (data.length < 1) {
-          throw new Error('Impossibile estrarre righe valide dal file.');
-        }
+        if (data.length < 1) throw new Error('Impossibile estrarre righe valide dal file.');
 
         resolve(data);
       } catch (err) {
@@ -66,74 +59,75 @@ const getFileExtension = (fileName = '') => {
 };
 
 /**
- * PARSER PDF DEDICATO
- * Gestisce fatture PDF con layout tipo:
- * NR | DESCRIZIONE | QUANTITA' | PREZZO | IMPORTO | IVA
- * e righe di dettaglio con "Cod.valore: XXXXX"
+ * PARSER PDF BRUTE FORCE
+ * Nessun worker, solo estrazione testo + regex robuste.
  */
-const parsePdfFile = async (file) => {
+const parsePdfBruteForce = async (file) => {
   const buffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-  let lines = [];
+  const pdf = await pdfjsLib.getDocument({
+    data: buffer,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    disableFontFace: true,
+  }).promise;
+
+  const allLines = [];
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
-    const content = await page.getTextContent();
+    const textContent = await page.getTextContent();
 
-    const pageLines = groupTextItemsIntoLines(content.items);
-    lines.push(...pageLines);
+    const lines = groupItemsIntoLines(textContent.items);
+    allLines.push(...lines);
   }
 
-  const cleanedLines = lines
-    .map(normalizePdfLine)
+  const cleaned = allLines
+    .map((line) => normalizePdfLine(line))
     .filter(Boolean);
 
-  const invoiceRows = extractInvoiceRowsFromPdfLines(cleanedLines);
+  const rows = extractInvoiceRowsBruteForce(cleaned);
 
-  if (invoiceRows.length === 0) {
+  if (!rows.length) {
     throw new Error('PDF letto, ma nessuna riga articolo riconosciuta.');
   }
 
-  // Ritorniamo una struttura tabellare compatibile col resto del sistema
   return [
     ['Codice', 'Descrizione', 'Quantità', 'UM', 'Marca', 'Categoria', 'Posizione'],
-    ...invoiceRows.map((row) => [
+    ...rows.map((row) => [
       row.code || '',
       row.description || '',
       row.quantity ?? '',
-      row.unit || 'PZ',
-      row.brand || '',
-      row.category || '',
-      row.location || '',
+      row.unit || 'ST',
+      '',
+      '',
+      '',
     ]),
   ];
 };
 
-/**
- * Raggruppa i frammenti PDF in righe usando la coordinata Y
- */
-const groupTextItemsIntoLines = (items) => {
-  const rows = new Map();
+const groupItemsIntoLines = (items) => {
+  const buckets = new Map();
 
   for (const item of items) {
-    const str = String(item.str || '').trim();
-    if (!str) continue;
+    const text = String(item.str || '').trim();
+    if (!text) continue;
 
     const y = Math.round(item.transform[5]);
-    if (!rows.has(y)) rows.set(y, []);
-    rows.get(y).push({
-      text: str,
+
+    if (!buckets.has(y)) buckets.set(y, []);
+    buckets.get(y).push({
       x: item.transform[4],
+      text,
     });
   }
 
-  return Array.from(rows.entries())
+  return Array.from(buckets.entries())
     .sort((a, b) => b[0] - a[0])
-    .map(([, rowItems]) =>
-      rowItems
+    .map(([, row]) =>
+      row
         .sort((a, b) => a.x - b.x)
-        .map((r) => r.text)
+        .map((cell) => cell.text)
         .join(' ')
         .replace(/\s+/g, ' ')
         .trim()
@@ -143,38 +137,29 @@ const groupTextItemsIntoLines = (items) => {
 const normalizePdfLine = (line) => {
   return String(line || '')
     .replace(/\s+/g, ' ')
-    .replace(/€\s+/g, '€ ')
+    .replace(/€/g, ' € ')
+    .replace(/\s+/g, ' ')
     .trim();
 };
 
-/**
- * Estrae le righe prodotto dal PDF
- */
-const extractInvoiceRowsFromPdfLines = (lines) => {
+const extractInvoiceRowsBruteForce = (lines) => {
   const results = [];
-
-  let inProductsSection = false;
+  let inProducts = false;
   let currentItem = null;
 
-  const isProductsStart = (line) =>
-    /PRODOTTI E SERVIZI/i.test(line);
-
-  const isProductsHeader = (line) =>
-    /NR\s+DESCRIZIONE\s+QUANTITA/i.test(line);
-
-  const isProductsEnd = (line) =>
-    /METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA/i.test(line);
+  const endRegex = /METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA/i;
+  const headerRegex = /NR\s+DESCRIZIONE\s+QUANTITA/i;
 
   for (const line of lines) {
-    if (isProductsStart(line)) {
-      inProductsSection = true;
+    if (/PRODOTTI E SERVIZI/i.test(line)) {
+      inProducts = true;
       continue;
     }
 
-    if (!inProductsSection) continue;
-    if (isProductsHeader(line)) continue;
+    if (!inProducts) continue;
+    if (headerRegex.test(line)) continue;
 
-    if (isProductsEnd(line)) {
+    if (endRegex.test(line)) {
       if (currentItem) {
         results.push(currentItem);
         currentItem = null;
@@ -182,56 +167,45 @@ const extractInvoiceRowsFromPdfLines = (lines) => {
       break;
     }
 
-    // Riga dettaglio codice:
-    // Cod.tipo: COD_FORNITORE, Cod.valore: 65105322, ...
     const codeMatch = line.match(/Cod\.valore:\s*([A-Z0-9\-]+)/i);
     if (codeMatch && currentItem) {
       currentItem.code = codeMatch[1].trim();
       continue;
     }
 
-    // Riga prodotto standard:
-    // 1 GRUPPO RITORNO 1 ST 75,98000000 € 75,98 € 22 % -
-    // 17 VALVOLA GAS 2 ST 58,57500000 € 117,15 € 22 % -
+    // Esempi:
+    // 1 GRUPPO RITORNO 1 ST 75,98000000 € 75,98 €
+    // 17 VALVOLA GAS 2 ST 58,57500000 € 117,15 €
+    // 9950 MAGG TRASP ASSOLUT 1 ST 13,62000000 € 13,62 €
     const productMatch = line.match(
-      /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s*€\s+(\d+(?:[.,]\d+)?)\s*€/
+      /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s+€\s+(\d+(?:[.,]\d+)?)\s+€/i
     );
 
-    // Riga prodotto senza numero progressivo classico:
-    // 9950 MAGG TRASP ASSOLUT 1 ST 13,62000000 € 13,62 € 22 % -
-    const altProductMatch = line.match(
-      /^([A-Z0-9]+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s*€\s+(\d+(?:[.,]\d+)?)\s*€/
-    );
-
-    const match = productMatch || altProductMatch;
-
-    if (match) {
+    if (productMatch) {
       if (currentItem) {
         results.push(currentItem);
       }
 
       currentItem = {
-        rowNumber: match[1],
-        description: match[2].trim(),
-        quantity: parseItalianNumber(match[3]),
-        unit: match[4].trim(),
+        rowNumber: productMatch[1],
+        description: productMatch[2].trim(),
+        quantity: parseItalianNumber(productMatch[3]),
+        unit: productMatch[4].trim(),
         code: '',
-        brand: '',
-        category: '',
-        location: '',
       };
-
       continue;
     }
 
-    // Se capita una descrizione spezzata su più righe, la accodiamo
+    // Riga descrizione spezzata
     if (
       currentItem &&
+      line.length > 2 &&
       !/Cod\.tipo:|Cod\.valore:/i.test(line) &&
-      !isProductsEnd(line) &&
-      line.length > 2
+      !endRegex.test(line)
     ) {
-      currentItem.description = `${currentItem.description} ${line}`.replace(/\s+/g, ' ').trim();
+      currentItem.description = `${currentItem.description} ${line}`
+        .replace(/\s+/g, ' ')
+        .trim();
     }
   }
 
@@ -254,7 +228,6 @@ const parseItalianNumber = (value) => {
 
 /**
  * PARSE RAW TEXT
- * Gestisce delimitatori , ; \t e pulizia righe
  */
 const parseRawText = (text) => {
   if (!text) return [];
@@ -277,8 +250,6 @@ const parseRawText = (text) => {
       bestDelim = d;
     }
   });
-
-  console.log(`OmniParser: Rilevato delimitatore "${bestDelim}" con media colonne ${maxCols}`);
 
   return lines.map((line) =>
     line.split(bestDelim).map((val) => val.replace(/^["']|["']$/g, '').trim())
