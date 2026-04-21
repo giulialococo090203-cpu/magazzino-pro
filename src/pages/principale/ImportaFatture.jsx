@@ -69,7 +69,7 @@ function buildImportAssistantMessage(error, file) {
 
   if (msg.includes('pdf')) {
     suggestions.push('Se il PDF è una scansione immagine, il parser potrebbe leggere male il contenuto.');
-    suggestions.push('Prova, se possibile, a esportare lo stesso documento in Excel o CSV.');
+    suggestions.push('Se è un PDF nativo, il sistema proverà a leggerne i dati e mostrarteli in anteprima.');
   }
 
   if (msg.includes('csv')) {
@@ -83,7 +83,7 @@ function buildImportAssistantMessage(error, file) {
   }
 
   if (msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
-    suggestions.push('Controlla la connessione internet.');
+    suggestions.push('Controlla la connessione internet o il server di parsing PDF.');
     suggestions.push('Riprova tra qualche secondo.');
   }
 
@@ -94,8 +94,8 @@ function buildImportAssistantMessage(error, file) {
 
   if (suggestions.length === 0) {
     suggestions.push('Controlla che il file sia leggibile e completo.');
-    suggestions.push('Se possibile, prova con una versione Excel o CSV del documento.');
-    suggestions.push('Se l’errore continua, usa la mappatura manuale dopo il caricamento.');
+    suggestions.push('Se l’errore continua, riprova con lo stesso file dopo aver riavviato il server PDF.');
+    suggestions.push('Se necessario, correggi manualmente le categorie prima della conferma.');
   }
 
   return {
@@ -114,6 +114,7 @@ export default function ImportaFatture() {
   const [parsedItems, setParsedItems] = useState([]);
   const [results, setResults] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [allMaterials, setAllMaterials] = useState([]);
   const [rawWorkbookData, setRawWorkbookData] = useState(null);
   const [manualMapping, setManualMapping] = useState({
     code: -1,
@@ -133,15 +134,19 @@ export default function ImportaFatture() {
   const [lastFile, setLastFile] = useState(null);
 
   useEffect(() => {
-    async function loadCats() {
+    async function loadData() {
       try {
         const cats = await categoryStore.getAll();
+        const materials = await materialStore.getAll();
+
         setCategories(cats);
+        setAllMaterials(materials);
       } catch (err) {
-        console.error('Errore caricamento categorie:', err);
+        console.error('Errore caricamento dati importazione:', err);
       }
     }
-    loadCats();
+
+    loadData();
   }, []);
 
   const resetImportState = () => {
@@ -205,7 +210,6 @@ export default function ImportaFatture() {
       validateFileBeforeImport(file);
       setStep(2);
 
-      // 1. OMNI-PARSING
       const data = await parseFile(file);
       setRawWorkbookData(data);
 
@@ -213,7 +217,6 @@ export default function ImportaFatture() {
         throw new Error('Il file è stato letto ma non contiene righe utilizzabili.');
       }
 
-      // 2. HEURISTIC ANALYSIS
       const analysis = findBestMapping(data);
 
       if (analysis && analysis.confidence > 0.6) {
@@ -273,13 +276,109 @@ export default function ImportaFatture() {
     );
   };
 
+  const getCategoryName = (categoryId) => {
+    const found = categories.find((c) => String(c.id) === String(categoryId));
+    return found?.name || '';
+  };
+
+  const scoreCategoryFromText = (item, category) => {
+    const itemText = normalize(`${item.code || ''} ${item.description || ''} ${item.brand || ''}`);
+    const categoryText = normalize(`${category.name || ''}`);
+
+    if (!itemText || !categoryText) return 0;
+
+    let score = 0;
+
+    if (itemText.includes(categoryText)) score += 100;
+
+    const itemWords = itemText.split(/\s+/).filter(Boolean);
+    const categoryWords = categoryText.split(/\s+/).filter(Boolean);
+
+    categoryWords.forEach((word) => {
+      if (word.length >= 3 && itemWords.some((w) => w.includes(word) || word.includes(w))) {
+        score += 20;
+      }
+    });
+
+    return score;
+  };
+
+  const suggestCategoryForItem = (item) => {
+    if (item.existingMaterial?.category) {
+      return item.existingMaterial.category;
+    }
+
+    const categorySuggestions = (item.suggestions || []).filter((s) => s.type === 'category');
+    if (categorySuggestions.length > 0) {
+      return categorySuggestions[0].id;
+    }
+
+    const itemText = normalize(`${item.code || ''} ${item.description || ''} ${item.brand || ''}`);
+
+    let bestMaterialMatch = null;
+    let bestMaterialScore = 0;
+
+    for (const material of allMaterials) {
+      const materialText = normalize(`${material.code || ''} ${material.description || ''} ${material.brand || ''}`);
+      let score = 0;
+
+      if (item.code && material.code && normalize(item.code) === normalize(material.code)) {
+        score += 1000;
+      }
+
+      if (item.description && material.description) {
+        const itemWords = itemText.split(/\s+/).filter(Boolean);
+        const materialWords = materialText.split(/\s+/).filter(Boolean);
+
+        itemWords.forEach((w) => {
+          if (w.length >= 3 && materialWords.some((mw) => mw.includes(w) || w.includes(mw))) {
+            score += 10;
+          }
+        });
+      }
+
+      if (score > bestMaterialScore && material.category) {
+        bestMaterialScore = score;
+        bestMaterialMatch = material;
+      }
+    }
+
+    if (bestMaterialMatch?.category) {
+      return bestMaterialMatch.category;
+    }
+
+    let bestCategory = null;
+    let bestCategoryScore = 0;
+
+    for (const category of categories) {
+      const score = scoreCategoryFromText(item, category);
+      if (score > bestCategoryScore) {
+        bestCategoryScore = score;
+        bestCategory = category;
+      }
+    }
+
+    if (bestCategory && bestCategoryScore >= 20) {
+      return bestCategory.id;
+    }
+
+    return '';
+  };
+
   const applyAllSuggestions = () => {
     setParsedItems((prev) =>
       prev.map((item) => {
-        if (item.isNew && !item.category && item.suggestions?.length > 0) {
-          return { ...item, category: item.suggestions[0].id, isAutoAssigned: true };
-        }
-        return item;
+        if (!item.selected) return item;
+
+        const suggestedCategory = suggestCategoryForItem(item);
+
+        if (!suggestedCategory) return item;
+
+        return {
+          ...item,
+          category: suggestedCategory,
+          isAutoAssigned: true,
+        };
       })
     );
   };
@@ -293,7 +392,6 @@ export default function ImportaFatture() {
 
       const code = String(row[mapping.code] || '').trim();
 
-      // Salta righe vuote o estetiche
       if (!code || code === '0' || code.length < 2 || code.toLowerCase() === 'codice') continue;
 
       const qtyStr = String(row[mapping.quantity] || '0').replace(',', '.');
@@ -317,13 +415,25 @@ export default function ImportaFatture() {
         }
       }
 
-      let catId = existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
-      let isAutoAssigned = recognition.confidence === 'certi' || recognition.confidence === 'probabili';
-      let suggestions = recognition.allCandidates.slice(0, 5);
+      let catId =
+        existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
+
+      let isAutoAssigned =
+        recognition.confidence === 'certi' || recognition.confidence === 'probabili';
+
+      let suggestions = (recognition.allCandidates || [])
+        .filter((candidate) => candidate.type === 'category')
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 5);
 
       if (!catId && explicitCat) {
         const normalizedExplicitCat = normalize(explicitCat);
-        const matchedCategory = categories.find((c) => normalize(c.name) === normalizedExplicitCat);
+        const matchedCategory = categories.find(
+          (c) =>
+            normalize(c.name || '').includes(normalizedExplicitCat) ||
+            normalizedExplicitCat.includes(normalize(c.name || ''))
+        );
+
         if (matchedCategory) {
           catId = matchedCategory.id;
           isAutoAssigned = true;
@@ -718,6 +828,7 @@ export default function ImportaFatture() {
               </button>
             </div>
           </div>
+
           <div className="card-body" style={{ padding: 0 }}>
             <table className="data-table">
               <thead>
@@ -763,6 +874,7 @@ export default function ImportaFatture() {
                         style={{ width: 18, height: 18 }}
                       />
                     </td>
+
                     <td>
                       <div className="d-flex flex-column">
                         <strong>{item.code}</strong>
@@ -785,15 +897,13 @@ export default function ImportaFatture() {
                         )}
                       </div>
                     </td>
+
                     <td>{item.description}</td>
-                    <td>
-                      <span className="text-muted">{item.brand}</span>
-                    </td>
+                    <td><span className="text-muted">{item.brand}</span></td>
                     <td style={{ fontWeight: 700 }}>{item.quantity}</td>
                     <td>{item.unit}</td>
-                    <td>
-                      <span className="text-muted">{item.location}</span>
-                    </td>
+                    <td><span className="text-muted">{item.location}</span></td>
+
                     <td>
                       <div className="suggestion-container">
                         <select
@@ -821,6 +931,22 @@ export default function ImportaFatture() {
                             </option>
                           ))}
                         </select>
+
+                        {item.category && (
+                          <div
+                            style={{
+                              marginTop: 6,
+                              fontSize: 11,
+                              color: item.isAutoAssigned ? 'var(--primary-700)' : 'var(--gray-500)',
+                              fontWeight: item.isAutoAssigned ? 700 : 500,
+                            }}
+                          >
+                            {item.isAutoAssigned
+                              ? `Auto: ${getCategoryName(item.category)}`
+                              : `Selezionata: ${getCategoryName(item.category)}`}
+                          </div>
+                        )}
+
                         {item.confidence !== 'certi' &&
                           item.suggestions?.filter((s) => s.type === 'category').length > 0 && (
                             <div className="suggestions-list mt-1">
@@ -852,12 +978,13 @@ export default function ImportaFatture() {
               </tbody>
             </table>
           </div>
+
           <div
             className="card-footer"
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <div className="text-sm">
-              {parsedItems.filter((i) => i.selected).length} materiali selezionati ·
+              {parsedItems.filter((i) => i.selected).length} materiali selezionati ·{' '}
               <span
                 style={{
                   color: parsedItems.some((i) => i.isNew && i.selected && !i.category)
@@ -868,6 +995,7 @@ export default function ImportaFatture() {
                 {parsedItems.filter((i) => i.isNew && i.selected && !i.category).length} da completare
               </span>
             </div>
+
             <button
               className="btn btn-primary"
               disabled={parsedItems.filter((i) => i.selected).length === 0}
@@ -927,6 +1055,7 @@ export default function ImportaFatture() {
           <div className="card-body" style={{ textAlign: 'center', padding: 48 }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16 }}>Importazione Completata</h2>
+
             <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 24 }}>
               <div
                 style={{
@@ -940,6 +1069,7 @@ export default function ImportaFatture() {
                 </div>
                 <div className="text-sm text-muted">Caricati</div>
               </div>
+
               <div
                 style={{
                   background: 'var(--primary-50)',
@@ -952,6 +1082,7 @@ export default function ImportaFatture() {
                 </div>
                 <div className="text-sm text-muted">Creati</div>
               </div>
+
               {results.errors.length > 0 && (
                 <div
                   style={{
@@ -967,6 +1098,7 @@ export default function ImportaFatture() {
                 </div>
               )}
             </div>
+
             {results.errors.length > 0 && (
               <div
                 style={{
@@ -989,6 +1121,7 @@ export default function ImportaFatture() {
                 ))}
               </div>
             )}
+
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
               <button className="btn btn-primary btn-lg" onClick={resetImportState}>
                 Importa un altro documento
