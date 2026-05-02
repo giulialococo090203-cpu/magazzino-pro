@@ -196,80 +196,6 @@ export default function ImportaFatture() {
     }
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setLastFile(file);
-    setImportError(null);
-    setAssistantAdvice(null);
-    setResults(null);
-    setParsedItems([]);
-    setRawWorkbookData(null);
-    setFileName(file.name);
-
-    try {
-      validateFileBeforeImport(file);
-      setStep(2);
-
-      const data = await parseFile(file);
-      setRawWorkbookData(data);
-
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('Il file è stato letto ma non contiene righe utilizzabili.');
-      }
-
-      const analysis = findBestMapping(data);
-
-      if (analysis && analysis.confidence > 0.6) {
-        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, file.name);
-      } else {
-        setStep(3);
-      }
-    } catch (err) {
-      console.error('OmniParser Error:', err);
-      setImportError(err.message || 'Errore durante la lettura del file.');
-      setAssistantAdvice(buildImportAssistantMessage(err, file));
-      setStep(1);
-    }
-  };
-
-  const retryLastImport = async () => {
-    if (!lastFile) return;
-
-    setImportError(null);
-    setAssistantAdvice(null);
-    setResults(null);
-    setParsedItems([]);
-    setRawWorkbookData(null);
-    setFileName(lastFile.name);
-
-    try {
-      validateFileBeforeImport(lastFile);
-      setStep(2);
-
-      const data = await parseFile(lastFile);
-      setRawWorkbookData(data);
-
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('Il file è stato letto ma non contiene righe utilizzabili.');
-      }
-
-      const analysis = findBestMapping(data);
-
-      if (analysis && analysis.confidence > 0.6) {
-        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, lastFile.name);
-      } else {
-        setStep(3);
-      }
-    } catch (err) {
-      console.error('Retry Import Error:', err);
-      setImportError(err.message || 'Errore durante il nuovo tentativo.');
-      setAssistantAdvice(buildImportAssistantMessage(err, lastFile));
-      setStep(1);
-    }
-  };
-
   const updateItem = (index, field, value) => {
     setParsedItems((prev) =>
       prev.map((item, i) =>
@@ -383,6 +309,101 @@ export default function ImportaFatture() {
         };
       })
     );
+  };
+
+  const buildParsedItemsFromPdfRows = async (rows, currentFileName = fileName) => {
+    const trainingData = await materialStore.getAll();
+
+    const processed = rows
+      .map((row) => {
+        if (!row || row.length < 5) return null;
+
+        const code = String(row[0] || '').trim();
+        const desc = String(row[1] || '').trim();
+        const qty = parseFloat(String(row[2] || '0').replace(',', '.')) || 0;
+        const unit = String(row[3] || 'pz').trim();
+        const price = parseFloat(String(row[4] || '0').replace(',', '.')) || 0;
+        const brand = String(row[5] || '').trim();
+        const explicitCat = String(row[6] || '').trim();
+        const location = String(row[7] || 'A1-01').trim();
+
+        if (!code || !desc || qty <= 0) return null;
+
+        const recognition = aggressiveMatch(
+          { code, description: desc },
+          { materials: trainingData, categories }
+        );
+
+        let existing =
+          recognition.bestMatch?.type === 'material'
+            ? recognition.bestMatch.original
+            : null;
+
+        if ((!existing || recognition.confidence !== 'certi') && code) {
+          const strictMatch = trainingData.find(
+            (m) => String(m.code || '').toLowerCase() === code.toLowerCase()
+          );
+          if (strictMatch) existing = strictMatch;
+        }
+
+        let catId =
+          existing?.category ||
+          (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
+
+        let isAutoAssigned =
+          recognition.confidence === 'certi' || recognition.confidence === 'probabili';
+
+        let suggestions = (recognition.allCandidates || [])
+          .filter((candidate) => candidate.type === 'category')
+          .sort((a, b) => (b.score || 0) - (a.score || 0))
+          .slice(0, 5);
+
+        if (!catId && explicitCat) {
+          const normalizedExplicitCat = normalize(explicitCat);
+          const matchedCategory = categories.find(
+            (c) =>
+              normalize(c.name || '').includes(normalizedExplicitCat) ||
+              normalizedExplicitCat.includes(normalize(c.name || ''))
+          );
+
+          if (matchedCategory) {
+            catId = matchedCategory.id;
+            isAutoAssigned = true;
+          }
+        }
+
+        return {
+          code: existing?.code || code,
+          description: existing ? existing.description : desc,
+          quantity: qty,
+          unit: existing ? existing.unit : unit,
+          price: price || existing?.price || 0,
+          isNew: !existing,
+          selected: true,
+          category: catId,
+          isAutoAssigned,
+          confidence: recognition.confidence,
+          suggestions,
+          brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
+          minThreshold: 10,
+          location: location || existing?.location || 'A1-01',
+          supplier: 'Importato',
+          notes: `Import: ${currentFileName}`,
+          existingMaterial: existing,
+        };
+      })
+      .filter(Boolean);
+
+    console.log('PDF processed items:', processed);
+
+    if (processed.length === 0) {
+      throw new Error('Nessun materiale valido rilevato nel PDF.');
+    }
+
+    setParsedItems(processed);
+    setImportError(null);
+    setAssistantAdvice(null);
+    setStep(2);
   };
 
   const processItems = async (rows, mapping, currentFileName = fileName) => {
@@ -501,6 +522,94 @@ export default function ImportaFatture() {
     setImportError(null);
     setAssistantAdvice(null);
     setStep(2);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLastFile(file);
+    setImportError(null);
+    setAssistantAdvice(null);
+    setResults(null);
+    setParsedItems([]);
+    setRawWorkbookData(null);
+    setFileName(file.name);
+
+    try {
+      validateFileBeforeImport(file);
+      setStep(2);
+
+      const data = await parseFile(file);
+      setRawWorkbookData(data);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Il file è stato letto ma non contiene righe utilizzabili.');
+      }
+
+      const extension = getFileExtension(file.name);
+
+      if (extension === 'pdf') {
+        await buildParsedItemsFromPdfRows(data.slice(1), file.name);
+        return;
+      }
+
+      const analysis = findBestMapping(data);
+
+      if (analysis && analysis.confidence > 0.6) {
+        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, file.name);
+      } else {
+        setStep(3);
+      }
+    } catch (err) {
+      console.error('OmniParser Error:', err);
+      setImportError(err.message || 'Errore durante la lettura del file.');
+      setAssistantAdvice(buildImportAssistantMessage(err, file));
+      setStep(1);
+    }
+  };
+
+  const retryLastImport = async () => {
+    if (!lastFile) return;
+
+    setImportError(null);
+    setAssistantAdvice(null);
+    setResults(null);
+    setParsedItems([]);
+    setRawWorkbookData(null);
+    setFileName(lastFile.name);
+
+    try {
+      validateFileBeforeImport(lastFile);
+      setStep(2);
+
+      const data = await parseFile(lastFile);
+      setRawWorkbookData(data);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Il file è stato letto ma non contiene righe utilizzabili.');
+      }
+
+      const extension = getFileExtension(lastFile.name);
+
+      if (extension === 'pdf') {
+        await buildParsedItemsFromPdfRows(data.slice(1), lastFile.name);
+        return;
+      }
+
+      const analysis = findBestMapping(data);
+
+      if (analysis && analysis.confidence > 0.6) {
+        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, lastFile.name);
+      } else {
+        setStep(3);
+      }
+    } catch (err) {
+      console.error('Retry Import Error:', err);
+      setImportError(err.message || 'Errore durante il nuovo tentativo.');
+      setAssistantAdvice(buildImportAssistantMessage(err, lastFile));
+      setStep(1);
+    }
   };
 
   const handleConfirmImport = async () => {
@@ -738,7 +847,9 @@ export default function ImportaFatture() {
           <div className="card-body" style={{ padding: 40 }}>
             <div className="import-dropzone" onClick={() => fileInputRef.current?.click()}>
               <div className="import-dropzone-icon">📄</div>
-              <div className="import-dropzone-text">Clicca per selezionare un file o trascinalo qui</div>
+              <div className="import-dropzone-text">
+                Clicca per selezionare un file o trascinalo qui
+              </div>
               <div className="import-dropzone-hint">
                 Formati supportati: PDF, Excel, CSV, XML, DOC, DOCX
               </div>
@@ -803,13 +914,11 @@ export default function ImportaFatture() {
                       <td
                         key={cIdx}
                         style={{
-                          background: Object.values(manualMapping).includes(cIdx)
-                            ? 'var(--primary-50)'
-                            : 'transparent',
+                          background: Object.values(manualMapping).includes(cIdx) ? 'var(--primary-50)' : 'transparent',
                           whiteSpace: 'nowrap',
                           maxWidth: 200,
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis',
+                          textOverflow: 'ellipsis'
                         }}
                       >
                         {String(cell || '')}
@@ -884,22 +993,20 @@ export default function ImportaFatture() {
                   <tr
                     key={idx}
                     style={{
-                      background:
-                        item.confidence === 'certi'
-                          ? 'var(--success-25)'
-                          : item.confidence === 'probabili'
-                            ? 'var(--primary-25)'
-                            : item.isNew
-                              ? 'var(--warning-25)'
-                              : 'transparent',
-                      borderLeft:
-                        item.confidence === 'certi'
-                          ? '4px solid var(--success-500)'
-                          : item.confidence === 'probabili'
-                            ? '4px solid var(--primary-500)'
-                            : item.isNew
-                              ? '4px solid var(--warning-500)'
-                              : 'none',
+                      background: item.confidence === 'certi'
+                        ? 'var(--success-25)'
+                        : item.confidence === 'probabili'
+                          ? 'var(--primary-25)'
+                          : item.isNew
+                            ? 'var(--warning-25)'
+                            : 'transparent',
+                      borderLeft: item.confidence === 'certi'
+                        ? '4px solid var(--success-500)'
+                        : item.confidence === 'probabili'
+                          ? '4px solid var(--primary-500)'
+                          : item.isNew
+                            ? '4px solid var(--warning-500)'
+                            : 'none'
                     }}
                   >
                     <td>
@@ -920,12 +1027,11 @@ export default function ImportaFatture() {
                               fontSize: 9,
                               fontWeight: 800,
                               textTransform: 'uppercase',
-                              color:
-                                item.confidence === 'certi'
-                                  ? 'var(--success-700)'
-                                  : item.confidence === 'probabili'
-                                    ? 'var(--primary-700)'
-                                    : 'var(--warning-700)',
+                              color: item.confidence === 'certi'
+                                ? 'var(--success-700)'
+                                : item.confidence === 'probabili'
+                                  ? 'var(--primary-700)'
+                                  : 'var(--warning-700)'
                             }}
                           >
                             {item.confidence.replace('_', ' ')}
@@ -962,15 +1068,14 @@ export default function ImportaFatture() {
                           style={{
                             padding: '6px 10px',
                             fontSize: 12,
-                            border:
-                              item.confidence === 'certi'
-                                ? '2px solid var(--success-400)'
-                                : item.confidence === 'probabili'
-                                  ? '2px solid var(--primary-400)'
-                                  : item.category
-                                    ? '1px solid var(--gray-300)'
-                                    : '2px solid var(--warning-400)',
-                            backgroundColor: 'white'
+                            border: item.confidence === 'certi'
+                              ? '2px solid var(--success-400)'
+                              : item.confidence === 'probabili'
+                                ? '2px solid var(--primary-400)'
+                                : item.category
+                                  ? '1px solid var(--gray-300)'
+                                  : '2px solid var(--warning-400)',
+                            backgroundColor: 'white',
                           }}
                         >
                           <option value="">Seleziona...</option>

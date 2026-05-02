@@ -4,7 +4,7 @@ export const parseFile = async (file) => {
   const extension = getFileExtension(file.name);
 
   if (extension === 'pdf') {
-    return await parsePdfViaBackend(file);
+    return await parsePdfViaPythonBackend(file);
   }
 
   return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export const parseFile = async (file) => {
               defval: '',
             });
 
-            if (sheetData.length > 2) {
+            if (sheetData.length > 0) {
               data = sheetData;
               break;
             }
@@ -34,7 +34,7 @@ export const parseFile = async (file) => {
           console.warn('XLSX parser failed, attempting raw text fallback...', err);
         }
 
-        if (data.length < 2) {
+        if (data.length < 1) {
           const text = new TextDecoder().decode(buffer);
           data = parseRawText(text);
         }
@@ -54,19 +54,39 @@ export const parseFile = async (file) => {
   });
 };
 
-const parsePdfViaBackend = async (file) => {
+const parsePdfViaPythonBackend = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('http://localhost:3001/api/parse-invoice-pdf', {
+  const response = await fetch('http://127.0.0.1:8000/api/parse-invoice-pdf', {
     method: 'POST',
     body: formData,
   });
 
-  const payload = await response.json();
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error('Risposta non valida dal parser Python.');
+  }
+
+  console.log('PAYLOAD PARSER PYTHON:', payload);
 
   if (!response.ok) {
-    throw new Error(payload?.error || 'Errore parsing PDF lato server.');
+    throw new Error(payload?.detail || 'Errore parsing PDF lato Python.');
+  }
+
+  if (!payload?.matrix || !Array.isArray(payload.matrix)) {
+    throw new Error('Il parser Python non ha restituito una matrice valida.');
+  }
+
+  console.log('RIGHE MATRIX:', payload.matrix.length);
+  console.log('PRIMA RIGA:', payload.matrix[0]);
+  console.log('SECONDA RIGA:', payload.matrix[1]);
+
+  if (payload.matrix.length <= 1) {
+    throw new Error('Il parser Python ha restituito solo l’intestazione, senza articoli.');
   }
 
   return payload.matrix;
