@@ -15,6 +15,7 @@ export const findBestMapping = (data) => {
       quantity: -1,
       description: -1,
       unit: -1,
+      price: -1,
       brand: -1,
       category: -1,
       location: -1,
@@ -61,6 +62,15 @@ export const findBestMapping = (data) => {
 
   const unitSyns = ['unita', 'um', 'unit', 'u.m.', 'misura', 'st'];
 
+  const priceSyns = [
+    'prezzo',
+    'price',
+    'costo',
+    'importo unitario',
+    'prezzo unitario',
+    'prezzo_u',
+  ];
+
   // 1. CERCA RIGA INTESTAZIONI
   let bestHeaderScore = 0;
 
@@ -72,6 +82,7 @@ export const findBestMapping = (data) => {
     if (row.some((h) => qtySyns.some((s) => h.includes(normalize(s))))) score += 40;
     if (row.some((h) => descSyns.some((s) => h.includes(normalize(s))))) score += 40;
     if (row.some((h) => unitSyns.some((s) => h.includes(normalize(s))))) score += 20;
+    if (row.some((h) => priceSyns.some((s) => h.includes(normalize(s))))) score += 30;
 
     if (score > bestHeaderScore) {
       bestHeaderScore = score;
@@ -88,6 +99,7 @@ export const findBestMapping = (data) => {
     result.mapping.quantity = find(qtySyns);
     result.mapping.description = find(descSyns);
     result.mapping.unit = find(unitSyns);
+    result.mapping.price = find(priceSyns);
     result.mapping.brand = find(['marca', 'brand', 'produttore', 'manuf']);
     result.mapping.category = find(['categoria', 'settore', 'gruppo', 'cat']);
     result.mapping.location = find(['posizione', 'scaffale', 'ubicazione', 'posto']);
@@ -100,13 +112,29 @@ export const findBestMapping = (data) => {
     const sample = data
       .slice(startRow, startRow + 20)
       .map((r) => r?.[c])
-      .filter((v) => v !== undefined);
+      .filter((v) => v !== undefined && v !== null);
 
     const scores = analyzeColumnType(sample);
 
     if (result.mapping.code === -1 && scores.code > 0.4) result.mapping.code = c;
     if (result.mapping.quantity === -1 && scores.quantity > 0.6) result.mapping.quantity = c;
     if (result.mapping.description === -1 && scores.description > 0.5) result.mapping.description = c;
+
+    // fallback euristico per il prezzo
+    if (result.mapping.price === -1) {
+      const priceLikeCount = sample.filter((value) => {
+        const raw = String(value || '').trim();
+        if (!raw) return false;
+
+        const normalizedValue = raw.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+        const num = parseFloat(normalizedValue);
+        return Number.isFinite(num) && num > 0;
+      }).length;
+
+      if (sample.length > 0 && priceLikeCount / sample.length >= 0.6) {
+        result.mapping.price = c;
+      }
+    }
   }
 
   // 4. FALLBACK
@@ -114,12 +142,14 @@ export const findBestMapping = (data) => {
   if (result.mapping.description === -1 && numCols >= 2) result.mapping.description = 1;
   if (result.mapping.quantity === -1 && numCols >= 3) result.mapping.quantity = 2;
   if (result.mapping.unit === -1 && numCols >= 4) result.mapping.unit = 3;
+  if (result.mapping.price === -1 && numCols >= 5) result.mapping.price = 4;
 
   // 5. CONFIDENZA
-  if (result.mapping.code !== -1) result.confidence += 0.3;
-  if (result.mapping.description !== -1) result.confidence += 0.25;
-  if (result.mapping.quantity !== -1) result.confidence += 0.25;
+  if (result.mapping.code !== -1) result.confidence += 0.25;
+  if (result.mapping.description !== -1) result.confidence += 0.2;
+  if (result.mapping.quantity !== -1) result.confidence += 0.2;
   if (result.mapping.unit !== -1) result.confidence += 0.1;
+  if (result.mapping.price !== -1) result.confidence += 0.15;
   if (result.headerRowIndex !== -1) result.confidence += 0.1;
 
   result.confidence = Math.min(result.confidence, 1);
