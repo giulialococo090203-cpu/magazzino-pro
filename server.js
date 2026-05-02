@@ -44,12 +44,13 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
       fileName: req.file.originalname,
       rows,
       matrix: [
-        ['Codice', 'Descrizione', 'Quantità', 'UM', 'Marca', 'Categoria', 'Posizione'],
+        ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo', 'Marca', 'Categoria', 'Posizione'],
         ...rows.map((row) => [
           row.code || '',
           row.description || '',
           row.quantity ?? '',
           row.unit || 'ST',
+          row.price ?? '',
           '',
           '',
           '',
@@ -103,6 +104,8 @@ function extractInvoiceRows(text) {
       continue;
     }
 
+    // Esempio:
+    // 1 GRUPPO RITORNO 1 ST 75,98000000 € 75,98 € 22 % -
     const productMatch = line.match(
       /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s+€\s+(\d+(?:[.,]\d+)?)\s+€/i
     );
@@ -117,6 +120,8 @@ function extractInvoiceRows(text) {
         description: cleanDescription(productMatch[2]),
         quantity: parseItalianNumber(productMatch[3]),
         unit: productMatch[4].trim(),
+        price: parseItalianNumber(productMatch[5]),
+        total: parseItalianNumber(productMatch[6]),
         code: '',
       };
       continue;
@@ -147,6 +152,8 @@ function finalizeItem(item) {
     description: cleanDescription(item.description || ''),
     quantity: Number.isFinite(item.quantity) ? item.quantity : 0,
     unit: String(item.unit || 'ST').trim(),
+    price: Number.isFinite(item.price) ? item.price : 0,
+    total: Number.isFinite(item.total) ? item.total : 0,
   };
 }
 
