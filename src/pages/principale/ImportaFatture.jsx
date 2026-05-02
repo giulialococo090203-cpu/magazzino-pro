@@ -79,7 +79,7 @@ function buildImportAssistantMessage(error, file) {
 
   if (msg.includes('mapping') || msg.includes('colonn') || msg.includes('header')) {
     suggestions.push('Le colonne potrebbero non essere riconosciute automaticamente.');
-    suggestions.push('Usa la mappatura manuale per indicare Codice, Descrizione e Quantità.');
+    suggestions.push('Usa la mappatura manuale per indicare Codice, Descrizione, Quantità e Prezzo.');
   }
 
   if (msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
@@ -121,6 +121,7 @@ export default function ImportaFatture() {
     description: -1,
     quantity: -1,
     unit: -1,
+    price: -1,
     brand: -1,
     category: -1,
     location: -1,
@@ -160,6 +161,7 @@ export default function ImportaFatture() {
       description: -1,
       quantity: -1,
       unit: -1,
+      price: -1,
       brand: -1,
       category: -1,
       location: -1,
@@ -390,33 +392,61 @@ export default function ImportaFatture() {
     for (const row of rows) {
       if (!row || row.length === 0) continue;
 
-      const code = String(row[mapping.code] || '').trim();
+      const rawCode = row?.[mapping.code];
+      const rawDescription = row?.[mapping.description];
+      const rawQuantity = row?.[mapping.quantity];
+      const rawUnit = row?.[mapping.unit];
+      const rawPrice = mapping.price !== undefined && mapping.price !== -1 ? row?.[mapping.price] : 0;
+      const rawBrand = mapping.brand !== undefined && mapping.brand !== -1 ? row?.[mapping.brand] : '';
+      const rawCategory = mapping.category !== undefined && mapping.category !== -1 ? row?.[mapping.category] : '';
+      const rawLocation = mapping.location !== undefined && mapping.location !== -1 ? row?.[mapping.location] : '';
 
-      if (!code || code === '0' || code.length < 2 || code.toLowerCase() === 'codice') continue;
+      const code = String(rawCode || '').trim();
+      const desc = String(rawDescription || '').trim();
+      const unit = String(rawUnit || 'pz').trim();
+      const brand = String(rawBrand || '').trim();
+      const explicitCat = String(rawCategory || '').trim();
+      const location = String(rawLocation || 'A1-01').trim();
 
-      const qtyStr = String(row[mapping.quantity] || '0').replace(',', '.');
+      const qtyStr = String(rawQuantity || '0').replace(',', '.');
       const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
-      const desc = String(row[mapping.description] || '').trim();
-      const unit = String(row[mapping.unit] || 'pz').trim();
-      const brand = String(row[mapping.brand] || '').trim();
-      const explicitCat = String(row[mapping.category] || '').trim();
+
+      const priceStr = String(rawPrice || '0').replace(',', '.');
+      const price = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+
+      const looksLikeHeader =
+        code.toLowerCase() === 'codice' ||
+        desc.toLowerCase() === 'descrizione' ||
+        String(rawQuantity || '').toLowerCase() === 'quantita' ||
+        String(rawQuantity || '').toLowerCase() === 'quantità';
+
+      if (looksLikeHeader) continue;
+      if (!code && !desc) continue;
+      if (!code || code.length < 2) continue;
+      if (qty <= 0) continue;
 
       const recognition = aggressiveMatch(
         { code, description: desc },
         { materials: trainingData, categories: categories }
       );
 
-      let existing = recognition.bestMatch?.type === 'material' ? recognition.bestMatch.original : null;
+      let existing =
+        recognition.bestMatch?.type === 'material'
+          ? recognition.bestMatch.original
+          : null;
 
       if ((!existing || recognition.confidence !== 'certi') && code) {
-        const strictMatch = trainingData.find((m) => m.code.toLowerCase() === code.toLowerCase());
+        const strictMatch = trainingData.find(
+          (m) => String(m.code || '').toLowerCase() === code.toLowerCase()
+        );
         if (strictMatch) {
           existing = strictMatch;
         }
       }
 
       let catId =
-        existing?.category || (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
+        existing?.category ||
+        (recognition.bestMatch?.type === 'category' ? recognition.bestMatch.id : '');
 
       let isAutoAssigned =
         recognition.confidence === 'certi' || recognition.confidence === 'probabili';
@@ -445,6 +475,7 @@ export default function ImportaFatture() {
         description: existing ? existing.description : (desc || code),
         quantity: qty,
         unit: existing ? existing.unit : unit,
+        price: price || existing?.price || 0,
         isNew: !existing,
         selected: true,
         category: catId,
@@ -453,12 +484,14 @@ export default function ImportaFatture() {
         suggestions,
         brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
         minThreshold: 10,
-        location: String(row[mapping.location] || existing?.location || 'A1-01'),
+        location: location || existing?.location || 'A1-01',
         supplier: 'Importato',
         notes: `Import: ${currentFileName}`,
         existingMaterial: existing,
       });
     }
+
+    console.log('Processed items:', processed);
 
     if (processed.length === 0) {
       throw new Error('Nessun materiale valido rilevato nel documento.');
@@ -523,6 +556,7 @@ export default function ImportaFatture() {
             category: item.category,
             quantity: item.quantity,
             unit: item.unit,
+            price: item.price,
             minThreshold: item.minThreshold,
             location: item.location,
             supplier: item.supplier,
@@ -752,6 +786,7 @@ export default function ImportaFatture() {
                         <option value="description">Descrizione</option>
                         <option value="quantity">Quantità</option>
                         <option value="unit">U.M.</option>
+                        <option value="price">Prezzo</option>
                         <option value="brand">Marca</option>
                         <option value="category">Categoria</option>
                         <option value="location">Posizione</option>
@@ -795,7 +830,7 @@ export default function ImportaFatture() {
                 memory[fingerprint] = manualMapping;
                 localStorage.setItem('import_mapping_memory', JSON.stringify(memory));
 
-                processItems(rawWorkbookData, manualMapping, fileName);
+                processItems(rawWorkbookData.slice(1), manualMapping, fileName);
               }}
             >
               {manualMapping.code === -1 || manualMapping.quantity === -1
@@ -829,7 +864,7 @@ export default function ImportaFatture() {
             </div>
           </div>
 
-          <div className="card-body" style={{ padding: 0 }}>
+          <div className="card-body" style={{ padding: 0, overflowX: 'auto' }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -839,6 +874,7 @@ export default function ImportaFatture() {
                   <th>Marca</th>
                   <th>Qtà</th>
                   <th>UM</th>
+                  <th>Prezzo</th>
                   <th>Posizione</th>
                   <th>Categoria</th>
                 </tr>
@@ -902,6 +938,19 @@ export default function ImportaFatture() {
                     <td><span className="text-muted">{item.brand}</span></td>
                     <td style={{ fontWeight: 700 }}>{item.quantity}</td>
                     <td>{item.unit}</td>
+
+                    <td>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="form-control"
+                        value={item.price ?? 0}
+                        onChange={(e) => updateItem(idx, 'price', parseFloat(e.target.value) || 0)}
+                        style={{ width: 110 }}
+                      />
+                    </td>
+
                     <td><span className="text-muted">{item.location}</span></td>
 
                     <td>
@@ -921,14 +970,12 @@ export default function ImportaFatture() {
                                   : item.category
                                     ? '1px solid var(--gray-300)'
                                     : '2px solid var(--warning-400)',
-                            backgroundColor: 'white',
+                            backgroundColor: 'white'
                           }}
                         >
                           <option value="">Seleziona...</option>
                           {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
+                            <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </select>
 
@@ -1028,20 +1075,12 @@ export default function ImportaFatture() {
                 dal file <strong>{fileName}</strong>:
               </p>
               <ul style={{ marginTop: 12, paddingLeft: 20, color: 'var(--gray-600)' }}>
-                <li>
-                  <strong>{parsedItems.filter((i) => i.selected && !i.isNew).length}</strong> materiali
-                  esistenti — verrà aggiunta la quantità
-                </li>
-                <li>
-                  <strong>{parsedItems.filter((i) => i.selected && i.isNew).length}</strong> nuovi
-                  materiali — verranno creati in anagrafica
-                </li>
+                <li><strong>{parsedItems.filter((i) => i.selected && !i.isNew).length}</strong> materiali esistenti — verrà aggiunta la quantità</li>
+                <li><strong>{parsedItems.filter((i) => i.selected && i.isNew).length}</strong> nuovi materiali — verranno creati in anagrafica</li>
               </ul>
             </div>
             <div className="btn-group">
-              <button className="btn btn-secondary" onClick={() => setStep(2)}>
-                ← Modifica
-              </button>
+              <button className="btn btn-secondary" onClick={() => setStep(2)}>← Modifica</button>
               <button className="btn btn-success btn-lg" onClick={handleConfirmImport}>
                 ✓ Conferma Importazione
               </button>

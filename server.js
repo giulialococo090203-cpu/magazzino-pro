@@ -16,22 +16,40 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
   let parser = null;
 
   try {
+    console.log('--- PDF REQUEST ARRIVATA ---');
+
     if (!req.file) {
+      console.log('Nessun file ricevuto');
       return res.status(400).json({ error: 'Nessun file ricevuto.' });
     }
+
+    console.log('File ricevuto:', {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+    });
 
     parser = new PDFParse({
       data: new Uint8Array(req.file.buffer),
     });
 
+    console.log('Parser creato');
+
     const result = await parser.getText();
     const text = String(result?.text || '');
 
+    console.log('Testo estratto, lunghezza:', text.length);
+    console.log('Prime 1000 battute:\n', text.slice(0, 1000));
+
     if (!text.trim()) {
+      console.log('PDF senza testo estraibile');
       return res.status(400).json({ error: 'PDF senza testo estraibile.' });
     }
 
     const rows = extractInvoiceRows(text);
+
+    console.log('Righe trovate:', rows.length);
+    console.log('Prime 5 righe:', rows.slice(0, 5));
 
     if (!rows.length) {
       return res.status(400).json({
@@ -84,13 +102,18 @@ function extractInvoiceRows(text) {
     /PRODOTTI E SERVIZI([\s\S]*?)(METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA)/i
   );
 
-  if (!sectionMatch) return [];
+  if (!sectionMatch) {
+    console.log('Sezione PRODOTTI E SERVIZI non trovata');
+    return [];
+  }
 
   const section = sectionMatch[1];
   const lines = section
     .split('\n')
     .map((l) => l.trim())
     .filter(Boolean);
+
+  console.log('Righe nella sezione prodotti:', lines.length);
 
   const results = [];
   let currentItem = null;
