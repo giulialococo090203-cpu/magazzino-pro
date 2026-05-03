@@ -58,7 +58,7 @@ const parsePdfViaBackend = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('/api/parse_invoice_pdf', {
+  const response = await fetch('/api', {
     method: 'POST',
     body: formData,
   });
