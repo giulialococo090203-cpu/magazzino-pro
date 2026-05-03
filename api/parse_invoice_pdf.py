@@ -123,16 +123,10 @@ def extract_invoice_rows(text: str) -> List[Dict[str, Any]]:
     return [item for item in results if item["description"] and item["quantity"] > 0]
 
 @app.get("/")
-def root():
-    return {"ok": True, "service": "invoice-parser-vercel"}
+def probe():
+    return {"ok": True, "message": "Endpoint parser attivo"}
 
-@app.get("/parse-invoice-pdf")
-@app.get("/api/parse-invoice-pdf")
-def parse_invoice_pdf_probe():
-    return {"ok": True, "message": "Endpoint attivo. Usa POST con multipart/form-data."}
-
-@app.post("/parse-invoice-pdf")
-@app.post("/api/parse-invoice-pdf")
+@app.post("/")
 async def parse_invoice_pdf(file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="Nessun file ricevuto.")
