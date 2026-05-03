@@ -4,7 +4,7 @@ export const parseFile = async (file) => {
   const extension = getFileExtension(file.name);
 
   if (extension === 'pdf') {
-    return await parsePdfViaPythonBackend(file);
+    return await parsePdfViaBackend(file);
   }
 
   return new Promise((resolve, reject) => {
@@ -54,11 +54,11 @@ export const parseFile = async (file) => {
   });
 };
 
-const parsePdfViaPythonBackend = async (file) => {
+const parsePdfViaBackend = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('http://127.0.0.1:8000/api/parse-invoice-pdf', {
+  const response = await fetch('/api/parse-invoice-pdf', {
     method: 'POST',
     body: formData,
   });
@@ -68,17 +68,17 @@ const parsePdfViaPythonBackend = async (file) => {
   try {
     payload = await response.json();
   } catch {
-    throw new Error('Risposta non valida dal parser Python.');
+    throw new Error('Risposta non valida dal parser PDF.');
   }
 
-  console.log('PAYLOAD PARSER PYTHON:', payload);
+  console.log('PAYLOAD PARSER PDF:', payload);
 
   if (!response.ok) {
-    throw new Error(payload?.detail || 'Errore parsing PDF lato Python.');
+    throw new Error(payload?.detail || payload?.error || 'Errore parsing PDF lato backend.');
   }
 
   if (!payload?.matrix || !Array.isArray(payload.matrix)) {
-    throw new Error('Il parser Python non ha restituito una matrice valida.');
+    throw new Error('Il backend PDF non ha restituito una matrice valida.');
   }
 
   console.log('RIGHE MATRIX:', payload.matrix.length);
@@ -86,7 +86,7 @@ const parsePdfViaPythonBackend = async (file) => {
   console.log('SECONDA RIGA:', payload.matrix[1]);
 
   if (payload.matrix.length <= 1) {
-    throw new Error('Il parser Python ha restituito solo l’intestazione, senza articoli.');
+    throw new Error('Il parser PDF ha restituito solo l’intestazione, senza articoli.');
   }
 
   return payload.matrix;
