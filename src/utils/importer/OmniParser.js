@@ -1,333 +1,118 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import pdfplumber
-import re
-import io
-from typing import List, Dict, Any
+import * as XLSX from 'xlsx';
 
-app = FastAPI()
+export const parseFile = async (file) => {
+  const extension = getFileExtension(file.name);
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+  if (extension === 'pdf') {
+    return await parsePdfViaBackend(file);
+  }
 
-PRODUCT_SECTION_RE = re.compile(
-    r"PRODOTTI E SERVIZI(.*?)(METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA)",
-    re.IGNORECASE | re.DOTALL,
-)
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-PRODUCT_LINE_RE = re.compile(
-    r"^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s+€\s+(\d+(?:[.,]\d+)?)\s+€",
-    re.IGNORECASE,
-)
+    reader.onload = async (e) => {
+      try {
+        const buffer = e.target.result;
+        let data = [];
 
-CODE_RE = re.compile(r"Cod\.valore:\s*([A-Z0-9\-]+)", re.IGNORECASE)
-HEADER_RE = re.compile(r"^NR\s+DESCRIZIONE\s+QUANTITA", re.IGNORECASE)
-END_RE = re.compile(
-    r"METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA",
-    re.IGNORECASE,
-)
+        try {
+          const wb = XLSX.read(buffer, { type: 'array' });
 
-def parse_italian_number(value: str) -> float:
-    cleaned = str(value or "").replace(".", "").replace(",", ".")
-    cleaned = re.sub(r"[^\d\.\-]", "", cleaned)
-    try:
-        return float(cleaned)
-    except ValueError:
-        return 0.0
+          for (const sn of wb.SheetNames) {
+            const sheet = wb.Sheets[sn];
+            const sheetData = XLSX.utils.sheet_to_json(sheet, {
+              header: 1,
+              defval: '',
+            });
 
-def clean_description(value: str) -> str:
-    text = str(value or "")
-    text = re.sub(r"\s+", " ", text).strip()
-    text = re.sub(r"^[-–—\s]+", "", text)
-    text = re.sub(r"\bPILE,\s*Riferimento testo:.*$", "", text, flags=re.IGNORECASE).strip()
-    return text
-
-def extract_text_with_pdfplumber(file_bytes: bytes) -> str:
-    pages_text = []
-    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            if text.strip():
-                pages_text.append(text)
-    return "\n".join(pages_text)
-
-def finalize_item(item: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "code": str(item.get("code", "")).strip(),
-        "description": clean_description(item.get("description", "")),
-        "quantity": item.get("quantity", 0) or 0,
-        "unit": str(item.get("unit", "ST")).strip(),
-        "price": item.get("price", 0) or 0,
-        "total": item.get("total", 0) or 0,
-    }
-
-def extract_invoice_rows(text: str) -> List[Dict[str, Any]]:
-    normalized = text.replace("\r", "")
-    normalized = re.sub(r"[ \t]+", " ", normalized)
-    normalized = re.sub(r"\n{2,}", "\n", normalized).strip()
-
-    section_match = PRODUCT_SECTION_RE.search(normalized)
-    if not section_match:
-        return []
-
-    section = section_match.group(1)
-    lines = [line.strip() for line in section.split("\n") if line.strip()]
-
-    results = []
-    current_item = None
-
-    for line in lines:
-        if HEADER_RE.search(line):
-            continue
-
-        if END_RE.search(line):
-            if current_item:
-                results.append(finalize_item(current_item))
-                current_item = None
-            break
-
-        code_match = CODE_RE.search(line)
-        if code_match and current_item:
-            current_item["code"] = code_match.group(1).strip()
-            continue
-
-        product_match = PRODUCT_LINE_RE.match(line)
-        if product_match:
-            if current_item:
-                results.append(finalize_item(current_item))
-
-            current_item = {
-                "rowNumber": product_match.group(1),
-                "description": clean_description(product_match.group(2)),
-                "quantity": parse_italian_number(product_match.group(3)),
-                "unit": product_match.group(4).strip(),
-                "price": parse_italian_number(product_match.group(5)),
-                "total": parse_italian_number(product_match.group(6)),
-                "code": "",
+            if (sheetData.length > 0) {
+              data = sheetData;
+              break;
             }
-            continue
+          }
+        } catch (err) {
+          console.warn('XLSX parser failed, attempting raw text fallback...', err);
+        }
 
-        if current_item and len(line) > 2 and not CODE_RE.search(line):
-            current_item["description"] = clean_description(
-                f'{current_item["description"]} {line}'
-            )
+        if (data.length < 1) {
+          const text = new TextDecoder().decode(buffer);
+          data = parseRawText(text);
+        }
 
-    if current_item:
-        results.append(finalize_item(current_item))
+        if (data.length < 1) {
+          throw new Error('Impossibile estrarre righe valide dal file.');
+        }
 
-    return [item for item in results if item["description"] and item["quantity"] > 0]
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    };
 
-@app.post("/parse-invoice-pdf")
-async def parse_invoice_pdf(file: UploadFile = File(...)):
-    if not file:
-        raise HTTPException(status_code=400, detail="Nessun file ricevuto.")
+    reader.onerror = () => reject(new Error('Errore durante la lettura del file.'));
+    reader.readAsArrayBuffer(file);
+  });
+};
 
-    file_bytes = await file.read()
-    if not file_bytes:
-        raise HTTPException(status_code=400, detail="File vuoto.")
+const parsePdfViaBackend = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
 
-    try:
-        text = extract_text_with_pdfplumber(file_bytes)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore lettura PDF: {e}")
+  const response = await fetch('/api/parse-invoice-pdf', {
+    method: 'POST',
+    body: formData,
+  });
 
-    if not text.strip():
-        raise HTTPException(status_code=400, detail="PDF senza testo estraibile.")
+  let payload = null;
 
-    rows = extract_invoice_rows(text)
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error('Risposta non valida dal parser PDF.');
+  }
 
-    if not rows:
-        raise HTTPException(status_code=400, detail="Nessuna riga articolo riconosciuta nel PDF.")
+  if (!response.ok) {
+    throw new Error(payload?.detail || payload?.error || 'Errore parsing PDF lato backend.');
+  }
 
-    return {
-        "ok": True,
-        "fileName": file.filename,
-        "rows": rows,
-        "matrix": [
-            ["Codice", "Descrizione", "Quantità", "UM", "Prezzo", "Marca", "Categoria", "Posizione"],
-            *[
-                [
-                    row.get("code", ""),
-                    row.get("description", ""),
-                    row.get("quantity", ""),
-                    row.get("unit", "ST"),
-                    row.get("price", 0),
-                    "",
-                    "",
-                    "",
-                ]
-                for row in rows
-            ],
-        ],
-    }from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import pdfplumber
-import re
-import io
-from typing import List, Dict, Any
+  if (!payload?.matrix || !Array.isArray(payload.matrix)) {
+    throw new Error('Il backend PDF non ha restituito una matrice valida.');
+  }
 
-app = FastAPI()
+  if (payload.matrix.length <= 1) {
+    throw new Error('Il parser PDF ha restituito solo l’intestazione, senza articoli.');
+  }
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+  return payload.matrix;
+};
 
-PRODUCT_SECTION_RE = re.compile(
-    r"PRODOTTI E SERVIZI(.*?)(METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA)",
-    re.IGNORECASE | re.DOTALL,
-)
+const getFileExtension = (fileName = '') => {
+  return fileName.split('.').pop()?.toLowerCase() || '';
+};
 
-PRODUCT_LINE_RE = re.compile(
-    r"^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s+€\s+(\d+(?:[.,]\d+)?)\s+€",
-    re.IGNORECASE,
-)
+const parseRawText = (text) => {
+  if (!text) return [];
 
-CODE_RE = re.compile(r"Cod\.valore:\s*([A-Z0-9\-]+)", re.IGNORECASE)
-HEADER_RE = re.compile(r"^NR\s+DESCRIZIONE\s+QUANTITA", re.IGNORECASE)
-END_RE = re.compile(
-    r"METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA",
-    re.IGNORECASE,
-)
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (!lines.length) return [];
 
-def parse_italian_number(value: str) -> float:
-    cleaned = str(value or "").replace(".", "").replace(",", ".")
-    cleaned = re.sub(r"[^\d\.\-]", "", cleaned)
-    try:
-        return float(cleaned)
-    except ValueError:
-        return 0.0
+  const delimiters = [',', ';', '\t', '|'];
+  let bestDelim = ',';
+  let maxCols = 0;
 
-def clean_description(value: str) -> str:
-    text = str(value or "")
-    text = re.sub(r"\s+", " ", text).strip()
-    text = re.sub(r"^[-–—\s]+", "", text)
-    text = re.sub(r"\bPILE,\s*Riferimento testo:.*$", "", text, flags=re.IGNORECASE).strip()
-    return text
+  delimiters.forEach((d) => {
+    const sample = lines.slice(0, 5);
+    const avgCols = sample.length
+      ? sample.reduce((acc, line) => acc + line.split(d).length, 0) / sample.length
+      : 0;
 
-def extract_text_with_pdfplumber(file_bytes: bytes) -> str:
-    pages_text = []
-    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            if text.strip():
-                pages_text.append(text)
-    return "\n".join(pages_text)
-
-def finalize_item(item: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "code": str(item.get("code", "")).strip(),
-        "description": clean_description(item.get("description", "")),
-        "quantity": item.get("quantity", 0) or 0,
-        "unit": str(item.get("unit", "ST")).strip(),
-        "price": item.get("price", 0) or 0,
-        "total": item.get("total", 0) or 0,
+    if (avgCols > maxCols) {
+      maxCols = avgCols;
+      bestDelim = d;
     }
+  });
 
-def extract_invoice_rows(text: str) -> List[Dict[str, Any]]:
-    normalized = text.replace("\r", "")
-    normalized = re.sub(r"[ \t]+", " ", normalized)
-    normalized = re.sub(r"\n{2,}", "\n", normalized).strip()
-
-    section_match = PRODUCT_SECTION_RE.search(normalized)
-    if not section_match:
-        return []
-
-    section = section_match.group(1)
-    lines = [line.strip() for line in section.split("\n") if line.strip()]
-
-    results = []
-    current_item = None
-
-    for line in lines:
-        if HEADER_RE.search(line):
-            continue
-
-        if END_RE.search(line):
-            if current_item:
-                results.append(finalize_item(current_item))
-                current_item = None
-            break
-
-        code_match = CODE_RE.search(line)
-        if code_match and current_item:
-            current_item["code"] = code_match.group(1).strip()
-            continue
-
-        product_match = PRODUCT_LINE_RE.match(line)
-        if product_match:
-            if current_item:
-                results.append(finalize_item(current_item))
-
-            current_item = {
-                "rowNumber": product_match.group(1),
-                "description": clean_description(product_match.group(2)),
-                "quantity": parse_italian_number(product_match.group(3)),
-                "unit": product_match.group(4).strip(),
-                "price": parse_italian_number(product_match.group(5)),
-                "total": parse_italian_number(product_match.group(6)),
-                "code": "",
-            }
-            continue
-
-        if current_item and len(line) > 2 and not CODE_RE.search(line):
-            current_item["description"] = clean_description(
-                f'{current_item["description"]} {line}'
-            )
-
-    if current_item:
-        results.append(finalize_item(current_item))
-
-    return [item for item in results if item["description"] and item["quantity"] > 0]
-
-@app.post("/parse-invoice-pdf")
-async def parse_invoice_pdf(file: UploadFile = File(...)):
-    if not file:
-        raise HTTPException(status_code=400, detail="Nessun file ricevuto.")
-
-    file_bytes = await file.read()
-    if not file_bytes:
-        raise HTTPException(status_code=400, detail="File vuoto.")
-
-    try:
-        text = extract_text_with_pdfplumber(file_bytes)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore lettura PDF: {e}")
-
-    if not text.strip():
-        raise HTTPException(status_code=400, detail="PDF senza testo estraibile.")
-
-    rows = extract_invoice_rows(text)
-
-    if not rows:
-        raise HTTPException(status_code=400, detail="Nessuna riga articolo riconosciuta nel PDF.")
-
-    return {
-        "ok": True,
-        "fileName": file.filename,
-        "rows": rows,
-        "matrix": [
-            ["Codice", "Descrizione", "Quantità", "UM", "Prezzo", "Marca", "Categoria", "Posizione"],
-            *[
-                [
-                    row.get("code", ""),
-                    row.get("description", ""),
-                    row.get("quantity", ""),
-                    row.get("unit", "ST"),
-                    row.get("price", 0),
-                    "",
-                    "",
-                    "",
-                ]
-                for row in rows
-            ],
-        ],
-    }
+  return lines.map((line) =>
+    line.split(bestDelim).map((val) => val.replace(/^["']|["']$/g, '').trim())
+  );
+};
