@@ -43,7 +43,11 @@ export const parseFile = async (file) => {
           throw new Error('Impossibile estrarre righe valide dal file.');
         }
 
-        resolve(data);
+        resolve({
+          mode: 'table',
+          scanDetected: false,
+          matrix: data,
+        });
       } catch (err) {
         reject(err);
       }
@@ -75,6 +79,18 @@ const parsePdfViaBackend = async (file) => {
     throw new Error(payload?.detail || payload?.error || 'Errore parsing PDF lato backend.');
   }
 
+  if (payload?.scanDetected) {
+    return {
+      mode: 'scan',
+      scanDetected: true,
+      message: payload?.message || 'Documento scansito rilevato.',
+      fileName: payload?.fileName || file.name,
+      matrix: [],
+      rows: [],
+      raw: payload,
+    };
+  }
+
   if (!payload?.matrix || !Array.isArray(payload.matrix)) {
     throw new Error('Il backend PDF non ha restituito una matrice valida.');
   }
@@ -83,7 +99,13 @@ const parsePdfViaBackend = async (file) => {
     throw new Error('Il parser PDF ha restituito solo l’intestazione, senza articoli.');
   }
 
-  return payload.matrix;
+  return {
+    mode: 'table',
+    scanDetected: false,
+    matrix: payload.matrix,
+    rows: payload.rows || [],
+    raw: payload,
+  };
 };
 
 const getFileExtension = (fileName = '') => {
