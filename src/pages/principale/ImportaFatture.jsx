@@ -68,7 +68,7 @@ function buildImportAssistantMessage(error, file) {
   }
 
   if (msg.includes('pdf')) {
-    suggestions.push('Se il PDF è una scansione immagine, il parser potrebbe leggere male il contenuto.');
+    suggestions.push('Se il PDF è una scansione immagine, il parser potrebbe non riuscire a leggere automaticamente il contenuto.');
     suggestions.push('Se è un PDF nativo, il sistema proverà a leggerne i dati e mostrarteli in anteprima.');
   }
 
@@ -134,6 +134,9 @@ export default function ImportaFatture() {
   const [assistantAdvice, setAssistantAdvice] = useState(null);
   const [lastFile, setLastFile] = useState(null);
 
+  const [scanDetected, setScanDetected] = useState(false);
+  const [scanMessage, setScanMessage] = useState('');
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -170,6 +173,8 @@ export default function ImportaFatture() {
     setAssistantAdvice(null);
     setLoading(false);
     setLoadingProgress({ current: 0, total: 0 });
+    setScanDetected(false);
+    setScanMessage('');
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -403,6 +408,8 @@ export default function ImportaFatture() {
     setParsedItems(processed);
     setImportError(null);
     setAssistantAdvice(null);
+    setScanDetected(false);
+    setScanMessage('');
     setStep(2);
   };
 
@@ -521,6 +528,8 @@ export default function ImportaFatture() {
     setParsedItems(processed);
     setImportError(null);
     setAssistantAdvice(null);
+    setScanDetected(false);
+    setScanMessage('');
     setStep(2);
   };
 
@@ -534,13 +543,25 @@ export default function ImportaFatture() {
     setResults(null);
     setParsedItems([]);
     setRawWorkbookData(null);
+    setScanDetected(false);
+    setScanMessage('');
     setFileName(file.name);
 
     try {
       validateFileBeforeImport(file);
       setStep(2);
 
-      const data = await parseFile(file);
+      const parsed = await parseFile(file);
+
+      if (parsed?.scanDetected) {
+        setScanDetected(true);
+        setScanMessage(parsed?.message || 'Documento scansito rilevato.');
+        setRawWorkbookData([]);
+        setStep(1);
+        return;
+      }
+
+      const data = parsed?.matrix || parsed;
       setRawWorkbookData(data);
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -577,13 +598,25 @@ export default function ImportaFatture() {
     setResults(null);
     setParsedItems([]);
     setRawWorkbookData(null);
+    setScanDetected(false);
+    setScanMessage('');
     setFileName(lastFile.name);
 
     try {
       validateFileBeforeImport(lastFile);
       setStep(2);
 
-      const data = await parseFile(lastFile);
+      const parsed = await parseFile(lastFile);
+
+      if (parsed?.scanDetected) {
+        setScanDetected(true);
+        setScanMessage(parsed?.message || 'Documento scansito rilevato.');
+        setRawWorkbookData([]);
+        setStep(1);
+        return;
+      }
+
+      const data = parsed?.matrix || parsed;
       setRawWorkbookData(data);
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -758,7 +791,53 @@ export default function ImportaFatture() {
         </div>
       </div>
 
-      {(assistantAdvice || importError) && (
+      {scanDetected && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 20,
+            border: '1px solid var(--warning-300)',
+            background: 'var(--warning-50)',
+          }}
+        >
+          <div className="card-body" style={{ padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div style={{ fontSize: 28 }}>🖼️</div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ marginBottom: 8, fontWeight: 800 }}>
+                  Documento scansito rilevato
+                </h3>
+                <p style={{ marginBottom: 12, color: 'var(--gray-700)' }}>
+                  {scanMessage || 'Questa fattura sembra una scansione o un’immagine. La lettura automatica completa non è disponibile.'}
+                </p>
+                <div style={{ marginBottom: 14, color: 'var(--gray-700)' }}>
+                  Cosa puoi fare adesso:
+                  <ul style={{ paddingLeft: 18, marginTop: 8 }}>
+                    <li>usa un PDF nativo se disponibile</li>
+                    <li>oppure salva i dati manualmente dalla fattura</li>
+                    <li>in seguito possiamo aggiungere una schermata dedicata per le scansioni</li>
+                  </ul>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setScanDetected(false);
+                      setScanMessage('');
+                      resetImportState();
+                    }}
+                  >
+                    Scegli un altro file
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(assistantAdvice || importError) && !scanDetected && (
         <div
           className="card"
           style={{
