@@ -1,140 +1,319 @@
 import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 
-export const parseFile = async (file) => {
-  const extension = getFileExtension(file.name);
+const PDF_TEXT_PARSER_URL = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
+const LOCAL_SCAN_PARSER_URL = 'https://pdf-scan-parser-docker.onrender.com/parse-scan-invoice';
 
-  if (extension === 'pdf') {
-    return await parsePdfViaBackend(file);
+function getFileExtension(fileName = '') {
+  return fileName.split('.').pop()?.toLowerCase() || '';
+}
+
+function normalizeCell(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'number') return value;
+  return String(value).trim();
+}
+
+function cleanRow(row = []) {
+  return row.map(normalizeCell);
+}
+
+function hasEnoughUsefulCells(row = []) {
+  const filled = row.filter((cell) => String(cell ?? '').trim() !== '');
+  return filled.length >= 2;
+}
+
+function safeJsonParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function fileToArrayBuffer(file) {
+  return await file.arrayBuffer();
+}
+
+async function fileToText(file) {
+  return await file.text();
+}
+
+async function parseExcelFile(file) {
+  const buffer = await fileToArrayBuffer(file);
+  const workbook = XLSX.read(buffer, { type: 'array' });
+
+  const firstSheetName = workbook.SheetNames?.[0];
+  if (!firstSheetName) {
+    throw new Error('Il file Excel non contiene fogli.');
   }
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        const buffer = e.target.result;
-        let data = [];
-
-        try {
-          const wb = XLSX.read(buffer, { type: 'array' });
-
-          for (const sn of wb.SheetNames) {
-            const sheet = wb.Sheets[sn];
-            const sheetData = XLSX.utils.sheet_to_json(sheet, {
-              header: 1,
-              defval: '',
-            });
-
-            if (sheetData.length > 0) {
-              data = sheetData;
-              break;
-            }
-          }
-        } catch (err) {
-          console.warn('XLSX parser failed, attempting raw text fallback...', err);
-        }
-
-        if (data.length < 1) {
-          const text = new TextDecoder().decode(buffer);
-          data = parseRawText(text);
-        }
-
-        if (data.length < 1) {
-          throw new Error('Impossibile estrarre righe valide dal file.');
-        }
-
-        resolve({
-          mode: 'table',
-          scanDetected: false,
-          matrix: data,
-        });
-      } catch (err) {
-        reject(err);
-      }
-    };
-
-    reader.onerror = () => reject(new Error('Errore durante la lettura del file.'));
-    reader.readAsArrayBuffer(file);
+  const worksheet = workbook.Sheets[firstSheetName];
+  const rows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
+    raw: false,
+    defval: '',
+    blankrows: false,
   });
-};
 
-const parsePdfViaBackend = async (file) => {
+  const cleaned = rows.map(cleanRow).filter(hasEnoughUsefulCells);
+
+  if (!cleaned.length) {
+    throw new Error('Il file Excel non contiene righe utili.');
+  }
+
+  return cleaned;
+}
+
+async function parseCsvFile(file) {
+  const text = await fileToText(file);
+
+  const workbook = XLSX.read(text, {
+    type: 'string',
+    raw: false,
+    FS: ';',
+  });
+
+  const firstSheetName = workbook.SheetNames?.[0];
+  if (!firstSheetName) {
+    throw new Error('Il CSV non contiene dati leggibili.');
+  }
+
+  const worksheet = workbook.Sheets[firstSheetName];
+  let rows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
+    raw: false,
+    defval: '',
+    blankrows: false,
+  });
+
+  rows = rows.map(cleanRow).filter(hasEnoughUsefulCells);
+
+  if (!rows.length) {
+    throw new Error('Il CSV non contiene righe utili.');
+  }
+
+  return rows;
+}
+
+async function parseXmlFile(file) {
+  const text = await fileToText(file);
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(text, 'application/xml');
+
+  if (xml.querySelector('parsererror')) {
+    throw new Error('XML non valido.');
+  }
+
+  const rows = [];
+  const allNodes = Array.from(xml.querySelectorAll('*'));
+
+  allNodes.forEach((node) => {
+    const children = Array.from(node.children || []);
+    if (!children.length) return;
+
+    const row = children.map((child) => normalizeCell(child.textContent));
+    if (hasEnoughUsefulCells(row)) {
+      rows.push(row);
+    }
+  });
+
+  if (!rows.length) {
+    throw new Error('XML letto ma senza righe utili.');
+  }
+
+  return rows;
+}
+
+async function parseDocxFile(file) {
+  const buffer = await fileToArrayBuffer(file);
+  const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+  const text = result?.value || '';
+
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    throw new Error('DOCX senza testo utile.');
+  }
+
+  return lines.map((line) => [line]);
+}
+
+async function parseDocFile(file) {
+  const text = await fileToText(file);
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    throw new Error('DOC senza testo utile.');
+  }
+
+  return lines.map((line) => [line]);
+}
+
+async function callPdfTextParser(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('/api', {
+  const response = await fetch(PDF_TEXT_PARSER_URL, {
     method: 'POST',
     body: formData,
   });
 
-  let payload = null;
-
-  try {
-    payload = await response.json();
-  } catch {
-    throw new Error('Risposta non valida dal parser PDF.');
-  }
-
   if (!response.ok) {
-    throw new Error(payload?.detail || payload?.error || 'Errore parsing PDF lato backend.');
+    throw new Error(`Parser PDF testuale non disponibile (${response.status}).`);
   }
 
-  if (payload?.scanDetected) {
-    return {
-      mode: 'scan',
-      scanDetected: true,
-      message: payload?.message || 'Documento scansito rilevato.',
-      fileName: payload?.fileName || file.name,
-      matrix: [],
-      rows: [],
-      raw: payload,
-    };
+  const data = await response.json();
+
+  if (!data) {
+    throw new Error('Risposta non valida dal parser PDF testuale.');
   }
 
-  if (!payload?.matrix || !Array.isArray(payload.matrix)) {
-    throw new Error('Il backend PDF non ha restituito una matrice valida.');
-  }
+  return data;
+}
 
-  if (payload.matrix.length <= 1) {
-    throw new Error('Il parser PDF ha restituito solo l’intestazione, senza articoli.');
-  }
+async function callScanPdfParser(file) {
+  const formData = new FormData();
+  formData.append('file', file);
 
-  return {
-    mode: 'table',
-    scanDetected: false,
-    matrix: payload.matrix,
-    rows: payload.rows || [],
-    raw: payload,
-  };
-};
-
-const getFileExtension = (fileName = '') => {
-  return fileName.split('.').pop()?.toLowerCase() || '';
-};
-
-const parseRawText = (text) => {
-  if (!text) return [];
-
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (!lines.length) return [];
-
-  const delimiters = [',', ';', '\t', '|'];
-  let bestDelim = ',';
-  let maxCols = 0;
-
-  delimiters.forEach((d) => {
-    const sample = lines.slice(0, 5);
-    const avgCols = sample.length
-      ? sample.reduce((acc, line) => acc + line.split(d).length, 0) / sample.length
-      : 0;
-
-    if (avgCols > maxCols) {
-      maxCols = avgCols;
-      bestDelim = d;
-    }
+  const response = await fetch(LOCAL_SCAN_PARSER_URL, {
+    method: 'POST',
+    body: formData,
   });
 
-  return lines.map((line) =>
-    line.split(bestDelim).map((val) => val.replace(/^["']|["']$/g, '').trim())
-  );
+  if (!response.ok) {
+    const text = await response.text();
+    const parsed = safeJsonParse(text);
+
+    if (parsed?.detail?.message) {
+      throw new Error(parsed.detail.message);
+    }
+
+    throw new Error(`Parser scansioni non disponibile (${response.status}).`);
+  }
+
+  const data = await response.json();
+
+  if (!data || !Array.isArray(data.matrix) || !data.matrix.length) {
+    throw new Error('Risposta non valida dal parser scansioni.');
+  }
+
+  return data;
+}
+
+function isLikelyScannedPdfTextParserResponse(data) {
+  if (!data) return false;
+
+  if (data.scanDetected === true) return true;
+  if (data.mode === 'scan-ocr') return true;
+
+  if (typeof data.message === 'string') {
+    const msg = data.message.toLowerCase();
+    if (
+      msg.includes('scans') ||
+      msg.includes('ocr') ||
+      msg.includes('immagine') ||
+      msg.includes('scan')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function normalizePdfTextParserRows(data) {
+  if (Array.isArray(data)) {
+    return data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.matrix)) {
+    return data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.rows)) {
+    return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.data)) {
+    return data.data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  return [];
+}
+
+export async function parseFile(file) {
+  if (!file) {
+    throw new Error('Nessun file selezionato.');
+  }
+
+  const ext = getFileExtension(file.name);
+
+  if (['xlsx', 'xls'].includes(ext)) {
+    return await parseExcelFile(file);
+  }
+
+  if (ext === 'csv') {
+    return await parseCsvFile(file);
+  }
+
+  if (ext === 'xml') {
+    return await parseXmlFile(file);
+  }
+
+  if (ext === 'docx') {
+    return await parseDocxFile(file);
+  }
+
+  if (ext === 'doc') {
+    return await parseDocFile(file);
+  }
+
+  if (ext === 'pdf') {
+    let textParserError = null;
+
+    try {
+      const textParserResult = await callPdfTextParser(file);
+
+      if (!isLikelyScannedPdfTextParserResponse(textParserResult)) {
+        const rows = normalizePdfTextParserRows(textParserResult);
+        if (rows.length) {
+          return rows;
+        }
+      }
+    } catch (err) {
+      textParserError = err;
+    }
+
+    try {
+      const scanResult = await callScanPdfParser(file);
+
+      return {
+        scanDetected: false,
+        mode: scanResult.mode || 'scan-ocr',
+        matrix: scanResult.matrix,
+        extractedRows: scanResult.extractedRows || [],
+        debug: scanResult.debug || null,
+      };
+    } catch (scanErr) {
+      if (textParserError) {
+        throw new Error(
+          scanErr?.message || textParserError?.message || 'Risposta non valida dal parser PDF.'
+        );
+      }
+      throw scanErr;
+    }
+  }
+
+  throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);
+}
+
+export default {
+  parseFile,
 };
