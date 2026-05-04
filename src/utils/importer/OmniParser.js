@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
+const PDF_TEXT_PARSER_URL = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
 const SCAN_PARSER_URL = 'https://pdf-scan-parser-docker.onrender.com/parse-scan-invoice';
 
 function getFileExtension(fileName = '') {
@@ -155,6 +156,30 @@ async function parseDocFile(file) {
   return lines.map((line) => [line]);
 }
 
+async function callPdfTextParser(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(PDF_TEXT_PARSER_URL, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    const parsed = safeJsonParse(text);
+    throw new Error(parsed?.message || parsed?.detail || `Parser PDF testuale non disponibile (${response.status}).`);
+  }
+
+  const data = await response.json();
+
+  if (!data) {
+    throw new Error('Risposta non valida dal parser PDF testuale.');
+  }
+
+  return data;
+}
+
 async function callScanPdfParser(file) {
   const formData = new FormData();
   formData.append('file', file);
@@ -177,15 +202,52 @@ async function callScanPdfParser(file) {
 
   const data = await response.json();
 
-  if (!data) {
-    throw new Error('Risposta vuota dal parser scansioni.');
-  }
-
-  if (!Array.isArray(data.matrix) || !data.matrix.length) {
+  if (!data || !Array.isArray(data.matrix) || !data.matrix.length) {
     throw new Error('Risposta non valida dal parser scansioni.');
   }
 
   return data;
+}
+
+function normalizeTextParserRows(data) {
+  if (Array.isArray(data)) {
+    return data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.matrix)) {
+    return data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.rows)) {
+    return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.data)) {
+    return data.data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  return [];
+}
+
+function looksLikeScannedResponse(data) {
+  if (!data) return false;
+
+  if (data.scanDetected === true) return true;
+  if (data.mode === 'scan-ocr') return true;
+
+  if (typeof data.message === 'string') {
+    const msg = data.message.toLowerCase();
+    if (
+      msg.includes('scans') ||
+      msg.includes('ocr') ||
+      msg.includes('immagine') ||
+      msg.includes('scan')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export async function parseFile(file) {
@@ -195,36 +257,45 @@ export async function parseFile(file) {
 
   const ext = getFileExtension(file.name);
 
-  if (['xlsx', 'xls'].includes(ext)) {
-    return await parseExcelFile(file);
-  }
-
-  if (ext === 'csv') {
-    return await parseCsvFile(file);
-  }
-
-  if (ext === 'xml') {
-    return await parseXmlFile(file);
-  }
-
-  if (ext === 'docx') {
-    return await parseDocxFile(file);
-  }
-
-  if (ext === 'doc') {
-    return await parseDocFile(file);
-  }
+  if (['xlsx', 'xls'].includes(ext)) return await parseExcelFile(file);
+  if (ext === 'csv') return await parseCsvFile(file);
+  if (ext === 'xml') return await parseXmlFile(file);
+  if (ext === 'docx') return await parseDocxFile(file);
+  if (ext === 'doc') return await parseDocFile(file);
 
   if (ext === 'pdf') {
-    const scanResult = await callScanPdfParser(file);
+    let textParserError = null;
 
-    return {
-      scanDetected: false,
-      mode: scanResult.mode || 'scan-ocr',
-      matrix: scanResult.matrix,
-      extractedRows: scanResult.extractedRows || [],
-      debug: scanResult.debug || null,
-    };
+    try {
+      const textResult = await callPdfTextParser(file);
+
+      if (!looksLikeScannedResponse(textResult)) {
+        const rows = normalizeTextParserRows(textResult);
+        if (rows.length) {
+          return rows;
+        }
+      }
+    } catch (err) {
+      textParserError = err;
+    }
+
+    try {
+      const scanResult = await callScanPdfParser(file);
+
+      return {
+        scanDetected: false,
+        mode: scanResult.mode || 'scan-ocr',
+        matrix: scanResult.matrix,
+        extractedRows: scanResult.extractedRows || [],
+        debug: scanResult.debug || null,
+      };
+    } catch (scanErr) {
+      throw new Error(
+        scanErr?.message ||
+        textParserError?.message ||
+        'Risposta non valida dal parser PDF.'
+      );
+    }
   }
 
   throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);
