@@ -7,6 +7,7 @@ import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
 
 import { parseFile } from '../../utils/importer/OmniParser';
 import { findBestMapping } from '../../utils/importer/HeuristicAnalysis';
+import ScanInvoiceFallback, { createEmptyRow } from '../../components/import/ScanInvoiceFallback.jsx';
 
 const MAX_FILE_SIZE_MB = 15;
 const SUPPORTED_EXTENSIONS = ['pdf', 'xlsx', 'xls', 'csv', 'xml', 'doc', 'docx'];
@@ -109,7 +110,7 @@ export default function ImportaFatture() {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [step, setStep] = useState(1); // 1=upload, 2=preview, 3=mapping, 4=confirm, 5=done
+  const [step, setStep] = useState(1); // 1=upload, 2=preview, 3=mapping, 4=confirm, 5=done, 6=scan fallback
   const [fileName, setFileName] = useState('');
   const [parsedItems, setParsedItems] = useState([]);
   const [results, setResults] = useState(null);
@@ -136,6 +137,7 @@ export default function ImportaFatture() {
 
   const [scanDetected, setScanDetected] = useState(false);
   const [scanMessage, setScanMessage] = useState('');
+  const [scanRows, setScanRows] = useState([createEmptyRow()]);
 
   useEffect(() => {
     async function loadData() {
@@ -175,6 +177,7 @@ export default function ImportaFatture() {
     setLoadingProgress({ current: 0, total: 0 });
     setScanDetected(false);
     setScanMessage('');
+    setScanRows([createEmptyRow()]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -207,6 +210,23 @@ export default function ImportaFatture() {
         i === index ? { ...item, [field]: value, isAutoAssigned: false } : item
       )
     );
+  };
+
+  const updateScanRow = (index, field, value) => {
+    setScanRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
+  };
+
+  const addScanRow = () => {
+    setScanRows((prev) => [...prev, createEmptyRow()]);
+  };
+
+  const removeScanRow = (index) => {
+    setScanRows((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const getCategoryName = (categoryId) => {
@@ -533,6 +553,39 @@ export default function ImportaFatture() {
     setStep(2);
   };
 
+  const continueFromScanFallback = async () => {
+    const validRows = (scanRows || []).filter((row) => {
+      const hasCode = String(row.code || '').trim().length > 0;
+      const hasDescription = String(row.description || '').trim().length > 0;
+      const qty = Number(row.quantity || 0);
+      return hasCode && hasDescription && qty > 0;
+    });
+
+    if (validRows.length === 0) {
+      alert('Inserisci almeno una riga valida con codice, descrizione e quantità.');
+      return;
+    }
+
+    const matrix = [
+      ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo', 'Marca', 'Categoria', 'Posizione'],
+      ...validRows.map((row) => [
+        row.code || '',
+        row.description || '',
+        row.quantity || 0,
+        row.unit || 'PZ',
+        row.price || 0,
+        '',
+        '',
+        'A1-01',
+      ]),
+    ];
+
+    setRawWorkbookData(matrix);
+    setScanDetected(false);
+    setScanMessage('');
+    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName);
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -545,6 +598,7 @@ export default function ImportaFatture() {
     setRawWorkbookData(null);
     setScanDetected(false);
     setScanMessage('');
+    setScanRows([createEmptyRow()]);
     setFileName(file.name);
 
     try {
@@ -557,7 +611,8 @@ export default function ImportaFatture() {
         setScanDetected(true);
         setScanMessage(parsed?.message || 'Documento scansito rilevato.');
         setRawWorkbookData([]);
-        setStep(1);
+        setScanRows([createEmptyRow()]);
+        setStep(6);
         return;
       }
 
@@ -600,6 +655,7 @@ export default function ImportaFatture() {
     setRawWorkbookData(null);
     setScanDetected(false);
     setScanMessage('');
+    setScanRows([createEmptyRow()]);
     setFileName(lastFile.name);
 
     try {
@@ -612,7 +668,8 @@ export default function ImportaFatture() {
         setScanDetected(true);
         setScanMessage(parsed?.message || 'Documento scansito rilevato.');
         setRawWorkbookData([]);
-        setStep(1);
+        setScanRows([createEmptyRow()]);
+        setStep(6);
         return;
       }
 
@@ -791,7 +848,7 @@ export default function ImportaFatture() {
         </div>
       </div>
 
-      {scanDetected && (
+      {scanDetected && step !== 6 && (
         <div
           className="card"
           style={{
@@ -810,27 +867,6 @@ export default function ImportaFatture() {
                 <p style={{ marginBottom: 12, color: 'var(--gray-700)' }}>
                   {scanMessage || 'Questa fattura sembra una scansione o un’immagine. La lettura automatica completa non è disponibile.'}
                 </p>
-                <div style={{ marginBottom: 14, color: 'var(--gray-700)' }}>
-                  Cosa puoi fare adesso:
-                  <ul style={{ paddingLeft: 18, marginTop: 8 }}>
-                    <li>usa un PDF nativo se disponibile</li>
-                    <li>oppure salva i dati manualmente dalla fattura</li>
-                    <li>in seguito possiamo aggiungere una schermata dedicata per le scansioni</li>
-                  </ul>
-                </div>
-
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setScanDetected(false);
-                      setScanMessage('');
-                      resetImportState();
-                    }}
-                  >
-                    Scegli un altro file
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -946,6 +982,18 @@ export default function ImportaFatture() {
             </p>
           </div>
         </div>
+      )}
+
+      {step === 6 && (
+        <ScanInvoiceFallback
+          fileName={fileName}
+          rows={scanRows}
+          onChangeRow={updateScanRow}
+          onAddRow={addScanRow}
+          onRemoveRow={removeScanRow}
+          onCancel={resetImportState}
+          onContinue={continueFromScanFallback}
+        />
       )}
 
       {step === 3 && rawWorkbookData && (

@@ -103,14 +103,13 @@ export default function Layout({ children }) {
   const initials = displayName
     .split(' ')
     .filter(Boolean)
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 
   return (
     <div className="app-layout">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">
@@ -122,16 +121,17 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        {NAV_SECTIONS.map(section => {
-          const visibleItems = section.items.filter(item =>
+        {NAV_SECTIONS.map((section) => {
+          const visibleItems = section.items.filter((item) =>
             item.roles.includes(user.role)
           );
           if (visibleItems.length === 0) return null;
+
           return (
             <div className="sidebar-section" key={section.title}>
               <div className="sidebar-section-title">{section.title}</div>
               <nav className="sidebar-nav">
-                {visibleItems.map(item => (
+                {visibleItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
@@ -163,7 +163,6 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="main-content">
         <header className="header">
           <div className="header-left">
@@ -173,16 +172,17 @@ export default function Layout({ children }) {
               <span>{pageTitle}</span>
             </div>
           </div>
+
           <div className="header-right">
             <div className="global-search-container">
               <span className="global-search-icon">🔍</span>
-              <input 
-                type="text" 
-                className="global-search-input" 
-                placeholder="Cerca codice materiale..." 
+              <input
+                type="text"
+                className="global-search-input"
+                placeholder="Cerca codice materiale..."
                 value={globalSearch}
-                onChange={e => setGlobalSearch(e.target.value)}
-                onKeyDown={e => {
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' && globalSearch.trim()) {
                     navigate(`/inventario?q=${encodeURIComponent(globalSearch.trim())}`);
                     setGlobalSearch('');
@@ -190,7 +190,11 @@ export default function Layout({ children }) {
                 }}
               />
             </div>
-            <span className="header-date" style={{ textTransform: 'capitalize' }}>{today}</span>
+
+            <span className="header-date" style={{ textTransform: 'capitalize' }}>
+              {today}
+            </span>
+
             <Link to="/controllo/notifiche" className="header-notification-btn">
               🔔
               {unreadCount > 0 && (
