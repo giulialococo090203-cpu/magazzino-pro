@@ -171,13 +171,7 @@ async function callPdfTextParser(file) {
     throw new Error(parsed?.message || parsed?.detail || `Parser PDF testuale non disponibile (${response.status}).`);
   }
 
-  const data = await response.json();
-
-  if (!data) {
-    throw new Error('Risposta non valida dal parser PDF testuale.');
-  }
-
-  return data;
+  return await response.json();
 }
 
 async function callScanPdfParser(file) {
@@ -229,11 +223,15 @@ function normalizeTextParserRows(data) {
   return [];
 }
 
-function looksLikeScannedResponse(data) {
-  if (!data) return false;
+function mustUseScanFallback(data) {
+  if (!data) return true;
 
   if (data.scanDetected === true) return true;
+  if (data.mode === 'scan') return true;
   if (data.mode === 'scan-ocr') return true;
+
+  if (Array.isArray(data.matrix) && data.matrix.length === 0) return true;
+  if (Array.isArray(data.rows) && data.rows.length === 0) return true;
 
   if (typeof data.message === 'string') {
     const msg = data.message.toLowerCase();
@@ -264,13 +262,14 @@ export async function parseFile(file) {
   if (ext === 'doc') return await parseDocFile(file);
 
   if (ext === 'pdf') {
+    let textParserResult = null;
     let textParserError = null;
 
     try {
-      const textResult = await callPdfTextParser(file);
+      textParserResult = await callPdfTextParser(file);
 
-      if (!looksLikeScannedResponse(textResult)) {
-        const rows = normalizeTextParserRows(textResult);
+      if (!mustUseScanFallback(textParserResult)) {
+        const rows = normalizeTextParserRows(textParserResult);
         if (rows.length) {
           return rows;
         }
@@ -279,23 +278,17 @@ export async function parseFile(file) {
       textParserError = err;
     }
 
-    try {
-      const scanResult = await callScanPdfParser(file);
+    const scanResult = await callScanPdfParser(file);
 
-      return {
-        scanDetected: false,
-        mode: scanResult.mode || 'scan-ocr',
-        matrix: scanResult.matrix,
-        extractedRows: scanResult.extractedRows || [],
-        debug: scanResult.debug || null,
-      };
-    } catch (scanErr) {
-      throw new Error(
-        scanErr?.message ||
-        textParserError?.message ||
-        'Risposta non valida dal parser PDF.'
-      );
-    }
+    return {
+      scanDetected: false,
+      mode: scanResult.mode || 'scan-ocr',
+      matrix: scanResult.matrix,
+      extractedRows: scanResult.extractedRows || [],
+      debug: scanResult.debug || null,
+      textParserError: textParserError?.message || null,
+      textParserMode: textParserResult?.mode || null,
+    };
   }
 
   throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);
