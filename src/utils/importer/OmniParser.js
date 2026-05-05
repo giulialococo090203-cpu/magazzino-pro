@@ -21,7 +21,6 @@ function cleanRow(row = []) {
 
 function hasEnoughUsefulCells(row = []) {
   if (!Array.isArray(row)) return false;
-
   const filled = row.filter((cell) => String(cell ?? '').trim() !== '');
   return filled.length >= 2;
 }
@@ -69,7 +68,6 @@ function cleanBoschDescription(value = '') {
   text = text.replace(/\bCessione Norm\..*$/gi, '');
   text = text.replace(/\bAddebito Trasporto.*$/gi, '');
   text = text.replace(/\bContributo Ambientale.*$/gi, '');
-
   text = text.replace(/\s+/g, ' ');
   text = text.replace(/^[-–—,\s]+/, '');
   text = text.replace(/[-–—,\s]+$/, '');
@@ -143,6 +141,9 @@ function extractTextFromParserResult(data = {}) {
     'content',
     'plainText',
     'extractedText',
+    'pdfText',
+    'documentText',
+    '__rawText',
   ];
 
   for (const key of possibleKeys) {
@@ -155,7 +156,17 @@ function extractTextFromParserResult(data = {}) {
     return data.pages
       .map((page) => {
         if (typeof page === 'string') return page;
-        return page?.text || page?.content || page?.rawText || '';
+        return page?.text || page?.content || page?.rawText || page?.plainText || '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  if (Array.isArray(data?.lines)) {
+    return data.lines
+      .map((line) => {
+        if (typeof line === 'string') return line;
+        return line?.text || line?.content || '';
       })
       .filter(Boolean)
       .join('\n');
@@ -184,7 +195,7 @@ function parseBoschInvoiceTextToRows(text = '') {
   const rows = [];
 
   const itemRegex =
-    /^(\d{4})\s+(\d(?:-\d+){2,}(?:-\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s+[-–]?\d+(?:[.,]\d+)?%\([a-z]\))*\s+(\d+(?:[.,]\d+)?)\s+([A-Z0-9]{1,3})\b/i;
+    /^(\d{4})\s+(\d(?:-\d+){2,}(?:-\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s*[-–]?\d+(?:[.,]\d+)?%\([a-z]\))*\s+(\d+(?:[.,]\d+)?)\s+([A-Z0-9]{1,3})\b/i;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -254,8 +265,16 @@ function parseBoschInvoiceTextToRows(text = '') {
 
 function parserObjectRowToMatrixRow(row = {}) {
   return [
-    normalizeCell(row.code || row.codice || ''),
-    normalizeCell(row.description || row.name || row.nome || row.descrizione || ''),
+    normalizeCell(row.code || row.codice || row.productCode || row.codiceProdotto || ''),
+    normalizeCell(
+      row.description ||
+        row.name ||
+        row.nome ||
+        row.descrizione ||
+        row.productDescription ||
+        row.descrizioneProdotto ||
+        ''
+    ),
     normalizeCell(row.quantity ?? row.qty ?? row.quantita ?? row.quantità ?? ''),
     normalizeCell(row.unit || row.um || row.unita || row.unitaMisura || 'PZ'),
     normalizeCell(row.price ?? row.netPrice ?? row.prezzoNetto ?? row.prezzo ?? ''),
@@ -265,44 +284,57 @@ function parserObjectRowToMatrixRow(row = {}) {
   ];
 }
 
+function normalizeObjectRows(rows = []) {
+  const header = [
+    'Codice',
+    'Descrizione',
+    'Quantità',
+    'UM',
+    'Prezzo Netto',
+    'Marca',
+    'Categoria',
+    'Posizione',
+  ];
+
+  const matrixRows = rows.map(parserObjectRowToMatrixRow).filter(hasEnoughUsefulCells);
+
+  if (!matrixRows.length) return [];
+
+  return [header, ...matrixRows];
+}
+
 function normalizeTextParserRows(data) {
   if (Array.isArray(data)) {
-    return data.map(cleanRow).filter(hasEnoughUsefulCells);
+    const firstRow = data[0];
+
+    if (Array.isArray(firstRow)) {
+      return data.map(cleanRow).filter(hasEnoughUsefulCells);
+    }
+
+    if (typeof firstRow === 'object' && firstRow !== null) {
+      return normalizeObjectRows(data);
+    }
   }
 
   if (Array.isArray(data?.matrix) && data.matrix.length > 0) {
     return data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
   }
 
-  if (Array.isArray(data?.rows) && data.rows.length > 0) {
-    const firstRow = data.rows[0];
+  const objectArrayKeys = ['rows', 'data', 'items', 'articles', 'products', 'materials'];
 
-    if (Array.isArray(firstRow)) {
-      return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+  for (const key of objectArrayKeys) {
+    if (Array.isArray(data?.[key]) && data[key].length > 0) {
+      const firstRow = data[key][0];
+
+      if (Array.isArray(firstRow)) {
+        return data[key].map(cleanRow).filter(hasEnoughUsefulCells);
+      }
+
+      if (typeof firstRow === 'object' && firstRow !== null) {
+        const normalized = normalizeObjectRows(data[key]);
+        if (normalized.length > 0) return normalized;
+      }
     }
-
-    if (typeof firstRow === 'object' && firstRow !== null) {
-      const header = [
-        'Codice',
-        'Descrizione',
-        'Quantità',
-        'UM',
-        'Prezzo Netto',
-        'Marca',
-        'Categoria',
-        'Posizione',
-      ];
-
-      const rows = data.rows
-        .map(parserObjectRowToMatrixRow)
-        .filter(hasEnoughUsefulCells);
-
-      return [header, ...rows];
-    }
-  }
-
-  if (Array.isArray(data?.data)) {
-    return data.data.map(cleanRow).filter(hasEnoughUsefulCells);
   }
 
   const extractedText = extractTextFromParserResult(data);
@@ -449,19 +481,53 @@ async function callPdfTextParser(file) {
     );
   }
 
-  const text = await response.text();
-  const parsed = safeJsonParse(text);
+  const responseText = await response.text();
+  const parsed = safeJsonParse(responseText);
+
+  const payload =
+    parsed && typeof parsed === 'object'
+      ? {
+          ...parsed,
+          __httpOk: response.ok,
+          __status: response.status,
+          __rawText: responseText,
+        }
+      : {
+          text: responseText,
+          __httpOk: response.ok,
+          __status: response.status,
+          __rawText: responseText,
+        };
 
   if (!response.ok) {
-    throw new Error(
-      parsed?.error ||
-        parsed?.message ||
-        parsed?.detail ||
-        `Parser PDF non disponibile (${response.status}).`
-    );
+    const hasRecoverableText = Boolean(extractTextFromParserResult(payload));
+    const hasRecoverableRows = normalizeTextParserRows(payload).length > 0;
+
+    if (!hasRecoverableText && !hasRecoverableRows) {
+      throw new Error(
+        payload?.error ||
+          payload?.message ||
+          payload?.detail ||
+          `Parser PDF non disponibile (${response.status}).`
+      );
+    }
   }
 
-  return parsed || {};
+  return payload || {};
+}
+
+function buildPdfManualFallback(file, message) {
+  return {
+    ok: true,
+    mode: 'scan',
+    scanDetected: true,
+    fileName: file?.name || '',
+    message:
+      message ||
+      'Il PDF è stato letto, ma non sono state riconosciute righe articolo utilizzabili. Puoi completare l’importazione con inserimento guidato.',
+    rows: [],
+    matrix: [],
+  };
 }
 
 export async function parseFile(file) {
@@ -487,7 +553,10 @@ export async function parseFile(file) {
     const rows = normalizeTextParserRows(textResult);
 
     if (!rows.length) {
-      throw new Error(
+      console.warn('PDF parser payload non riconosciuto:', textResult);
+
+      return buildPdfManualFallback(
+        file,
         textResult?.error ||
           textResult?.message ||
           'Il PDF è stato letto, ma non sono state riconosciute righe articolo utilizzabili.'
