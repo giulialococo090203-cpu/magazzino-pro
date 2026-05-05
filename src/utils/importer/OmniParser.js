@@ -42,13 +42,12 @@ async function fileToText(file) {
   return await file.text();
 }
 
-function normalizeSpaces(value = '') {
-  return String(value || '').replace(/\s+/g, ' ').trim();
+function normalizeSpaces(text = '') {
+  return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
 function parseItalianNumber(value = '') {
-  const text = String(value || '')
-    .trim()
+  const text = normalizeSpaces(value)
     .replace(/\./g, '')
     .replace(',', '.')
     .replace(/[^\d.-]/g, '');
@@ -57,132 +56,119 @@ function parseItalianNumber(value = '') {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function cleanBoschDescription(lines = []) {
-  const blacklist = [
-    /^ricambio$/i,
-    /^ricambi$/i,
-    /^solar$/i,
-    /^old\s+/i,
-    /^old$/i,
-    /^d\.d\.t\./i,
-    /^vs\.\s*ordine/i,
-    /^cessione/i,
-    /^cod\.ean/i,
-    /^pos\s+cod\./i,
-    /^descrizione/i,
-    /^robert bosch/i,
-    /^capitale/i,
-    /^c\.c\.i\.a\.a\./i,
-    /^bollo/i,
-    /^bosch e il simbolo/i,
-    /^dati da indicare/i,
-    /^dest\./i,
-    /^fattura$/i,
-    /^ns\.\s*codice/i,
-    /^presso iln/i,
-    /^pagina\s+\d+/i,
-    /^via\s+/i,
-    /^cl thermoservice/i,
-    /^it-\d+/i,
-    /^cod\.cliente/i,
-    /^partita iva/i,
-    /^iva\s+/i,
-    /^ricevuta/i,
-    /^\(c\)=/i,
-    /^il documento/i,
-    /^per eventuali/i,
-    /^unicredit/i,
-    /^iban/i,
-    /^swift/i,
-    /^indicare sempre/i,
-    /^informazioni/i,
-    /^regolamento/i,
-    /^www\./i,
-    /^addebito trasporto/i,
-    /^contributo ambientale/i,
-  ];
+function cleanBoschDescription(value = '') {
+  let text = normalizeSpaces(value);
 
-  const useful = [];
+  text = text.replace(/\bRICAMBIO\b/gi, '');
+  text = text.replace(/\bRICAMBI\b/gi, '');
+  text = text.replace(/\bSOLAR\b/gi, '');
+  text = text.replace(/\bOLD\s+[0-9A-Z-]+/gi, '');
+  text = text.replace(/\bold\s+[0-9A-Z-]+/g, '');
+  text = text.replace(/\bD\.d\.T\..*$/gi, '');
+  text = text.replace(/\bVs\. ordine.*$/gi, '');
+  text = text.replace(/\bCessione Norm\..*$/gi, '');
+  text = text.replace(/\bAddebito Trasporto.*$/gi, '');
+  text = text.replace(/\bContributo Ambientale.*$/gi, '');
 
-  for (const rawLine of lines) {
-    const line = normalizeSpaces(rawLine);
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/^[-–—,\s]+/, '');
+  text = text.replace(/[-–—,\s]+$/, '');
 
-    if (!line) continue;
-    if (/^\d+[.,]\d+$/.test(line)) continue;
-    if (/^\d{10,}$/.test(line)) continue;
-    if (blacklist.some((regex) => regex.test(line))) continue;
-
-    useful.push(line);
-  }
-
-  return normalizeSpaces(useful.join(' '));
+  return text.trim();
 }
 
-function extractPlainTextFromPdfParserResult(data = {}) {
-  const parts = [];
+function isBoschCode(value = '') {
+  return /^\d(?:-\d+){2,}(?:-\d+)?$/.test(String(value || '').trim());
+}
 
-  if (typeof data === 'string') {
-    parts.push(data);
-  }
+function isNoiseLine(line = '') {
+  const text = normalizeSpaces(line);
 
-  if (typeof data?.text === 'string') {
-    parts.push(data.text);
-  }
+  if (!text) return true;
 
-  if (typeof data?.rawText === 'string') {
-    parts.push(data.rawText);
-  }
+  return (
+    /^Pos\s+Cod\./i.test(text) ||
+    /^Descrizione\s+in\s+EUR/i.test(text) ||
+    /^Cod\.EAN/i.test(text) ||
+    /^Partita IVA/i.test(text) ||
+    /^D\.d\.T\./i.test(text) ||
+    /^Vs\. ordine/i.test(text) ||
+    /^del\s+\d{2}\.\d{2}\.\d{4}/i.test(text) ||
+    /^Cessione Norm\./i.test(text) ||
+    /^ROBERT BOSCH/i.test(text) ||
+    /^Robert Bosch/i.test(text) ||
+    /^Capitale sottoscritto/i.test(text) ||
+    /^C\.C\.I\.A\.A\./i.test(text) ||
+    /^Bollo assolto/i.test(text) ||
+    /^Pile\s+/i.test(text) ||
+    /^BOSCH e il simbolo/i.test(text) ||
+    /^Dati da indicare/i.test(text) ||
+    /^Dest\./i.test(text) ||
+    /^Fattura$/i.test(text) ||
+    /^Ns\. codice/i.test(text) ||
+    /^presso ILN/i.test(text) ||
+    /^Pagina\s+\d+\s*\/\s*\d+/i.test(text) ||
+    /^Via M\.A\. Colonna/i.test(text) ||
+    /^CL THERMOSERVICE/i.test(text) ||
+    /^VIA TOMMASO/i.test(text) ||
+    /^IT-\d+/i.test(text) ||
+    /^Cod\.Cliente/i.test(text) ||
+    /^11311532/i.test(text) ||
+    /^IVA\s+IV\s+Descrizione/i.test(text) ||
+    /^22\.00%/i.test(text) ||
+    /^0\.00%/i.test(text) ||
+    /^Ricevuta/i.test(text) ||
+    /^\(c\)=/i.test(text) ||
+    /^Il documento non firmato/i.test(text) ||
+    /^Per eventuali bonifici/i.test(text) ||
+    /^UniCredit/i.test(text) ||
+    /^IBAN/i.test(text) ||
+    /^SWIFT/i.test(text) ||
+    /^INDICARE SEMPRE/i.test(text) ||
+    /^IL RITARDATO/i.test(text) ||
+    /^DI INTERESSI/i.test(text) ||
+    /^Informazioni sulle Sostanze/i.test(text) ||
+    /^regolamento REACH/i.test(text) ||
+    /^www\./i.test(text)
+  );
+}
 
-  if (typeof data?.content === 'string') {
-    parts.push(data.content);
+function extractTextFromParserResult(data = {}) {
+  if (typeof data === 'string') return data;
+
+  const possibleKeys = [
+    'text',
+    'fullText',
+    'rawText',
+    'content',
+    'plainText',
+    'extractedText',
+  ];
+
+  for (const key of possibleKeys) {
+    if (typeof data?.[key] === 'string' && data[key].trim()) {
+      return data[key];
+    }
   }
 
   if (Array.isArray(data?.pages)) {
-    data.pages.forEach((page) => {
-      if (typeof page === 'string') {
-        parts.push(page);
-      } else if (typeof page?.text === 'string') {
-        parts.push(page.text);
-      } else if (typeof page?.content === 'string') {
-        parts.push(page.content);
-      }
-    });
+    return data.pages
+      .map((page) => {
+        if (typeof page === 'string') return page;
+        return page?.text || page?.content || page?.rawText || '';
+      })
+      .filter(Boolean)
+      .join('\n');
   }
 
-  if (Array.isArray(data?.lines)) {
-    parts.push(data.lines.join('\n'));
-  }
-
-  if (Array.isArray(data?.rows)) {
-    data.rows.forEach((row) => {
-      if (Array.isArray(row)) {
-        parts.push(row.join(' '));
-      } else if (typeof row === 'string') {
-        parts.push(row);
-      } else if (row && typeof row === 'object') {
-        parts.push(Object.values(row).join(' '));
-      }
-    });
-  }
-
-  if (Array.isArray(data?.matrix)) {
-    data.matrix.forEach((row) => {
-      if (Array.isArray(row)) {
-        parts.push(row.join(' '));
-      }
-    });
-  }
-
-  return parts.join('\n').trim();
+  return '';
 }
 
-function parseBoschInvoiceText(text = '') {
-  const rawLines = String(text || '')
+function parseBoschInvoiceTextToRows(text = '') {
+  const lines = String(text || '')
     .split(/\r?\n/)
     .map((line) => normalizeSpaces(line))
     .filter(Boolean);
-
-  if (!rawLines.length) return [];
 
   const header = [
     'Codice',
@@ -197,70 +183,67 @@ function parseBoschInvoiceText(text = '') {
 
   const rows = [];
 
-  /*
-    Formato Bosch tipico:
-    0010 8-718-641-615-0 1 56,45 -30,00%(c) -5,00%(d) 37,53 H6
-    MASCHERINA
-    RICAMBIO
+  const itemRegex =
+    /^(\d{4})\s+(\d(?:-\d+){2,}(?:-\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s+[-–]?\d+(?:[.,]\d+)?%\([a-z]\))*\s+(\d+(?:[.,]\d+)?)\s+([A-Z0-9]{1,3})\b/i;
 
-    Gruppi:
-    posizione, codice, quantità, prezzo unitario, eventuali sconti, importo netto, iva
-  */
-  const articleRegex =
-    /^(\d{4})\s+([A-Z0-9][A-Z0-9-]{4,})\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s+.*?)*\s+(\d+(?:[.,]\d+)?)\s+[A-Z]{1,3}\d?$/i;
-
-  for (let i = 0; i < rawLines.length; i++) {
-    const line = rawLines[i];
-    const match = line.match(articleRegex);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const match = line.match(itemRegex);
 
     if (!match) continue;
 
-    const position = match[1];
     const code = match[2];
     const quantity = parseItalianNumber(match[3]);
-    const unitPrice = parseItalianNumber(match[4]);
+    const price = parseItalianNumber(match[4]);
 
-    if (!code || quantity <= 0) continue;
+    if (!isBoschCode(code) || quantity <= 0) continue;
 
-    const descriptionLines = [];
+    const descriptionParts = [];
 
-    for (let j = i + 1; j < rawLines.length; j++) {
-      const nextLine = rawLines[j];
+    for (let j = i + 1; j < lines.length; j++) {
+      const nextLine = lines[j];
 
-      if (articleRegex.test(nextLine)) break;
+      if (itemRegex.test(nextLine)) break;
+      if (/^\d{4}\s+\d(?:-\d+){2,}/.test(nextLine)) break;
 
-      if (/^\d{4}\s+/.test(nextLine)) break;
-      if (/^d\.d\.t\./i.test(nextLine)) break;
-      if (/^vs\.\s*ordine/i.test(nextLine)) break;
-      if (/^cessione/i.test(nextLine)) break;
-      if (/^addebito trasporto/i.test(nextLine)) break;
-      if (/^contributo ambientale/i.test(nextLine)) break;
-      if (/^robert bosch/i.test(nextLine)) break;
-      if (/^capitale/i.test(nextLine)) break;
-      if (/^pagina\s+\d+/i.test(nextLine)) break;
-      if (/^fattura$/i.test(nextLine)) break;
-      if (/^cod\.cliente/i.test(nextLine)) break;
-      if (/^iva\s+/i.test(nextLine)) break;
-      if (/^\d+[.,]\d+$/.test(nextLine)) break;
+      if (isNoiseLine(nextLine)) {
+        if (descriptionParts.length > 0) break;
+        continue;
+      }
 
-      descriptionLines.push(nextLine);
+      if (/^\d{1,3}(?:\.\d{3})*,\d{2}$/.test(nextLine)) {
+        if (descriptionParts.length > 0) break;
+        continue;
+      }
 
-      if (descriptionLines.length >= 5) break;
+      if (/^(RICAMBIO|RICAMBI|SOLAR)$/i.test(nextLine)) {
+        continue;
+      }
+
+      if (/^OLD\s+/i.test(nextLine) || /^old\s+/.test(nextLine)) {
+        continue;
+      }
+
+      const cleaned = cleanBoschDescription(nextLine);
+
+      if (cleaned) {
+        descriptionParts.push(cleaned);
+      }
+
+      if (descriptionParts.length >= 3) break;
     }
 
-    const description = cleanBoschDescription(descriptionLines);
-
-    if (!description) continue;
+    const description = cleanBoschDescription(descriptionParts.join(' '));
 
     rows.push([
       code,
-      description,
+      description || code,
       quantity,
       'PZ',
-      unitPrice,
+      price,
       'Bosch',
       '',
-      position,
+      '',
     ]);
   }
 
@@ -269,14 +252,67 @@ function parseBoschInvoiceText(text = '') {
   return [header, ...rows];
 }
 
-function parseBoschInvoiceFromMatrix(matrix = []) {
-  if (!Array.isArray(matrix) || !matrix.length) return [];
+function parserObjectRowToMatrixRow(row = {}) {
+  return [
+    normalizeCell(row.code || row.codice || ''),
+    normalizeCell(row.description || row.name || row.nome || row.descrizione || ''),
+    normalizeCell(row.quantity ?? row.qty ?? row.quantita ?? row.quantità ?? ''),
+    normalizeCell(row.unit || row.um || row.unita || row.unitaMisura || 'PZ'),
+    normalizeCell(row.price ?? row.netPrice ?? row.prezzoNetto ?? row.prezzo ?? ''),
+    normalizeCell(row.brand || row.marca || ''),
+    normalizeCell(row.category || row.categoria || ''),
+    normalizeCell(row.position || row.posizione || ''),
+  ];
+}
 
-  const text = matrix
-    .map((row) => (Array.isArray(row) ? row.join(' ') : String(row || '')))
-    .join('\n');
+function normalizeTextParserRows(data) {
+  if (Array.isArray(data)) {
+    return data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
 
-  return parseBoschInvoiceText(text);
+  if (Array.isArray(data?.matrix) && data.matrix.length > 0) {
+    return data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  if (Array.isArray(data?.rows) && data.rows.length > 0) {
+    const firstRow = data.rows[0];
+
+    if (Array.isArray(firstRow)) {
+      return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+    }
+
+    if (typeof firstRow === 'object' && firstRow !== null) {
+      const header = [
+        'Codice',
+        'Descrizione',
+        'Quantità',
+        'UM',
+        'Prezzo Netto',
+        'Marca',
+        'Categoria',
+        'Posizione',
+      ];
+
+      const rows = data.rows
+        .map(parserObjectRowToMatrixRow)
+        .filter(hasEnoughUsefulCells);
+
+      return [header, ...rows];
+    }
+  }
+
+  if (Array.isArray(data?.data)) {
+    return data.data.map(cleanRow).filter(hasEnoughUsefulCells);
+  }
+
+  const extractedText = extractTextFromParserResult(data);
+
+  if (extractedText) {
+    const boschRows = parseBoschInvoiceTextToRows(extractedText);
+    if (boschRows.length > 0) return boschRows;
+  }
+
+  return [];
 }
 
 async function parseExcelFile(file) {
@@ -426,84 +462,6 @@ async function callPdfTextParser(file) {
   }
 
   return parsed || {};
-}
-
-function parserObjectRowToMatrixRow(row = {}) {
-  return [
-    normalizeCell(row.code || ''),
-    normalizeCell(row.description || row.name || row.nome || ''),
-    normalizeCell(row.quantity ?? row.qty ?? row.quantita ?? ''),
-    normalizeCell(row.unit || row.um || 'ST'),
-    normalizeCell(row.price ?? row.netPrice ?? row.prezzoNetto ?? row.prezzo ?? ''),
-    normalizeCell(row.brand || row.marca || ''),
-    normalizeCell(row.category || row.categoria || ''),
-    normalizeCell(row.position || row.posizione || ''),
-  ];
-}
-
-function normalizeTextParserRows(data) {
-  if (Array.isArray(data)) {
-    return data.map(cleanRow).filter(hasEnoughUsefulCells);
-  }
-
-  if (Array.isArray(data?.matrix) && data.matrix.length > 0) {
-    const cleanedMatrix = data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
-
-    const boschRows = parseBoschInvoiceFromMatrix(cleanedMatrix);
-    if (boschRows.length > 0) return boschRows;
-
-    return cleanedMatrix;
-  }
-
-  if (Array.isArray(data?.rows) && data.rows.length > 0) {
-    const firstRow = data.rows[0];
-
-    if (Array.isArray(firstRow)) {
-      const cleanedRows = data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
-
-      const boschRows = parseBoschInvoiceFromMatrix(cleanedRows);
-      if (boschRows.length > 0) return boschRows;
-
-      return cleanedRows;
-    }
-
-    if (typeof firstRow === 'object' && firstRow !== null) {
-      const header = [
-        'Codice',
-        'Descrizione',
-        'Quantità',
-        'UM',
-        'Prezzo Netto',
-        'Marca',
-        'Categoria',
-        'Posizione',
-      ];
-
-      const rows = data.rows
-        .map(parserObjectRowToMatrixRow)
-        .filter(hasEnoughUsefulCells);
-
-      return [header, ...rows];
-    }
-  }
-
-  if (Array.isArray(data?.data)) {
-    const cleanedData = data.data.map(cleanRow).filter(hasEnoughUsefulCells);
-
-    const boschRows = parseBoschInvoiceFromMatrix(cleanedData);
-    if (boschRows.length > 0) return boschRows;
-
-    return cleanedData;
-  }
-
-  const plainText = extractPlainTextFromPdfParserResult(data);
-  const boschRows = parseBoschInvoiceText(plainText);
-
-  if (boschRows.length > 0) {
-    return boschRows;
-  }
-
-  return [];
 }
 
 export async function parseFile(file) {
