@@ -1,5 +1,8 @@
 import { supabase } from '../supabaseClient';
 
+const DEFAULT_LIMIT_BYTES = 500 * 1024 * 1024;
+const KNOWN_BUCKETS = ['fatture'];
+
 export function formatBytes(bytes = 0) {
   const value = Number(bytes || 0);
 
@@ -10,25 +13,102 @@ export function formatBytes(bytes = 0) {
   return `${(value / 1024 / 1024 / 1024).toFixed(2)} GB`;
 }
 
-export function calcPercent(usedBytes = 0, limitBytes = 500 * 1024 * 1024) {
+export function calcPercent(usedBytes = 0, limitBytes = DEFAULT_LIMIT_BYTES) {
   const used = Number(usedBytes || 0);
   const limit = Number(limitBytes || 1);
 
   return Math.min(100, Math.round((used / limit) * 100));
 }
 
+function toNumber(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
 function normalizeBucketRow(bucket = {}) {
   return {
-    bucketId: bucket.bucketId || bucket.name || bucket.id || 'bucket',
-    files: Number(bucket.files || 0),
-    bytes: Number(bucket.bytes || 0),
+    bucketId:
+      bucket.bucketId ||
+      bucket.bucket_id ||
+      bucket.name ||
+      bucket.id ||
+      'bucket',
+    files: toNumber(bucket.files || bucket.fileCount || bucket.file_count),
+    bytes: toNumber(bucket.bytes || bucket.size || bucket.totalBytes || bucket.total_bytes),
+    error: bucket.error || '',
   };
+}
+
+function normalizeTableRow(table = {}) {
+  return {
+    tableName:
+      table.tableName ||
+      table.table_name ||
+      table.name ||
+      'tabella',
+    bytes: toNumber(table.bytes || table.size || table.totalBytes || table.total_bytes),
+  };
+}
+
+function normalizeRpcUsage(data) {
+  const raw = Array.isArray(data) ? data[0] : data;
+
+  if (!raw || typeof raw !== 'object') return null;
+
+  const databaseBytes = toNumber(
+    raw.databaseBytes ||
+      raw.database_bytes ||
+      raw.dbBytes ||
+      raw.db_bytes
+  );
+
+  const storageBytes = toNumber(
+    raw.storageBytes ||
+      raw.storage_bytes
+  );
+
+  const totalBytes = toNumber(
+    raw.totalBytes ||
+      raw.total_bytes ||
+      databaseBytes + storageBytes
+  );
+
+  const tables = Array.isArray(raw.tables)
+    ? raw.tables.map(normalizeTableRow)
+    : [];
+
+  const buckets = Array.isArray(raw.buckets)
+    ? raw.buckets.map(normalizeBucketRow)
+    : [];
+
+  return {
+    databaseBytes,
+    storageBytes,
+    totalBytes,
+    tables,
+    buckets,
+    updatedAt:
+      raw.updatedAt ||
+      raw.updated_at ||
+      raw.generatedAt ||
+      raw.generated_at ||
+      null,
+  };
+}
+
+function isFolderItem(item = {}) {
+  const hasMetadataSize = item?.metadata && item.metadata.size !== undefined;
+  const hasFileId = Boolean(item?.id);
+
+  if (hasMetadataSize || hasFileId) return false;
+
+  return true;
 }
 
 async function listBucketFilesRecursive(bucketName, path = '') {
   const output = [];
-  let offset = 0;
   const limit = 100;
+  let offset = 0;
 
   while (true) {
     const { data, error } = await supabase.storage
@@ -49,24 +129,20 @@ async function listBucketFilesRecursive(bucketName, path = '') {
     const items = Array.isArray(data) ? data : [];
 
     for (const item of items) {
+      if (!item?.name) continue;
+
       const itemPath = path ? `${path}/${item.name}` : item.name;
 
-      const isFolder =
-        !item.id &&
-        !item.metadata &&
-        !item.updated_at &&
-        !item.created_at;
-
-      if (isFolder) {
-        const nestedFiles = await listBucketFilesRecursive(bucketName, itemPath);
-        output.push(...nestedFiles);
+      if (isFolderItem(item)) {
+        const nested = await listBucketFilesRecursive(bucketName, itemPath);
+        output.push(...nested);
       } else {
         output.push({
           name: item.name,
           path: itemPath,
-          size: Number(item.metadata?.size || 0),
-          updatedAt: item.updated_at || null,
-          createdAt: item.created_at || null,
+          size: toNumber(item.metadata?.size),
+          updatedAt: item.updated_at || item.updatedAt || null,
+          createdAt: item.created_at || item.createdAt || null,
         });
       }
     }
@@ -79,41 +155,64 @@ async function listBucketFilesRecursive(bucketName, path = '') {
   return output;
 }
 
-async function getStorageUsageDirectly() {
-  const { data: buckets, error } = await supabase.storage.listBuckets();
+async function getAvailableBuckets() {
+  try {
+    const { data, error } = await supabase.storage.listBuckets();
 
-  if (error) {
-    throw error;
+    if (error) throw error;
+
+    const names = (Array.isArray(data) ? data : [])
+      .map((bucket) => bucket?.name || bucket?.id)
+      .filter(Boolean);
+
+    const merged = [...new Set([...names, ...KNOWN_BUCKETS])];
+
+    return merged;
+  } catch (err) {
+    console.warn('Lista bucket non leggibile, uso bucket noti:', err);
+    return [...KNOWN_BUCKETS];
   }
+}
 
+async function getStorageUsageDirectly() {
+  const bucketNames = await getAvailableBuckets();
   const bucketRows = [];
 
-  for (const bucket of buckets || []) {
+  for (const bucketName of bucketNames) {
     try {
-      const files = await listBucketFilesRecursive(bucket.name);
-      const bytes = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
+      const files = await listBucketFilesRecursive(bucketName);
+      const bytes = files.reduce((sum, file) => sum + toNumber(file.size), 0);
 
       bucketRows.push({
-        bucketId: bucket.name,
+        bucketId: bucketName,
         files: files.length,
         bytes,
+        error: '',
       });
-    } catch (bucketError) {
-      console.warn(`Impossibile leggere il bucket ${bucket.name}:`, bucketError);
+    } catch (err) {
+      console.warn(`Impossibile leggere il bucket ${bucketName}:`, err);
 
       bucketRows.push({
-        bucketId: bucket.name,
+        bucketId: bucketName,
         files: 0,
         bytes: 0,
-        error: bucketError.message || 'Errore lettura bucket',
+        error: err?.message || 'Errore lettura bucket',
       });
     }
   }
 
   return {
     buckets: bucketRows,
-    storageBytes: bucketRows.reduce((sum, bucket) => sum + Number(bucket.bytes || 0), 0),
+    storageBytes: bucketRows.reduce((sum, bucket) => sum + toNumber(bucket.bytes), 0),
   };
+}
+
+async function getRpcUsage() {
+  const { data, error } = await supabase.rpc('get_supabase_usage_monitor');
+
+  if (error) throw error;
+
+  return normalizeRpcUsage(data);
 }
 
 export async function getSupabaseUsageMonitor() {
@@ -121,20 +220,7 @@ export async function getSupabaseUsageMonitor() {
   let rpcError = null;
 
   try {
-    const { data, error } = await supabase.rpc('get_supabase_usage_monitor');
-
-    if (error) {
-      throw error;
-    }
-
-    rpcUsage = {
-      databaseBytes: Number(data?.databaseBytes || 0),
-      storageBytes: Number(data?.storageBytes || 0),
-      totalBytes: Number(data?.totalBytes || 0),
-      tables: Array.isArray(data?.tables) ? data.tables : [],
-      buckets: Array.isArray(data?.buckets) ? data.buckets.map(normalizeBucketRow) : [],
-      updatedAt: data?.updatedAt || null,
-    };
+    rpcUsage = await getRpcUsage();
   } catch (err) {
     console.warn('Funzione SQL memoria Supabase non disponibile o non aggiornata:', err);
     rpcError = err;
@@ -158,21 +244,22 @@ export async function getSupabaseUsageMonitor() {
     );
   }
 
-  const databaseBytes = Number(rpcUsage?.databaseBytes || 0);
+  const databaseBytes = toNumber(rpcUsage?.databaseBytes);
 
-  const storageBytes =
-    directStorage
-      ? Number(directStorage.storageBytes || 0)
-      : Number(rpcUsage?.storageBytes || 0);
+  const storageBytes = directStorage
+    ? toNumber(directStorage.storageBytes)
+    : toNumber(rpcUsage?.storageBytes);
 
   const buckets =
-    directStorage?.buckets?.length
-      ? directStorage.buckets
+    directStorage?.buckets?.length > 0
+      ? directStorage.buckets.map(normalizeBucketRow)
       : Array.isArray(rpcUsage?.buckets)
-        ? rpcUsage.buckets
+        ? rpcUsage.buckets.map(normalizeBucketRow)
         : [];
 
-  const tables = Array.isArray(rpcUsage?.tables) ? rpcUsage.tables : [];
+  const tables = Array.isArray(rpcUsage?.tables)
+    ? rpcUsage.tables.map(normalizeTableRow)
+    : [];
 
   return {
     databaseBytes,
@@ -183,3 +270,9 @@ export async function getSupabaseUsageMonitor() {
     updatedAt: new Date().toISOString(),
   };
 }
+
+export default {
+  formatBytes,
+  calcPercent,
+  getSupabaseUsageMonitor,
+};
