@@ -144,7 +144,7 @@ export default function Dashboard() {
       console.error('Errore memoria Supabase:', err);
       setSupabaseUsageError(
         err.message ||
-          'Non riesco a leggere la memoria Supabase. Verifica che la funzione SQL sia stata creata.'
+          'Non riesco a leggere la memoria Supabase. Verifica i permessi Storage o la funzione SQL.'
       );
     } finally {
       setSupabaseUsageLoading(false);
@@ -207,7 +207,7 @@ export default function Dashboard() {
 
     loadSupabaseUsage();
 
-    const interval = setInterval(loadSupabaseUsage, 30000);
+    const interval = setInterval(loadSupabaseUsage, 10000);
 
     return () => {
       clearInterval(interval);
@@ -221,12 +221,24 @@ export default function Dashboard() {
       loadSupabaseUsage();
     };
 
+    const refreshOnVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadSupabaseUsage();
+      }
+    };
+
     window.addEventListener('wm_supabase_usage_refresh', refreshUsage);
     window.addEventListener('storage', refreshUsage);
+    window.addEventListener('focus', refreshUsage);
+    window.addEventListener('pageshow', refreshUsage);
+    document.addEventListener('visibilitychange', refreshOnVisibility);
 
     return () => {
       window.removeEventListener('wm_supabase_usage_refresh', refreshUsage);
       window.removeEventListener('storage', refreshUsage);
+      window.removeEventListener('focus', refreshUsage);
+      window.removeEventListener('pageshow', refreshUsage);
+      document.removeEventListener('visibilitychange', refreshOnVisibility);
     };
   }, [datoreView, loadSupabaseUsage]);
 
