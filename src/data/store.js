@@ -955,7 +955,27 @@ export const invoiceImportStore = {
     return data.map(mapImportedInvoice.toModel);
   },
 
+  async getById(id) {
+    if (!id) {
+      throw new Error('ID fattura mancante.');
+    }
+
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    return mapImportedInvoice.toModel(data);
+  },
+
   async getSignedUrl(filePath, expiresIn = 60 * 10) {
+    if (!filePath) {
+      throw new Error('Percorso file mancante.');
+    }
+
     const { data, error } = await supabase.storage
       .from(this.bucketName)
       .createSignedUrl(filePath, expiresIn);
@@ -963,6 +983,43 @@ export const invoiceImportStore = {
     if (error) throw error;
 
     return data?.signedUrl || '';
+  },
+
+  async deleteWithFile(id) {
+    if (!id) {
+      throw new Error('ID fattura mancante.');
+    }
+
+    const invoice = await this.getById(id);
+
+    const fileErrors = [];
+    let fileDeleted = false;
+
+    if (invoice.filePath) {
+      const { data, error } = await supabase.storage
+        .from(invoice.bucket || this.bucketName)
+        .remove([invoice.filePath]);
+
+      if (error) {
+        fileErrors.push(error.message);
+      } else {
+        fileDeleted = Array.isArray(data) ? data.length > 0 : true;
+      }
+    }
+
+    const { error: deleteRecordError } = await supabase
+      .from('fatture_importate')
+      .delete()
+      .eq('id', id);
+
+    if (deleteRecordError) throw deleteRecordError;
+
+    return {
+      invoiceDeleted: true,
+      fileDeleted,
+      fileErrors,
+      invoice,
+    };
   },
 
   async deleteAllWithFiles() {
