@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { userStore } from './data/store';
 import { INITIAL_UNITS } from './data/initialData';
+import { hasPermission, getDefaultRouteForUser } from './data/permissions';
 
 // Pagine - Login e Generale
 import Login from './pages/Login';
@@ -32,36 +33,11 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-const ROLE_ALIASES = {
-  datore: ['datore', 'admin'],
-  segretaria: ['segretaria', 'segreteria'],
-  magazziniere: ['magazziniere', 'operatore'],
-  operaio: ['operaio'],
-};
-
-function hasRole(user, allowedRoles = []) {
-  const userRole = String(user?.role || '').trim().toLowerCase();
-  if (!userRole) return false;
-
-  return allowedRoles.some((role) => {
-    const accepted = (ROLE_ALIASES[role] || [role]).map((r) =>
-      String(r).trim().toLowerCase()
-    );
-
-    return accepted.includes(userRole);
-  });
-}
-
-function getDefaultRoute(user) {
-  if (hasRole(user, ['datore'])) return '/';
-  return '/inventario';
-}
-
-function ProtectedRoute({ user, allowedRoles, children }) {
+function ProtectedRoute({ user, permission, children }) {
   if (!user) return <Navigate to="/" replace />;
 
-  if (!hasRole(user, allowedRoles)) {
-    return <Navigate to={getDefaultRoute(user)} replace />;
+  if (!hasPermission(user, permission)) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
   return children;
@@ -70,13 +46,17 @@ function ProtectedRoute({ user, allowedRoles, children }) {
 function ProtectedMovementRoute({ user }) {
   const { tipo } = useParams();
 
-  const allowedRoles =
-    tipo === 'rettifica'
-      ? ['datore']
-      : ['datore', 'segretaria', 'magazziniere'];
+  const permissionByTipo = {
+    entrata: 'canMoveIn',
+    uscita: 'canMoveOut',
+    reintegro: 'canReintegrate',
+    rettifica: 'canRectify',
+  };
 
-  if (!hasRole(user, allowedRoles)) {
-    return <Navigate to={getDefaultRoute(user)} replace />;
+  const requiredPermission = permissionByTipo[tipo] || 'canMoveIn';
+
+  if (!hasPermission(user, requiredPermission)) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
   return <MovimentiForm />;
@@ -104,6 +84,13 @@ function App() {
     setCurrentUser(user);
   };
 
+  const refreshCurrentUser = (updatedUser) => {
+    if (!updatedUser) return;
+
+    setCurrentUser(updatedUser);
+    userStore.setCurrentUser(updatedUser);
+  };
+
   const logout = () => {
     userStore.logout();
     setCurrentUser(null);
@@ -112,7 +99,14 @@ function App() {
   if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ user: currentUser, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user: currentUser,
+        login,
+        logout,
+        refreshCurrentUser,
+      }}
+    >
       <BrowserRouter>
         {!currentUser ? (
           <Routes>
@@ -124,7 +118,7 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -133,10 +127,7 @@ function App() {
               <Route
                 path="/inventario"
                 element={
-                  <ProtectedRoute
-                    user={currentUser}
-                    allowedRoles={['datore', 'segretaria', 'magazziniere', 'operaio']}
-                  >
+                  <ProtectedRoute user={currentUser} permission="canViewInventory">
                     <Inventario />
                   </ProtectedRoute>
                 }
@@ -150,7 +141,7 @@ function App() {
               <Route
                 path="/storico"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canViewHistory">
                     <StoricoMovimenti />
                   </ProtectedRoute>
                 }
@@ -159,10 +150,7 @@ function App() {
               <Route
                 path="/importa"
                 element={
-                  <ProtectedRoute
-                    user={currentUser}
-                    allowedRoles={['datore', 'segretaria', 'magazziniere']}
-                  >
+                  <ProtectedRoute user={currentUser} permission="canImportInvoices">
                     <ImportaFatture />
                   </ProtectedRoute>
                 }
@@ -171,7 +159,7 @@ function App() {
               <Route
                 path="/gestione/categorie"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria']}>
+                  <ProtectedRoute user={currentUser} permission="canManageCategories">
                     <GestioneCategorie />
                   </ProtectedRoute>
                 }
@@ -180,7 +168,7 @@ function App() {
               <Route
                 path="/gestione/materiali"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
                     <GestioneMateriali />
                   </ProtectedRoute>
                 }
@@ -189,7 +177,7 @@ function App() {
               <Route
                 path="/gestione/utenti"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canManageUsers">
                     <GestioneUtenti />
                   </ProtectedRoute>
                 }
@@ -198,7 +186,7 @@ function App() {
               <Route
                 path="/gestione/log"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canViewAuditLog">
                     <LogModifiche />
                   </ProtectedRoute>
                 }
@@ -207,7 +195,7 @@ function App() {
               <Route
                 path="/controllo"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -216,7 +204,7 @@ function App() {
               <Route
                 path="/controllo/soglie"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria']}>
+                  <ProtectedRoute user={currentUser} permission="canManageThresholds">
                     <Soglie />
                   </ProtectedRoute>
                 }
@@ -225,16 +213,16 @@ function App() {
               <Route
                 path="/controllo/notifiche"
                 element={
-                  <ProtectedRoute
-                    user={currentUser}
-                    allowedRoles={['datore', 'segretaria', 'magazziniere']}
-                  >
+                  <ProtectedRoute user={currentUser} permission="canViewNotifications">
                     <Notifiche />
                   </ProtectedRoute>
                 }
               />
 
-              <Route path="*" element={<Navigate to={getDefaultRoute(currentUser)} replace />} />
+              <Route
+                path="*"
+                element={<Navigate to={getDefaultRouteForUser(currentUser)} replace />}
+              />
             </Routes>
           </Layout>
         )}

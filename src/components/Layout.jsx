@@ -1,35 +1,20 @@
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { notificationStore } from '../data/store';
+import {
+  hasPermission,
+  getDefaultRouteForUser,
+  normalizeRole,
+} from '../data/permissions';
 import { useState, useEffect } from 'react';
 
-const ROLE_ALIASES = {
-  datore: ['datore', 'admin'],
-  segretaria: ['segretaria', 'segreteria'],
-  magazziniere: ['magazziniere', 'operatore'],
-  operaio: ['operaio'],
-};
-
-function hasRole(user, allowedRoles = []) {
-  const userRole = String(user?.role || '').trim().toLowerCase();
-  if (!userRole) return false;
-
-  return allowedRoles.some((role) => {
-    const accepted = (ROLE_ALIASES[role] || [role]).map((r) =>
-      String(r).trim().toLowerCase()
-    );
-
-    return accepted.includes(userRole);
-  });
-}
-
 function getRoleLabel(role) {
-  const normalized = String(role || '').trim().toLowerCase();
+  const normalized = normalizeRole(role);
 
-  if (ROLE_ALIASES.datore.includes(normalized)) return 'Datore';
-  if (ROLE_ALIASES.segretaria.includes(normalized)) return 'Segretaria';
-  if (ROLE_ALIASES.magazziniere.includes(normalized)) return 'Magazziniere';
-  if (ROLE_ALIASES.operaio.includes(normalized)) return 'Operaio';
+  if (normalized === 'datore') return 'Datore';
+  if (normalized === 'segretaria') return 'Segretaria';
+  if (normalized === 'magazziniere') return 'Magazziniere';
+  if (normalized === 'operaio') return 'Operaio';
 
   return role || 'Utente';
 }
@@ -42,31 +27,37 @@ const NAV_SECTIONS = [
         path: '/inventario',
         label: 'Giacenza',
         icon: '📦',
-        roles: ['datore', 'segretaria', 'magazziniere', 'operaio'],
+        permission: 'canViewInventory',
       },
       {
         path: '/movimento/entrata',
         label: 'Carico Materiale',
         icon: '📥',
-        roles: ['datore', 'segretaria', 'magazziniere'],
+        permission: 'canMoveIn',
       },
       {
         path: '/movimento/uscita',
         label: 'Scarica Materiale',
         icon: '📤',
-        roles: ['datore', 'segretaria', 'magazziniere'],
+        permission: 'canMoveOut',
+      },
+      {
+        path: '/movimento/reintegro',
+        label: 'Reintegra Materiale',
+        icon: '🔄',
+        permission: 'canReintegrate',
       },
       {
         path: '/movimento/rettifica',
         label: 'Rettifica Manuale',
         icon: '✏️',
-        roles: ['datore'],
+        permission: 'canRectify',
       },
       {
         path: '/storico',
         label: 'Storico Movimenti',
         icon: '📅',
-        roles: ['datore'],
+        permission: 'canViewHistory',
       },
     ],
   },
@@ -77,19 +68,19 @@ const NAV_SECTIONS = [
         path: '/importa',
         label: 'Importa / Inserisci',
         icon: '📄',
-        roles: ['datore', 'segretaria', 'magazziniere'],
+        permission: 'canImportInvoices',
       },
       {
         path: '/gestione/categorie',
         label: 'Categorie',
         icon: '🏷️',
-        roles: ['datore', 'segretaria'],
+        permission: 'canManageCategories',
       },
       {
         path: '/controllo/soglie',
         label: 'Soglie Scorta',
         icon: '⚙️',
-        roles: ['datore', 'segretaria'],
+        permission: 'canManageThresholds',
       },
     ],
   },
@@ -100,7 +91,7 @@ const NAV_SECTIONS = [
         path: '/controllo/notifiche',
         label: 'Notifiche',
         icon: '🔔',
-        roles: ['datore', 'segretaria', 'magazziniere'],
+        permission: 'canViewNotifications',
         badge: true,
       },
     ],
@@ -112,25 +103,25 @@ const NAV_SECTIONS = [
         path: '/',
         label: 'Dashboard',
         icon: '📊',
-        roles: ['datore'],
+        permission: 'canViewDashboard',
       },
       {
         path: '/gestione/materiali',
         label: 'Anagrafica Materiali',
         icon: '🛠️',
-        roles: ['datore'],
+        permission: 'canManageMaterials',
       },
       {
         path: '/gestione/utenti',
         label: 'Utenti',
         icon: '👤',
-        roles: ['datore'],
+        permission: 'canManageUsers',
       },
       {
         path: '/gestione/log',
         label: 'Audit Log',
         icon: '📜',
-        roles: ['datore'],
+        permission: 'canViewAuditLog',
       },
     ],
   },
@@ -194,9 +185,9 @@ export default function Layout({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [globalSearch, setGlobalSearch] = useState('');
 
-  useEffect(() => {
-    const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
+  const canSeeNotifications = hasPermission(user, 'canViewNotifications');
 
+  useEffect(() => {
     if (!canSeeNotifications) {
       setUnreadCount(0);
       return undefined;
@@ -207,6 +198,7 @@ export default function Layout({ children }) {
     const updateNotifs = async () => {
       try {
         const unread = await notificationStore.getUnread();
+
         if (mounted) {
           setUnreadCount(Array.isArray(unread) ? unread.length : 0);
         }
@@ -223,7 +215,7 @@ export default function Layout({ children }) {
       mounted = false;
       clearInterval(interval);
     };
-  }, [user]);
+  }, [canSeeNotifications]);
 
   const section = getSection(location.pathname);
   const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
@@ -245,10 +237,11 @@ export default function Layout({ children }) {
     .toUpperCase()
     .slice(0, 2);
 
-  const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
-
   const visibleSections = NAV_SECTIONS.map((navSection) => {
-    const visibleItems = navSection.items.filter((item) => hasRole(user, item.roles));
+    const visibleItems = navSection.items.filter((item) =>
+      hasPermission(user, item.permission)
+    );
+
     return { ...navSection, items: visibleItems };
   }).filter((navSection) => navSection.items.length > 0);
 
@@ -267,7 +260,7 @@ export default function Layout({ children }) {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <Link to={hasRole(user, ['datore']) ? '/' : '/inventario'} className="sidebar-logo">
+          <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
             <div className="sidebar-logo-icon">M</div>
             <div className="sidebar-logo-text">
               <h1>MagazzinoPro</h1>
@@ -329,24 +322,30 @@ export default function Layout({ children }) {
           </div>
 
           <div className="header-right">
-            <div className="global-search-container">
-              <span className="global-search-icon">🔍</span>
-              <input
-                type="text"
-                className="global-search-input"
-                placeholder="Cerca codice materiale..."
-                value={globalSearch}
-                onChange={(e) => setGlobalSearch(e.target.value)}
-                onKeyDown={handleGlobalSearchKeyDown}
-              />
-            </div>
+            {hasPermission(user, 'canViewInventory') && (
+              <div className="global-search-container">
+                <span className="global-search-icon">🔍</span>
+                <input
+                  type="text"
+                  className="global-search-input"
+                  placeholder="Cerca codice materiale..."
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  onKeyDown={handleGlobalSearchKeyDown}
+                />
+              </div>
+            )}
 
             <span className="header-date" style={{ textTransform: 'capitalize' }}>
               {today}
             </span>
 
             {canSeeNotifications && (
-              <Link to="/controllo/notifiche" className="header-notification-btn" title="Notifiche">
+              <Link
+                to="/controllo/notifiche"
+                className="header-notification-btn"
+                title="Notifiche"
+              >
                 🔔
                 {unreadCount > 0 && (
                   <span className="header-notification-badge">{unreadCount}</span>
