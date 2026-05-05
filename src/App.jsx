@@ -14,6 +14,7 @@ import Inventario from './pages/principale/Inventario';
 import MovimentiForm from './pages/principale/MovimentiForm';
 import StoricoMovimenti from './pages/principale/StoricoMovimenti';
 import ImportaFatture from './pages/principale/ImportaFatture';
+import ArchivioFatture from './pages/principale/ArchivioFatture';
 
 // Pagine - Gestione
 import GestioneCategorie from './pages/gestione/GestioneCategorie';
@@ -152,6 +153,15 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canImportInvoices">
                     <ImportaFatture />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/fatture"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canImportInvoices">
+                    <ArchivioFatture />
                   </ProtectedRoute>
                 }
               />

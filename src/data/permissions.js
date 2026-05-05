@@ -55,8 +55,8 @@ export const PERMISSIONS = [
   },
   {
     key: 'canImportInvoices',
-    label: 'Importa fatture / inserimento manuale',
-    description: 'Può importare fatture o inserire componenti manualmente',
+    label: 'Importa fatture / archivio fatture',
+    description: 'Può importare fatture, inserire componenti manualmente e vedere l’archivio dei documenti caricati',
     group: 'Fatture',
   },
   {
@@ -211,6 +211,7 @@ export function getEffectivePermissions(user) {
       canRectify: true,
       canViewHistory: true,
       canExportMovements: true,
+      canImportInvoices: true,
     };
   }
 

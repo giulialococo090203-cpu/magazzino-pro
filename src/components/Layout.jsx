@@ -71,6 +71,12 @@ const NAV_SECTIONS = [
         permission: 'canImportInvoices',
       },
       {
+        path: '/fatture',
+        label: 'Archivio Fatture',
+        icon: '🗂️',
+        permission: 'canImportInvoices',
+      },
+      {
         path: '/gestione/categorie',
         label: 'Categorie',
         icon: '🏷️',
@@ -136,6 +142,7 @@ const PAGE_TITLES = {
   '/movimento/rettifica': 'Rettifica Magazzino',
   '/storico': 'Storico Movimenti',
   '/importa': 'Importa / Inserisci',
+  '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/utenti': 'Gestione Utenti',
@@ -152,6 +159,7 @@ const SECTION_NAMES = {
   '/movimento': 'Magazzino',
   '/storico': 'Magazzino',
   '/importa': 'Fatture',
+  '/fatture': 'Fatture',
   '/gestione': 'Configurazione',
   '/controllo': 'Controllo Datore',
   '/': 'Generale',
