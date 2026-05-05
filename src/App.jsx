@@ -41,10 +41,14 @@ const ROLE_ALIASES = {
 };
 
 function hasRole(user, allowedRoles = []) {
-  if (!user?.role) return false;
+  const userRole = String(user?.role || '').trim().toLowerCase();
+  if (!userRole) return false;
+
   return allowedRoles.some((role) => {
-    const accepted = ROLE_ALIASES[role] || [role];
-    return accepted.includes(user.role);
+    const accepted = (ROLE_ALIASES[role] || [role]).map((r) =>
+      String(r).trim().toLowerCase()
+    );
+    return accepted.includes(userRole);
   });
 }
 

@@ -3,52 +3,80 @@ import { useAuth } from '../App';
 import { notificationStore } from '../data/store';
 import { useState, useEffect } from 'react';
 
+const ROLE_ALIASES = {
+  datore: ['datore', 'admin'],
+  segretaria: ['segretaria', 'segreteria'],
+  magazziniere: ['magazziniere', 'operatore'],
+  operaio: ['operaio'],
+};
+
+function hasRole(user, allowedRoles = []) {
+  const userRole = String(user?.role || '').trim().toLowerCase();
+  if (!userRole) return false;
+
+  return allowedRoles.some((role) => {
+    const accepted = (ROLE_ALIASES[role] || [role]).map((r) =>
+      String(r).trim().toLowerCase()
+    );
+    return accepted.includes(userRole);
+  });
+}
+
+function getRoleLabel(role) {
+  const normalized = String(role || '').trim().toLowerCase();
+  if (ROLE_ALIASES.datore.includes(normalized)) return 'Datore';
+  if (ROLE_ALIASES.segretaria.includes(normalized)) return 'Segretaria';
+  if (ROLE_ALIASES.magazziniere.includes(normalized)) return 'Magazziniere';
+  if (ROLE_ALIASES.operaio.includes(normalized)) return 'Operaio';
+  return role || 'Utente';
+}
+
 const NAV_SECTIONS = [
   {
-    title: 'Monitoraggio',
+    title: 'Magazzino',
     items: [
-      { path: '/', label: 'Punto di Controllo', icon: '📊', roles: ['admin', 'operatore', 'segreteria', 'controllo'] },
-      { path: '/controllo/notifiche', label: 'Notifiche', icon: '🔔', roles: ['admin', 'controllo'], badge: true },
+      { path: '/inventario', label: 'Giacenza', icon: '📦', roles: ['datore', 'segretaria', 'magazziniere', 'operaio'] },
+      { path: '/movimento/entrata', label: 'Carico (In)', icon: '📥', roles: ['datore', 'segretaria', 'magazziniere'] },
+      { path: '/movimento/uscita', label: 'Scarica (Out)', icon: '📤', roles: ['datore', 'segretaria', 'magazziniere'] },
+      { path: '/movimento/rettifica', label: 'Rettifica Manuale', icon: '✏️', roles: ['datore'] },
+      { path: '/storico', label: 'Storico Movimenti', icon: '📅', roles: ['datore'] },
     ]
   },
   {
-    title: 'Operatività Magazzino',
+    title: 'Fatture e Configurazione',
     items: [
-      { path: '/inventario', label: 'Inventario Reale', icon: '📦', roles: ['admin', 'operatore', 'segreteria', 'controllo'] },
-      { path: '/movimento/entrata', label: 'Carico (In)', icon: '📥', roles: ['admin', 'operatore', 'segreteria'] },
-      { path: '/movimento/uscita', label: 'Scarica (Out)', icon: '📤', roles: ['admin', 'operatore', 'segreteria'] },
-      { path: '/storico', label: 'Storico Movimenti', icon: '📅', roles: ['admin', 'operatore', 'segreteria', 'controllo'] },
+      { path: '/importa', label: 'Importa Fatture', icon: '📄', roles: ['datore', 'segretaria'] },
+      { path: '/gestione/categorie', label: 'Categorie', icon: '🏷️', roles: ['datore', 'segretaria'] },
+      { path: '/controllo/soglie', label: 'Soglie Scorta', icon: '⚙️', roles: ['datore', 'segretaria'] },
     ]
   },
   {
-    title: 'Strumenti & Analisi',
+    title: 'Notifiche',
     items: [
-      { path: '/importa', label: 'Importa da Documenti', icon: '📄', roles: ['admin', 'segreteria'] },
-      { path: '/controllo', label: 'Analisi Dati', icon: '📈', roles: ['admin', 'controllo'] },
-      { path: '/movimento/rettifica', label: 'Rettifica Manuale', icon: '✏️', roles: ['admin', 'operatore'] },
+      { path: '/controllo/notifiche', label: 'Notifiche', icon: '🔔', roles: ['datore', 'segretaria', 'magazziniere'], badge: true },
     ]
   },
   {
-    title: 'Configurazione Sistema',
+    title: 'Controllo Datore',
     items: [
-      { path: '/gestione/materiali', label: 'Anagrafica Materiali', icon: '🛠️', roles: ['admin'] },
-      { path: '/gestione/categorie', label: 'Categorie', icon: '🏷️', roles: ['admin'] },
-      { path: '/controllo/soglie', label: 'Soglie Scorta', icon: '⚙️', roles: ['admin', 'controllo'] },
-      { path: '/gestione/utenti', label: 'Utenti', icon: '👤', roles: ['admin'] },
-      { path: '/gestione/log', label: 'Audit Log', icon: '📜', roles: ['admin'] },
+      { path: '/', label: 'Punto di Controllo', icon: '📊', roles: ['datore'] },
+      { path: '/controllo', label: 'Analisi Dati', icon: '📈', roles: ['datore'] },
+      { path: '/gestione/materiali', label: 'Anagrafica Materiali', icon: '🛠️', roles: ['datore'] },
+      { path: '/gestione/utenti', label: 'Utenti', icon: '👤', roles: ['datore'] },
+      { path: '/gestione/log', label: 'Audit Log', icon: '📜', roles: ['datore'] },
     ]
   },
 ];
 
 const PAGE_TITLES = {
   '/': 'Punto di Controllo',
-  '/inventario': 'Inventario Reale',
+  '/inventario': 'Giacenza',
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
   '/movimento/reintegro': 'Reintegra Materiale',
   '/movimento/rettifica': 'Rettifica Manuale',
   '/storico': 'Storico Movimenti',
-  '/importa': 'Importa da Documenti',
+  '/importa': 'Importa Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/utenti': 'Gestione Utenti',
@@ -59,18 +87,20 @@ const PAGE_TITLES = {
 };
 
 const SECTION_NAMES = {
-  '/': 'Monitoraggio',
-  '/inventario': 'Operatività',
-  '/movimento': 'Operatività',
-  '/storico': 'Operatività',
-  '/importa': 'Strumenti',
-  '/controllo': 'Analisi',
+  '/controllo/notifiche': 'Notifiche',
+  '/inventario': 'Magazzino',
+  '/movimento': 'Magazzino',
+  '/storico': 'Magazzino',
+  '/importa': 'Fatture',
+  '/controllo': 'Controllo',
   '/gestione': 'Configurazione',
+  '/': 'Controllo',
 };
 
 function getSection(pathname) {
-  for (const [prefix, name] of Object.entries(SECTION_NAMES)) {
-    if (pathname.startsWith(prefix) && prefix !== '/') return name;
+  const orderedPrefixes = Object.keys(SECTION_NAMES).sort((a, b) => b.length - a.length);
+  for (const prefix of orderedPrefixes) {
+    if (pathname.startsWith(prefix)) return SECTION_NAMES[prefix];
   }
   return 'Generale';
 }
@@ -83,11 +113,31 @@ export default function Layout({ children }) {
   const [globalSearch, setGlobalSearch] = useState('');
 
   useEffect(() => {
-    const updateNotifs = () => setUnreadCount(notificationStore.getUnread().length);
+    const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
+    if (!canSeeNotifications) {
+      setUnreadCount(0);
+      return;
+    }
+
+    let mounted = true;
+
+    const updateNotifs = async () => {
+      try {
+        const unread = await notificationStore.getUnread();
+        if (mounted) setUnreadCount(unread.length);
+      } catch (err) {
+        console.error('Errore caricamento notifiche:', err);
+      }
+    };
+
     updateNotifs();
-    const interval = setInterval(updateNotifs, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = setInterval(updateNotifs, 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const section = getSection(location.pathname);
   const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
@@ -108,6 +158,8 @@ export default function Layout({ children }) {
     .toUpperCase()
     .slice(0, 2);
 
+  const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
+
   return (
     <div className="app-layout">
       <aside className="sidebar">
@@ -122,9 +174,7 @@ export default function Layout({ children }) {
         </div>
 
         {NAV_SECTIONS.map((section) => {
-          const visibleItems = section.items.filter((item) =>
-            item.roles.includes(user.role)
-          );
+          const visibleItems = section.items.filter((item) => hasRole(user, item.roles));
           if (visibleItems.length === 0) return null;
 
           return (
@@ -153,8 +203,8 @@ export default function Layout({ children }) {
           <div className="sidebar-user-info">
             <div className="sidebar-avatar">{initials}</div>
             <div className="sidebar-user-details">
-              <div className="sidebar-user-name">{user.fullName}</div>
-              <div className="sidebar-user-role">{user.role}</div>
+              <div className="sidebar-user-name">{displayName}</div>
+              <div className="sidebar-user-role">{getRoleLabel(user?.role)}</div>
             </div>
             <button className="sidebar-logout" onClick={logout} title="Esci">
               ⏻
@@ -195,12 +245,14 @@ export default function Layout({ children }) {
               {today}
             </span>
 
-            <Link to="/controllo/notifiche" className="header-notification-btn">
-              🔔
-              {unreadCount > 0 && (
-                <span className="header-notification-badge">{unreadCount}</span>
-              )}
-            </Link>
+            {canSeeNotifications && (
+              <Link to="/controllo/notifiche" className="header-notification-btn">
+                🔔
+                {unreadCount > 0 && (
+                  <span className="header-notification-badge">{unreadCount}</span>
+                )}
+              </Link>
+            )}
           </div>
         </header>
 

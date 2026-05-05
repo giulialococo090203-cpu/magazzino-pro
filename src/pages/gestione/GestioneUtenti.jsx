@@ -9,13 +9,15 @@ const USER_ROLES = [
   { value: 'datore', label: 'Datore', description: 'Accesso completo a controllo, utenti, log e configurazioni' },
 ];
 
-const EMPTY_FORM = { username: '', password: '', fullName: '', email: '', role: 'operaio' };
+const EMPTY_FORM = { username: '', password: '', fullName: '', email: '', role: 'operaio', active: true };
 
 function normalizeEditableRole(role) {
-  if (role === 'admin') return 'datore';
-  if (role === 'segreteria') return 'segretaria';
-  if (role === 'operatore') return 'magazziniere';
-  return role;
+  const normalized = String(role || '').trim().toLowerCase();
+  if (normalized === 'admin') return 'datore';
+  if (normalized === 'segreteria') return 'segretaria';
+  if (normalized === 'operatore') return 'magazziniere';
+  if (normalized === 'controllo') return 'datore';
+  return normalized;
 }
 
 function getRoleVisuals(role) {
@@ -88,11 +90,12 @@ export default function GestioneUtenti() {
   const openEdit = (u) => {
     setEditItem(u);
     setForm({
-      username: u.username,
+      username: u.username || '',
       password: '',
-      fullName: u.fullName,
+      fullName: u.fullName || '',
       email: u.email || '',
       role: normalizeEditableRole(u.role),
+      active: u.active ?? true,
     });
     setError('');
     setShowModal(true);
@@ -112,14 +115,15 @@ export default function GestioneUtenti() {
     try {
       if (editItem) {
         const updates = {
-          username: form.username,
-          fullName: form.fullName,
-          email: form.email,
+          username: form.username.trim(),
+          fullName: form.fullName.trim(),
+          email: form.email?.trim() || null,
           role: form.role,
+          active: form.active,
         };
 
         if (form.password.trim()) {
-          updates.password = form.password;
+          updates.password = form.password.trim();
         }
 
         await userStore.update(editItem.id, updates);
@@ -132,7 +136,15 @@ export default function GestioneUtenti() {
           userName: currentUser.fullName,
         });
       } else {
-        await userStore.create(form);
+        await userStore.create({
+          username: form.username.trim(),
+          password: form.password.trim(),
+          fullName: form.fullName.trim(),
+          email: form.email?.trim() || null,
+          role: form.role,
+          active: true,
+        });
+
         await adminLogStore.create({
           action: 'Nuovo utente',
           entity: 'utente',
@@ -145,7 +157,8 @@ export default function GestioneUtenti() {
       await refresh();
       setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      console.error('Errore salvataggio utente:', err);
+      setError(err.message || 'Errore durante il salvataggio utente');
     }
   };
 
@@ -169,6 +182,7 @@ export default function GestioneUtenti() {
       await refresh();
     } catch (err) {
       console.error('Errore eliminazione utente:', err);
+      setError(err.message || 'Errore durante l’eliminazione utente');
     }
   };
 
@@ -188,6 +202,7 @@ export default function GestioneUtenti() {
       await refresh();
     } catch (err) {
       console.error('Errore toggle stato utente:', err);
+      setError(err.message || 'Errore durante cambio stato utente');
     }
   };
 
@@ -228,6 +243,12 @@ export default function GestioneUtenti() {
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="login-error" style={{ marginBottom: 16 }}>
+          {error}
+        </div>
+      )}
 
       <div className="table-container">
         <table className="data-table">
