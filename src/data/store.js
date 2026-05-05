@@ -59,6 +59,16 @@ function buildInvoiceStoragePath(fileName = '') {
   return `fatture/${year}/${month}/${timestamp}-${safeName}`;
 }
 
+function chunkArray(array = [], size = 100) {
+  const chunks = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+
+  return chunks;
+}
+
 // --- Field Mappings DB Snake Case <-> App Camel Case ---
 
 const mapCategory = {
@@ -567,6 +577,15 @@ export const movementStore = {
     return result;
   },
 
+  async deleteAll() {
+    const { error } = await supabase
+      .from('movimenti')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (error) throw error;
+  },
+
   async getMostMoved(limit = 10) {
     const all = await this.getAll();
     const counts = {};
@@ -944,6 +963,45 @@ export const invoiceImportStore = {
     if (error) throw error;
 
     return data?.signedUrl || '';
+  },
+
+  async deleteAllWithFiles() {
+    const invoices = await this.getAll();
+
+    const filePaths = invoices
+      .map((invoice) => invoice.filePath)
+      .filter(Boolean);
+
+    const uniqueFilePaths = [...new Set(filePaths)];
+
+    let deletedFiles = 0;
+    const fileErrors = [];
+
+    for (const chunk of chunkArray(uniqueFilePaths, 100)) {
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .remove(chunk);
+
+      if (error) {
+        fileErrors.push(error.message);
+      } else {
+        deletedFiles += Array.isArray(data) ? data.length : chunk.length;
+      }
+    }
+
+    const { error: deleteRecordsError } = await supabase
+      .from('fatture_importate')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (deleteRecordsError) throw deleteRecordsError;
+
+    return {
+      invoicesDeleted: invoices.length,
+      filesRequested: uniqueFilePaths.length,
+      filesDeleted: deletedFiles,
+      fileErrors,
+    };
   },
 };
 

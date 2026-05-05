@@ -1,8 +1,15 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { movementStore, categoryStore, materialStore, userStore } from '../../data/store';
+import {
+  movementStore,
+  categoryStore,
+  materialStore,
+  userStore,
+  invoiceImportStore,
+  adminLogStore,
+} from '../../data/store';
 import { MOVEMENT_TYPES, MOVEMENT_REASONS } from '../../data/initialData';
 import { useAuth } from '../../App';
-import { hasPermission } from '../../data/permissions';
+import { hasPermission, normalizeRole } from '../../data/permissions';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -101,53 +108,60 @@ export default function StoricoMovimenti() {
   const clientWrapRef = useRef(null);
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
 
+  const [confirmEmptyHistory, setConfirmEmptyHistory] = useState(false);
+  const [emptyingHistory, setEmptyingHistory] = useState(false);
+  const [emptyHistoryError, setEmptyHistoryError] = useState('');
+  const [emptyHistoryResult, setEmptyHistoryResult] = useState(null);
+
   const canExportMovements = hasPermission(user, 'canExportMovements');
+  const isDatore = ['datore', 'admin'].includes(normalizeRole(user?.role));
+  const canEmptyHistory = isDatore || hasPermission(user, 'canViewAuditLog');
+
+  const loadStatic = async () => {
+    try {
+      const [cats, mats, usrs] = await Promise.all([
+        categoryStore.getAll(),
+        materialStore.getAll(),
+        userStore.getAll(),
+      ]);
+
+      setCategories(cats);
+      setMaterials(mats);
+      setUsers(usrs);
+    } catch (err) {
+      console.error('Errore caricamento dati statici:', err);
+    }
+  };
+
+  const loadFiltered = async () => {
+    try {
+      const filtered = await movementStore.getFiltered({
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        userId: filterUser || undefined,
+        categoryId: filterCategory || undefined,
+        materialId: filterMaterial || undefined,
+        type: filterType || undefined,
+      });
+
+      const clientFiltered = filterClient
+        ? filtered.filter((m) =>
+            String(m.clientName || '').toLowerCase().includes(filterClient.toLowerCase())
+          )
+        : filtered;
+
+      setMovements(clientFiltered);
+      setPage(1);
+    } catch (err) {
+      console.error('Errore caricamento movimenti:', err);
+    }
+  };
 
   useEffect(() => {
-    async function loadStatic() {
-      try {
-        const [cats, mats, usrs] = await Promise.all([
-          categoryStore.getAll(),
-          materialStore.getAll(),
-          userStore.getAll(),
-        ]);
-
-        setCategories(cats);
-        setMaterials(mats);
-        setUsers(usrs);
-      } catch (err) {
-        console.error('Errore caricamento dati statici:', err);
-      }
-    }
-
     loadStatic();
   }, []);
 
   useEffect(() => {
-    async function loadFiltered() {
-      try {
-        const filtered = await movementStore.getFiltered({
-          dateFrom: dateFrom || undefined,
-          dateTo: dateTo || undefined,
-          userId: filterUser || undefined,
-          categoryId: filterCategory || undefined,
-          materialId: filterMaterial || undefined,
-          type: filterType || undefined,
-        });
-
-        const clientFiltered = filterClient
-          ? filtered.filter((m) =>
-              String(m.clientName || '').toLowerCase().includes(filterClient.toLowerCase())
-            )
-          : filtered;
-
-        setMovements(clientFiltered);
-        setPage(1);
-      } catch (err) {
-        console.error('Errore caricamento movimenti:', err);
-      }
-    }
-
     loadFiltered();
   }, [dateFrom, dateTo, filterUser, filterCategory, filterMaterial, filterType, filterClient]);
 
@@ -195,6 +209,47 @@ export default function StoricoMovimenti() {
     setFilterMaterial('');
     setFilterType('');
     setFilterClient('');
+  };
+
+  const handleEmptyHistory = async () => {
+    if (!canEmptyHistory) return;
+
+    setEmptyingHistory(true);
+    setEmptyHistoryError('');
+    setEmptyHistoryResult(null);
+
+    try {
+      const currentMovementCount = movements.length;
+
+      const invoiceCleanup = await invoiceImportStore.deleteAllWithFiles();
+      await movementStore.deleteAll();
+
+      await adminLogStore.create({
+        userId: user?.id,
+        userName: user?.fullName || user?.username || '',
+        entity: 'storico',
+        action: 'Svuotamento storico',
+        details:
+          `Storico movimenti svuotato. ` +
+          `Movimenti visibili al momento: ${currentMovementCount}. ` +
+          `Fatture eliminate: ${invoiceCleanup.invoicesDeleted}. ` +
+          `File richiesti in eliminazione: ${invoiceCleanup.filesRequested}. ` +
+          `File eliminati: ${invoiceCleanup.filesDeleted}.`,
+      });
+
+      setMovements([]);
+      setPage(1);
+      setConfirmEmptyHistory(false);
+      setEmptyHistoryResult(invoiceCleanup);
+
+      await loadStatic();
+      await loadFiltered();
+    } catch (err) {
+      console.error('Errore svuotamento storico:', err);
+      setEmptyHistoryError(err.message || 'Errore durante lo svuotamento dello storico.');
+    } finally {
+      setEmptyingHistory(false);
+    }
   };
 
   const exportExcel = () => {
@@ -355,20 +410,60 @@ export default function StoricoMovimenti() {
           <p className="page-subtitle">{movements.length} movimenti trovati</p>
         </div>
 
-        {canExportMovements && (
-          <div className="btn-group">
-            <button className="btn btn-secondary" onClick={exportExcel} disabled={movements.length === 0}>
-              📊 Excel
+        <div className="btn-group">
+          {canExportMovements && (
+            <>
+              <button className="btn btn-secondary" onClick={exportExcel} disabled={movements.length === 0}>
+                📊 Excel
+              </button>
+              <button className="btn btn-secondary" onClick={exportCSV} disabled={movements.length === 0}>
+                🧾 CSV
+              </button>
+              <button className="btn btn-secondary" onClick={exportPDF} disabled={movements.length === 0}>
+                📄 PDF
+              </button>
+            </>
+          )}
+
+          {canEmptyHistory && (
+            <button
+              className="btn btn-danger"
+              onClick={() => setConfirmEmptyHistory(true)}
+              disabled={emptyingHistory}
+            >
+              🗑️ Svuota storico
             </button>
-            <button className="btn btn-secondary" onClick={exportCSV} disabled={movements.length === 0}>
-              🧾 CSV
-            </button>
-            <button className="btn btn-secondary" onClick={exportPDF} disabled={movements.length === 0}>
-              📄 PDF
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {emptyHistoryError && (
+        <div className="login-error" style={{ marginBottom: 16 }}>
+          {emptyHistoryError}
+        </div>
+      )}
+
+      {emptyHistoryResult && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 16,
+            border: '1px solid var(--success-100)',
+            background: 'var(--success-50)',
+          }}
+        >
+          <div className="card-body" style={{ padding: 14 }}>
+            <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
+              ✅ Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}. File eliminati: {emptyHistoryResult.filesDeleted}.
+            </div>
+            {emptyHistoryResult.fileErrors?.length > 0 && (
+              <div className="text-xs text-warning" style={{ marginTop: 6 }}>
+                Alcuni file non sono stati eliminati dallo Storage: {emptyHistoryResult.fileErrors.join(' · ')}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
@@ -623,6 +718,57 @@ export default function StoricoMovimenti() {
             >
               →
             </button>
+          </div>
+        </div>
+      )}
+
+      {confirmEmptyHistory && (
+        <div className="modal-overlay confirm-dialog" onClick={() => !emptyingHistory && setConfirmEmptyHistory(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Svuotare lo storico?</h3>
+              <button
+                className="modal-close"
+                onClick={() => setConfirmEmptyHistory(false)}
+                disabled={emptyingHistory}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ textAlign: 'center' }}>
+              <div className="confirm-icon danger">🗑️</div>
+              <p className="confirm-message">
+                Questa operazione eliminerà <strong>tutti i movimenti</strong>, i record delle
+                <strong> fatture importate</strong> e i <strong>file originali</strong> salvati nel bucket Supabase <strong>fatture</strong>.
+                <br />
+                L’operazione non può essere annullata.
+              </p>
+
+              {emptyHistoryError && (
+                <div className="login-error" style={{ marginTop: 16 }}>
+                  {emptyHistoryError}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setConfirmEmptyHistory(false)}
+                disabled={emptyingHistory}
+              >
+                Annulla
+              </button>
+
+              <button
+                className="btn btn-danger"
+                onClick={handleEmptyHistory}
+                disabled={emptyingHistory}
+              >
+                {emptyingHistory ? 'Svuotamento...' : 'Svuota tutto'}
+              </button>
+            </div>
           </div>
         </div>
       )}
