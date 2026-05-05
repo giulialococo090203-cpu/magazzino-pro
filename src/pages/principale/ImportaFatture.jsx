@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
+import {
+  materialStore,
+  categoryStore,
+  movementStore,
+  adminLogStore,
+  invoiceImportStore,
+} from '../../data/store';
 import { useAuth } from '../../App';
 import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
 import { parseFile } from '../../utils/importer/OmniParser';
@@ -151,6 +157,9 @@ export default function ImportaFatture() {
   const [scanMessage, setScanMessage] = useState('');
   const [scanRows, setScanRows] = useState([createEmptyRow()]);
 
+  const [invoiceRecord, setInvoiceRecord] = useState(null);
+  const [storageWarning, setStorageWarning] = useState('');
+
   const canUseImport = canImportInvoices(user?.role);
 
   useEffect(() => {
@@ -158,6 +167,7 @@ export default function ImportaFatture() {
       try {
         const cats = await categoryStore.getAll();
         const materials = await materialStore.getAll();
+
         setCategories(Array.isArray(cats) ? cats : []);
         setAllMaterials(Array.isArray(materials) ? materials : []);
       } catch (err) {
@@ -191,6 +201,8 @@ export default function ImportaFatture() {
     setScanDetected(false);
     setScanMessage('');
     setScanRows([createEmptyRow()]);
+    setInvoiceRecord(null);
+    setStorageWarning('');
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -215,6 +227,8 @@ export default function ImportaFatture() {
     setScanDetected(true);
     setScanMessage('Inserisci manualmente uno o più componenti da caricare in magazzino.');
     setScanRows([createEmptyRow()]);
+    setInvoiceRecord(null);
+    setStorageWarning('');
   };
 
   const validateFileBeforeImport = (file) => {
@@ -368,7 +382,32 @@ export default function ImportaFatture() {
     );
   };
 
-  const buildParsedItemsFromPdfRows = async (rows, currentFileName = fileName) => {
+  const markInvoiceAsAnalyzedSafe = async (invoice, count) => {
+    if (!invoice?.id) return;
+
+    try {
+      const updated = await invoiceImportStore.markAnalyzed(invoice.id, count);
+      setInvoiceRecord(updated);
+    } catch (err) {
+      console.warn('Impossibile aggiornare stato fattura ad analizzata:', err);
+      setStorageWarning(
+        'Il file è stato salvato, ma non sono riuscito ad aggiornare lo stato dell’archivio fatture.'
+      );
+    }
+  };
+
+  const markInvoiceAsErrorSafe = async (invoice, errorMessage) => {
+    if (!invoice?.id) return;
+
+    try {
+      const updated = await invoiceImportStore.markError(invoice.id, errorMessage);
+      setInvoiceRecord(updated);
+    } catch (err) {
+      console.warn('Impossibile aggiornare stato fattura ad errore:', err);
+    }
+  };
+
+  const buildParsedItemsFromPdfRows = async (rows, currentFileName = fileName, invoice = invoiceRecord) => {
     const trainingData = await materialStore.getAll();
 
     const processed = rows
@@ -461,9 +500,11 @@ export default function ImportaFatture() {
     setScanDetected(false);
     setScanMessage('');
     setStep(2);
+
+    await markInvoiceAsAnalyzedSafe(invoice, processed.length);
   };
 
-  const processItems = async (rows, mapping, currentFileName = fileName) => {
+  const processItems = async (rows, mapping, currentFileName = fileName, invoice = invoiceRecord) => {
     const processed = [];
     const trainingData = await materialStore.getAll();
 
@@ -579,6 +620,8 @@ export default function ImportaFatture() {
     setScanDetected(false);
     setScanMessage('');
     setStep(2);
+
+    await markInvoiceAsAnalyzedSafe(invoice, processed.length);
   };
 
   const continueFromScanFallback = async () => {
@@ -611,7 +654,24 @@ export default function ImportaFatture() {
     setRawWorkbookData(matrix);
     setScanDetected(false);
     setScanMessage('');
-    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName || 'Inserimento manuale');
+
+    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName || 'Inserimento manuale', invoiceRecord);
+  };
+
+  const uploadInvoiceFileSafe = async (file) => {
+    try {
+      const uploaded = await invoiceImportStore.uploadOriginalFile(file, user);
+      setInvoiceRecord(uploaded);
+      setStorageWarning('');
+      return uploaded;
+    } catch (err) {
+      console.warn('Salvataggio file originale non riuscito:', err);
+      setInvoiceRecord(null);
+      setStorageWarning(
+        'Il file non è stato salvato nell’archivio Supabase Storage, ma puoi continuare comunque con l’importazione.'
+      );
+      return null;
+    }
   };
 
   const handleFileUpload = async (e) => {
@@ -633,9 +693,16 @@ export default function ImportaFatture() {
     setScanMessage('');
     setScanRows([createEmptyRow()]);
     setFileName(file.name);
+    setInvoiceRecord(null);
+    setStorageWarning('');
+
+    let uploadedInvoice = null;
 
     try {
       validateFileBeforeImport(file);
+
+      uploadedInvoice = await uploadInvoiceFileSafe(file);
+
       setStep(2);
 
       const parsed = await parseFile(file);
@@ -659,14 +726,14 @@ export default function ImportaFatture() {
       const extension = getFileExtension(file.name);
 
       if (extension === 'pdf') {
-        await buildParsedItemsFromPdfRows(data.slice(1), file.name);
+        await buildParsedItemsFromPdfRows(data.slice(1), file.name, uploadedInvoice);
         return;
       }
 
       const analysis = findBestMapping(data);
 
       if (analysis && analysis.confidence > 0.6) {
-        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, file.name);
+        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, file.name, uploadedInvoice);
       } else {
         setStep(3);
       }
@@ -674,6 +741,7 @@ export default function ImportaFatture() {
       console.error('OmniParser Error:', err);
       setImportError(err.message || 'Errore durante la lettura del file.');
       setAssistantAdvice(buildImportAssistantMessage(err, file));
+      await markInvoiceAsErrorSafe(uploadedInvoice, err.message || 'Errore durante la lettura del file.');
       setStep(1);
     }
   };
@@ -691,8 +759,15 @@ export default function ImportaFatture() {
     setScanRows([createEmptyRow()]);
     setFileName(lastFile.name);
 
+    let activeInvoice = invoiceRecord;
+
     try {
       validateFileBeforeImport(lastFile);
+
+      if (!activeInvoice?.id) {
+        activeInvoice = await uploadInvoiceFileSafe(lastFile);
+      }
+
       setStep(2);
 
       const parsed = await parseFile(lastFile);
@@ -716,14 +791,14 @@ export default function ImportaFatture() {
       const extension = getFileExtension(lastFile.name);
 
       if (extension === 'pdf') {
-        await buildParsedItemsFromPdfRows(data.slice(1), lastFile.name);
+        await buildParsedItemsFromPdfRows(data.slice(1), lastFile.name, activeInvoice);
         return;
       }
 
       const analysis = findBestMapping(data);
 
       if (analysis && analysis.confidence > 0.6) {
-        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, lastFile.name);
+        await processItems(data.slice(analysis.headerRowIndex + 1), analysis.mapping, lastFile.name, activeInvoice);
       } else {
         setStep(3);
       }
@@ -731,6 +806,7 @@ export default function ImportaFatture() {
       console.error('Retry Import Error:', err);
       setImportError(err.message || 'Errore durante il nuovo tentativo.');
       setAssistantAdvice(buildImportAssistantMessage(err, lastFile));
+      await markInvoiceAsErrorSafe(activeInvoice, err.message || 'Errore durante il nuovo tentativo.');
       setStep(1);
     }
   };
@@ -832,6 +908,24 @@ export default function ImportaFatture() {
       });
     }
 
+    if (invoiceRecord?.id) {
+      try {
+        const updated = await invoiceImportStore.markCompleted(invoiceRecord.id, {
+          detectedItems: selectedItems.length,
+          createdItems: created,
+          updatedItems: loaded,
+          errors,
+        });
+
+        setInvoiceRecord(updated);
+      } catch (err) {
+        console.warn('Impossibile aggiornare stato finale fattura:', err);
+        setStorageWarning(
+          'Importazione completata, ma non sono riuscito ad aggiornare lo stato finale dell’archivio fatture.'
+        );
+      }
+    }
+
     setLoading(false);
     setStep(5);
   };
@@ -914,6 +1008,49 @@ export default function ImportaFatture() {
           <p className="page-subtitle">Carica materiali partendo da documenti di ordine o fatture</p>
         </div>
       </div>
+
+      {storageWarning && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 20,
+            border: '1px solid var(--warning-300)',
+            background: 'var(--warning-50)',
+          }}
+        >
+          <div className="card-body" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 22 }}>⚠️</div>
+              <div>
+                <div style={{ fontWeight: 800, marginBottom: 4 }}>Avviso archivio fatture</div>
+                <div className="text-sm" style={{ color: 'var(--gray-700)' }}>
+                  {storageWarning}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {invoiceRecord?.id && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 20,
+            border: '1px solid var(--success-100)',
+            background: 'var(--success-50)',
+          }}
+        >
+          <div className="card-body" style={{ padding: 14 }}>
+            <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
+              ✅ File originale salvato in Supabase Storage · Stato archivio: {invoiceRecord.status}
+            </div>
+            <div className="text-xs text-muted" style={{ marginTop: 4 }}>
+              {invoiceRecord.originalFileName || invoiceRecord.fileName}
+            </div>
+          </div>
+        </div>
+      )}
 
       {(assistantAdvice || importError) && !scanDetected && (
         <div
@@ -1029,7 +1166,7 @@ export default function ImportaFatture() {
                 border: '1px dashed var(--primary-300)',
                 borderRadius: 'var(--border-radius-lg)',
                 background: 'var(--primary-50)',
-                textAlign: 'center'
+                textAlign: 'center',
               }}
             >
               <div style={{ fontSize: 28, marginBottom: 8 }}>✍️</div>
@@ -1113,7 +1250,7 @@ export default function ImportaFatture() {
                           whiteSpace: 'nowrap',
                           maxWidth: 200,
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {String(cell || '')}
@@ -1134,7 +1271,7 @@ export default function ImportaFatture() {
                 memory[fingerprint] = manualMapping;
                 localStorage.setItem('import_mapping_memory', JSON.stringify(memory));
 
-                processItems(rawWorkbookData.slice(1), manualMapping, fileName);
+                processItems(rawWorkbookData.slice(1), manualMapping, fileName, invoiceRecord);
               }}
             >
               {manualMapping.code === -1 || manualMapping.quantity === -1
@@ -1207,7 +1344,7 @@ export default function ImportaFatture() {
                           ? '4px solid var(--primary-500)'
                           : item.isNew
                             ? '4px solid var(--warning-500)'
-                            : 'none'
+                            : 'none',
                     }}
                   >
                     <td>
@@ -1298,7 +1435,7 @@ export default function ImportaFatture() {
                           fontSize: 12,
                           border: item.category ? '1px solid var(--gray-300)' : '2px solid var(--warning-400)',
                           backgroundColor: 'white',
-                          minWidth: 150
+                          minWidth: 150,
                         }}
                       >
                         <option value="">Seleziona...</option>
@@ -1388,7 +1525,7 @@ export default function ImportaFatture() {
             <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16 }}>Importazione Completata</h2>
 
-            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
               <div
                 style={{
                   background: 'var(--success-50)',
@@ -1431,6 +1568,26 @@ export default function ImportaFatture() {
               )}
             </div>
 
+            {invoiceRecord?.id && (
+              <div
+                style={{
+                  background: 'var(--success-50)',
+                  borderRadius: 'var(--border-radius-md)',
+                  padding: 16,
+                  marginBottom: 20,
+                  textAlign: 'left',
+                }}
+              >
+                <div className="fw-semibold text-success mb-2">File originale archiviato</div>
+                <div className="text-sm text-muted">
+                  {invoiceRecord.originalFileName || invoiceRecord.fileName}
+                </div>
+                <div className="text-xs text-muted" style={{ marginTop: 4 }}>
+                  Stato archivio: {invoiceRecord.status}
+                </div>
+              </div>
+            )}
+
             {results.errors.length > 0 && (
               <div
                 style={{
@@ -1454,7 +1611,7 @@ export default function ImportaFatture() {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button className="btn btn-primary btn-lg" onClick={resetImportState}>
                 Importa un altro documento
               </button>

@@ -31,6 +31,34 @@ const normalizeRole = (role) => {
   return normalized;
 };
 
+function sanitizeStorageFileName(fileName = '') {
+  const parts = String(fileName || 'documento')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .split('.');
+
+  const extension = parts.length > 1 ? parts.pop().toLowerCase() : '';
+
+  const baseName = parts
+    .join('.')
+    .replace(/[^a-zA-Z0-9_-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .slice(0, 90);
+
+  return `${baseName || 'documento'}${extension ? `.${extension}` : ''}`;
+}
+
+function buildInvoiceStoragePath(fileName = '') {
+  const now = new Date();
+  const year = String(now.getFullYear());
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const timestamp = Date.now();
+  const safeName = sanitizeStorageFileName(fileName);
+
+  return `fatture/${year}/${month}/${timestamp}-${safeName}`;
+}
+
 // --- Field Mappings DB Snake Case <-> App Camel Case ---
 
 const mapCategory = {
@@ -195,6 +223,44 @@ const mapLog = {
     }),
 };
 
+const mapImportedInvoice = {
+  toModel: (row) => ({
+    id: row.id,
+    fileName: row.nome_file,
+    originalFileName: row.nome_file_originale,
+    filePath: row.percorso_file,
+    bucket: row.bucket || 'fatture',
+    fileSize: Number(row.dimensione_file || 0),
+    fileType: row.tipo_file || '',
+    userId: row.utente_id,
+    userName: row.utente_nome || '',
+    status: row.stato_importazione,
+    detectedItems: Number(row.numero_materiali_rilevati || 0),
+    createdItems: Number(row.numero_materiali_creati || 0),
+    updatedItems: Number(row.numero_materiali_aggiornati || 0),
+    errors: row.eventuali_errori || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }),
+
+  toRow: (model) =>
+    clean({
+      nome_file: model.fileName,
+      nome_file_originale: model.originalFileName,
+      percorso_file: model.filePath,
+      bucket: model.bucket || 'fatture',
+      dimensione_file: model.fileSize,
+      tipo_file: model.fileType,
+      utente_id: model.userId || null,
+      utente_nome: model.userName || null,
+      stato_importazione: model.status,
+      numero_materiali_rilevati: model.detectedItems,
+      numero_materiali_creati: model.createdItems,
+      numero_materiali_aggiornati: model.updatedItems,
+      eventuali_errori: model.errors,
+    }),
+};
+
 // ============================================================
 // STORES
 // ============================================================
@@ -267,6 +333,7 @@ export const unitStore = {
 export const materialStore = {
   getStatus(material) {
     if (Number(material.quantity || 0) <= 0) return 'esaurito';
+
     if (Number(material.quantity || 0) <= Number(material.minThreshold || 0)) {
       return 'sotto_soglia';
     }
@@ -769,6 +836,117 @@ export const adminLogStore = {
   },
 };
 
+export const invoiceImportStore = {
+  bucketName: 'fatture',
+
+  async uploadOriginalFile(file, user) {
+    if (!file) {
+      throw new Error('Nessun file da salvare.');
+    }
+
+    const filePath = buildInvoiceStoragePath(file.name);
+
+    const { error: uploadError } = await supabase.storage
+      .from(this.bucketName)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || undefined,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .insert(
+        mapImportedInvoice.toRow({
+          fileName: sanitizeStorageFileName(file.name),
+          originalFileName: file.name,
+          filePath,
+          bucket: this.bucketName,
+          fileSize: file.size || 0,
+          fileType: file.type || '',
+          userId: user?.id || null,
+          userName: user?.fullName || user?.username || '',
+          status: 'caricata',
+          detectedItems: 0,
+          createdItems: 0,
+          updatedItems: 0,
+          errors: null,
+        })
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return mapImportedInvoice.toModel(data);
+  },
+
+  async update(id, updates) {
+    if (!id) return null;
+
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .update(mapImportedInvoice.toRow(updates))
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return mapImportedInvoice.toModel(data);
+  },
+
+  async markAnalyzed(id, detectedItems = 0) {
+    return this.update(id, {
+      status: 'analizzata',
+      detectedItems,
+    });
+  },
+
+  async markCompleted(
+    id,
+    { detectedItems = 0, createdItems = 0, updatedItems = 0, errors = [] } = {}
+  ) {
+    return this.update(id, {
+      status: errors.length > 0 ? 'completata_con_errori' : 'completata',
+      detectedItems,
+      createdItems,
+      updatedItems,
+      errors: errors.length > 0 ? errors.join('\n') : null,
+    });
+  },
+
+  async markError(id, errorMessage) {
+    return this.update(id, {
+      status: 'errore',
+      errors: errorMessage || 'Errore sconosciuto',
+    });
+  },
+
+  async getAll() {
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(mapImportedInvoice.toModel);
+  },
+
+  async getSignedUrl(filePath, expiresIn = 60 * 10) {
+    const { data, error } = await supabase.storage
+      .from(this.bucketName)
+      .createSignedUrl(filePath, expiresIn);
+
+    if (error) throw error;
+
+    return data?.signedUrl || '';
+  },
+};
+
 export const statsStore = {
   async getDashboardStats() {
     const materials = await materialStore.getAll();
@@ -778,6 +956,7 @@ export const statsStore = {
     const allMovements = await movementStore.getAll();
 
     const today = new Date().toISOString().substring(0, 10);
+
     const todayMovements = allMovements.filter(
       (m) => String(m.date || '').substring(0, 10) === today
     ).length;
