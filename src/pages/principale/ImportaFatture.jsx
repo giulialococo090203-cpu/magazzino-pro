@@ -14,6 +14,16 @@ function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
 }
 
+function normalizeRole(role) {
+  return String(role || '').trim().toLowerCase();
+}
+
+function canImportInvoices(role) {
+  return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
+    normalizeRole(role)
+  );
+}
+
 function buildImportAssistantMessage(error, file) {
   const extension = getFileExtension(file?.name);
   const fileSizeMb = file?.size ? (file.size / (1024 * 1024)).toFixed(2) : null;
@@ -141,13 +151,15 @@ export default function ImportaFatture() {
   const [scanMessage, setScanMessage] = useState('');
   const [scanRows, setScanRows] = useState([createEmptyRow()]);
 
+  const canUseImport = canImportInvoices(user?.role);
+
   useEffect(() => {
     async function loadData() {
       try {
         const cats = await categoryStore.getAll();
         const materials = await materialStore.getAll();
-        setCategories(cats);
-        setAllMaterials(materials);
+        setCategories(Array.isArray(cats) ? cats : []);
+        setAllMaterials(Array.isArray(materials) ? materials : []);
       } catch (err) {
         console.error('Errore caricamento dati importazione:', err);
       }
@@ -183,6 +195,26 @@ export default function ImportaFatture() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const startManualInsert = () => {
+    if (!canUseImport) {
+      setImportError('Non hai i permessi per inserire componenti manualmente.');
+      return;
+    }
+
+    setStep(6);
+    setFileName('Inserimento manuale');
+    setParsedItems([]);
+    setResults(null);
+    setRawWorkbookData([]);
+    setImportError(null);
+    setAssistantAdvice(null);
+    setLoading(false);
+    setLoadingProgress({ current: 0, total: 0 });
+    setScanDetected(true);
+    setScanMessage('Inserisci manualmente uno o più componenti da caricare in magazzino.');
+    setScanRows([createEmptyRow()]);
   };
 
   const validateFileBeforeImport = (file) => {
@@ -563,28 +595,33 @@ export default function ImportaFatture() {
     }
 
     const matrix = [
-      ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo', 'Marca', 'Categoria', 'Posizione'],
+      ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo Netto', 'Marca', 'Categoria', 'Posizione'],
       ...validRows.map((row) => [
         row.code || '',
         row.description || '',
         row.quantity || 0,
         row.unit || 'PZ',
         row.price || 0,
-        '',
-        '',
-        'A1-01',
+        row.brand || '',
+        row.category || '',
+        row.location || 'A1-01',
       ]),
     ];
 
     setRawWorkbookData(matrix);
     setScanDetected(false);
     setScanMessage('');
-    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName);
+    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName || 'Inserimento manuale');
   };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!canUseImport) {
+      setImportError('Non hai i permessi per caricare fatture o documenti.');
+      return;
+    }
 
     setLastFile(file);
     setImportError(null);
@@ -711,7 +748,7 @@ export default function ImportaFatture() {
 
     const groupedItems = {};
     selectedItems.forEach((item) => {
-      const key = item.code.toLowerCase();
+      const key = String(item.code || '').toLowerCase();
       if (!groupedItems[key]) {
         groupedItems[key] = { ...item };
       } else {
@@ -757,6 +794,7 @@ export default function ImportaFatture() {
             supplier: item.supplier,
             notes: item.notes,
           });
+
           created++;
         } else if (item.existingMaterial) {
           if ((item.price || 0) > 0) {
@@ -769,11 +807,13 @@ export default function ImportaFatture() {
             materialId: item.existingMaterial.id,
             type: 'entrata',
             quantity: item.quantity,
-            reason: 'uso_interno',
-            notes: `Importazione da fattura: ${fileName}`,
-            userId: user.id,
-            userName: user.fullName,
+            reason: 'importazione_fattura',
+            notes: `Importazione da fattura/documento: ${fileName}`,
+            userId: user?.id,
+            userName: user?.fullName || user?.username || '',
+            operatorName: user?.fullName || user?.username || '',
           });
+
           loaded++;
         }
       } catch (err) {
@@ -785,7 +825,7 @@ export default function ImportaFatture() {
 
     if (created > 0 || loaded > 0) {
       await adminLogStore.create({
-        userId: user.id,
+        userId: user?.id,
         entity: 'materiali',
         action: 'importazione',
         details: `Importazione completata: ${created} creati, ${loaded} aggiornati dal file ${fileName}.`,
@@ -795,6 +835,31 @@ export default function ImportaFatture() {
     setLoading(false);
     setStep(5);
   };
+
+  if (!canUseImport) {
+    return (
+      <div className="animate-slideUp">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">📄 Importa da Fatture</h1>
+            <p className="page-subtitle">Carica materiali partendo da documenti di ordine o fatture</p>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-body">
+            <div className="empty-state">
+              <div className="empty-state-icon">🔒</div>
+              <div className="empty-state-title">Accesso non consentito</div>
+              <div className="empty-state-text">
+                Il tuo ruolo non può caricare fatture o inserire componenti manualmente.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-slideUp" style={{ position: 'relative' }}>
@@ -890,6 +955,9 @@ export default function ImportaFatture() {
                   <button className="btn btn-secondary" onClick={resetImportState}>
                     Scegli un altro file
                   </button>
+                  <button className="btn btn-success" onClick={startManualInsert}>
+                    + Inserimento manuale
+                  </button>
                 </div>
               </div>
             </div>
@@ -953,6 +1021,29 @@ export default function ImportaFatture() {
                 style={{ display: 'none' }}
               />
             </div>
+
+            <div
+              style={{
+                marginTop: 24,
+                padding: 20,
+                border: '1px dashed var(--primary-300)',
+                borderRadius: 'var(--border-radius-lg)',
+                background: 'var(--primary-50)',
+                textAlign: 'center'
+              }}
+            >
+              <div style={{ fontSize: 28, marginBottom: 8 }}>✍️</div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>
+                Inserimento manuale componenti
+              </h3>
+              <p className="text-muted" style={{ marginBottom: 16 }}>
+                Usa questa funzione per caricare uno o più componenti senza importare una fattura.
+              </p>
+              <button className="btn btn-primary btn-lg" onClick={startManualInsert}>
+                + Inserisci componente manualmente
+              </button>
+            </div>
+
             <p className="text-center text-muted mt-4" style={{ fontSize: 13 }}>
               Il sistema analizzerà il documento e individuerà automaticamente i materiali contenuti.
               Potrai verificare e confermare tutto prima del caricamento.
@@ -976,9 +1067,9 @@ export default function ImportaFatture() {
       {step === 3 && rawWorkbookData && (
         <div className="card animate-fadeIn">
           <div className="card-header" style={{ background: 'var(--warning-50)' }}>
-            <h3 className="card-title">🛡️ Mappatura Manuale (Forza Bruta)</h3>
+            <h3 className="card-title">🛡️ Mappatura Manuale</h3>
             <p className="text-sm mt-1">
-              L'auto-rilevamento è fallito. Indica quali colonne contengono i dati cliccando sui pulsanti:
+              L'auto-rilevamento è fallito. Indica quali colonne contengono i dati:
             </p>
           </div>
           <div className="card-body" style={{ overflowX: 'auto' }}>
@@ -1001,7 +1092,7 @@ export default function ImportaFatture() {
                         <option value="description">Descrizione</option>
                         <option value="quantity">Quantità</option>
                         <option value="unit">U.M.</option>
-                        <option value="price">Prezzo</option>
+                        <option value="price">Prezzo Netto</option>
                         <option value="brand">Marca</option>
                         <option value="category">Categoria</option>
                         <option value="location">Posizione</option>
@@ -1066,6 +1157,12 @@ export default function ImportaFatture() {
                 🪄 Applica Suggerimenti Auto
               </button>
               <button
+                className="btn btn-sm btn-success"
+                onClick={startManualInsert}
+              >
+                + Aggiungi manualmente
+              </button>
+              <button
                 className="btn btn-sm btn-secondary"
                 onClick={() => {
                   setStep(1);
@@ -1123,31 +1220,52 @@ export default function ImportaFatture() {
                     </td>
 
                     <td>
-                      <div className="d-flex flex-column">
-                        <strong>{item.code}</strong>
-                        {item.confidence && (
-                          <span
-                            style={{
-                              fontSize: 9,
-                              fontWeight: 800,
-                              textTransform: 'uppercase',
-                              color: item.confidence === 'certi'
-                                ? 'var(--success-700)'
-                                : item.confidence === 'probabili'
-                                  ? 'var(--primary-700)'
-                                  : 'var(--warning-700)'
-                            }}
-                          >
-                            {item.confidence.replace('_', ' ')}
-                          </span>
-                        )}
-                      </div>
+                      <input
+                        className="form-control"
+                        value={item.code}
+                        onChange={(e) => updateItem(idx, 'code', e.target.value)}
+                        style={{ minWidth: 130 }}
+                      />
                     </td>
 
-                    <td>{item.description}</td>
-                    <td><span className="text-muted">{item.brand}</span></td>
-                    <td style={{ fontWeight: 700 }}>{item.quantity}</td>
-                    <td>{item.unit}</td>
+                    <td>
+                      <input
+                        className="form-control"
+                        value={item.description}
+                        onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                        style={{ minWidth: 220 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={item.brand}
+                        onChange={(e) => updateItem(idx, 'brand', e.target.value)}
+                        style={{ minWidth: 140 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="form-control"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                        style={{ width: 90 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={item.unit}
+                        onChange={(e) => updateItem(idx, 'unit', e.target.value)}
+                        style={{ width: 80 }}
+                      />
+                    </td>
 
                     <td>
                       <input
@@ -1161,73 +1279,39 @@ export default function ImportaFatture() {
                       />
                     </td>
 
-                    <td><span className="text-muted">{item.location}</span></td>
+                    <td>
+                      <input
+                        className="form-control"
+                        value={item.location}
+                        onChange={(e) => updateItem(idx, 'location', e.target.value)}
+                        style={{ width: 110 }}
+                      />
+                    </td>
 
                     <td>
-                      <div className="suggestion-container">
-                        <select
-                          className="form-control"
-                          value={item.category}
-                          onChange={(e) => updateItem(idx, 'category', e.target.value)}
-                          style={{
-                            padding: '6px 10px',
-                            fontSize: 12,
-                            border: item.confidence === 'certi'
-                              ? '2px solid var(--success-400)'
-                              : item.confidence === 'probabili'
-                                ? '2px solid var(--primary-400)'
-                                : item.category
-                                  ? '1px solid var(--gray-300)'
-                                  : '2px solid var(--warning-400)',
-                            backgroundColor: 'white',
-                          }}
-                        >
-                          <option value="">Seleziona...</option>
-                          {categories.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                      <select
+                        className="form-control"
+                        value={item.category}
+                        onChange={(e) => updateItem(idx, 'category', e.target.value)}
+                        style={{
+                          padding: '6px 10px',
+                          fontSize: 12,
+                          border: item.category ? '1px solid var(--gray-300)' : '2px solid var(--warning-400)',
+                          backgroundColor: 'white',
+                          minWidth: 150
+                        }}
+                      >
+                        <option value="">Seleziona...</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
 
-                        {item.category && (
-                          <div
-                            style={{
-                              marginTop: 6,
-                              fontSize: 11,
-                              color: item.isAutoAssigned ? 'var(--primary-700)' : 'var(--gray-500)',
-                              fontWeight: item.isAutoAssigned ? 700 : 500,
-                            }}
-                          >
-                            {item.isAutoAssigned
-                              ? `Auto: ${getCategoryName(item.category)}`
-                              : `Selezionata: ${getCategoryName(item.category)}`}
-                          </div>
-                        )}
-
-                        {item.confidence !== 'certi' &&
-                          item.suggestions?.filter((s) => s.type === 'category').length > 0 && (
-                            <div className="suggestions-list mt-1">
-                              {item.suggestions
-                                .filter((s) => s.type === 'category')
-                                .slice(0, 3)
-                                .map((sug) => (
-                                  <button
-                                    key={sug.id}
-                                    className="btn-suggestion"
-                                    onClick={() => updateItem(idx, 'category', sug.id)}
-                                    title={`Confidenza: ${Math.round(sug.score)}%`}
-                                    style={{
-                                      opacity: sug.score / 100 + 0.3,
-                                      fontSize: 10,
-                                      padding: '2px 6px',
-                                      margin: '2px',
-                                    }}
-                                  >
-                                    {sug.name}
-                                  </button>
-                                ))}
-                            </div>
-                          )}
-                      </div>
+                      {item.category && (
+                        <div style={{ marginTop: 6, fontSize: 11, color: 'var(--gray-500)' }}>
+                          {getCategoryName(item.category)}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

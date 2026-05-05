@@ -104,10 +104,6 @@ function formatNowDateTime() {
   });
 }
 
-function getDefaultOperatorName(user) {
-  return user?.fullName || user?.username || '';
-}
-
 export default function MovimentiForm() {
   const { tipo } = useParams();
   const { user } = useAuth();
@@ -124,7 +120,7 @@ export default function MovimentiForm() {
   const [searchMat, setSearchMat] = useState('');
   const [clientName, setClientName] = useState('');
   const [authorizedBy, setAuthorizedBy] = useState('');
-  const [operatorName, setOperatorName] = useState(getDefaultOperatorName(user));
+  const [operatorName, setOperatorName] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -132,10 +128,6 @@ export default function MovimentiForm() {
   const searchWrapRef = useRef(null);
 
   const canUsePage = canManageMovements(user?.role);
-
-  useEffect(() => {
-    setOperatorName(getDefaultOperatorName(user));
-  }, [user]);
 
   useEffect(() => {
     async function loadData() {
@@ -154,7 +146,7 @@ export default function MovimentiForm() {
         setNotes('');
         setClientName('');
         setAuthorizedBy('');
-        setOperatorName(getDefaultOperatorName(user));
+        setOperatorName('');
         setSuccess('');
         setError('');
         setSearchMat('');
@@ -166,7 +158,7 @@ export default function MovimentiForm() {
     }
 
     loadData();
-  }, [tipo, user]);
+  }, [tipo]);
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -189,7 +181,6 @@ export default function MovimentiForm() {
     return materials.filter((m) => {
       const matchCat = !filterCat || m.category === filterCat;
       const matchSearch = materialMatchesSearch(m, searchMat);
-
       return matchCat && matchSearch;
     });
   }, [materials, filterCat, searchMat]);
@@ -244,7 +235,7 @@ export default function MovimentiForm() {
     setNotes('');
     setClientName('');
     setAuthorizedBy('');
-    setOperatorName(getDefaultOperatorName(user));
+    setOperatorName('');
     setSearchMat('');
     setSuccess('');
     setShowSuggestions(false);
@@ -409,15 +400,8 @@ export default function MovimentiForm() {
           <div className="card-body">
             <div className="form-group">
               <label className="form-label">Data movimento</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formatNowDateTime()}
-                readOnly
-              />
-              <div className="form-hint">
-                La data viene registrata automaticamente al momento del salvataggio.
-              </div>
+              <input type="text" className="form-control" value={formatNowDateTime()} readOnly />
+              <div className="form-hint">La data viene registrata automaticamente al momento del salvataggio.</div>
             </div>
 
             <div className="form-group">
@@ -431,10 +415,7 @@ export default function MovimentiForm() {
             </div>
 
             <div className="form-group" ref={searchWrapRef} style={{ position: 'relative' }}>
-              <label className="form-label">
-                Cerca Materiale <span className="required">*</span>
-              </label>
-
+              <label className="form-label">Cerca Materiale <span className="required">*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -513,27 +494,6 @@ export default function MovimentiForm() {
                   })}
                 </div>
               )}
-
-              {showSuggestions && searchMat.trim() && suggestions.length === 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    left: 0,
-                    right: 0,
-                    zIndex: 20,
-                    background: '#fff',
-                    border: '1px solid var(--gray-200)',
-                    borderRadius: 'var(--border-radius-md)',
-                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
-                    padding: '14px',
-                    color: 'var(--gray-500)',
-                    fontSize: 13
-                  }}
-                >
-                  Nessun materiale trovato
-                </div>
-              )}
             </div>
 
             <div className="form-group">
@@ -588,22 +548,18 @@ export default function MovimentiForm() {
 
               <div className="form-group">
                 <label className="form-label">Motivazione <span className="required">*</span></label>
-
                 <select
                   className="form-control"
                   value={reason}
                   onChange={(e) => {
                     setReason(e.target.value);
-                    if (e.target.value !== 'altro') {
-                      setCustomReason('');
-                    }
+                    if (e.target.value !== 'altro') setCustomReason('');
                   }}
                 >
                   <option value="">-- Seleziona motivazione --</option>
                   {MOVEMENT_REASONS.map((r) => (
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
-                  <option value="altro">Altro</option>
                 </select>
 
                 {reason === 'altro' && (
@@ -652,9 +608,6 @@ export default function MovimentiForm() {
                 onChange={(e) => setOperatorName(e.target.value)}
                 placeholder="Nome operatore"
               />
-              <div className="form-hint">
-                Il campo è precompilato con l’utente loggato, ma può essere corretto manualmente se necessario.
-              </div>
             </div>
 
             <div className="form-group">
@@ -668,11 +621,7 @@ export default function MovimentiForm() {
               />
             </div>
 
-            <button
-              className={`btn ${config.btnClass} btn-lg w-full`}
-              onClick={handleSubmit}
-              style={{ marginTop: 8 }}
-            >
+            <button className={`btn ${config.btnClass} btn-lg w-full`} onClick={handleSubmit} style={{ marginTop: 8 }}>
               {config.icon} {config.btnLabel}
             </button>
           </div>
@@ -743,73 +692,7 @@ export default function MovimentiForm() {
                     {material.quantity}
                   </div>
                   <div className="text-sm text-muted">{material.unit} · soglia minima: {material.minThreshold}</div>
-                  <div style={{ marginTop: 8 }}>
-                    <span className={`status-badge status-${material.status}`}>
-                      {material.status === 'disponibile'
-                        ? 'Disponibile'
-                        : material.status === 'sotto_soglia'
-                          ? 'Sotto soglia'
-                          : 'Esaurito'}
-                    </span>
-                  </div>
                 </div>
-
-                {quantity && Number(quantity) >= 0 && (
-                  <div
-                    style={{
-                      background:
-                        tipo === 'rettifica'
-                          ? 'var(--warning-50)'
-                          : tipo === 'uscita'
-                            ? 'var(--danger-50)'
-                            : 'var(--success-50)',
-                      borderRadius: 'var(--border-radius-md)',
-                      padding: 16,
-                      textAlign: 'center',
-                      marginTop: 12,
-                      border: `1px solid ${
-                        tipo === 'rettifica'
-                          ? 'var(--warning-100)'
-                          : tipo === 'uscita'
-                            ? 'var(--danger-100)'
-                            : 'var(--success-100)'
-                      }`
-                    }}
-                  >
-                    <div
-                      className="text-sm fw-semibold"
-                      style={{
-                        color:
-                          tipo === 'rettifica'
-                            ? 'var(--warning-700)'
-                            : tipo === 'uscita'
-                              ? 'var(--danger-700)'
-                              : 'var(--success-700)'
-                      }}
-                    >
-                      Quantità dopo l'operazione
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 28,
-                        fontWeight: 800,
-                        color:
-                          tipo === 'rettifica'
-                            ? 'var(--warning-700)'
-                            : tipo === 'uscita'
-                              ? 'var(--danger-700)'
-                              : 'var(--success-700)'
-                      }}
-                    >
-                      {tipo === 'rettifica'
-                        ? Number(quantity)
-                        : tipo === 'uscita'
-                          ? Number(material.quantity || 0) - Number(quantity)
-                          : Number(material.quantity || 0) + Number(quantity)}{' '}
-                      {material.unit}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           ) : (
@@ -840,9 +723,6 @@ export default function MovimentiForm() {
               <div className={`confirm-icon ${tipo === 'uscita' ? 'danger' : 'warning'}`}>
                 {config.icon}
               </div>
-              <p className="confirm-message" style={{ marginBottom: 20 }}>
-                Stai per registrare {tipo === 'rettifica' ? 'una rettifica' : tipo === 'uscita' ? "un'uscita" : tipo === 'reintegro' ? 'un reintegro' : "un'entrata"} di:
-              </p>
 
               <div
                 style={{
@@ -866,9 +746,6 @@ export default function MovimentiForm() {
                 </div>
                 <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
                   Motivazione: {finalReason || '—'}
-                </div>
-                <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
-                  Data: automatica al salvataggio
                 </div>
               </div>
             </div>
