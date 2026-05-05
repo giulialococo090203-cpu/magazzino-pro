@@ -47,19 +47,23 @@ function hasRole(user, allowedRoles = []) {
     const accepted = (ROLE_ALIASES[role] || [role]).map((r) =>
       String(r).trim().toLowerCase()
     );
+
     return accepted.includes(userRole);
   });
 }
 
-function getDefaultRoute() {
-  return '/';
+function getDefaultRoute(user) {
+  if (hasRole(user, ['datore'])) return '/';
+  return '/inventario';
 }
 
 function ProtectedRoute({ user, allowedRoles, children }) {
   if (!user) return <Navigate to="/" replace />;
+
   if (!hasRole(user, allowedRoles)) {
     return <Navigate to={getDefaultRoute(user)} replace />;
   }
+
   return children;
 }
 
@@ -84,6 +88,7 @@ function App() {
 
   useEffect(() => {
     const user = userStore.getCurrentUser();
+
     if (user) {
       setCurrentUser(user);
     }
@@ -95,7 +100,9 @@ function App() {
     setLoading(false);
   }, []);
 
-  const login = (user) => setCurrentUser(user);
+  const login = (user) => {
+    setCurrentUser(user);
+  };
 
   const logout = () => {
     userStore.logout();
@@ -117,7 +124,7 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere', 'operaio']}>
+                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -126,7 +133,10 @@ function App() {
               <Route
                 path="/inventario"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere', 'operaio']}>
+                  <ProtectedRoute
+                    user={currentUser}
+                    allowedRoles={['datore', 'segretaria', 'magazziniere', 'operaio']}
+                  >
                     <Inventario />
                   </ProtectedRoute>
                 }
@@ -149,7 +159,10 @@ function App() {
               <Route
                 path="/importa"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere']}>
+                  <ProtectedRoute
+                    user={currentUser}
+                    allowedRoles={['datore', 'segretaria', 'magazziniere']}
+                  >
                     <ImportaFatture />
                   </ProtectedRoute>
                 }
@@ -212,7 +225,10 @@ function App() {
               <Route
                 path="/controllo/notifiche"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere']}>
+                  <ProtectedRoute
+                    user={currentUser}
+                    allowedRoles={['datore', 'segretaria', 'magazziniere']}
+                  >
                     <Notifiche />
                   </ProtectedRoute>
                 }
