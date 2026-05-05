@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api",
-      "destination": "https://pdf-parser-vercel-wheat.vercel.app/"
+      "source": "/api/pdf-parse",
+      "destination": "https://pdf-parser-vercel-wheat.vercel.app/parse"
     },
     {
       "source": "/(.*)",

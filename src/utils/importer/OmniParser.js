@@ -1,8 +1,9 @@
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-const PDF_TEXT_PARSER_URL =
-  import.meta.env.VITE_PDF_TEXT_PARSER_URL || 'https://pdf-parser-vercel-wheat.vercel.app/parse';
+const PDF_TEXT_PARSER_URL = import.meta.env.DEV
+  ? import.meta.env.VITE_PDF_TEXT_PARSER_URL || 'https://pdf-parser-vercel-wheat.vercel.app/parse'
+  : '/api/pdf-parse';
 
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
@@ -195,7 +196,7 @@ function parseBoschInvoiceTextToRows(text = '') {
   const rows = [];
 
   const itemRegex =
-    /^(\d{4})\s+(\d(?:-\d+){2,}(?:-\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s*[-–]?\d+(?:[.,]\d+)?%\([a-z]\))*\s+(\d+(?:[.,]\d+)?)\s+([A-Z0-9]{1,3})\b/i;
+    /^(\d{4})\s+(\d(?:-\d+){2,}(?:-\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)(?:\s*[-–]?\d+(?:[.,]\d+)?%\([a-z]\))*\s+(\d+(?:[.,]\d+)?)\s+([A-Z0-9]{1,3})?\b/i;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -206,10 +207,10 @@ function parseBoschInvoiceTextToRows(text = '') {
     const code = match[2];
     const quantity = parseItalianNumber(match[3]);
     const total = parseItalianNumber(match[5]);
-    const price = quantity > 0 && total > 0 ? total / quantity : parseItalianNumber(match[4]);
 
     if (!isBoschCode(code) || quantity <= 0) continue;
 
+    const price = quantity > 0 && total > 0 ? total / quantity : parseItalianNumber(match[4]);
     const descriptionParts = [];
 
     for (let j = i + 1; j < lines.length; j++) {
@@ -252,7 +253,7 @@ function parseBoschInvoiceTextToRows(text = '') {
       description || code,
       quantity,
       'ST',
-      price,
+      Number(price.toFixed(4)),
       'Bosch',
       '',
       '',
@@ -261,49 +262,7 @@ function parseBoschInvoiceTextToRows(text = '') {
 
   if (!rows.length) return [];
 
-  return [header, ...aggregateMatrixRows(rows)];
-}
-
-function aggregateMatrixRows(rows = []) {
-  const grouped = new Map();
-
-  rows.forEach((row) => {
-    const code = String(row[0] || '').trim();
-    const description = String(row[1] || '').trim();
-    const quantity = Number(row[2] || 0);
-    const unit = String(row[3] || 'ST').trim();
-    const price = Number(row[4] || 0);
-    const brand = String(row[5] || '').trim();
-    const category = String(row[6] || '').trim();
-    const location = String(row[7] || '').trim();
-
-    const key = [
-      code.toLowerCase(),
-      description.toLowerCase(),
-      unit.toUpperCase(),
-      price.toFixed(6),
-      brand.toLowerCase(),
-    ].join('|');
-
-    if (!grouped.has(key)) {
-      grouped.set(key, [
-        code,
-        description,
-        quantity,
-        unit,
-        price,
-        brand,
-        category,
-        location,
-      ]);
-      return;
-    }
-
-    const existing = grouped.get(key);
-    existing[2] = Number(existing[2] || 0) + quantity;
-  });
-
-  return [...grouped.values()];
+  return [header, ...rows];
 }
 
 function parserObjectRowToMatrixRow(row = {}) {
@@ -343,7 +302,7 @@ function normalizeObjectRows(rows = []) {
 
   if (!matrixRows.length) return [];
 
-  return [header, ...aggregateMatrixRows(matrixRows)];
+  return [header, ...matrixRows];
 }
 
 function normalizeTextParserRows(data) {
@@ -420,13 +379,23 @@ async function parseExcelFile(file) {
 async function parseCsvFile(file) {
   const text = await fileToText(file);
 
-  const workbook = XLSX.read(text, {
+  let workbook = XLSX.read(text, {
     type: 'string',
     raw: false,
     FS: ';',
   });
 
-  const firstSheetName = workbook.SheetNames?.[0];
+  let firstSheetName = workbook.SheetNames?.[0];
+
+  if (!firstSheetName) {
+    workbook = XLSX.read(text, {
+      type: 'string',
+      raw: false,
+      FS: ',',
+    });
+
+    firstSheetName = workbook.SheetNames?.[0];
+  }
 
   if (!firstSheetName) {
     throw new Error('Il CSV non contiene dati leggibili.');
@@ -497,7 +466,6 @@ async function parseDocxFile(file) {
 
 async function parseDocFile(file) {
   const text = await fileToText(file);
-
   const lines = text
     .split('\n')
     .map((line) => line.trim())
@@ -510,9 +478,12 @@ async function parseDocFile(file) {
   return lines.map((line) => [line]);
 }
 
-function buildParserUrl() {
-  const separator = PDF_TEXT_PARSER_URL.includes('?') ? '&' : '?';
-  return `${PDF_TEXT_PARSER_URL}${separator}_cors_bust=${Date.now()}`;
+function buildPdfParserUrl() {
+  if (PDF_TEXT_PARSER_URL.startsWith('/')) {
+    return PDF_TEXT_PARSER_URL;
+  }
+
+  return PDF_TEXT_PARSER_URL;
 }
 
 async function callPdfTextParser(file) {
@@ -522,15 +493,14 @@ async function callPdfTextParser(file) {
   let response;
 
   try {
-    response = await fetch(buildParserUrl(), {
+    response = await fetch(buildPdfParserUrl(), {
       method: 'POST',
       body: formData,
-      mode: 'cors',
       cache: 'no-store',
     });
   } catch {
     throw new Error(
-      'Connessione al parser PDF non riuscita. Se da terminale il parser risponde correttamente, svuota cache del browser o riprova in finestra anonima.'
+      'Connessione al parser PDF non riuscita. Se da terminale il parser risponde correttamente, controlla il proxy Vercel /api/pdf-parse o svuota cache del browser.'
     );
   }
 
