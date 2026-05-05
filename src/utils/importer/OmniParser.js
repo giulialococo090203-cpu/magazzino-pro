@@ -2,7 +2,6 @@ import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
 const PDF_TEXT_PARSER_URL = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
-const SCAN_PARSER_URL = 'https://pdf-scan-parser-docker.onrender.com/parse-scan-invoice';
 
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
@@ -168,39 +167,10 @@ async function callPdfTextParser(file) {
   if (!response.ok) {
     const text = await response.text();
     const parsed = safeJsonParse(text);
-    throw new Error(parsed?.message || parsed?.detail || `Parser PDF testuale non disponibile (${response.status}).`);
+    throw new Error(parsed?.message || parsed?.detail || `Parser PDF non disponibile (${response.status}).`);
   }
 
   return await response.json();
-}
-
-async function callScanPdfParser(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(SCAN_PARSER_URL, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    const parsed = safeJsonParse(text);
-
-    if (parsed?.detail?.message) {
-      throw new Error(parsed.detail.message);
-    }
-
-    throw new Error(`Parser scansioni non disponibile (${response.status}).`);
-  }
-
-  const data = await response.json();
-
-  if (!data || !Array.isArray(data.matrix) || !data.matrix.length) {
-    throw new Error('Risposta non valida dal parser scansioni.');
-  }
-
-  return data;
 }
 
 function normalizeTextParserRows(data) {
@@ -223,31 +193,6 @@ function normalizeTextParserRows(data) {
   return [];
 }
 
-function mustUseScanFallback(data) {
-  if (!data) return true;
-
-  if (data.scanDetected === true) return true;
-  if (data.mode === 'scan') return true;
-  if (data.mode === 'scan-ocr') return true;
-
-  if (Array.isArray(data.matrix) && data.matrix.length === 0) return true;
-  if (Array.isArray(data.rows) && data.rows.length === 0) return true;
-
-  if (typeof data.message === 'string') {
-    const msg = data.message.toLowerCase();
-    if (
-      msg.includes('scans') ||
-      msg.includes('ocr') ||
-      msg.includes('immagine') ||
-      msg.includes('scan')
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 export async function parseFile(file) {
   if (!file) {
     throw new Error('Nessun file selezionato.');
@@ -262,33 +207,14 @@ export async function parseFile(file) {
   if (ext === 'doc') return await parseDocFile(file);
 
   if (ext === 'pdf') {
-    let textParserResult = null;
-    let textParserError = null;
+    const textResult = await callPdfTextParser(file);
+    const rows = normalizeTextParserRows(textResult);
 
-    try {
-      textParserResult = await callPdfTextParser(file);
-
-      if (!mustUseScanFallback(textParserResult)) {
-        const rows = normalizeTextParserRows(textParserResult);
-        if (rows.length) {
-          return rows;
-        }
-      }
-    } catch (err) {
-      textParserError = err;
+    if (!rows.length) {
+      throw new Error('Il PDF non contiene righe utilizzabili.');
     }
 
-    const scanResult = await callScanPdfParser(file);
-
-    return {
-      scanDetected: false,
-      mode: scanResult.mode || 'scan-ocr',
-      matrix: scanResult.matrix,
-      extractedRows: scanResult.extractedRows || [],
-      debug: scanResult.debug || null,
-      textParserError: textParserError?.message || null,
-      textParserMode: textParserResult?.mode || null,
-    };
+    return rows;
   }
 
   throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);
