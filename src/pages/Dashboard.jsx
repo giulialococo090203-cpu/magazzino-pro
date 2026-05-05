@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import {
   statsStore,
@@ -130,6 +130,27 @@ export default function Dashboard() {
 
   const datoreView = isDatore(user);
 
+  const loadSupabaseUsage = useCallback(async () => {
+    if (!datoreView) return;
+
+    try {
+      setSupabaseUsageLoading(true);
+      setSupabaseUsageError('');
+
+      const usage = await getSupabaseUsageMonitor();
+
+      setSupabaseUsage(usage);
+    } catch (err) {
+      console.error('Errore memoria Supabase:', err);
+      setSupabaseUsageError(
+        err.message ||
+          'Non riesco a leggere la memoria Supabase. Verifica che la funzione SQL sia stata creata.'
+      );
+    } finally {
+      setSupabaseUsageLoading(false);
+    }
+  }, [datoreView]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -184,41 +205,30 @@ export default function Dashboard() {
   useEffect(() => {
     if (!datoreView) return undefined;
 
-    let mounted = true;
-
-    async function loadSupabaseUsage() {
-      try {
-        setSupabaseUsageLoading(true);
-        setSupabaseUsageError('');
-
-        const usage = await getSupabaseUsageMonitor();
-
-        if (!mounted) return;
-
-        setSupabaseUsage(usage);
-      } catch (err) {
-        console.error('Errore memoria Supabase:', err);
-
-        if (mounted) {
-          setSupabaseUsageError(
-            err.message ||
-              'Non riesco a leggere la memoria Supabase. Verifica che la funzione SQL sia stata creata.'
-          );
-        }
-      } finally {
-        if (mounted) setSupabaseUsageLoading(false);
-      }
-    }
-
     loadSupabaseUsage();
 
     const interval = setInterval(loadSupabaseUsage, 30000);
 
     return () => {
-      mounted = false;
       clearInterval(interval);
     };
-  }, [datoreView]);
+  }, [datoreView, loadSupabaseUsage]);
+
+  useEffect(() => {
+    if (!datoreView) return undefined;
+
+    const refreshUsage = () => {
+      loadSupabaseUsage();
+    };
+
+    window.addEventListener('wm_supabase_usage_refresh', refreshUsage);
+    window.addEventListener('storage', refreshUsage);
+
+    return () => {
+      window.removeEventListener('wm_supabase_usage_refresh', refreshUsage);
+      window.removeEventListener('storage', refreshUsage);
+    };
+  }, [datoreView, loadSupabaseUsage]);
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -1080,6 +1090,14 @@ export default function Dashboard() {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">🧠 Memoria Supabase</h3>
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={loadSupabaseUsage}
+              disabled={supabaseUsageLoading}
+            >
+              {supabaseUsageLoading ? 'Aggiorno...' : '↻ Aggiorna'}
+            </button>
           </div>
 
           <div className="chart-container">

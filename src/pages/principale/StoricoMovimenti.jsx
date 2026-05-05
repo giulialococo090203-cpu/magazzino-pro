@@ -211,6 +211,11 @@ export default function StoricoMovimenti() {
     setFilterClient('');
   };
 
+  const notifySupabaseUsageRefresh = () => {
+    localStorage.setItem('wm_supabase_usage_refresh', String(Date.now()));
+    window.dispatchEvent(new Event('wm_supabase_usage_refresh'));
+  };
+
   const handleEmptyHistory = async () => {
     if (!canEmptyHistory) return;
 
@@ -241,6 +246,8 @@ export default function StoricoMovimenti() {
       setPage(1);
       setConfirmEmptyHistory(false);
       setEmptyHistoryResult(invoiceCleanup);
+
+      notifySupabaseUsageRefresh();
 
       await loadStatic();
       await loadFiltered();
@@ -723,7 +730,10 @@ export default function StoricoMovimenti() {
       )}
 
       {confirmEmptyHistory && (
-        <div className="modal-overlay confirm-dialog" onClick={() => !emptyingHistory && setConfirmEmptyHistory(false)}>
+        <div
+          className="modal-overlay confirm-dialog"
+          onClick={() => !emptyingHistory && setConfirmEmptyHistory(false)}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Svuotare lo storico?</h3>
