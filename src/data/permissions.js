@@ -48,6 +48,12 @@ export const PERMISSIONS = [
     group: 'Controllo',
   },
   {
+    key: 'canExportMovements',
+    label: 'Esporta storico movimenti',
+    description: 'Può esportare lo storico dei movimenti in Excel, CSV o PDF',
+    group: 'Controllo',
+  },
+  {
     key: 'canImportInvoices',
     label: 'Importa fatture / inserimento manuale',
     description: 'Può importare fatture o inserire componenti manualmente',
@@ -101,6 +107,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canReintegrate: false,
     canRectify: false,
     canViewHistory: false,
+    canExportMovements: false,
     canImportInvoices: false,
     canManageCategories: false,
     canManageThresholds: false,
@@ -119,6 +126,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canReintegrate: true,
     canRectify: true,
     canViewHistory: false,
+    canExportMovements: false,
     canImportInvoices: true,
     canManageCategories: true,
     canManageThresholds: true,
@@ -137,6 +145,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canReintegrate: true,
     canRectify: true,
     canViewHistory: false,
+    canExportMovements: false,
     canImportInvoices: true,
     canManageCategories: false,
     canManageThresholds: false,
@@ -155,6 +164,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canReintegrate: true,
     canRectify: true,
     canViewHistory: true,
+    canExportMovements: true,
     canImportInvoices: true,
     canManageCategories: true,
     canManageThresholds: true,
@@ -199,6 +209,8 @@ export function getEffectivePermissions(user) {
       canViewDashboard: true,
       canManageUsers: true,
       canRectify: true,
+      canViewHistory: true,
+      canExportMovements: true,
     };
   }
 
