@@ -47,6 +47,45 @@ function formatCurrency(value) {
   }).format(Number(value || 0));
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function getMaterialCode(material) {
+  return material?.code || material?.codice || '';
+}
+
+function getMaterialName(material) {
+  return material?.name || material?.nome || material?.description || material?.descrizione || '';
+}
+
+function getMaterialDescription(material) {
+  return material?.description || material?.descrizione || material?.name || material?.nome || '';
+}
+
+function materialMatchesSearch(material, query) {
+  const q = normalizeSearchText(query);
+
+  if (!q) return true;
+
+  const searchable = [
+    material?.code,
+    material?.codice,
+    material?.name,
+    material?.nome,
+    material?.description,
+    material?.descrizione
+  ]
+    .map(normalizeSearchText)
+    .join(' ');
+
+  return searchable.includes(q);
+}
+
 export default function Inventario() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -96,6 +135,7 @@ export default function Inventario() {
         setMaterialMovements([]);
       }
     }
+
     loadMovements();
   }, [detailMaterial]);
 
@@ -105,6 +145,7 @@ export default function Inventario() {
         setShowSuggestions(false);
       }
     };
+
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
@@ -112,14 +153,7 @@ export default function Inventario() {
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
 
   const filtered = materials.filter((m) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      m.code?.toLowerCase().includes(q) ||
-      m.description?.toLowerCase().includes(q) ||
-      m.brand?.toLowerCase().includes(q) ||
-      getCategoryName(m.category)?.toLowerCase().includes(q);
-
+    const matchSearch = materialMatchesSearch(m, search);
     const matchCat = !filterCategory || m.category === filterCategory;
     const matchStatus = !filterStatus || m.status === filterStatus;
 
@@ -127,17 +161,37 @@ export default function Inventario() {
   });
 
   const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = normalizeSearchText(search);
+
     if (!q) return [];
+
     return materials
-      .filter((m) =>
-        m.code?.toLowerCase().includes(q) ||
-        m.description?.toLowerCase().includes(q) ||
-        m.brand?.toLowerCase().includes(q) ||
-        getCategoryName(m.category)?.toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }, [search, materials, categories]);
+      .filter((m) => materialMatchesSearch(m, q))
+      .sort((a, b) => {
+        const aCode = normalizeSearchText(getMaterialCode(a));
+        const bCode = normalizeSearchText(getMaterialCode(b));
+        const aName = normalizeSearchText(getMaterialName(a));
+        const bName = normalizeSearchText(getMaterialName(b));
+        const aDescription = normalizeSearchText(getMaterialDescription(a));
+        const bDescription = normalizeSearchText(getMaterialDescription(b));
+
+        const aStarts =
+          aCode.startsWith(q) ||
+          aName.startsWith(q) ||
+          aDescription.startsWith(q);
+
+        const bStarts =
+          bCode.startsWith(q) ||
+          bName.startsWith(q) ||
+          bDescription.startsWith(q);
+
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return aName.localeCompare(bName);
+      })
+      .slice(0, 10);
+  }, [search, materials]);
 
   const exportExcel = () => {
     const data = filtered.map((m) => {
@@ -234,6 +288,11 @@ export default function Inventario() {
     doc.save(`Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
+  const clearSearch = () => {
+    setSearch('');
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="animate-slideUp">
       <div className="page-header">
@@ -254,22 +313,45 @@ export default function Inventario() {
       <div className="filters-row">
         <div
           className="search-bar"
-          style={{ flex: 1, maxWidth: 450, position: 'relative' }}
+          style={{ flex: 1, maxWidth: 520, position: 'relative' }}
           ref={searchWrapRef}
         >
           <span className="search-bar-icon">🔍</span>
+
           <input
             type="text"
             className="form-control"
-            placeholder="Cerca per codice, descrizione, marca o categoria..."
+            placeholder="Cerca materiale per codice, nome o descrizione..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setShowSuggestions(true);
             }}
             onFocus={() => setShowSuggestions(true)}
-            style={{ paddingLeft: 40 }}
+            style={{ paddingLeft: 40, paddingRight: search ? 42 : undefined }}
           />
+
+          {search && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              title="Pulisci ricerca"
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                color: 'var(--gray-500)',
+                fontSize: 16,
+                lineHeight: 1
+              }}
+            >
+              ✕
+            </button>
+          )}
 
           {showSuggestions && suggestions.length > 0 && (
             <div
@@ -283,35 +365,77 @@ export default function Inventario() {
                 border: '1px solid var(--gray-200)',
                 borderRadius: 'var(--border-radius-md)',
                 boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
-                maxHeight: 280,
+                maxHeight: 320,
                 overflowY: 'auto'
               }}
             >
-              {suggestions.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setSearch(item.code || item.description || '');
-                    setShowSuggestions(false);
-                  }}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    padding: '12px 14px',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid var(--gray-100)'
-                  }}
-                >
-                  <div style={{ fontWeight: 700 }}>{item.code}</div>
-                  <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
-                  <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-                    {item.brand} · {getCategoryName(item.category)}
-                  </div>
-                </button>
-              ))}
+              {suggestions.map((item) => {
+                const code = getMaterialCode(item);
+                const name = getMaterialName(item);
+                const description = getMaterialDescription(item);
+
+                return (
+                  <button
+                    key={item.id || `${code}-${description}`}
+                    type="button"
+                    onClick={() => {
+                      setSearch(code || name || description || '');
+                      setShowSuggestions(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: 'transparent',
+                      padding: '12px 14px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid var(--gray-100)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                      <strong>{code || 'Senza codice'}</strong>
+                      <span style={{ fontSize: 12, color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>
+                        {item.quantity ?? 0} {item.unit || ''}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: 13, color: 'var(--gray-700)', marginTop: 2 }}>
+                      {name || description || 'Materiale senza descrizione'}
+                    </div>
+
+                    {description && description !== name && (
+                      <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 2 }}>
+                        {description}
+                      </div>
+                    )}
+
+                    <div style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 2 }}>
+                      {item.brand || '—'} · {getCategoryName(item.category)}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {showSuggestions && search.trim() && suggestions.length === 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                right: 0,
+                zIndex: 20,
+                background: '#fff',
+                border: '1px solid var(--gray-200)',
+                borderRadius: 'var(--border-radius-md)',
+                boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                padding: '14px',
+                color: 'var(--gray-500)',
+                fontSize: 13
+              }}
+            >
+              Nessun suggerimento trovato
             </div>
           )}
         </div>
