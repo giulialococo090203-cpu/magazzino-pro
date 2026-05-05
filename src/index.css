@@ -1530,3 +1530,45 @@ textarea.form-control {
     padding: 0 16px;
   }
 }
+
+/* ============================================================
+   FORCE PRODUCTION DASHBOARD DESKTOP LAYOUT
+   ============================================================ */
+
+@media (min-width: 1000px) {
+  .page-content {
+    max-width: 1180px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+  }
+
+  .kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    max-width: 100% !important;
+  }
+
+  .quick-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    max-width: 100% !important;
+  }
+
+  .grid-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    max-width: 100% !important;
+  }
+
+  .charts-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    max-width: 100% !important;
+  }
+}
