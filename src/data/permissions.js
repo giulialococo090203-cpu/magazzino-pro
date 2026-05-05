@@ -37,8 +37,8 @@ export const PERMISSIONS = [
   },
   {
     key: 'canRectify',
-    label: 'Rettifica inventario',
-    description: 'Può correggere manualmente le quantità',
+    label: 'Rettifica magazzino',
+    description: 'Può correggere manualmente le quantità di magazzino',
     group: 'Movimenti',
   },
   {
@@ -117,7 +117,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canMoveIn: true,
     canMoveOut: true,
     canReintegrate: true,
-    canRectify: false,
+    canRectify: true,
     canViewHistory: false,
     canImportInvoices: true,
     canManageCategories: true,
@@ -135,7 +135,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canMoveIn: true,
     canMoveOut: true,
     canReintegrate: true,
-    canRectify: false,
+    canRectify: true,
     canViewHistory: false,
     canImportInvoices: true,
     canManageCategories: false,
@@ -198,6 +198,7 @@ export function getEffectivePermissions(user) {
       ...custom,
       canViewDashboard: true,
       canManageUsers: true,
+      canRectify: true,
     };
   }
 

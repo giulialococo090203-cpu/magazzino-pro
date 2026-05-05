@@ -49,7 +49,7 @@ const NAV_SECTIONS = [
       },
       {
         path: '/movimento/rettifica',
-        label: 'Rettifica Manuale',
+        label: 'Rettifica Magazzino',
         icon: '✏️',
         permission: 'canRectify',
       },
@@ -133,7 +133,7 @@ const PAGE_TITLES = {
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
   '/movimento/reintegro': 'Reintegra Materiale',
-  '/movimento/rettifica': 'Rettifica Manuale',
+  '/movimento/rettifica': 'Rettifica Magazzino',
   '/storico': 'Storico Movimenti',
   '/importa': 'Importa / Inserisci',
   '/gestione/materiali': 'Anagrafica Materiali',

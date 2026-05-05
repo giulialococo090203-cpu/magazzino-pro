@@ -53,9 +53,9 @@ function ProtectedMovementRoute({ user }) {
     rettifica: 'canRectify',
   };
 
-  const requiredPermission = permissionByTipo[tipo] || 'canMoveIn';
+  const requiredPermission = permissionByTipo[tipo];
 
-  if (!hasPermission(user, requiredPermission)) {
+  if (!requiredPermission || !hasPermission(user, requiredPermission)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
