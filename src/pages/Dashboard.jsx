@@ -38,6 +38,8 @@ const CHART_COLORS = [
   '#f97316',
 ];
 
+const SUPABASE_USAGE_LIMIT_BYTES = 500 * 1024 * 1024;
+
 function normalizeRole(role) {
   return String(role || '').trim().toLowerCase();
 }
@@ -80,6 +82,20 @@ function formatMovementType(type) {
 
 function safeLower(value) {
   return String(value || '').toLowerCase();
+}
+
+function getUsageLimitBytes() {
+  return SUPABASE_USAGE_LIMIT_BYTES;
+}
+
+function getRemainingBytes(usedBytes = 0) {
+  return Math.max(0, getUsageLimitBytes() - Number(usedBytes || 0));
+}
+
+function getUsageColor(percent) {
+  if (percent >= 85) return 'var(--danger-500)';
+  if (percent >= 65) return 'var(--warning-500)';
+  return 'var(--success-500)';
 }
 
 export default function Dashboard() {
@@ -446,6 +462,9 @@ export default function Dashboard() {
       return matchComponent && matchOperator && matchClient && matchDate;
     });
   }, [movements, searchComponent, searchOperator, searchClient, searchDate]);
+
+  const usagePercent = supabaseUsage ? calcPercent(supabaseUsage.totalBytes, getUsageLimitBytes()) : 0;
+  const remainingBytes = supabaseUsage ? getRemainingBytes(supabaseUsage.totalBytes) : getUsageLimitBytes();
 
   if (!datoreView) {
     return <Navigate to="/inventario" replace />;
@@ -1111,40 +1130,67 @@ export default function Dashboard() {
                 <div className="kpi-card">
                   <div className="kpi-icon green">📊</div>
                   <div className="kpi-content">
-                    <div className="kpi-label">Totale Stimato</div>
+                    <div className="kpi-label">Totale Usato</div>
                     <div className="kpi-value">
                       {formatBytes(supabaseUsage.totalBytes)}
                     </div>
                     <div className="kpi-detail">
-                      {calcPercent(supabaseUsage.totalBytes)}% di 500 MB stimati
+                      Usati {usagePercent}% di {formatBytes(getUsageLimitBytes())}
+                    </div>
+                    <div
+                      className="kpi-detail"
+                      style={{
+                        color:
+                          usagePercent >= 85
+                            ? 'var(--danger-700)'
+                            : usagePercent >= 65
+                              ? 'var(--warning-700)'
+                              : 'var(--success-700)',
+                        fontWeight: 800,
+                      }}
+                    >
+                      Restano {formatBytes(remainingBytes)}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div
-                style={{
-                  width: '100%',
-                  height: 10,
-                  background: 'var(--gray-100)',
-                  borderRadius: 999,
-                  overflow: 'hidden',
-                  marginBottom: 16,
-                }}
-              >
+              <div style={{ marginBottom: 16 }}>
                 <div
                   style={{
-                    width: `${calcPercent(supabaseUsage.totalBytes)}%`,
-                    height: '100%',
-                    background:
-                      calcPercent(supabaseUsage.totalBytes) >= 85
-                        ? 'var(--danger-500)'
-                        : calcPercent(supabaseUsage.totalBytes) >= 65
-                          ? 'var(--warning-500)'
-                          : 'var(--success-500)',
-                    borderRadius: 999,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    marginBottom: 8,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: 'var(--gray-600)',
+                    flexWrap: 'wrap',
                   }}
-                />
+                >
+                  <span>Usato: {formatBytes(supabaseUsage.totalBytes)}</span>
+                  <span>Disponibile: {formatBytes(remainingBytes)}</span>
+                  <span>Limite stimato: {formatBytes(getUsageLimitBytes())}</span>
+                </div>
+
+                <div
+                  style={{
+                    width: '100%',
+                    height: 12,
+                    background: 'var(--gray-100)',
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${Math.max(1, usagePercent)}%`,
+                      height: '100%',
+                      background: getUsageColor(usagePercent),
+                      borderRadius: 999,
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="grid-2">
