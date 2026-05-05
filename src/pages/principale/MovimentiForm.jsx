@@ -43,6 +43,67 @@ const TIPO_CONFIG = {
   }
 };
 
+function normalizeRole(role) {
+  return String(role || '').trim().toLowerCase();
+}
+
+function canManageMovements(role) {
+  return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
+    normalizeRole(role)
+  );
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function getMaterialCode(material) {
+  return material?.code || material?.codice || '';
+}
+
+function getMaterialName(material) {
+  return material?.name || material?.nome || material?.description || material?.descrizione || '';
+}
+
+function getMaterialDescription(material) {
+  return material?.description || material?.descrizione || material?.name || material?.nome || '';
+}
+
+function materialMatchesSearch(material, query) {
+  const q = normalizeSearchText(query);
+
+  if (!q) return true;
+
+  const searchable = [
+    material?.code,
+    material?.codice,
+    material?.name,
+    material?.nome,
+    material?.description,
+    material?.descrizione,
+    material?.brand,
+    material?.marca
+  ]
+    .map(normalizeSearchText)
+    .join(' ');
+
+  return searchable.includes(q);
+}
+
+function formatNowDateTime() {
+  return new Date().toLocaleString('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 export default function MovimentiForm() {
   const { tipo } = useParams();
   const { user } = useAuth();
@@ -64,6 +125,8 @@ export default function MovimentiForm() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapRef = useRef(null);
 
+  const canUsePage = canManageMovements(user?.role);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -71,8 +134,9 @@ export default function MovimentiForm() {
           materialStore.getAll(),
           categoryStore.getAll()
         ]);
-        setMaterials(mats);
-        setCategories(cats);
+
+        setMaterials(Array.isArray(mats) ? mats : []);
+        setCategories(Array.isArray(cats) ? cats : []);
         setSelectedMaterial('');
         setQuantity('');
         setReason('');
@@ -81,10 +145,14 @@ export default function MovimentiForm() {
         setAuthorizedBy('');
         setSuccess('');
         setError('');
+        setSearchMat('');
+        setShowSuggestions(false);
       } catch (err) {
         console.error('Errore caricamento dati:', err);
+        setError('Errore durante il caricamento dei dati.');
       }
     }
+
     loadData();
   }, [tipo]);
 
@@ -94,49 +162,102 @@ export default function MovimentiForm() {
         setShowSuggestions(false);
       }
     };
+
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
-  const material = materials.find((m) => m.id === selectedMaterial);
 
-  const filteredMaterials = materials.filter((m) => {
-    const matchCat = !filterCat || m.category === filterCat;
-    const q = searchMat.toLowerCase();
-    const matchSearch =
-      !q ||
-      m.code?.toLowerCase().includes(q) ||
-      m.description?.toLowerCase().includes(q) ||
-      m.brand?.toLowerCase().includes(q);
-    return matchCat && matchSearch;
-  });
+  const material = useMemo(() => {
+    return materials.find((m) => m.id === selectedMaterial);
+  }, [materials, selectedMaterial]);
+
+  const filteredMaterials = useMemo(() => {
+    return materials.filter((m) => {
+      const matchCat = !filterCat || m.category === filterCat;
+      const matchSearch = materialMatchesSearch(m, searchMat);
+
+      return matchCat && matchSearch;
+    });
+  }, [materials, filterCat, searchMat]);
 
   const suggestions = useMemo(() => {
-    const q = searchMat.trim().toLowerCase();
+    const q = normalizeSearchText(searchMat);
+
     if (!q) return [];
-    return filteredMaterials.slice(0, 8);
-  }, [searchMat, filteredMaterials]);
+
+    return materials
+      .filter((m) => {
+        const matchCat = !filterCat || m.category === filterCat;
+        return matchCat && materialMatchesSearch(m, q);
+      })
+      .sort((a, b) => {
+        const aCode = normalizeSearchText(getMaterialCode(a));
+        const bCode = normalizeSearchText(getMaterialCode(b));
+        const aName = normalizeSearchText(getMaterialName(a));
+        const bName = normalizeSearchText(getMaterialName(b));
+        const aDescription = normalizeSearchText(getMaterialDescription(a));
+        const bDescription = normalizeSearchText(getMaterialDescription(b));
+
+        const aStarts =
+          aCode.startsWith(q) ||
+          aName.startsWith(q) ||
+          aDescription.startsWith(q);
+
+        const bStarts =
+          bCode.startsWith(q) ||
+          bName.startsWith(q) ||
+          bDescription.startsWith(q);
+
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return aName.localeCompare(bName);
+      })
+      .slice(0, 10);
+  }, [searchMat, materials, filterCat]);
+
+  const selectedMaterialLabel = material
+    ? `${getMaterialCode(material)} — ${getMaterialDescription(material)}`
+    : '';
+
+  const resetFormAfterSuccess = () => {
+    setSelectedMaterial('');
+    setQuantity('');
+    setReason('');
+    setNotes('');
+    setClientName('');
+    setAuthorizedBy('');
+    setSearchMat('');
+    setSuccess('');
+    setShowSuggestions(false);
+  };
 
   const handleSubmit = () => {
     setError('');
 
+    if (!canUsePage) {
+      setError('Non hai i permessi per registrare movimenti di magazzino.');
+      return;
+    }
+
     if (!selectedMaterial) {
-      setError('Seleziona un materiale');
+      setError('Seleziona un materiale.');
       return;
     }
 
     if (!quantity || Number(quantity) < 0 || (tipo !== 'rettifica' && Number(quantity) === 0)) {
-      setError('Inserisci una quantità valida');
+      setError('Inserisci una quantità valida.');
       return;
     }
 
     if (!reason) {
-      setError('Seleziona un motivo');
+      setError('Seleziona un motivo.');
       return;
     }
 
-    if (tipo === 'uscita' && material && Number(quantity) > material.quantity) {
+    if (tipo === 'uscita' && material && Number(quantity) > Number(material.quantity || 0)) {
       setError(`Quantità insufficiente! Disponibilità attuale: ${material.quantity} ${material.unit}`);
       return;
     }
@@ -146,15 +267,21 @@ export default function MovimentiForm() {
 
   const confirmMovement = async () => {
     try {
+      if (!canUsePage) {
+        setError('Non hai i permessi per registrare movimenti di magazzino.');
+        setShowConfirm(false);
+        return;
+      }
+
       await movementStore.create({
         materialId: selectedMaterial,
         type: tipo,
         quantity: Number(quantity),
         reason,
         notes,
-        userId: user.id,
-        userName: user.fullName,
-        operatorName: user.fullName,
+        userId: user?.id,
+        userName: user?.fullName || user?.username || '',
+        operatorName: user?.fullName || user?.username || '',
         clientName,
         authorizedBy
       });
@@ -163,23 +290,39 @@ export default function MovimentiForm() {
       setShowConfirm(false);
 
       const updatedMats = await materialStore.getAll();
-      setMaterials(updatedMats);
+      setMaterials(Array.isArray(updatedMats) ? updatedMats : []);
 
-      setTimeout(() => {
-        setSelectedMaterial('');
-        setQuantity('');
-        setReason('');
-        setNotes('');
-        setClientName('');
-        setAuthorizedBy('');
-        setSearchMat('');
-        setSuccess('');
-      }, 2500);
+      setTimeout(resetFormAfterSuccess, 2500);
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || 'Errore durante il salvataggio del movimento.');
       setShowConfirm(false);
     }
   };
+
+  if (!canUsePage) {
+    return (
+      <div className="animate-slideUp">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Movimenti Magazzino</h1>
+            <p className="page-subtitle">Registrazione entrate e uscite materiale</p>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-body">
+            <div className="empty-state">
+              <div className="empty-state-icon">🔒</div>
+              <div className="empty-state-title">Accesso non consentito</div>
+              <div className="empty-state-text">
+                Il tuo ruolo può visualizzare la giacenza, ma non può registrare entrate o uscite di materiale.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-slideUp">
@@ -236,7 +379,21 @@ export default function MovimentiForm() {
           <div className="card-header">
             <h3 className="card-title">Dati Movimento</h3>
           </div>
+
           <div className="card-body">
+            <div className="form-group">
+              <label className="form-label">Data movimento</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formatNowDateTime()}
+                readOnly
+              />
+              <div className="form-hint">
+                La data viene registrata automaticamente al momento del salvataggio.
+              </div>
+            </div>
+
             <div className="form-group">
               <label className="form-label">Filtra per Categoria</label>
               <select className="form-control" value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
@@ -248,14 +405,18 @@ export default function MovimentiForm() {
             </div>
 
             <div className="form-group" ref={searchWrapRef} style={{ position: 'relative' }}>
-              <label className="form-label">Cerca Materiale</label>
+              <label className="form-label">
+                Cerca Materiale <span className="required">*</span>
+              </label>
+
               <input
                 type="text"
                 className="form-control"
-                placeholder="Cerca per codice, descrizione o marca..."
+                placeholder="Cerca per codice, nome o descrizione..."
                 value={searchMat}
                 onChange={(e) => {
                   setSearchMat(e.target.value);
+                  setSelectedMaterial('');
                   setShowSuggestions(true);
                 }}
                 onFocus={() => setShowSuggestions(true)}
@@ -273,42 +434,84 @@ export default function MovimentiForm() {
                     border: '1px solid var(--gray-200)',
                     borderRadius: 'var(--border-radius-md)',
                     boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
-                    maxHeight: 280,
+                    maxHeight: 300,
                     overflowY: 'auto'
                   }}
                 >
-                  {suggestions.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedMaterial(item.id);
-                        setSearchMat(`${item.code} — ${item.description}`);
-                        setShowSuggestions(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        border: 'none',
-                        background: 'transparent',
-                        padding: '12px 14px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid var(--gray-100)'
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>{item.code}</div>
-                      <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
-                      <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-                        {item.brand} · {getCategoryName(item.category)} · {item.quantity} {item.unit}
-                      </div>
-                    </button>
-                  ))}
+                  {suggestions.map((item) => {
+                    const code = getMaterialCode(item);
+                    const name = getMaterialName(item);
+                    const description = getMaterialDescription(item);
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMaterial(item.id);
+                          setSearchMat(`${code} — ${description}`);
+                          setShowSuggestions(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          border: 'none',
+                          background: 'transparent',
+                          padding: '12px 14px',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid var(--gray-100)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                          <strong>{code || 'Senza codice'}</strong>
+                          <span style={{ fontSize: 12, color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>
+                            {item.quantity ?? 0} {item.unit || ''}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: 13, color: 'var(--gray-700)', marginTop: 2 }}>
+                          {name || description || 'Materiale senza descrizione'}
+                        </div>
+
+                        {description && description !== name && (
+                          <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 2 }}>
+                            {description}
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: 12, color: 'var(--gray-400)', marginTop: 2 }}>
+                          {item.brand || '—'} · {getCategoryName(item.category)}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {showSuggestions && searchMat.trim() && suggestions.length === 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    background: '#fff',
+                    border: '1px solid var(--gray-200)',
+                    borderRadius: 'var(--border-radius-md)',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                    padding: '14px',
+                    color: 'var(--gray-500)',
+                    fontSize: 13
+                  }}
+                >
+                  Nessun materiale trovato
                 </div>
               )}
             </div>
 
             <div className="form-group">
-              <label className="form-label">Materiale <span className="required">*</span></label>
+              <label className="form-label">Materiale selezionato</label>
               <select
                 className="form-control"
                 value={selectedMaterial}
@@ -316,18 +519,24 @@ export default function MovimentiForm() {
                   const val = e.target.value;
                   setSelectedMaterial(val);
                   const found = materials.find((m) => m.id === val);
+
                   if (found) {
-                    setSearchMat(`${found.code} — ${found.description}`);
+                    setSearchMat(`${getMaterialCode(found)} — ${getMaterialDescription(found)}`);
                   }
                 }}
               >
                 <option value="">-- Seleziona materiale --</option>
                 {filteredMaterials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.code} — {m.description} ({m.quantity} {m.unit})
+                    {getMaterialCode(m)} — {getMaterialDescription(m)} ({m.quantity} {m.unit})
                   </option>
                 ))}
               </select>
+              {selectedMaterialLabel && (
+                <div className="form-hint">
+                  Selezionato: <strong>{selectedMaterialLabel}</strong>
+                </div>
+              )}
             </div>
 
             <div className="form-row">
@@ -352,9 +561,9 @@ export default function MovimentiForm() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Motivo <span className="required">*</span></label>
+                <label className="form-label">Motivazione <span className="required">*</span></label>
                 <select className="form-control" value={reason} onChange={(e) => setReason(e.target.value)}>
-                  <option value="">-- Seleziona motivo --</option>
+                  <option value="">-- Seleziona motivazione --</option>
                   {MOVEMENT_REASONS.map((r) => (
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
@@ -391,9 +600,12 @@ export default function MovimentiForm() {
               <input
                 type="text"
                 className="form-control"
-                value={user?.fullName || ''}
+                value={user?.fullName || user?.username || ''}
                 readOnly
               />
+              <div className="form-hint">
+                L’operatore viene tracciato automaticamente dall’utente loggato.
+              </div>
             </div>
 
             <div className="form-group">
@@ -423,21 +635,22 @@ export default function MovimentiForm() {
               <div className="card-header">
                 <h3 className="card-title">📦 Materiale Selezionato</h3>
               </div>
+
               <div className="card-body">
                 <div style={{ marginBottom: 16 }}>
                   <div className="text-sm text-muted fw-semibold">Codice</div>
-                  <div style={{ fontSize: 18, fontWeight: 800 }}>{material.code}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800 }}>{getMaterialCode(material)}</div>
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
                   <div className="text-sm text-muted fw-semibold">Descrizione</div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>{material.description}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>{getMaterialDescription(material)}</div>
                 </div>
 
                 <div className="form-row" style={{ marginBottom: 16 }}>
                   <div>
                     <div className="text-sm text-muted fw-semibold">Marca</div>
-                    <div>{material.brand}</div>
+                    <div>{material.brand || '—'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-muted fw-semibold">Categoria</div>
@@ -448,11 +661,11 @@ export default function MovimentiForm() {
                 <div className="form-row" style={{ marginBottom: 16 }}>
                   <div>
                     <div className="text-sm text-muted fw-semibold">Posizione</div>
-                    <div>{material.location}</div>
+                    <div>{material.location || '—'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-muted fw-semibold">Fornitore</div>
-                    <div>{material.supplier}</div>
+                    <div>{material.supplier || '—'}</div>
                   </div>
                 </div>
 
@@ -471,9 +684,9 @@ export default function MovimentiForm() {
                       fontSize: 40,
                       fontWeight: 800,
                       color:
-                        material.quantity === 0
+                        Number(material.quantity || 0) === 0
                           ? 'var(--danger-600)'
-                          : material.quantity <= material.minThreshold
+                          : Number(material.quantity || 0) <= Number(material.minThreshold || 0)
                             ? 'var(--warning-600)'
                             : 'var(--primary-700)'
                     }}
@@ -542,8 +755,8 @@ export default function MovimentiForm() {
                       {tipo === 'rettifica'
                         ? Number(quantity)
                         : tipo === 'uscita'
-                          ? material.quantity - Number(quantity)
-                          : material.quantity + Number(quantity)}{' '}
+                          ? Number(material.quantity || 0) - Number(quantity)
+                          : Number(material.quantity || 0) + Number(quantity)}{' '}
                       {material.unit}
                     </div>
                   </div>
@@ -557,7 +770,7 @@ export default function MovimentiForm() {
                   <div className="empty-state-icon">📦</div>
                   <div className="empty-state-title">Seleziona un materiale</div>
                   <div className="empty-state-text">
-                    Scegli un materiale dall'elenco a sinistra per visualizzarne i dettagli e registrare il movimento
+                    Scegli un materiale dall'elenco a sinistra per visualizzarne i dettagli e registrare il movimento.
                   </div>
                 </div>
               </div>
@@ -590,15 +803,20 @@ export default function MovimentiForm() {
                   marginBottom: 16
                 }}
               >
-                <div style={{ fontWeight: 800, fontSize: 18 }}>{material.code} — {material.description}</div>
+                <div style={{ fontWeight: 800, fontSize: 18 }}>
+                  {getMaterialCode(material)} — {getMaterialDescription(material)}
+                </div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: config.color, marginTop: 8 }}>
                   {tipo === 'rettifica' ? 'Nuova qtà: ' : ''}{quantity} {material.unit}
                 </div>
                 <div style={{ marginTop: 8, color: 'var(--gray-600)', fontSize: 13 }}>
-                  Operatore: {user?.fullName || '—'}
+                  Operatore: {user?.fullName || user?.username || '—'}
                 </div>
                 <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
                   Cliente: {clientName || '—'} · Autorizzato da: {authorizedBy || '—'}
+                </div>
+                <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
+                  Data: automatica al salvataggio
                 </div>
               </div>
             </div>
