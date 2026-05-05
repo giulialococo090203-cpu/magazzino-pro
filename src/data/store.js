@@ -27,10 +27,11 @@ const mapCategory = {
     description: row.descrizione,
     createdAt: row.created_at
   }),
-  toRow: (model) => clean({
-    nome: model.name,
-    descrizione: model.description
-  })
+  toRow: (model) =>
+    clean({
+      nome: model.name,
+      descrizione: model.description
+    })
 };
 
 const mapMaterial = {
@@ -51,20 +52,21 @@ const mapMaterial = {
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }),
-  toRow: (model) => clean({
-    codice: model.code,
-    descrizione: model.description,
-    marca: model.brand,
-    quantita: model.quantity,
-    categoria_id: model.category,
-    unita_misura: model.unit,
-    soglia_minima: model.minThreshold,
-    stato_disponibilita: model.status,
-    posizione_scaffale: model.location,
-    fornitore: model.supplier,
-    note: model.notes,
-    prezzo_netto: model.netPrice
-  })
+  toRow: (model) =>
+    clean({
+      codice: model.code,
+      descrizione: model.description,
+      marca: model.brand,
+      quantita: model.quantity,
+      categoria_id: model.category,
+      unita_misura: model.unit,
+      soglia_minima: model.minThreshold,
+      stato_disponibilita: model.status,
+      posizione_scaffale: model.location,
+      fornitore: model.supplier,
+      note: model.notes,
+      prezzo_netto: model.netPrice
+    })
 };
 
 const mapMovement = {
@@ -88,20 +90,21 @@ const mapMovement = {
     previousQty: row.previous_qty ?? null,
     newQty: row.new_qty ?? null
   }),
-  toRow: (model) => clean({
-    materiale_id: model.materialId,
-    tipo_movimento: model.type,
-    quantita: model.quantity,
-    motivo: model.reason,
-    note: model.notes,
-    utente_id: model.userId,
-    data_movimento: model.date || new Date().toISOString(),
-    cliente_nome: model.clientName || null,
-    autorizzato_da: model.authorizedBy || null,
-    operatore_nome: model.operatorName || null,
-    previous_qty: model.previousQty ?? null,
-    new_qty: model.newQty ?? null
-  })
+  toRow: (model) =>
+    clean({
+      materiale_id: model.materialId,
+      tipo_movimento: model.type,
+      quantita: model.quantity,
+      motivo: model.reason,
+      note: model.notes,
+      utente_id: model.userId,
+      data_movimento: model.date || new Date().toISOString(),
+      cliente_nome: model.clientName || null,
+      autorizzato_da: model.authorizedBy || null,
+      operatore_nome: model.operatorName || null,
+      previous_qty: model.previousQty ?? null,
+      new_qty: model.newQty ?? null
+    })
 };
 
 const mapUser = {
@@ -114,14 +117,15 @@ const mapUser = {
     active: row.attivo,
     createdAt: row.created_at
   }),
-  toRow: (model) => clean({
-    username: model.username,
-    nome: model.fullName,
-    email: model.email || null,
-    ruolo: normalizeRole(model.role),
-    attivo: model.active,
-    password: model.password
-  })
+  toRow: (model) =>
+    clean({
+      username: model.username,
+      nome: model.fullName,
+      email: model.email || null,
+      ruolo: normalizeRole(model.role),
+      attivo: model.active,
+      password: model.password
+    })
 };
 
 const mapNotification = {
@@ -137,12 +141,13 @@ const mapNotification = {
     currentQty: row.materiali?.quantita,
     threshold: row.materiali?.soglia_minima
   }),
-  toRow: (model) => clean({
-    materiale_id: model.materialId,
-    tipo: model.type,
-    messaggio: model.message,
-    letta: model.read
-  })
+  toRow: (model) =>
+    clean({
+      materiale_id: model.materialId,
+      tipo: model.type,
+      messaggio: model.message,
+      letta: model.read
+    })
 };
 
 const mapLog = {
@@ -156,13 +161,14 @@ const mapLog = {
     details: row.descrizione,
     date: row.created_at
   }),
-  toRow: (model) => clean({
-    utente_id: model.userId,
-    entita: model.entity,
-    entita_id: model.entityId,
-    azione: model.action,
-    descrizione: model.details
-  })
+  toRow: (model) =>
+    clean({
+      utente_id: model.userId,
+      entita: model.entity,
+      entita_id: model.entityId,
+      azione: model.action,
+      descrizione: model.details
+    })
 };
 
 // ============================================================
@@ -296,7 +302,11 @@ export const materialStore = {
     await supabase.from('notifiche').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from('movimenti').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-    const { error } = await supabase.from('materiali').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    const { error } = await supabase
+      .from('materiali')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
     if (error) throw error;
   },
 
@@ -467,10 +477,15 @@ export const userStore = {
       .ilike('username', trimmedUsername)
       .eq('password', hashedPassword)
       .eq('attivo', true)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      console.warn('Login fallito per:', trimmedUsername, error?.message);
+    if (error) {
+      console.warn('Login fallito per:', trimmedUsername, error.message);
+      return null;
+    }
+
+    if (!data) {
+      console.warn('Login fallito per:', trimmedUsername, 'nessun utente trovato');
       return null;
     }
 
