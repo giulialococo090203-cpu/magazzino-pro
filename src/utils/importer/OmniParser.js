@@ -1,7 +1,8 @@
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-const PDF_TEXT_PARSER_URL = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
+const PDF_TEXT_PARSER_URL =
+  import.meta.env.VITE_PDF_TEXT_PARSER_URL || 'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
@@ -159,15 +160,28 @@ async function callPdfTextParser(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(PDF_TEXT_PARSER_URL, {
-    method: 'POST',
-    body: formData,
-  });
+  let response;
+
+  try {
+    response = await fetch(PDF_TEXT_PARSER_URL, {
+      method: 'POST',
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error(
+      'Connessione al parser PDF non riuscita. In locale può essere un problema CORS del server PDF.'
+    );
+  }
 
   if (!response.ok) {
     const text = await response.text();
     const parsed = safeJsonParse(text);
-    throw new Error(parsed?.message || parsed?.detail || `Parser PDF non disponibile (${response.status}).`);
+
+    throw new Error(
+      parsed?.message ||
+        parsed?.detail ||
+        `Parser PDF non disponibile (${response.status}).`
+    );
   }
 
   return await response.json();
@@ -208,13 +222,18 @@ export async function parseFile(file) {
 
   if (ext === 'pdf') {
     const textResult = await callPdfTextParser(file);
+
+    if (textResult?.scanDetected) {
+      return textResult;
+    }
+
     const rows = normalizeTextParserRows(textResult);
 
     if (!rows.length) {
       throw new Error('Il PDF non contiene righe utilizzabili.');
     }
 
-    return rows;
+    return { matrix: rows };
   }
 
   throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);

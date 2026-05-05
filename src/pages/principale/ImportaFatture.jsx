@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
-// import { predictCategory } from '../../utils/mlEngine';
-
 import { parseFile } from '../../utils/importer/OmniParser';
 import { findBestMapping } from '../../utils/importer/HeuristicAnalysis';
 import ScanInvoiceFallback, { createEmptyRow } from '../../components/import/ScanInvoiceFallback.jsx';
@@ -21,7 +19,6 @@ function buildImportAssistantMessage(error, file) {
   const fileSizeMb = file?.size ? (file.size / (1024 * 1024)).toFixed(2) : null;
   const rawMessage = error?.message || 'Errore sconosciuto durante l’importazione.';
   const msg = rawMessage.toLowerCase();
-
   const suggestions = [];
 
   if (!file) {
@@ -56,6 +53,11 @@ function buildImportAssistantMessage(error, file) {
         'Se è un Excel, elimina fogli inutili o immagini incorporate.',
       ],
     };
+  }
+
+  if (msg.includes('cors') || msg.includes('connessione al parser pdf')) {
+    suggestions.push('Il parser PDF sta rifiutando le richieste dal tuo ambiente locale.');
+    suggestions.push('Prova dalla versione online oppure abilita http://localhost:4173 nel CORS del parser.');
   }
 
   if (msg.includes('empty') || msg.includes('vuoto')) {
@@ -110,7 +112,7 @@ export default function ImportaFatture() {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [step, setStep] = useState(1); // 1=upload, 2=preview, 3=mapping, 4=confirm, 5=done, 6=scan fallback
+  const [step, setStep] = useState(1);
   const [fileName, setFileName] = useState('');
   const [parsedItems, setParsedItems] = useState([]);
   const [results, setResults] = useState(null);
@@ -144,7 +146,6 @@ export default function ImportaFatture() {
       try {
         const cats = await categoryStore.getAll();
         const materials = await materialStore.getAll();
-
         setCategories(cats);
         setAllMaterials(materials);
       } catch (err) {
@@ -324,7 +325,6 @@ export default function ImportaFatture() {
         if (!item.selected) return item;
 
         const suggestedCategory = suggestCategoryForItem(item);
-
         if (!suggestedCategory) return item;
 
         return {
@@ -402,7 +402,7 @@ export default function ImportaFatture() {
           description: existing ? existing.description : desc,
           quantity: qty,
           unit: existing ? existing.unit : unit,
-          price: price || existing?.price || 0,
+          price: price || existing?.netPrice || 0,
           isNew: !existing,
           selected: true,
           category: catId,
@@ -410,16 +410,14 @@ export default function ImportaFatture() {
           confidence: recognition.confidence,
           suggestions,
           brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
-          minThreshold: 10,
+          minThreshold: existing?.minThreshold || 10,
           location: location || existing?.location || 'A1-01',
-          supplier: 'Importato',
+          supplier: existing?.supplier || 'Importato',
           notes: `Import: ${currentFileName}`,
           existingMaterial: existing,
         };
       })
       .filter(Boolean);
-
-    console.log('PDF processed items:', processed);
 
     if (processed.length === 0) {
       throw new Error('Nessun materiale valido rilevato nel PDF.');
@@ -523,7 +521,7 @@ export default function ImportaFatture() {
         description: existing ? existing.description : (desc || code),
         quantity: qty,
         unit: existing ? existing.unit : unit,
-        price: price || existing?.price || 0,
+        price: price || existing?.netPrice || 0,
         isNew: !existing,
         selected: true,
         category: catId,
@@ -531,15 +529,13 @@ export default function ImportaFatture() {
         confidence: recognition.confidence,
         suggestions,
         brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
-        minThreshold: 10,
+        minThreshold: existing?.minThreshold || 10,
         location: location || existing?.location || 'A1-01',
-        supplier: 'Importato',
+        supplier: existing?.supplier || 'Importato',
         notes: `Import: ${currentFileName}`,
         existingMaterial: existing,
       });
     }
-
-    console.log('Processed items:', processed);
 
     if (processed.length === 0) {
       throw new Error('Nessun materiale valido rilevato nel documento.');
@@ -709,7 +705,7 @@ export default function ImportaFatture() {
 
     let loaded = 0;
     let created = 0;
-    let errors = [];
+    const errors = [];
 
     const selectedItems = parsedItems.filter((item) => item.selected);
 
@@ -755,7 +751,7 @@ export default function ImportaFatture() {
             category: item.category,
             quantity: item.quantity,
             unit: item.unit,
-            price: item.price,
+            netPrice: item.price || 0,
             minThreshold: item.minThreshold,
             location: item.location,
             supplier: item.supplier,
@@ -763,6 +759,12 @@ export default function ImportaFatture() {
           });
           created++;
         } else if (item.existingMaterial) {
+          if ((item.price || 0) > 0) {
+            await materialStore.update(item.existingMaterial.id, {
+              netPrice: item.price || 0,
+            });
+          }
+
           await movementStore.create({
             materialId: item.existingMaterial.id,
             type: 'entrata',
@@ -847,31 +849,6 @@ export default function ImportaFatture() {
           <p className="page-subtitle">Carica materiali partendo da documenti di ordine o fatture</p>
         </div>
       </div>
-
-      {scanDetected && step !== 6 && (
-        <div
-          className="card"
-          style={{
-            marginBottom: 20,
-            border: '1px solid var(--warning-300)',
-            background: 'var(--warning-50)',
-          }}
-        >
-          <div className="card-body" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <div style={{ fontSize: 28 }}>🖼️</div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ marginBottom: 8, fontWeight: 800 }}>
-                  Documento scansito rilevato
-                </h3>
-                <p style={{ marginBottom: 12, color: 'var(--gray-700)' }}>
-                  {scanMessage || 'Questa fattura sembra una scansione o un’immagine. La lettura automatica completa non è disponibile.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {(assistantAdvice || importError) && !scanDetected && (
         <div
@@ -1110,7 +1087,7 @@ export default function ImportaFatture() {
                   <th>Marca</th>
                   <th>Qtà</th>
                   <th>UM</th>
-                  <th>Prezzo</th>
+                  <th>Prezzo Netto</th>
                   <th>Posizione</th>
                   <th>Categoria</th>
                 </tr>
