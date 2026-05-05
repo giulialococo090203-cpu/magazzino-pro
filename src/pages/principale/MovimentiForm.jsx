@@ -104,6 +104,10 @@ function formatNowDateTime() {
   });
 }
 
+function getDefaultOperatorName(user) {
+  return user?.fullName || user?.username || '';
+}
+
 export default function MovimentiForm() {
   const { tipo } = useParams();
   const { user } = useAuth();
@@ -114,11 +118,13 @@ export default function MovimentiForm() {
   const [selectedMaterial, setSelectedMaterial] = useState('');
   const [quantity, setQuantity] = useState('');
   const [reason, setReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
   const [notes, setNotes] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [searchMat, setSearchMat] = useState('');
   const [clientName, setClientName] = useState('');
   const [authorizedBy, setAuthorizedBy] = useState('');
+  const [operatorName, setOperatorName] = useState(getDefaultOperatorName(user));
   const [showConfirm, setShowConfirm] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -126,6 +132,10 @@ export default function MovimentiForm() {
   const searchWrapRef = useRef(null);
 
   const canUsePage = canManageMovements(user?.role);
+
+  useEffect(() => {
+    setOperatorName(getDefaultOperatorName(user));
+  }, [user]);
 
   useEffect(() => {
     async function loadData() {
@@ -140,9 +150,11 @@ export default function MovimentiForm() {
         setSelectedMaterial('');
         setQuantity('');
         setReason('');
+        setCustomReason('');
         setNotes('');
         setClientName('');
         setAuthorizedBy('');
+        setOperatorName(getDefaultOperatorName(user));
         setSuccess('');
         setError('');
         setSearchMat('');
@@ -154,7 +166,7 @@ export default function MovimentiForm() {
     }
 
     loadData();
-  }, [tipo]);
+  }, [tipo, user]);
 
   useEffect(() => {
     const onClickOutside = (e) => {
@@ -222,13 +234,17 @@ export default function MovimentiForm() {
     ? `${getMaterialCode(material)} — ${getMaterialDescription(material)}`
     : '';
 
+  const finalReason = reason === 'altro' ? customReason.trim() : reason;
+
   const resetFormAfterSuccess = () => {
     setSelectedMaterial('');
     setQuantity('');
     setReason('');
+    setCustomReason('');
     setNotes('');
     setClientName('');
     setAuthorizedBy('');
+    setOperatorName(getDefaultOperatorName(user));
     setSearchMat('');
     setSuccess('');
     setShowSuggestions(false);
@@ -253,7 +269,17 @@ export default function MovimentiForm() {
     }
 
     if (!reason) {
-      setError('Seleziona un motivo.');
+      setError('Seleziona una motivazione.');
+      return;
+    }
+
+    if (reason === 'altro' && !customReason.trim()) {
+      setError('Scrivi la motivazione manuale.');
+      return;
+    }
+
+    if (!operatorName.trim()) {
+      setError('Inserisci il nome dell’operatore.');
       return;
     }
 
@@ -277,11 +303,11 @@ export default function MovimentiForm() {
         materialId: selectedMaterial,
         type: tipo,
         quantity: Number(quantity),
-        reason,
+        reason: finalReason,
         notes,
         userId: user?.id,
         userName: user?.fullName || user?.username || '',
-        operatorName: user?.fullName || user?.username || '',
+        operatorName: operatorName.trim(),
         clientName,
         authorizedBy
       });
@@ -562,12 +588,34 @@ export default function MovimentiForm() {
 
               <div className="form-group">
                 <label className="form-label">Motivazione <span className="required">*</span></label>
-                <select className="form-control" value={reason} onChange={(e) => setReason(e.target.value)}>
+
+                <select
+                  className="form-control"
+                  value={reason}
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    if (e.target.value !== 'altro') {
+                      setCustomReason('');
+                    }
+                  }}
+                >
                   <option value="">-- Seleziona motivazione --</option>
                   {MOVEMENT_REASONS.map((r) => (
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
+                  <option value="altro">Altro</option>
                 </select>
+
+                {reason === 'altro' && (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    placeholder="Scrivi la motivazione..."
+                    style={{ marginTop: 10 }}
+                  />
+                )}
               </div>
             </div>
 
@@ -596,15 +644,16 @@ export default function MovimentiForm() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Operatore</label>
+              <label className="form-label">Operatore <span className="required">*</span></label>
               <input
                 type="text"
                 className="form-control"
-                value={user?.fullName || user?.username || ''}
-                readOnly
+                value={operatorName}
+                onChange={(e) => setOperatorName(e.target.value)}
+                placeholder="Nome operatore"
               />
               <div className="form-hint">
-                L’operatore viene tracciato automaticamente dall’utente loggato.
+                Il campo è precompilato con l’utente loggato, ma può essere corretto manualmente se necessario.
               </div>
             </div>
 
@@ -810,10 +859,13 @@ export default function MovimentiForm() {
                   {tipo === 'rettifica' ? 'Nuova qtà: ' : ''}{quantity} {material.unit}
                 </div>
                 <div style={{ marginTop: 8, color: 'var(--gray-600)', fontSize: 13 }}>
-                  Operatore: {user?.fullName || user?.username || '—'}
+                  Operatore: {operatorName.trim() || '—'}
                 </div>
                 <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
                   Cliente: {clientName || '—'} · Autorizzato da: {authorizedBy || '—'}
+                </div>
+                <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
+                  Motivazione: {finalReason || '—'}
                 </div>
                 <div style={{ marginTop: 4, color: 'var(--gray-600)', fontSize: 13 }}>
                   Data: automatica al salvataggio
