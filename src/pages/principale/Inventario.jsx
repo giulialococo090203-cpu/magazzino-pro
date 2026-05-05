@@ -8,14 +8,43 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 function formatStatus(status) {
-  const labels = { disponibile: 'Disponibile', sotto_soglia: 'Sotto soglia', esaurito: 'Esaurito' };
+  const labels = {
+    disponibile: 'Disponibile',
+    sotto_soglia: 'Sotto soglia',
+    esaurito: 'Esaurito'
+  };
   return labels[status] || status;
 }
 
-function canSeeInstallerPrice(role) {
-  return ['datore', 'admin', 'segretaria', 'segreteria', 'magazziniere', 'operatore'].includes(
-    String(role || '').trim().toLowerCase()
+function normalizeRole(role) {
+  return String(role || '').trim().toLowerCase();
+}
+
+function canSeeListPrice(role) {
+  return ['operaio', 'operatore', 'segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
+    normalizeRole(role)
   );
+}
+
+function canSeeInstallerPrice(role) {
+  return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
+    normalizeRole(role)
+  );
+}
+
+function calcListPrice(netPrice) {
+  return Number(netPrice || 0) * 1.22;
+}
+
+function calcInstallerPrice(netPrice) {
+  return Number(netPrice || 0) * 0.9 * 1.22;
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('it-IT', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(Number(value || 0));
 }
 
 export default function Inventario() {
@@ -30,6 +59,9 @@ export default function Inventario() {
   const [materialMovements, setMaterialMovements] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapRef = useRef(null);
+
+  const showListPrice = canSeeListPrice(user?.role);
+  const showInstallerPrice = canSeeInstallerPrice(user?.role);
 
   const refresh = async () => {
     try {
@@ -108,27 +140,34 @@ export default function Inventario() {
   }, [search, materials, categories]);
 
   const exportExcel = () => {
-    const data = filtered.map((m) => ({
-      Codice: m.code,
-      Descrizione: m.description,
-      Marca: m.brand,
-      Categoria: getCategoryName(m.category),
-      Quantità: m.quantity,
-      Unità: m.unit,
-      'Soglia Min.': m.minThreshold,
-      Stato: formatStatus(m.status),
-      Posizione: m.location,
-      Fornitore: m.supplier,
-      Note: m.notes || ''
-    }));
+    const data = filtered.map((m) => {
+      const row = {
+        Codice: m.code,
+        Descrizione: m.description,
+        Marca: m.brand,
+        Categoria: getCategoryName(m.category),
+        Quantità: m.quantity,
+        Unità: m.unit,
+        'Soglia Min.': m.minThreshold,
+        Stato: formatStatus(m.status),
+        Posizione: m.location,
+        Fornitore: m.supplier,
+        Note: m.notes || ''
+      };
+
+      if (showListPrice) {
+        row['Prezzo di listino'] = calcListPrice(m.netPrice);
+      }
+
+      if (showInstallerPrice) {
+        row['Prezzo installatore'] = calcInstallerPrice(m.netPrice);
+      }
+
+      return row;
+    });
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-      { wch: 12 }, { wch: 35 }, { wch: 18 }, { wch: 16 },
-      { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 14 },
-      { wch: 12 }, { wch: 22 }, { wch: 20 }
-    ];
     XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
     XLSX.writeFile(wb, `Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
@@ -140,25 +179,52 @@ export default function Inventario() {
     doc.text('Inventario Magazzino', 14, 20);
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
-    doc.text(`Generato il ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}`, 14, 28);
+    doc.text(
+      `Generato il ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}`,
+      14,
+      28
+    );
     doc.text(`Totale materiali: ${filtered.length}`, 14, 34);
 
-    const tableData = filtered.map((m) => [
-      m.code,
-      m.description,
-      m.brand,
-      getCategoryName(m.category),
-      m.quantity,
-      m.unit,
-      m.minThreshold,
-      formatStatus(m.status),
-      m.location,
-      m.supplier
-    ]);
+    const head = [
+      'Codice',
+      'Descrizione',
+      'Marca',
+      'Categoria',
+      'Qtà',
+      'UM'
+    ];
+
+    if (showListPrice) head.push('Prezzo listino');
+    if (showInstallerPrice) head.push('Prezzo installatore');
+
+    head.push('Stato', 'Posizione', 'Fornitore');
+
+    const tableData = filtered.map((m) => {
+      const row = [
+        m.code,
+        m.description,
+        m.brand,
+        getCategoryName(m.category),
+        m.quantity,
+        m.unit
+      ];
+
+      if (showListPrice) row.push(formatCurrency(calcListPrice(m.netPrice)));
+      if (showInstallerPrice) row.push(formatCurrency(calcInstallerPrice(m.netPrice)));
+
+      row.push(
+        formatStatus(m.status),
+        m.location || '',
+        m.supplier || ''
+      );
+
+      return row;
+    });
 
     autoTable(doc, {
       startY: 40,
-      head: [['Codice', 'Descrizione', 'Marca', 'Categoria', 'Qtà', 'UM', 'Soglia', 'Stato', 'Posizione', 'Fornitore']],
+      head: [head],
       body: tableData,
       styles: { fontSize: 8, cellPadding: 3 },
       headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
@@ -281,6 +347,8 @@ export default function Inventario() {
               <th>Categoria</th>
               <th style={{ textAlign: 'center' }}>Quantità</th>
               <th>UM</th>
+              {showListPrice && <th>Prezzo di listino</th>}
+              {showInstallerPrice && <th>Prezzo installatore</th>}
               <th>Stato</th>
               <th>Posizione</th>
               <th>Fornitore</th>
@@ -290,7 +358,16 @@ export default function Inventario() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan="10" className="text-center" style={{ padding: 40 }}>
+                <td
+                  colSpan={
+                    9 +
+                    (showListPrice ? 1 : 0) +
+                    (showInstallerPrice ? 1 : 0) +
+                    2
+                  }
+                  className="text-center"
+                  style={{ padding: 40 }}
+                >
                   <div className="empty-state">
                     <div className="empty-state-icon">📦</div>
                     <div className="empty-state-title">Nessun materiale trovato</div>
@@ -321,6 +398,12 @@ export default function Inventario() {
                     </strong>
                   </td>
                   <td className="text-muted">{m.unit}</td>
+                  {showListPrice && (
+                    <td>{formatCurrency(calcListPrice(m.netPrice))}</td>
+                  )}
+                  {showInstallerPrice && (
+                    <td>{formatCurrency(calcInstallerPrice(m.netPrice))}</td>
+                  )}
                   <td>
                     <span className={`status-badge status-${m.status}`}>
                       {formatStatus(m.status)}
@@ -388,6 +471,23 @@ export default function Inventario() {
                   </div>
                 </div>
               </div>
+
+              {(showListPrice || showInstallerPrice) && (
+                <div className="form-row" style={{ marginBottom: 20 }}>
+                  {showListPrice && (
+                    <div>
+                      <span className="text-sm text-muted fw-semibold">Prezzo di listino:</span>{' '}
+                      <strong>{formatCurrency(calcListPrice(detailMaterial.netPrice))}</strong>
+                    </div>
+                  )}
+                  {showInstallerPrice && (
+                    <div>
+                      <span className="text-sm text-muted fw-semibold">Prezzo installatore:</span>{' '}
+                      <strong>{formatCurrency(calcInstallerPrice(detailMaterial.netPrice))}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="form-row" style={{ marginBottom: 20 }}>
                 <div><span className="text-sm text-muted fw-semibold">Posizione:</span> <strong>{detailMaterial.location || '—'}</strong></div>
