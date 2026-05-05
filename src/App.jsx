@@ -1,105 +1,268 @@
-import { useState, useEffect, createContext, useContext } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { userStore } from './data/store';
-import { INITIAL_UNITS } from './data/initialData';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../App';
+import { notificationStore } from '../data/store';
+import { useState, useEffect } from 'react';
 
-// Pagine - Login e Generale
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Layout from './components/Layout';
+const ROLE_ALIASES = {
+  datore: ['datore', 'admin'],
+  segretaria: ['segretaria', 'segreteria'],
+  magazziniere: ['magazziniere', 'operatore'],
+  operaio: ['operaio'],
+};
 
-// Pagine - Principale
-import Inventario from './pages/principale/Inventario';
-import MovimentiForm from './pages/principale/MovimentiForm';
-import StoricoMovimenti from './pages/principale/StoricoMovimenti';
-import ImportaFatture from './pages/principale/ImportaFatture';
-
-// Pagine - Gestione
-import GestioneCategorie from './pages/gestione/GestioneCategorie';
-import GestioneMateriali from './pages/gestione/GestioneMateriali';
-import GestioneUtenti from './pages/gestione/GestioneUtenti';
-import LogModifiche from './pages/gestione/LogModifiche';
-
-// Pagine - Controllo
-import DashboardControllo from './pages/controllo/DashboardControllo';
-import Soglie from './pages/controllo/Soglie';
-import Notifiche from './pages/controllo/Notifiche';
-
-import './index.css';
-
-// Context per l'autenticazione
-export const AuthContext = createContext(null);
-
-export function useAuth() {
-  return useContext(AuthContext);
+function hasRole(user, allowedRoles = []) {
+  if (!user?.role) return false;
+  return allowedRoles.some((role) => {
+    const accepted = ROLE_ALIASES[role] || [role];
+    return accepted.includes(user.role);
+  });
 }
 
-function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+function getRoleLabel(role) {
+  if (ROLE_ALIASES.datore.includes(role)) return 'Datore';
+  if (ROLE_ALIASES.segretaria.includes(role)) return 'Segretaria';
+  if (ROLE_ALIASES.magazziniere.includes(role)) return 'Magazziniere';
+  if (ROLE_ALIASES.operaio.includes(role)) return 'Operaio';
+  return role || 'Utente';
+}
+
+function getDefaultRoute(user) {
+  if (hasRole(user, ['datore'])) return '/';
+  return '/inventario';
+}
+
+const NAV_SECTIONS = [
+  {
+    title: 'Magazzino',
+    items: [
+      { path: '/inventario', label: 'Giacenza', icon: '📦', roles: ['datore', 'segretaria', 'magazziniere', 'operaio'] },
+      { path: '/movimento/entrata', label: 'Carico (In)', icon: '📥', roles: ['datore', 'segretaria', 'magazziniere'] },
+      { path: '/movimento/uscita', label: 'Scarica (Out)', icon: '📤', roles: ['datore', 'segretaria', 'magazziniere'] },
+      { path: '/movimento/rettifica', label: 'Rettifica Manuale', icon: '✏️', roles: ['datore'] },
+      { path: '/storico', label: 'Storico Movimenti', icon: '📅', roles: ['datore'] },
+    ]
+  },
+  {
+    title: 'Fatture e Configurazione',
+    items: [
+      { path: '/importa', label: 'Importa Fatture', icon: '📄', roles: ['datore', 'segretaria'] },
+      { path: '/gestione/categorie', label: 'Categorie', icon: '🏷️', roles: ['datore', 'segretaria'] },
+      { path: '/controllo/soglie', label: 'Soglie Scorta', icon: '⚙️', roles: ['datore', 'segretaria'] },
+    ]
+  },
+  {
+    title: 'Notifiche',
+    items: [
+      { path: '/controllo/notifiche', label: 'Notifiche', icon: '🔔', roles: ['datore', 'segretaria', 'magazziniere'], badge: true },
+    ]
+  },
+  {
+    title: 'Controllo Datore',
+    items: [
+      { path: '/', label: 'Punto di Controllo', icon: '📊', roles: ['datore'] },
+      { path: '/controllo', label: 'Analisi Dati', icon: '📈', roles: ['datore'] },
+      { path: '/gestione/materiali', label: 'Anagrafica Materiali', icon: '🛠️', roles: ['datore'] },
+      { path: '/gestione/utenti', label: 'Utenti', icon: '👤', roles: ['datore'] },
+      { path: '/gestione/log', label: 'Audit Log', icon: '📜', roles: ['datore'] },
+    ]
+  },
+];
+
+const PAGE_TITLES = {
+  '/': 'Punto di Controllo',
+  '/inventario': 'Giacenza',
+  '/movimento/entrata': 'Carico Materiale',
+  '/movimento/uscita': 'Scarica Materiale',
+  '/movimento/reintegro': 'Reintegra Materiale',
+  '/movimento/rettifica': 'Rettifica Manuale',
+  '/storico': 'Storico Movimenti',
+  '/importa': 'Importa Fatture',
+  '/gestione/materiali': 'Anagrafica Materiali',
+  '/gestione/categorie': 'Gestione Categorie',
+  '/gestione/utenti': 'Gestione Utenti',
+  '/gestione/log': 'Audit Log',
+  '/controllo': 'Analisi Dati',
+  '/controllo/soglie': 'Soglie Scorta',
+  '/controllo/notifiche': 'Centro Notifiche',
+};
+
+const SECTION_NAMES = {
+  '/inventario': 'Magazzino',
+  '/movimento': 'Magazzino',
+  '/storico': 'Magazzino',
+  '/importa': 'Fatture',
+  '/controllo/notifiche': 'Notifiche',
+  '/controllo': 'Controllo',
+  '/gestione': 'Configurazione',
+  '/': 'Controllo',
+};
+
+function getSection(pathname) {
+  const orderedPrefixes = Object.keys(SECTION_NAMES).sort((a, b) => b.length - a.length);
+  for (const prefix of orderedPrefixes) {
+    if (pathname.startsWith(prefix)) return SECTION_NAMES[prefix];
+  }
+  return 'Generale';
+}
+
+export default function Layout({ children }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   useEffect(() => {
-    // Caricamento sessione utente
-    const user = userStore.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-    }
-    
-    // Inizializzazione Unità di misura base se mancanti (fallback locale)
-    if (!localStorage.getItem('wm_units')) {
-      localStorage.setItem('wm_units', JSON.stringify(INITIAL_UNITS));
+    const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
+    if (!canSeeNotifications) {
+      setUnreadCount(0);
+      return;
     }
 
-    setLoading(false);
-  }, []);
+    let mounted = true;
 
-  const login = (user) => setCurrentUser(user);
-  
-  const logout = () => {
-    userStore.logout();
-    setCurrentUser(null);
-  };
+    const updateNotifs = async () => {
+      try {
+        const unread = await notificationStore.getUnread();
+        if (mounted) setUnreadCount(unread.length);
+      } catch (err) {
+        console.error('Errore caricamento notifiche:', err);
+      }
+    };
 
-  if (loading) return null;
+    updateNotifs();
+    const interval = setInterval(updateNotifs, 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [user]);
+
+  const section = getSection(location.pathname);
+  const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
+
+  const today = new Date().toLocaleDateString('it-IT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  const displayName = user?.fullName || user?.username || 'Utente';
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  const canSeeNotifications = hasRole(user, ['datore', 'segretaria', 'magazziniere']);
 
   return (
-    <AuthContext.Provider value={{ user: currentUser, login, logout }}>
-      <BrowserRouter>
-        {!currentUser ? (
-          <Routes>
-            {/* Cattura tutti i path non autenticati e mostra il Login */}
-            <Route path="*" element={<Login onLogin={login} />} />
-          </Routes>
-        ) : (
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              
-              {/* Sezione Principale */}
-              <Route path="/inventario" element={<Inventario />} />
-              <Route path="/movimento/:tipo" element={<MovimentiForm />} />
-              <Route path="/storico" element={<StoricoMovimenti />} />
-              <Route path="/importa" element={<ImportaFatture />} />
-              
-              {/* Sezione Gestione */}
-              <Route path="/gestione/categorie" element={<GestioneCategorie />} />
-              <Route path="/gestione/materiali" element={<GestioneMateriali />} />
-              <Route path="/gestione/utenti" element={<GestioneUtenti />} />
-              <Route path="/gestione/log" element={<LogModifiche />} />
-              
-              {/* Sezione Controllo */}
-              <Route path="/controllo" element={<DashboardControllo />} />
-              <Route path="/controllo/soglie" element={<Soglie />} />
-              <Route path="/controllo/notifiche" element={<Notifiche />} />
-              
-              {/* Rotta di fallback: reindirizza alla Dashboard usando replace */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Layout>
-        )}
-      </BrowserRouter>
-    </AuthContext.Provider>
+    <div className="app-layout">
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-icon">M</div>
+            <div className="sidebar-logo-text">
+              <h1>MagazzinoPro</h1>
+              <span>Gestione Magazzino</span>
+            </div>
+          </div>
+        </div>
+
+        {NAV_SECTIONS.map((section) => {
+          const visibleItems = section.items.filter((item) =>
+            hasRole(user, item.roles)
+          );
+
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div className="sidebar-section" key={section.title}>
+              <div className="sidebar-section-title">{section.title}</div>
+              <nav className="sidebar-nav">
+                {visibleItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
+                  >
+                    <span className="sidebar-link-icon">{item.icon}</span>
+                    <span>{item.label}</span>
+                    {item.badge && unreadCount > 0 && (
+                      <span className="sidebar-badge">{unreadCount}</span>
+                    )}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          );
+        })}
+
+        <div className="sidebar-user">
+          <div className="sidebar-user-info">
+            <div className="sidebar-avatar">{initials}</div>
+            <div className="sidebar-user-details">
+              <div className="sidebar-user-name">{displayName}</div>
+              <div className="sidebar-user-role">{getRoleLabel(user?.role)}</div>
+            </div>
+            <button className="sidebar-logout" onClick={logout} title="Esci">
+              ⏻
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="main-content">
+        <header className="header">
+          <div className="header-left">
+            <div className="header-breadcrumb">
+              <span>{section}</span>
+              <span>›</span>
+              <span>{pageTitle}</span>
+            </div>
+          </div>
+
+          <div className="header-right">
+            <div className="global-search-container">
+              <span className="global-search-icon">🔍</span>
+              <input
+                type="text"
+                className="global-search-input"
+                placeholder="Cerca codice materiale..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && globalSearch.trim()) {
+                    navigate(`/inventario?q=${encodeURIComponent(globalSearch.trim())}`);
+                    setGlobalSearch('');
+                  }
+                }}
+              />
+            </div>
+
+            <span className="header-date" style={{ textTransform: 'capitalize' }}>
+              {today}
+            </span>
+
+            {canSeeNotifications && (
+              <Link to="/controllo/notifiche" className="header-notification-btn">
+                🔔
+                {unreadCount > 0 && (
+                  <span className="header-notification-badge">{unreadCount}</span>
+                )}
+              </Link>
+            )}
+          </div>
+        </header>
+
+        <div className="page-content animate-fadeIn" key={location.pathname}>
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }
-
-export default App;
