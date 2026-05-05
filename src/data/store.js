@@ -69,6 +69,15 @@ function chunkArray(array = [], size = 100) {
   return chunks;
 }
 
+function notifySupabaseUsageChanged() {
+  try {
+    window.dispatchEvent(new CustomEvent('wm_supabase_usage_refresh'));
+    localStorage.setItem('wm_supabase_usage_refresh_at', String(Date.now()));
+  } catch {
+    // Non bloccare mai le operazioni se il browser non permette l’evento.
+  }
+}
+
 // --- Field Mappings DB Snake Case <-> App Camel Case ---
 
 const mapCategory = {
@@ -316,6 +325,8 @@ export const categoryStore = {
     const { error } = await supabase.from('categorie').delete().eq('id', id);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 };
 
@@ -402,6 +413,8 @@ export const materialStore = {
 
     await this._checkThreshold(model);
 
+    notifySupabaseUsageChanged();
+
     return model;
   },
 
@@ -425,6 +438,8 @@ export const materialStore = {
 
     await this._checkThreshold(model);
 
+    notifySupabaseUsageChanged();
+
     return model;
   },
 
@@ -432,6 +447,8 @@ export const materialStore = {
     const { error } = await supabase.from('materiali').delete().eq('id', id);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async deleteAll() {
@@ -451,6 +468,8 @@ export const materialStore = {
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async _checkThreshold(material) {
@@ -536,6 +555,8 @@ export const movementStore = {
 
     if (error) throw error;
 
+    notifySupabaseUsageChanged();
+
     return mapMovement.toModel(data);
   },
 
@@ -584,6 +605,8 @@ export const movementStore = {
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async getMostMoved(limit = 10) {
@@ -722,6 +745,8 @@ export const userStore = {
 
     if (error) throw error;
 
+    notifySupabaseUsageChanged();
+
     return mapUser.toModel(data);
   },
 
@@ -748,6 +773,8 @@ export const userStore = {
       this.setCurrentUser(updatedUser);
     }
 
+    notifySupabaseUsageChanged();
+
     return updatedUser;
   },
 
@@ -755,6 +782,8 @@ export const userStore = {
     const { error } = await supabase.from('utenti').delete().eq('id', id);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 };
 
@@ -794,6 +823,8 @@ export const notificationStore = {
 
     if (error) throw error;
 
+    notifySupabaseUsageChanged();
+
     return data;
   },
 
@@ -819,6 +850,8 @@ export const notificationStore = {
     const { error } = await supabase.from('notifiche').delete().eq('id', id);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 };
 
@@ -840,6 +873,8 @@ export const adminLogStore = {
       .insert(mapLog.toRow(log));
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async getRecent(limit = 100) {
@@ -852,6 +887,17 @@ export const adminLogStore = {
     if (error) throw error;
 
     return data.map(mapLog.toModel);
+  },
+
+  async deleteAll() {
+    const { error } = await supabase
+      .from('log_modifiche')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 };
 
@@ -899,6 +945,8 @@ export const invoiceImportStore = {
 
     if (error) throw error;
 
+    notifySupabaseUsageChanged();
+
     return mapImportedInvoice.toModel(data);
   },
 
@@ -913,6 +961,8 @@ export const invoiceImportStore = {
       .single();
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
 
     return mapImportedInvoice.toModel(data);
   },
@@ -971,6 +1021,21 @@ export const invoiceImportStore = {
     return mapImportedInvoice.toModel(data);
   },
 
+  async getByIds(ids = []) {
+    const cleanIds = [...new Set((ids || []).filter(Boolean))];
+
+    if (cleanIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .select('*')
+      .in('id', cleanIds);
+
+    if (error) throw error;
+
+    return data.map(mapImportedInvoice.toModel);
+  },
+
   async getSignedUrl(filePath, expiresIn = 60 * 10) {
     if (!filePath) {
       throw new Error('Percorso file mancante.');
@@ -990,75 +1055,98 @@ export const invoiceImportStore = {
       throw new Error('ID fattura mancante.');
     }
 
-    const invoice = await this.getById(id);
+    const result = await this.deleteManyWithFiles([id]);
 
+    return {
+      invoiceDeleted: result.invoicesDeleted === 1,
+      fileDeleted: result.filesDeleted > 0,
+      fileErrors: result.fileErrors,
+      invoice: result.invoices?.[0] || null,
+    };
+  },
+
+  async deleteManyWithFiles(ids = []) {
+    const cleanIds = [...new Set((ids || []).filter(Boolean))];
+
+    if (cleanIds.length === 0) {
+      return {
+        invoices: [],
+        invoicesDeleted: 0,
+        filesRequested: 0,
+        filesDeleted: 0,
+        fileErrors: [],
+      };
+    }
+
+    const invoices = await this.getByIds(cleanIds);
+
+    if (invoices.length === 0) {
+      return {
+        invoices: [],
+        invoicesDeleted: 0,
+        filesRequested: 0,
+        filesDeleted: 0,
+        fileErrors: [],
+      };
+    }
+
+    const filesByBucket = invoices.reduce((groups, invoice) => {
+      if (!invoice.filePath) return groups;
+
+      const bucket = invoice.bucket || this.bucketName;
+
+      if (!groups[bucket]) groups[bucket] = new Set();
+      groups[bucket].add(invoice.filePath);
+
+      return groups;
+    }, {});
+
+    let filesDeleted = 0;
     const fileErrors = [];
-    let fileDeleted = false;
 
-    if (invoice.filePath) {
-      const { data, error } = await supabase.storage
-        .from(invoice.bucket || this.bucketName)
-        .remove([invoice.filePath]);
+    for (const [bucket, pathSet] of Object.entries(filesByBucket)) {
+      const paths = [...pathSet];
 
-      if (error) {
-        fileErrors.push(error.message);
-      } else {
-        fileDeleted = Array.isArray(data) ? data.length > 0 : true;
+      for (const chunk of chunkArray(paths, 100)) {
+        const { data, error } = await supabase.storage.from(bucket).remove(chunk);
+
+        if (error) {
+          fileErrors.push(`${bucket}: ${error.message}`);
+        } else {
+          filesDeleted += Array.isArray(data) ? data.length : chunk.length;
+        }
       }
     }
+
+    if (fileErrors.length > 0) {
+      throw new Error(
+        `Eliminazione file Storage non completata. Nessun record è stato cancellato dal database.\n${fileErrors.join('\n')}`
+      );
+    }
+
+    const idsToDelete = invoices.map((invoice) => invoice.id);
 
     const { error: deleteRecordError } = await supabase
       .from('fatture_importate')
       .delete()
-      .eq('id', id);
+      .in('id', idsToDelete);
 
     if (deleteRecordError) throw deleteRecordError;
 
+    notifySupabaseUsageChanged();
+
     return {
-      invoiceDeleted: true,
-      fileDeleted,
+      invoices,
+      invoicesDeleted: invoices.length,
+      filesRequested: Object.values(filesByBucket).reduce((sum, set) => sum + set.size, 0),
+      filesDeleted,
       fileErrors,
-      invoice,
     };
   },
 
   async deleteAllWithFiles() {
     const invoices = await this.getAll();
-
-    const filePaths = invoices
-      .map((invoice) => invoice.filePath)
-      .filter(Boolean);
-
-    const uniqueFilePaths = [...new Set(filePaths)];
-
-    let deletedFiles = 0;
-    const fileErrors = [];
-
-    for (const chunk of chunkArray(uniqueFilePaths, 100)) {
-      const { data, error } = await supabase.storage
-        .from(this.bucketName)
-        .remove(chunk);
-
-      if (error) {
-        fileErrors.push(error.message);
-      } else {
-        deletedFiles += Array.isArray(data) ? data.length : chunk.length;
-      }
-    }
-
-    const { error: deleteRecordsError } = await supabase
-      .from('fatture_importate')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
-
-    if (deleteRecordsError) throw deleteRecordsError;
-
-    return {
-      invoicesDeleted: invoices.length,
-      filesRequested: uniqueFilePaths.length,
-      filesDeleted: deletedFiles,
-      fileErrors,
-    };
+    return this.deleteManyWithFiles(invoices.map((invoice) => invoice.id));
   },
 };
 
