@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore } from '../../data/store';
 import { MOVEMENT_TYPES } from '../../data/initialData';
 import { useAuth } from '../../App';
+import { hasPermission } from '../../data/permissions';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -11,8 +12,9 @@ function formatStatus(status) {
   const labels = {
     disponibile: 'Disponibile',
     sotto_soglia: 'Sotto soglia',
-    esaurito: 'Esaurito'
+    esaurito: 'Esaurito',
   };
+
   return labels[status] || status;
 }
 
@@ -21,9 +23,15 @@ function normalizeRole(role) {
 }
 
 function canSeeListPrice(role) {
-  return ['operaio', 'operatore', 'segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
-    normalizeRole(role)
-  );
+  return [
+    'operaio',
+    'operatore',
+    'segretaria',
+    'segreteria',
+    'magazziniere',
+    'datore',
+    'admin',
+  ].includes(normalizeRole(role));
 }
 
 function canSeeInstallerPrice(role) {
@@ -43,13 +51,39 @@ function calcInstallerPrice(netPrice) {
 function formatCurrency(value) {
   return new Intl.NumberFormat('it-IT', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'EUR',
   }).format(Number(value || 0));
+}
+
+function getExportFileName(extension) {
+  return `Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.${extension}`;
+}
+
+function downloadTextFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
+function escapeCsvValue(value) {
+  const safeValue = String(value ?? '');
+  const escaped = safeValue.replace(/"/g, '""');
+
+  return `"${escaped}"`;
 }
 
 export default function Inventario() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+
   const [materials, setMaterials] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState(searchParams.get('q') || '');
@@ -58,17 +92,21 @@ export default function Inventario() {
   const [detailMaterial, setDetailMaterial] = useState(null);
   const [materialMovements, setMaterialMovements] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [exportFormat, setExportFormat] = useState('excel');
+
   const searchWrapRef = useRef(null);
 
   const showListPrice = canSeeListPrice(user?.role);
   const showInstallerPrice = canSeeInstallerPrice(user?.role);
+  const canExportInventory = hasPermission(user, 'canExportInventory');
 
   const refresh = async () => {
     try {
       const mats = await materialStore.getAll();
       const cats = await categoryStore.getAll();
-      setMaterials(mats);
-      setCategories(cats);
+
+      setMaterials(Array.isArray(mats) ? mats : []);
+      setCategories(Array.isArray(cats) ? cats : []);
     } catch (err) {
       console.error('Errore durante il refresh:', err);
     }
@@ -88,7 +126,7 @@ export default function Inventario() {
       if (detailMaterial) {
         try {
           const movs = await movementStore.getByMaterial(detailMaterial.id);
-          setMaterialMovements(movs.slice(0, 20));
+          setMaterialMovements(Array.isArray(movs) ? movs.slice(0, 20) : []);
         } catch (err) {
           console.error('Errore caricamento movimenti:', err);
         }
@@ -96,6 +134,7 @@ export default function Inventario() {
         setMaterialMovements([]);
       }
     }
+
     loadMovements();
   }, [detailMaterial]);
 
@@ -105,78 +144,111 @@ export default function Inventario() {
         setShowSuggestions(false);
       }
     };
+
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
 
-  const filtered = materials.filter((m) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      m.code?.toLowerCase().includes(q) ||
-      m.description?.toLowerCase().includes(q) ||
-      m.brand?.toLowerCase().includes(q) ||
-      getCategoryName(m.category)?.toLowerCase().includes(q);
+  const filtered = useMemo(() => {
+    return materials.filter((m) => {
+      const q = search.toLowerCase();
 
-    const matchCat = !filterCategory || m.category === filterCategory;
-    const matchStatus = !filterStatus || m.status === filterStatus;
-
-    return matchSearch && matchCat && matchStatus;
-  });
-
-  const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return [];
-    return materials
-      .filter((m) =>
+      const matchSearch =
+        !q ||
         m.code?.toLowerCase().includes(q) ||
         m.description?.toLowerCase().includes(q) ||
         m.brand?.toLowerCase().includes(q) ||
-        getCategoryName(m.category)?.toLowerCase().includes(q)
+        getCategoryName(m.category)?.toLowerCase().includes(q);
+
+      const matchCat = !filterCategory || m.category === filterCategory;
+      const matchStatus = !filterStatus || m.status === filterStatus;
+
+      return matchSearch && matchCat && matchStatus;
+    });
+  }, [materials, search, filterCategory, filterStatus, categories]);
+
+  const suggestions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    if (!q) return [];
+
+    return materials
+      .filter(
+        (m) =>
+          m.code?.toLowerCase().includes(q) ||
+          m.description?.toLowerCase().includes(q) ||
+          m.brand?.toLowerCase().includes(q) ||
+          getCategoryName(m.category)?.toLowerCase().includes(q)
       )
       .slice(0, 8);
   }, [search, materials, categories]);
 
-  const exportExcel = () => {
-    const data = filtered.map((m) => {
+  const buildExportRows = () => {
+    return filtered.map((m) => {
       const row = {
-        Codice: m.code,
-        Descrizione: m.description,
-        Marca: m.brand,
-        Categoria: getCategoryName(m.category),
-        Quantità: m.quantity,
-        Unità: m.unit,
-        'Soglia Min.': m.minThreshold,
+        Codice: m.code || '',
+        Descrizione: m.description || '',
+        Marca: m.brand || '',
+        Categoria: getCategoryName(m.category) || '',
+        Quantità: m.quantity ?? 0,
+        Unità: m.unit || '',
+        'Soglia minima': m.minThreshold ?? 0,
         Stato: formatStatus(m.status),
-        Posizione: m.location,
-        Fornitore: m.supplier,
-        Note: m.notes || ''
+        Posizione: m.location || '',
+        Fornitore: m.supplier || '',
+        Note: m.notes || '',
       };
 
       if (showListPrice) {
-        row['Prezzo di listino'] = calcListPrice(m.netPrice);
+        row['Prezzo di listino'] = Number(calcListPrice(m.netPrice).toFixed(2));
       }
 
       if (showInstallerPrice) {
-        row['Prezzo installatore'] = calcInstallerPrice(m.netPrice);
+        row['Prezzo installatore'] = Number(calcInstallerPrice(m.netPrice).toFixed(2));
       }
 
       return row;
     });
+  };
 
+  const exportExcel = () => {
+    const data = buildExportRows();
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
+
     XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
-    XLSX.writeFile(wb, `Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, getExportFileName('xlsx'));
+  };
+
+  const exportCSV = () => {
+    const data = buildExportRows();
+
+    if (data.length === 0) {
+      downloadTextFile('', getExportFileName('csv'), 'text/csv;charset=utf-8;');
+      return;
+    }
+
+    const headers = Object.keys(data[0]);
+
+    const rows = [
+      headers.map(escapeCsvValue).join(';'),
+      ...data.map((row) => headers.map((header) => escapeCsvValue(row[header])).join(';')),
+    ];
+
+    const csvContent = `\uFEFF${rows.join('\n')}`;
+
+    downloadTextFile(csvContent, getExportFileName('csv'), 'text/csv;charset=utf-8;');
   };
 
   const exportPDF = () => {
     const doc = new jsPDF({ orientation: 'landscape' });
+
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
     doc.text('Inventario Magazzino', 14, 20);
+
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text(
@@ -184,16 +256,9 @@ export default function Inventario() {
       14,
       28
     );
-    doc.text(`Totale materiali: ${filtered.length}`, 14, 34);
+    doc.text(`Totale materiali esportati: ${filtered.length}`, 14, 34);
 
-    const head = [
-      'Codice',
-      'Descrizione',
-      'Marca',
-      'Categoria',
-      'Qtà',
-      'UM'
-    ];
+    const head = ['Codice', 'Descrizione', 'Marca', 'Categoria', 'Qtà', 'UM'];
 
     if (showListPrice) head.push('Prezzo listino');
     if (showInstallerPrice) head.push('Prezzo installatore');
@@ -202,22 +267,18 @@ export default function Inventario() {
 
     const tableData = filtered.map((m) => {
       const row = [
-        m.code,
-        m.description,
-        m.brand,
-        getCategoryName(m.category),
-        m.quantity,
-        m.unit
+        m.code || '',
+        m.description || '',
+        m.brand || '',
+        getCategoryName(m.category) || '',
+        m.quantity ?? 0,
+        m.unit || '',
       ];
 
       if (showListPrice) row.push(formatCurrency(calcListPrice(m.netPrice)));
       if (showInstallerPrice) row.push(formatCurrency(calcInstallerPrice(m.netPrice)));
 
-      row.push(
-        formatStatus(m.status),
-        m.location || '',
-        m.supplier || ''
-      );
+      row.push(formatStatus(m.status), m.location || '', m.supplier || '');
 
       return row;
     });
@@ -226,12 +287,39 @@ export default function Inventario() {
       startY: 40,
       head: [head],
       body: tableData,
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 250, 252] }
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
     });
 
-    doc.save(`Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(getExportFileName('pdf'));
+  };
+
+  const handleExport = () => {
+    if (!canExportInventory) return;
+
+    if (exportFormat === 'excel') {
+      exportExcel();
+      return;
+    }
+
+    if (exportFormat === 'csv') {
+      exportCSV();
+      return;
+    }
+
+    if (exportFormat === 'pdf') {
+      exportPDF();
+    }
   };
 
   return (
@@ -239,16 +327,30 @@ export default function Inventario() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Inventario Magazzino</h1>
-          <p className="page-subtitle">{filtered.length} materiali trovati su {materials.length} totali</p>
+          <p className="page-subtitle">
+            {filtered.length} materiali trovati su {materials.length} totali
+          </p>
         </div>
-        <div className="btn-group">
-          <button onClick={exportExcel} className="btn btn-secondary">
-            📊 Esporta Excel
-          </button>
-          <button onClick={exportPDF} className="btn btn-secondary">
-            📄 Esporta PDF
-          </button>
-        </div>
+
+        {canExportInventory && (
+          <div className="btn-group" style={{ alignItems: 'center' }}>
+            <select
+              className="form-control"
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value)}
+              style={{ width: 170 }}
+              title="Scegli formato esportazione"
+            >
+              <option value="excel">Excel (.xlsx)</option>
+              <option value="csv">CSV (.csv)</option>
+              <option value="pdf">PDF (.pdf)</option>
+            </select>
+
+            <button onClick={handleExport} className="btn btn-secondary">
+              ⬇️ Esporta inventario
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="filters-row">
@@ -284,7 +386,7 @@ export default function Inventario() {
                 borderRadius: 'var(--border-radius-md)',
                 boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
                 maxHeight: 280,
-                overflowY: 'auto'
+                overflowY: 'auto',
               }}
             >
               {suggestions.map((item) => (
@@ -302,11 +404,13 @@ export default function Inventario() {
                     padding: '12px 14px',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    borderBottom: '1px solid var(--gray-100)'
+                    borderBottom: '1px solid var(--gray-100)',
                   }}
                 >
                   <div style={{ fontWeight: 700 }}>{item.code}</div>
-                  <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
+                  <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>
+                    {item.description}
+                  </div>
                   <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
                     {item.brand} · {getCategoryName(item.category)}
                   </div>
@@ -321,7 +425,9 @@ export default function Inventario() {
           <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="">Tutte</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
         </div>
@@ -355,16 +461,12 @@ export default function Inventario() {
               <th></th>
             </tr>
           </thead>
+
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={
-                    9 +
-                    (showListPrice ? 1 : 0) +
-                    (showInstallerPrice ? 1 : 0) +
-                    2
-                  }
+                  colSpan={10 + (showListPrice ? 1 : 0) + (showInstallerPrice ? 1 : 0)}
                   className="text-center"
                   style={{ padding: 40 }}
                 >
@@ -378,7 +480,9 @@ export default function Inventario() {
             ) : (
               filtered.map((m) => (
                 <tr key={m.id}>
-                  <td><strong>{m.code}</strong></td>
+                  <td>
+                    <strong>{m.code}</strong>
+                  </td>
                   <td>{m.description}</td>
                   <td>{m.brand}</td>
                   <td>{getCategoryName(m.category)}</td>
@@ -387,30 +491,33 @@ export default function Inventario() {
                       style={{
                         fontSize: 15,
                         color:
-                          m.quantity === 0
+                          Number(m.quantity || 0) === 0
                             ? 'var(--danger-600)'
-                            : m.quantity <= m.minThreshold
+                            : Number(m.quantity || 0) <= Number(m.minThreshold || 0)
                               ? 'var(--warning-600)'
-                              : 'var(--gray-800)'
+                              : 'var(--gray-800)',
                       }}
                     >
                       {m.quantity}
                     </strong>
                   </td>
                   <td className="text-muted">{m.unit}</td>
-                  {showListPrice && (
-                    <td>{formatCurrency(calcListPrice(m.netPrice))}</td>
-                  )}
+
+                  {showListPrice && <td>{formatCurrency(calcListPrice(m.netPrice))}</td>}
+
                   {showInstallerPrice && (
                     <td>{formatCurrency(calcInstallerPrice(m.netPrice))}</td>
                   )}
+
                   <td>
                     <span className={`status-badge status-${m.status}`}>
                       {formatStatus(m.status)}
                     </span>
                   </td>
+
                   <td>{m.location}</td>
                   <td className="text-sm">{m.supplier}</td>
+
                   <td>
                     <button
                       className="btn btn-sm btn-ghost"
@@ -432,12 +539,16 @@ export default function Inventario() {
           <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h3 className="modal-title">{detailMaterial.code} — {detailMaterial.description}</h3>
+                <h3 className="modal-title">
+                  {detailMaterial.code} — {detailMaterial.description}
+                </h3>
                 <div className="text-sm text-muted">
                   {detailMaterial.brand} · {getCategoryName(detailMaterial.category)}
                 </div>
               </div>
-              <button className="modal-close" onClick={() => setDetailMaterial(null)}>✕</button>
+              <button className="modal-close" onClick={() => setDetailMaterial(null)}>
+                ✕
+              </button>
             </div>
 
             <div className="modal-body">
@@ -448,24 +559,32 @@ export default function Inventario() {
                     style={{
                       fontSize: 32,
                       fontWeight: 800,
-                      color: detailMaterial.quantity === 0 ? 'var(--danger-600)' : 'var(--primary-700)'
+                      color:
+                        Number(detailMaterial.quantity || 0) === 0
+                          ? 'var(--danger-600)'
+                          : 'var(--primary-700)',
                     }}
                   >
-                    {detailMaterial.quantity} <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
+                    {detailMaterial.quantity}{' '}
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
                   </div>
                 </div>
 
                 <div>
                   <div className="text-sm text-muted fw-semibold">Soglia Minima</div>
                   <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--gray-400)' }}>
-                    {detailMaterial.minThreshold} <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
+                    {detailMaterial.minThreshold}{' '}
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
                   </div>
                 </div>
 
                 <div>
                   <div className="text-sm text-muted fw-semibold">Stato</div>
                   <div style={{ marginTop: 8 }}>
-                    <span className={`status-badge status-${detailMaterial.status}`} style={{ fontSize: 14, padding: '6px 16px' }}>
+                    <span
+                      className={`status-badge status-${detailMaterial.status}`}
+                      style={{ fontSize: 14, padding: '6px 16px' }}
+                    >
                       {formatStatus(detailMaterial.status)}
                     </span>
                   </div>
@@ -480,6 +599,7 @@ export default function Inventario() {
                       <strong>{formatCurrency(calcListPrice(detailMaterial.netPrice))}</strong>
                     </div>
                   )}
+
                   {showInstallerPrice && (
                     <div>
                       <span className="text-sm text-muted fw-semibold">Prezzo installatore:</span>{' '}
@@ -490,18 +610,29 @@ export default function Inventario() {
               )}
 
               <div className="form-row" style={{ marginBottom: 20 }}>
-                <div><span className="text-sm text-muted fw-semibold">Posizione:</span> <strong>{detailMaterial.location || '—'}</strong></div>
-                <div><span className="text-sm text-muted fw-semibold">Fornitore:</span> <strong>{detailMaterial.supplier || '—'}</strong></div>
+                <div>
+                  <span className="text-sm text-muted fw-semibold">Posizione:</span>{' '}
+                  <strong>{detailMaterial.location || '—'}</strong>
+                </div>
+                <div>
+                  <span className="text-sm text-muted fw-semibold">Fornitore:</span>{' '}
+                  <strong>{detailMaterial.supplier || '—'}</strong>
+                </div>
               </div>
 
               {detailMaterial.notes && (
                 <div style={{ marginBottom: 20 }}>
                   <span className="text-sm text-muted fw-semibold">Note:</span>
-                  <p style={{ marginTop: 4, color: 'var(--gray-600)' }}>{detailMaterial.notes}</p>
+                  <p style={{ marginTop: 4, color: 'var(--gray-600)' }}>
+                    {detailMaterial.notes}
+                  </p>
                 </div>
               )}
 
-              <h4 className="section-title" style={{ marginTop: 16 }}>📋 Ultimi Movimenti</h4>
+              <h4 className="section-title" style={{ marginTop: 16 }}>
+                📋 Ultimi Movimenti
+              </h4>
+
               {materialMovements.length === 0 ? (
                 <p className="text-muted">Nessun movimento registrato</p>
               ) : (
@@ -518,29 +649,48 @@ export default function Inventario() {
                         <th>Note</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {materialMovements.map((mov) => (
-                        <tr key={mov.id}>
-                          <td>
-                            <div style={{ fontWeight: 600 }}>
-                              {new Date(mov.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                            </div>
-                            <div className="text-xs text-muted">
-                              {new Date(mov.date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          </td>
-                          <td>
-                            <span className={`movement-badge movement-${mov.type}`}>
-                              {MOVEMENT_TYPES.find((mt) => mt.value === mov.type)?.label || mov.type}
-                            </span>
-                          </td>
-                          <td style={{ fontWeight: 700 }}>{mov.quantity}</td>
-                          <td>{mov.operatorName || mov.userName || '—'}</td>
-                          <td>{mov.clientName || '—'}</td>
-                          <td>{mov.authorizedBy || '—'}</td>
-                          <td className="text-muted">{mov.notes || '—'}</td>
-                        </tr>
-                      ))}
+                      {materialMovements.map((mov) => {
+                        const date = new Date(mov.date);
+
+                        return (
+                          <tr key={mov.id}>
+                            <td>
+                              <div style={{ fontWeight: 600 }}>
+                                {Number.isNaN(date.getTime())
+                                  ? '—'
+                                  : date.toLocaleDateString('it-IT', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                    })}
+                              </div>
+                              <div className="text-xs text-muted">
+                                {Number.isNaN(date.getTime())
+                                  ? ''
+                                  : date.toLocaleTimeString('it-IT', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                              </div>
+                            </td>
+
+                            <td>
+                              <span className={`movement-badge movement-${mov.type}`}>
+                                {MOVEMENT_TYPES.find((mt) => mt.value === mov.type)?.label ||
+                                  mov.type}
+                              </span>
+                            </td>
+
+                            <td style={{ fontWeight: 700 }}>{mov.quantity}</td>
+                            <td>{mov.operatorName || mov.userName || '—'}</td>
+                            <td>{mov.clientName || '—'}</td>
+                            <td>{mov.authorizedBy || '—'}</td>
+                            <td className="text-muted">{mov.notes || '—'}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -548,7 +698,9 @@ export default function Inventario() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setDetailMaterial(null)}>Chiudi</button>
+              <button className="btn btn-secondary" onClick={() => setDetailMaterial(null)}>
+                Chiudi
+              </button>
             </div>
           </div>
         </div>

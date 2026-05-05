@@ -12,6 +12,12 @@ export const PERMISSIONS = [
     group: 'Magazzino',
   },
   {
+    key: 'canExportInventory',
+    label: 'Esporta inventario',
+    description: 'Può esportare l’inventario in Excel, CSV o PDF',
+    group: 'Magazzino',
+  },
+  {
     key: 'canMoveIn',
     label: 'Carico materiale',
     description: 'Può registrare entrate di materiale',
@@ -89,6 +95,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   operaio: {
     canViewDashboard: false,
     canViewInventory: true,
+    canExportInventory: false,
     canMoveIn: false,
     canMoveOut: false,
     canReintegrate: false,
@@ -106,6 +113,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   segretaria: {
     canViewDashboard: false,
     canViewInventory: true,
+    canExportInventory: true,
     canMoveIn: true,
     canMoveOut: true,
     canReintegrate: true,
@@ -123,6 +131,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   magazziniere: {
     canViewDashboard: false,
     canViewInventory: true,
+    canExportInventory: false,
     canMoveIn: true,
     canMoveOut: true,
     canReintegrate: true,
@@ -140,6 +149,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   datore: {
     canViewDashboard: true,
     canViewInventory: true,
+    canExportInventory: true,
     canMoveIn: true,
     canMoveOut: true,
     canReintegrate: true,
