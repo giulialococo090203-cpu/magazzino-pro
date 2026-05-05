@@ -1,35 +1,66 @@
-import { useState, useEffect, useRef } from 'react';
-import { materialStore, categoryStore, movementStore, notificationStore } from '../../data/store';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { materialStore, categoryStore, movementStore, notificationStore, userStore } from '../../data/store';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend, Filler);
 
-const CHART_COLORS = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316'];
+const CHART_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316'];
 
 export default function DashboardControllo() {
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [users, setUsers] = useState([]);
   const [movementsData, setMovementsData] = useState({ mostMoved: [], entriesVsExits: [] });
   const [notifications, setNotifications] = useState([]);
+  const [movements, setMovements] = useState([]);
+
+  const [searchComponent, setSearchComponent] = useState('');
+  const [searchOperator, setSearchOperator] = useState('');
+  const [searchClient, setSearchClient] = useState('');
+  const [searchDate, setSearchDate] = useState('');
+
+  const [showComponentSuggestions, setShowComponentSuggestions] = useState(false);
+  const [showOperatorSuggestions, setShowOperatorSuggestions] = useState(false);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+
+  const componentRef = useRef(null);
+  const operatorRef = useRef(null);
+  const clientRef = useRef(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [mats, cats, movs, unread, mostMoved, evs] = await Promise.all([
+        const [mats, cats, unread, mostMoved, evs, allMovements, usrs] = await Promise.all([
           materialStore.getAll(),
           categoryStore.getAll(),
-          movementStore.getAll(),
           notificationStore.getUnread(),
           movementStore.getMostMoved(8),
-          movementStore.getEntriesVsExits(30)
+          movementStore.getEntriesVsExits(30),
+          movementStore.getAll(),
+          userStore.getAll()
         ]);
+
         setMaterials(mats);
         setCategories(cats);
         setNotifications(unread);
         setMovementsData({ mostMoved, entriesVsExits: evs });
+        setMovements(allMovements);
+        setUsers(usrs);
       } catch (err) {
         console.error('Errore caricamento dati controllo:', err);
       } finally {
@@ -39,57 +70,89 @@ export default function DashboardControllo() {
     loadData();
   }, []);
 
-  if (loading) return (
-    <div className="animate-slideUp" style={{ display: 'flex', justifyContent: 'center', padding: 100 }}>
-       <div className="text-muted">Analisi dati magazzino in corso...</div>
-    </div>
-  );
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (componentRef.current && !componentRef.current.contains(e.target)) setShowComponentSuggestions(false);
+      if (operatorRef.current && !operatorRef.current.contains(e.target)) setShowOperatorSuggestions(false);
+      if (clientRef.current && !clientRef.current.contains(e.target)) setShowClientSuggestions(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="animate-slideUp" style={{ display: 'flex', justifyContent: 'center', padding: 100 }}>
+        <div className="text-muted">Analisi dati magazzino in corso...</div>
+      </div>
+    );
+  }
 
   const { mostMoved, entriesVsExits } = movementsData;
-  const belowThreshold = materials.filter(m => m.quantity <= m.minThreshold && m.minThreshold > 0);
-  const exhausted = materials.filter(m => m.quantity <= 0);
+  const belowThreshold = materials.filter((m) => m.quantity <= m.minThreshold && m.minThreshold > 0);
+  const exhausted = materials.filter((m) => m.quantity <= 0);
 
-  // Category distribution data
   const catDist = {};
-  materials.forEach(m => {
-    const catName = categories.find(c => c.id === m.category)?.name || 'Altro';
+  materials.forEach((m) => {
+    const catName = categories.find((c) => c.id === m.category)?.name || 'Altro';
     catDist[catName] = (catDist[catName] || 0) + 1;
   });
+
   const categoryChartData = {
     labels: Object.keys(catDist),
     datasets: [{
       data: Object.values(catDist),
       backgroundColor: CHART_COLORS.slice(0, Object.keys(catDist).length),
-      borderWidth: 0,
+      borderWidth: 0
     }]
   };
 
-  // Entries vs exits last 30 days
   const evChartData = {
-    labels: entriesVsExits.map(d => { const p = d.date.split('-'); return `${p[2]}/${p[1]}`; }),
+    labels: entriesVsExits.map((d) => {
+      const p = d.date.split('-');
+      return `${p[2]}/${p[1]}`;
+    }),
     datasets: [
-      { label: 'Entrate', data: entriesVsExits.map(d => d.entries), backgroundColor: 'rgba(34,197,94,0.7)', borderRadius: 4 },
-      { label: 'Uscite', data: entriesVsExits.map(d => d.exits), backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 },
+      {
+        label: 'Entrate',
+        data: entriesVsExits.map((d) => d.entries),
+        backgroundColor: 'rgba(34,197,94,0.7)',
+        borderRadius: 4
+      },
+      {
+        label: 'Uscite',
+        data: entriesVsExits.map((d) => d.exits),
+        backgroundColor: 'rgba(239,68,68,0.7)',
+        borderRadius: 4
+      }
     ]
   };
 
-  // Most moved materials
   const mostMovedData = {
-    labels: mostMoved.map(m => m.code),
+    labels: mostMoved.map((m) => m.code),
     datasets: [{
       label: 'Quantità totale movimentata',
-      data: mostMoved.map(m => m.totalMoved),
+      data: mostMoved.map((m) => m.totalMoved),
       backgroundColor: 'rgba(59,130,246,0.7)',
-      borderRadius: 4,
+      borderRadius: 4
     }]
   };
 
-  // Below threshold chart
   const belowData = {
-    labels: belowThreshold.slice(0, 10).map(m => m.code),
+    labels: belowThreshold.slice(0, 10).map((m) => m.code),
     datasets: [
-      { label: 'Quantità attuale', data: belowThreshold.slice(0, 10).map(m => m.quantity), backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 },
-      { label: 'Soglia minima', data: belowThreshold.slice(0, 10).map(m => m.minThreshold), backgroundColor: 'rgba(251,191,36,0.4)', borderRadius: 4 },
+      {
+        label: 'Quantità attuale',
+        data: belowThreshold.slice(0, 10).map((m) => m.quantity),
+        backgroundColor: 'rgba(239,68,68,0.7)',
+        borderRadius: 4
+      },
+      {
+        label: 'Soglia minima',
+        data: belowThreshold.slice(0, 10).map((m) => m.minThreshold),
+        backgroundColor: 'rgba(251,191,36,0.4)',
+        borderRadius: 4
+      }
     ]
   };
 
@@ -104,8 +167,61 @@ export default function DashboardControllo() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, font: { size: 12, family: 'Inter' } } } },
-    cutout: '65%',
+    cutout: '65%'
   };
+
+  const componentSuggestions = useMemo(() => {
+    const q = searchComponent.trim().toLowerCase();
+    if (!q) return [];
+    return materials
+      .filter((m) =>
+        m.code?.toLowerCase().includes(q) ||
+        m.description?.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [searchComponent, materials]);
+
+  const operatorSuggestions = useMemo(() => {
+    const q = searchOperator.trim().toLowerCase();
+    if (!q) return [];
+    return users
+      .filter((u) =>
+        u.fullName?.toLowerCase().includes(q) ||
+        u.username?.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [searchOperator, users]);
+
+  const clientSuggestions = useMemo(() => {
+    const allClients = [...new Set(movements.map((m) => m.clientName).filter(Boolean))];
+    const q = searchClient.trim().toLowerCase();
+    if (!q) return [];
+    return allClients.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
+  }, [searchClient, movements]);
+
+  const monitoredRows = useMemo(() => {
+    return movements.filter((mov) => {
+      const matchComponent =
+        !searchComponent ||
+        mov.materialCode?.toLowerCase().includes(searchComponent.toLowerCase()) ||
+        mov.materialDescription?.toLowerCase().includes(searchComponent.toLowerCase());
+
+      const matchOperator =
+        !searchOperator ||
+        mov.operatorName?.toLowerCase().includes(searchOperator.toLowerCase()) ||
+        mov.userName?.toLowerCase().includes(searchOperator.toLowerCase());
+
+      const matchClient =
+        !searchClient ||
+        mov.clientName?.toLowerCase().includes(searchClient.toLowerCase());
+
+      const matchDate =
+        !searchDate ||
+        String(mov.date || '').startsWith(searchDate);
+
+      return matchComponent && matchOperator && matchClient && matchDate;
+    });
+  }, [movements, searchComponent, searchOperator, searchClient, searchDate]);
 
   return (
     <div className="animate-slideUp">
@@ -116,7 +232,6 @@ export default function DashboardControllo() {
         </div>
       </div>
 
-      {/* KPI row */}
       <div className="kpi-grid">
         <div className="kpi-card">
           <div className="kpi-icon blue">📦</div>
@@ -125,6 +240,7 @@ export default function DashboardControllo() {
             <div className="kpi-value">{materials.length}</div>
           </div>
         </div>
+
         <div className="kpi-card">
           <div className="kpi-icon yellow">⚠️</div>
           <div className="kpi-content">
@@ -132,6 +248,7 @@ export default function DashboardControllo() {
             <div className="kpi-value">{belowThreshold.length}</div>
           </div>
         </div>
+
         <div className="kpi-card">
           <div className="kpi-icon red">🚫</div>
           <div className="kpi-content">
@@ -139,6 +256,7 @@ export default function DashboardControllo() {
             <div className="kpi-value">{exhausted.length}</div>
           </div>
         </div>
+
         <div className="kpi-card">
           <div className="kpi-icon purple">🔔</div>
           <div className="kpi-content">
@@ -148,9 +266,236 @@ export default function DashboardControllo() {
         </div>
       </div>
 
-      {/* Charts grid */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <div className="card-header">
+          <h3 className="card-title">🔎 Monitoraggio Datore</h3>
+        </div>
+        <div className="card-body">
+          <div className="filters-row">
+            <div className="filter-group" ref={componentRef} style={{ position: 'relative', minWidth: 240 }}>
+              <label>Componente</label>
+              <input
+                type="text"
+                value={searchComponent}
+                onChange={(e) => {
+                  setSearchComponent(e.target.value);
+                  setShowComponentSuggestions(true);
+                }}
+                onFocus={() => setShowComponentSuggestions(true)}
+                placeholder="Codice o descrizione..."
+              />
+              {showComponentSuggestions && componentSuggestions.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    background: '#fff',
+                    border: '1px solid var(--gray-200)',
+                    borderRadius: 'var(--border-radius-md)',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                    maxHeight: 240,
+                    overflowY: 'auto'
+                  }}
+                >
+                  {componentSuggestions.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setSearchComponent(item.code);
+                        setShowComponentSuggestions(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 12px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--gray-100)'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700 }}>{item.code}</div>
+                      <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="filter-group" ref={operatorRef} style={{ position: 'relative', minWidth: 240 }}>
+              <label>Operatore</label>
+              <input
+                type="text"
+                value={searchOperator}
+                onChange={(e) => {
+                  setSearchOperator(e.target.value);
+                  setShowOperatorSuggestions(true);
+                }}
+                onFocus={() => setShowOperatorSuggestions(true)}
+                placeholder="Nome, cognome o username..."
+              />
+              {showOperatorSuggestions && operatorSuggestions.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    background: '#fff',
+                    border: '1px solid var(--gray-200)',
+                    borderRadius: 'var(--border-radius-md)',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                    maxHeight: 240,
+                    overflowY: 'auto'
+                  }}
+                >
+                  {operatorSuggestions.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setSearchOperator(item.fullName || item.username);
+                        setShowOperatorSuggestions(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 12px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--gray-100)'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700 }}>{item.fullName}</div>
+                      <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.username}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="filter-group" ref={clientRef} style={{ position: 'relative', minWidth: 220 }}>
+              <label>Cliente</label>
+              <input
+                type="text"
+                value={searchClient}
+                onChange={(e) => {
+                  setSearchClient(e.target.value);
+                  setShowClientSuggestions(true);
+                }}
+                onFocus={() => setShowClientSuggestions(true)}
+                placeholder="Nome cliente..."
+              />
+              {showClientSuggestions && clientSuggestions.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    background: '#fff',
+                    border: '1px solid var(--gray-200)',
+                    borderRadius: 'var(--border-radius-md)',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                    maxHeight: 240,
+                    overflowY: 'auto'
+                  }}
+                >
+                  {clientSuggestions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => {
+                        setSearchClient(item);
+                        setShowClientSuggestions(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 12px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--gray-100)'
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="filter-group">
+              <label>Data</label>
+              <input type="date" value={searchDate} onChange={(e) => setSearchDate(e.target.value)} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="table-container" style={{ marginBottom: 28 }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Data / Ora</th>
+              <th>Tipo</th>
+              <th>Codice</th>
+              <th>Descrizione</th>
+              <th>Qtà</th>
+              <th>Prima</th>
+              <th>Dopo</th>
+              <th>Operatore</th>
+              <th>Cliente</th>
+              <th>Autorizzato da</th>
+            </tr>
+          </thead>
+          <tbody>
+            {monitoredRows.length === 0 ? (
+              <tr>
+                <td colSpan="10" style={{ padding: 40 }}>
+                  <div className="empty-state">
+                    <div className="empty-state-icon">🔎</div>
+                    <div className="empty-state-title">Nessun movimento trovato</div>
+                    <div className="empty-state-text">Prova a cambiare i filtri del monitoraggio</div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              monitoredRows.slice(0, 100).map((mov) => (
+                <tr key={mov.id}>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>
+                      {new Date(mov.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </div>
+                    <div className="text-xs text-muted">
+                      {new Date(mov.date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </td>
+                  <td>{mov.type}</td>
+                  <td><strong>{mov.materialCode}</strong></td>
+                  <td>{mov.materialDescription}</td>
+                  <td>{mov.quantity}</td>
+                  <td>{mov.previousQty ?? '—'}</td>
+                  <td>{mov.newQty ?? '—'}</td>
+                  <td>{mov.operatorName || mov.userName || '—'}</td>
+                  <td>{mov.clientName || '—'}</td>
+                  <td>{mov.authorizedBy || '—'}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
       <div className="charts-grid">
-        {/* Entries vs Exits */}
         <div className="card">
           <div className="card-header"><h3 className="card-title">📊 Entrate vs Uscite (30 giorni)</h3></div>
           <div className="chart-container">
@@ -162,7 +507,6 @@ export default function DashboardControllo() {
           </div>
         </div>
 
-        {/* Category Distribution */}
         <div className="card">
           <div className="card-header"><h3 className="card-title">🏷️ Distribuzione per Categoria</h3></div>
           <div className="chart-container">
@@ -170,7 +514,6 @@ export default function DashboardControllo() {
           </div>
         </div>
 
-        {/* Most Moved */}
         <div className="card">
           <div className="card-header"><h3 className="card-title">🔥 Materiali Più Movimentati</h3></div>
           <div className="chart-container">
@@ -182,7 +525,6 @@ export default function DashboardControllo() {
           </div>
         </div>
 
-        {/* Below Threshold */}
         <div className="card">
           <div className="card-header"><h3 className="card-title">⚠️ Materiali Sotto Soglia</h3></div>
           <div className="chart-container">

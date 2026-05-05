@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore } from '../../data/store';
 import { MOVEMENT_TYPES } from '../../data/initialData';
+import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -11,16 +12,24 @@ function formatStatus(status) {
   return labels[status] || status;
 }
 
+function canSeeInstallerPrice(role) {
+  return ['datore', 'admin', 'segretaria', 'segreteria', 'magazziniere', 'operatore'].includes(
+    String(role || '').trim().toLowerCase()
+  );
+}
+
 export default function Inventario() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [materials, setMaterials] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [, setTick] = useState(0);
   const [detailMaterial, setDetailMaterial] = useState(null);
   const [materialMovements, setMaterialMovements] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchWrapRef = useRef(null);
 
   const refresh = async () => {
     try {
@@ -28,15 +37,15 @@ export default function Inventario() {
       const cats = await categoryStore.getAll();
       setMaterials(mats);
       setCategories(cats);
-      setTick(t => t + 1);
     } catch (err) {
       console.error('Errore durante il refresh:', err);
     }
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+  }, []);
 
-  // Sync search with URL param 'q'
   useEffect(() => {
     const q = searchParams.get('q');
     if (q !== null) setSearch(q);
@@ -58,34 +67,61 @@ export default function Inventario() {
     loadMovements();
   }, [detailMaterial]);
 
-  const getCategoryName = (id) => categories.find(c => c.id === id)?.name || id;
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
-  const filtered = materials.filter(m => {
+  const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
+
+  const filtered = materials.filter((m) => {
     const q = search.toLowerCase();
-    const matchSearch = !q ||
+    const matchSearch =
+      !q ||
       m.code?.toLowerCase().includes(q) ||
       m.description?.toLowerCase().includes(q) ||
       m.brand?.toLowerCase().includes(q) ||
       getCategoryName(m.category)?.toLowerCase().includes(q);
+
     const matchCat = !filterCategory || m.category === filterCategory;
     const matchStatus = !filterStatus || m.status === filterStatus;
+
     return matchSearch && matchCat && matchStatus;
   });
 
+  const suggestions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return materials
+      .filter((m) =>
+        m.code?.toLowerCase().includes(q) ||
+        m.description?.toLowerCase().includes(q) ||
+        m.brand?.toLowerCase().includes(q) ||
+        getCategoryName(m.category)?.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [search, materials, categories]);
+
   const exportExcel = () => {
-    const data = filtered.map(m => ({
-      'Codice': m.code,
-      'Descrizione': m.description,
-      'Marca': m.brand,
-      'Categoria': getCategoryName(m.category),
-      'Quantità': m.quantity,
-      'Unità': m.unit,
+    const data = filtered.map((m) => ({
+      Codice: m.code,
+      Descrizione: m.description,
+      Marca: m.brand,
+      Categoria: getCategoryName(m.category),
+      Quantità: m.quantity,
+      Unità: m.unit,
       'Soglia Min.': m.minThreshold,
-      'Stato': formatStatus(m.status),
-      'Posizione': m.location,
-      'Fornitore': m.supplier,
-      'Note': m.notes || '',
+      Stato: formatStatus(m.status),
+      Posizione: m.location,
+      Fornitore: m.supplier,
+      Note: m.notes || ''
     }));
+
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     ws['!cols'] = [
@@ -107,10 +143,17 @@ export default function Inventario() {
     doc.text(`Generato il ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}`, 14, 28);
     doc.text(`Totale materiali: ${filtered.length}`, 14, 34);
 
-    const tableData = filtered.map(m => [
-      m.code, m.description, m.brand, getCategoryName(m.category),
-      m.quantity, m.unit, m.minThreshold, formatStatus(m.status),
-      m.location, m.supplier
+    const tableData = filtered.map((m) => [
+      m.code,
+      m.description,
+      m.brand,
+      getCategoryName(m.category),
+      m.quantity,
+      m.unit,
+      m.minThreshold,
+      formatStatus(m.status),
+      m.location,
+      m.supplier
     ]);
 
     autoTable(doc, {
@@ -119,19 +162,11 @@ export default function Inventario() {
       body: tableData,
       styles: { fontSize: 8, cellPadding: 3 },
       headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-      columnStyles: {
-        0: { cellWidth: 22 },
-        1: { cellWidth: 50 },
-        4: { halign: 'center' },
-        6: { halign: 'center' },
-      }
+      alternateRowStyles: { fillColor: [248, 250, 252] }
     });
 
     doc.save(`Inventario_Magazzino_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
-
-
 
   return (
     <div className="animate-slideUp">
@@ -150,31 +185,84 @@ export default function Inventario() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="filters-row">
-        <div className="search-bar" style={{ flex: 1, maxWidth: 400 }}>
+        <div
+          className="search-bar"
+          style={{ flex: 1, maxWidth: 450, position: 'relative' }}
+          ref={searchWrapRef}
+        >
           <span className="search-bar-icon">🔍</span>
           <input
             type="text"
             className="form-control"
-            placeholder="Cerca per codice, descrizione, marca..."
+            placeholder="Cerca per codice, descrizione, marca o categoria..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
             style={{ paddingLeft: 40 }}
           />
+
+          {showSuggestions && suggestions.length > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                right: 0,
+                zIndex: 20,
+                background: '#fff',
+                border: '1px solid var(--gray-200)',
+                borderRadius: 'var(--border-radius-md)',
+                boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                maxHeight: 280,
+                overflowY: 'auto'
+              }}
+            >
+              {suggestions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setSearch(item.code || item.description || '');
+                    setShowSuggestions(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    border: 'none',
+                    background: 'transparent',
+                    padding: '12px 14px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid var(--gray-100)'
+                  }}
+                >
+                  <div style={{ fontWeight: 700 }}>{item.code}</div>
+                  <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
+                  <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+                    {item.brand} · {getCategoryName(item.category)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
         <div className="filter-group">
           <label>Categoria:</label>
-          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="">Tutte</option>
-            {categories.map(c => (
+            {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
+
         <div className="filter-group">
           <label>Stato:</label>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">Tutti</option>
             <option value="disponibile">Disponibile</option>
             <option value="sotto_soglia">Sotto soglia</option>
@@ -183,7 +271,6 @@ export default function Inventario() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="table-container">
         <table className="data-table">
           <thead>
@@ -212,17 +299,24 @@ export default function Inventario() {
                 </td>
               </tr>
             ) : (
-              filtered.map(m => (
+              filtered.map((m) => (
                 <tr key={m.id}>
                   <td><strong>{m.code}</strong></td>
                   <td>{m.description}</td>
                   <td>{m.brand}</td>
                   <td>{getCategoryName(m.category)}</td>
                   <td style={{ textAlign: 'center' }}>
-                    <strong style={{
-                      fontSize: 15,
-                      color: m.quantity === 0 ? 'var(--danger-600)' : m.quantity <= m.minThreshold ? 'var(--warning-600)' : 'var(--gray-800)'
-                    }}>
+                    <strong
+                      style={{
+                        fontSize: 15,
+                        color:
+                          m.quantity === 0
+                            ? 'var(--danger-600)'
+                            : m.quantity <= m.minThreshold
+                              ? 'var(--warning-600)'
+                              : 'var(--gray-800)'
+                      }}
+                    >
                       {m.quantity}
                     </strong>
                   </td>
@@ -250,31 +344,41 @@ export default function Inventario() {
         </table>
       </div>
 
-      {/* Detail Modal */}
       {detailMaterial && (
         <div className="modal-overlay" onClick={() => setDetailMaterial(null)}>
-          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
                 <h3 className="modal-title">{detailMaterial.code} — {detailMaterial.description}</h3>
-                <div className="text-sm text-muted">{detailMaterial.brand} · {getCategoryName(detailMaterial.category)}</div>
+                <div className="text-sm text-muted">
+                  {detailMaterial.brand} · {getCategoryName(detailMaterial.category)}
+                </div>
               </div>
               <button className="modal-close" onClick={() => setDetailMaterial(null)}>✕</button>
             </div>
+
             <div className="modal-body">
               <div className="form-row" style={{ marginBottom: 20 }}>
                 <div>
                   <div className="text-sm text-muted fw-semibold">Quantità Disponibile</div>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: detailMaterial.quantity === 0 ? 'var(--danger-600)' : 'var(--primary-700)' }}>
+                  <div
+                    style={{
+                      fontSize: 32,
+                      fontWeight: 800,
+                      color: detailMaterial.quantity === 0 ? 'var(--danger-600)' : 'var(--primary-700)'
+                    }}
+                  >
                     {detailMaterial.quantity} <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
                   </div>
                 </div>
+
                 <div>
                   <div className="text-sm text-muted fw-semibold">Soglia Minima</div>
                   <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--gray-400)' }}>
                     {detailMaterial.minThreshold} <span style={{ fontSize: 14, fontWeight: 500 }}>{detailMaterial.unit}</span>
                   </div>
                 </div>
+
                 <div>
                   <div className="text-sm text-muted fw-semibold">Stato</div>
                   <div style={{ marginTop: 8 }}>
@@ -284,16 +388,19 @@ export default function Inventario() {
                   </div>
                 </div>
               </div>
+
               <div className="form-row" style={{ marginBottom: 20 }}>
-                <div><span className="text-sm text-muted fw-semibold">Posizione:</span> <strong>{detailMaterial.location}</strong></div>
-                <div><span className="text-sm text-muted fw-semibold">Fornitore:</span> <strong>{detailMaterial.supplier}</strong></div>
+                <div><span className="text-sm text-muted fw-semibold">Posizione:</span> <strong>{detailMaterial.location || '—'}</strong></div>
+                <div><span className="text-sm text-muted fw-semibold">Fornitore:</span> <strong>{detailMaterial.supplier || '—'}</strong></div>
               </div>
+
               {detailMaterial.notes && (
                 <div style={{ marginBottom: 20 }}>
                   <span className="text-sm text-muted fw-semibold">Note:</span>
                   <p style={{ marginTop: 4, color: 'var(--gray-600)' }}>{detailMaterial.notes}</p>
                 </div>
               )}
+
               <h4 className="section-title" style={{ marginTop: 16 }}>📋 Ultimi Movimenti</h4>
               {materialMovements.length === 0 ? (
                 <p className="text-muted">Nessun movimento registrato</p>
@@ -305,24 +412,32 @@ export default function Inventario() {
                         <th>Data</th>
                         <th>Tipo</th>
                         <th>Qtà</th>
-                        <th>Utente</th>
+                        <th>Operatore</th>
+                        <th>Cliente</th>
+                        <th>Autorizzato da</th>
                         <th>Note</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {materialMovements.map(mov => (
+                      {materialMovements.map((mov) => (
                         <tr key={mov.id}>
                           <td>
-                            <div style={{ fontWeight: 600 }}>{new Date(mov.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
-                            <div className="text-xs text-muted">{new Date(mov.date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div style={{ fontWeight: 600 }}>
+                              {new Date(mov.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </div>
+                            <div className="text-xs text-muted">
+                              {new Date(mov.date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
                           </td>
                           <td>
                             <span className={`movement-badge movement-${mov.type}`}>
-                              {MOVEMENT_TYPES.find(mt => mt.value === mov.type)?.label || mov.type}
+                              {MOVEMENT_TYPES.find((mt) => mt.value === mov.type)?.label || mov.type}
                             </span>
                           </td>
                           <td style={{ fontWeight: 700 }}>{mov.quantity}</td>
-                          <td>{mov.userName || mov.userId}</td>
+                          <td>{mov.operatorName || mov.userName || '—'}</td>
+                          <td>{mov.clientName || '—'}</td>
+                          <td>{mov.authorizedBy || '—'}</td>
                           <td className="text-muted">{mov.notes || '—'}</td>
                         </tr>
                       ))}
@@ -331,6 +446,7 @@ export default function Inventario() {
                 </div>
               )}
             </div>
+
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setDetailMaterial(null)}>Chiudi</button>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { movementStore, categoryStore, materialStore, userStore } from '../../data/store';
 import { MOVEMENT_TYPES, MOVEMENT_REASONS } from '../../data/initialData';
 
@@ -11,10 +11,10 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 }
 function formatMovType(t) {
-  return MOVEMENT_TYPES.find(mt => mt.value === t)?.label || t;
+  return MOVEMENT_TYPES.find((mt) => mt.value === t)?.label || t;
 }
 function formatReason(r) {
-  return MOVEMENT_REASONS.find(mr => mr.value === r)?.label || r || '—';
+  return MOVEMENT_REASONS.find((mr) => mr.value === r)?.label || r || '—';
 }
 
 export default function StoricoMovimenti() {
@@ -23,17 +23,19 @@ export default function StoricoMovimenti() {
   const [materials, setMaterials] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Filters
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [filterUser, setFilterUser] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterMaterial, setFilterMaterial] = useState('');
   const [filterType, setFilterType] = useState('');
+  const [filterClient, setFilterClient] = useState('');
 
-  // Pagination
   const [page, setPage] = useState(1);
   const perPage = 20;
+
+  const clientWrapRef = useRef(null);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
 
   useEffect(() => {
     async function loadStatic() {
@@ -62,16 +64,37 @@ export default function StoricoMovimenti() {
           userId: filterUser || undefined,
           categoryId: filterCategory || undefined,
           materialId: filterMaterial || undefined,
-          type: filterType || undefined,
+          type: filterType || undefined
         });
-        setMovements(filtered);
+        const clientFiltered = filterClient
+          ? filtered.filter((m) => String(m.clientName || '').toLowerCase().includes(filterClient.toLowerCase()))
+          : filtered;
+
+        setMovements(clientFiltered);
         setPage(1);
       } catch (err) {
         console.error('Errore caricamento movimenti:', err);
       }
     }
     loadFiltered();
-  }, [dateFrom, dateTo, filterUser, filterCategory, filterMaterial, filterType]);
+  }, [dateFrom, dateTo, filterUser, filterCategory, filterMaterial, filterType, filterClient]);
+
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (clientWrapRef.current && !clientWrapRef.current.contains(e.target)) {
+        setShowClientSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  const clientSuggestions = useMemo(() => {
+    const allClients = [...new Set(movements.map((m) => m.clientName).filter(Boolean))];
+    const q = filterClient.trim().toLowerCase();
+    if (!q) return allClients.slice(0, 8);
+    return allClients.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
+  }, [movements, filterClient]);
 
   const totalPages = Math.ceil(movements.length / perPage);
   const paginated = movements.slice((page - 1) * perPage, page * perPage);
@@ -83,6 +106,7 @@ export default function StoricoMovimenti() {
     setFilterCategory('');
     setFilterMaterial('');
     setFilterType('');
+    setFilterClient('');
   };
 
   return (
@@ -94,7 +118,6 @@ export default function StoricoMovimenti() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <h3 className="card-title">🔍 Filtri di Ricerca</h3>
@@ -104,53 +127,110 @@ export default function StoricoMovimenti() {
           <div className="filters-row">
             <div className="filter-group">
               <label>Dal:</label>
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
             </div>
+
             <div className="filter-group">
               <label>Al:</label>
-              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
             </div>
+
             <div className="filter-group">
               <label>Tipo:</label>
-              <select value={filterType} onChange={e => setFilterType(e.target.value)}>
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
                 <option value="">Tutti</option>
-                {MOVEMENT_TYPES.map(t => (
+                {MOVEMENT_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
             </div>
+
             <div className="filter-group">
               <label>Categoria:</label>
-              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                 <option value="">Tutte</option>
-                {categories.map(c => (
+                {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
             </div>
+
             <div className="filter-group">
               <label>Materiale:</label>
-              <select value={filterMaterial} onChange={e => setFilterMaterial(e.target.value)}>
+              <select value={filterMaterial} onChange={(e) => setFilterMaterial(e.target.value)}>
                 <option value="">Tutti</option>
-                {materials.map(m => (
+                {materials.map((m) => (
                   <option key={m.id} value={m.id}>{m.code} - {m.description}</option>
                 ))}
               </select>
             </div>
+
             <div className="filter-group">
               <label>Utente:</label>
-              <select value={filterUser} onChange={e => setFilterUser(e.target.value)}>
+              <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)}>
                 <option value="">Tutti</option>
-                {users.map(u => (
+                {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.fullName}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="filter-group" ref={clientWrapRef} style={{ position: 'relative' }}>
+              <label>Cliente:</label>
+              <input
+                type="text"
+                value={filterClient}
+                onChange={(e) => {
+                  setFilterClient(e.target.value);
+                  setShowClientSuggestions(true);
+                }}
+                onFocus={() => setShowClientSuggestions(true)}
+                placeholder="Cerca cliente..."
+              />
+              {showClientSuggestions && clientSuggestions.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    background: '#fff',
+                    border: '1px solid var(--gray-200)',
+                    borderRadius: 'var(--border-radius-md)',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
+                    maxHeight: 220,
+                    overflowY: 'auto'
+                  }}
+                >
+                  {clientSuggestions.map((client) => (
+                    <button
+                      key={client}
+                      type="button"
+                      onClick={() => {
+                        setFilterClient(client);
+                        setShowClientSuggestions(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 12px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--gray-100)'
+                      }}
+                    >
+                      {client}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Table */}
       <div className="table-container">
         <table className="data-table">
           <thead>
@@ -164,13 +244,15 @@ export default function StoricoMovimenti() {
               <th style={{ textAlign: 'center' }}>Dopo</th>
               <th>Motivo</th>
               <th>Utente</th>
+              <th>Cliente</th>
+              <th>Autorizzato da</th>
               <th>Note</th>
             </tr>
           </thead>
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan="10" style={{ padding: 40 }}>
+                <td colSpan="12" style={{ padding: 40 }}>
                   <div className="empty-state">
                     <div className="empty-state-icon">📋</div>
                     <div className="empty-state-title">Nessun movimento trovato</div>
@@ -179,7 +261,7 @@ export default function StoricoMovimenti() {
                 </td>
               </tr>
             ) : (
-              paginated.map(mov => (
+              paginated.map((mov) => (
                 <tr key={mov.id}>
                   <td>
                     <div style={{ fontWeight: 600 }}>{formatDate(mov.date)}</div>
@@ -192,15 +274,21 @@ export default function StoricoMovimenti() {
                   </td>
                   <td><strong>{mov.materialCode}</strong></td>
                   <td>
-                    <div className="text-sm" title={mov.materialDescription} style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div
+                      className="text-sm"
+                      title={mov.materialDescription}
+                      style={{ maxWidth: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    >
                       {mov.materialDescription}
                     </div>
                   </td>
                   <td style={{ textAlign: 'center', fontWeight: 700, fontSize: 15 }}>{mov.quantity}</td>
-                  <td style={{ textAlign: 'center' }} className="text-muted">{mov.previousQty}</td>
-                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{mov.newQty}</td>
+                  <td style={{ textAlign: 'center' }} className="text-muted">{mov.previousQty ?? '—'}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{mov.newQty ?? '—'}</td>
                   <td className="text-sm">{formatReason(mov.reason)}</td>
-                  <td className="text-sm">{mov.userName || '—'}</td>
+                  <td className="text-sm">{mov.operatorName || mov.userName || '—'}</td>
+                  <td className="text-sm">{mov.clientName || '—'}</td>
+                  <td className="text-sm">{mov.authorizedBy || '—'}</td>
                   <td className="text-sm text-muted">{mov.notes || '—'}</td>
                 </tr>
               ))
@@ -209,22 +297,23 @@ export default function StoricoMovimenti() {
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
           <div className="pagination-info">
             Pagina {page} di {totalPages} — {movements.length} risultati
           </div>
           <div className="pagination-buttons">
-            <button className="pagination-btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+            <button className="pagination-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
               ←
             </button>
+
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
               let pageNum;
               if (totalPages <= 7) pageNum = i + 1;
               else if (page <= 4) pageNum = i + 1;
               else if (page >= totalPages - 3) pageNum = totalPages - 6 + i;
               else pageNum = page - 3 + i;
+
               return (
                 <button
                   key={pageNum}
@@ -235,7 +324,8 @@ export default function StoricoMovimenti() {
                 </button>
               );
             })}
-            <button className="pagination-btn" onClick={() => setPage(p => Math.min(Math.max(1, totalPages), p + 1))} disabled={page >= totalPages}>
+
+            <button className="pagination-btn" onClick={() => setPage((p) => Math.min(Math.max(1, totalPages), p + 1))} disabled={page >= totalPages}>
               →
             </button>
           </div>
