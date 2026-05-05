@@ -15,10 +15,13 @@ function normalizeCell(value) {
 }
 
 function cleanRow(row = []) {
+  if (!Array.isArray(row)) return [];
   return row.map(normalizeCell);
 }
 
 function hasEnoughUsefulCells(row = []) {
+  if (!Array.isArray(row)) return false;
+
   const filled = row.filter((cell) => String(cell ?? '').trim() !== '');
   return filled.length >= 2;
 }
@@ -167,24 +170,38 @@ async function callPdfTextParser(file) {
       method: 'POST',
       body: formData,
     });
-  } catch (err) {
+  } catch {
     throw new Error(
       'Connessione al parser PDF non riuscita. In locale può essere un problema CORS del server PDF.'
     );
   }
 
-  if (!response.ok) {
-    const text = await response.text();
-    const parsed = safeJsonParse(text);
+  const text = await response.text();
+  const parsed = safeJsonParse(text);
 
+  if (!response.ok) {
     throw new Error(
-      parsed?.message ||
+      parsed?.error ||
+        parsed?.message ||
         parsed?.detail ||
         `Parser PDF non disponibile (${response.status}).`
     );
   }
 
-  return await response.json();
+  return parsed || {};
+}
+
+function parserObjectRowToMatrixRow(row = {}) {
+  return [
+    normalizeCell(row.code || ''),
+    normalizeCell(row.description || row.name || row.nome || ''),
+    normalizeCell(row.quantity ?? row.qty ?? row.quantita ?? ''),
+    normalizeCell(row.unit || row.um || 'ST'),
+    normalizeCell(row.price ?? row.netPrice ?? row.prezzoNetto ?? row.prezzo ?? ''),
+    normalizeCell(row.brand || row.marca || ''),
+    normalizeCell(row.category || row.categoria || ''),
+    normalizeCell(row.position || row.posizione || ''),
+  ];
 }
 
 function normalizeTextParserRows(data) {
@@ -192,12 +209,35 @@ function normalizeTextParserRows(data) {
     return data.map(cleanRow).filter(hasEnoughUsefulCells);
   }
 
-  if (Array.isArray(data?.matrix)) {
+  if (Array.isArray(data?.matrix) && data.matrix.length > 0) {
     return data.matrix.map(cleanRow).filter(hasEnoughUsefulCells);
   }
 
-  if (Array.isArray(data?.rows)) {
-    return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+  if (Array.isArray(data?.rows) && data.rows.length > 0) {
+    const firstRow = data.rows[0];
+
+    if (Array.isArray(firstRow)) {
+      return data.rows.map(cleanRow).filter(hasEnoughUsefulCells);
+    }
+
+    if (typeof firstRow === 'object' && firstRow !== null) {
+      const header = [
+        'Codice',
+        'Descrizione',
+        'Quantità',
+        'UM',
+        'Prezzo Netto',
+        'Marca',
+        'Categoria',
+        'Posizione',
+      ];
+
+      const rows = data.rows
+        .map(parserObjectRowToMatrixRow)
+        .filter(hasEnoughUsefulCells);
+
+      return [header, ...rows];
+    }
   }
 
   if (Array.isArray(data?.data)) {
@@ -230,7 +270,11 @@ export async function parseFile(file) {
     const rows = normalizeTextParserRows(textResult);
 
     if (!rows.length) {
-      throw new Error('Il PDF non contiene righe utilizzabili.');
+      throw new Error(
+        textResult?.error ||
+          textResult?.message ||
+          'Il PDF non contiene righe utilizzabili.'
+      );
     }
 
     return { matrix: rows };
