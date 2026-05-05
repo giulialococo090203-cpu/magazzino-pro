@@ -21,7 +21,6 @@ import GestioneUtenti from './pages/gestione/GestioneUtenti';
 import LogModifiche from './pages/gestione/LogModifiche';
 
 // Pagine - Controllo
-import DashboardControllo from './pages/controllo/DashboardControllo';
 import Soglie from './pages/controllo/Soglie';
 import Notifiche from './pages/controllo/Notifiche';
 
@@ -52,10 +51,8 @@ function hasRole(user, allowedRoles = []) {
   });
 }
 
-function getDefaultRoute(user) {
-  if (hasRole(user, ['datore'])) return '/';
-  if (hasRole(user, ['segretaria', 'magazziniere', 'operaio'])) return '/inventario';
-  return '/inventario';
+function getDefaultRoute() {
+  return '/';
 }
 
 function ProtectedRoute({ user, allowedRoles, children }) {
@@ -120,7 +117,7 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
+                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere', 'operaio']}>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -152,7 +149,7 @@ function App() {
               <Route
                 path="/importa"
                 element={
-                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria']}>
+                  <ProtectedRoute user={currentUser} allowedRoles={['datore', 'segretaria', 'magazziniere']}>
                     <ImportaFatture />
                   </ProtectedRoute>
                 }
@@ -198,7 +195,7 @@ function App() {
                 path="/controllo"
                 element={
                   <ProtectedRoute user={currentUser} allowedRoles={['datore']}>
-                    <DashboardControllo />
+                    <Dashboard />
                   </ProtectedRoute>
                 }
               />

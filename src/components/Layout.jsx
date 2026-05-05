@@ -33,6 +33,12 @@ function getRoleLabel(role) {
 
 const NAV_SECTIONS = [
   {
+    title: 'Generale',
+    items: [
+      { path: '/', label: 'Dashboard', icon: '📊', roles: ['datore', 'segretaria', 'magazziniere', 'operaio'] },
+    ]
+  },
+  {
     title: 'Magazzino',
     items: [
       { path: '/inventario', label: 'Giacenza', icon: '📦', roles: ['datore', 'segretaria', 'magazziniere', 'operaio'] },
@@ -45,7 +51,7 @@ const NAV_SECTIONS = [
   {
     title: 'Fatture e Configurazione',
     items: [
-      { path: '/importa', label: 'Importa Fatture', icon: '📄', roles: ['datore', 'segretaria'] },
+      { path: '/importa', label: 'Importa Fatture', icon: '📄', roles: ['datore', 'segretaria', 'magazziniere'] },
       { path: '/gestione/categorie', label: 'Categorie', icon: '🏷️', roles: ['datore', 'segretaria'] },
       { path: '/controllo/soglie', label: 'Soglie Scorta', icon: '⚙️', roles: ['datore', 'segretaria'] },
     ]
@@ -59,8 +65,6 @@ const NAV_SECTIONS = [
   {
     title: 'Controllo Datore',
     items: [
-      { path: '/', label: 'Punto di Controllo', icon: '📊', roles: ['datore'] },
-      { path: '/controllo', label: 'Analisi Dati', icon: '📈', roles: ['datore'] },
       { path: '/gestione/materiali', label: 'Anagrafica Materiali', icon: '🛠️', roles: ['datore'] },
       { path: '/gestione/utenti', label: 'Utenti', icon: '👤', roles: ['datore'] },
       { path: '/gestione/log', label: 'Audit Log', icon: '📜', roles: ['datore'] },
@@ -69,7 +73,7 @@ const NAV_SECTIONS = [
 ];
 
 const PAGE_TITLES = {
-  '/': 'Punto di Controllo',
+  '/': 'Dashboard',
   '/inventario': 'Giacenza',
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
@@ -81,7 +85,7 @@ const PAGE_TITLES = {
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/utenti': 'Gestione Utenti',
   '/gestione/log': 'Audit Log',
-  '/controllo': 'Analisi Dati',
+  '/controllo': 'Dashboard',
   '/controllo/soglie': 'Soglie Scorta',
   '/controllo/notifiche': 'Centro Notifiche',
 };
@@ -94,7 +98,7 @@ const SECTION_NAMES = {
   '/importa': 'Fatture',
   '/controllo': 'Controllo',
   '/gestione': 'Configurazione',
-  '/': 'Controllo',
+  '/': 'Generale',
 };
 
 function getSection(pathname) {
