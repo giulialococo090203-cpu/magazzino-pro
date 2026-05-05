@@ -305,6 +305,8 @@ export const categoryStore = {
 
     if (error) throw error;
 
+    notifySupabaseUsageChanged();
+
     return mapCategory.toModel(data);
   },
 
@@ -317,6 +319,8 @@ export const categoryStore = {
       .single();
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
 
     return mapCategory.toModel(data);
   },
@@ -829,12 +833,18 @@ export const notificationStore = {
   },
 
   async markRead(id) {
+    if (!id) {
+      throw new Error('ID notifica mancante.');
+    }
+
     const { error } = await supabase
       .from('notifiche')
       .update({ letta: true })
       .eq('id', id);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async markAllRead() {
@@ -844,14 +854,81 @@ export const notificationStore = {
       .eq('letta', false);
 
     if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 
   async delete(id) {
+    if (!id) {
+      throw new Error('ID notifica mancante.');
+    }
+
     const { error } = await supabase.from('notifiche').delete().eq('id', id);
 
     if (error) throw error;
 
     notifySupabaseUsageChanged();
+
+    return {
+      deleted: 1,
+    };
+  },
+
+  async deleteRead() {
+    const { data: readRows, error: readError } = await supabase
+      .from('notifiche')
+      .select('id')
+      .eq('letta', true);
+
+    if (readError) throw readError;
+
+    const ids = (readRows || []).map((row) => row.id).filter(Boolean);
+
+    if (ids.length === 0) {
+      return {
+        deleted: 0,
+      };
+    }
+
+    for (const chunk of chunkArray(ids, 100)) {
+      const { error } = await supabase.from('notifiche').delete().in('id', chunk);
+
+      if (error) throw error;
+    }
+
+    notifySupabaseUsageChanged();
+
+    return {
+      deleted: ids.length,
+    };
+  },
+
+  async deleteAll() {
+    const { data: rows, error: readError } = await supabase
+      .from('notifiche')
+      .select('id');
+
+    if (readError) throw readError;
+
+    const ids = (rows || []).map((row) => row.id).filter(Boolean);
+
+    if (ids.length === 0) {
+      return {
+        deleted: 0,
+      };
+    }
+
+    for (const chunk of chunkArray(ids, 100)) {
+      const { error } = await supabase.from('notifiche').delete().in('id', chunk);
+
+      if (error) throw error;
+    }
+
+    notifySupabaseUsageChanged();
+
+    return {
+      deleted: ids.length,
+    };
   },
 };
 

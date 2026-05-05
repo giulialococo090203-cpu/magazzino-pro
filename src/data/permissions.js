@@ -56,7 +56,8 @@ export const PERMISSIONS = [
   {
     key: 'canImportInvoices',
     label: 'Importa fatture / archivio fatture',
-    description: 'Può importare fatture, inserire componenti manualmente e vedere l’archivio dei documenti caricati',
+    description:
+      'Può importare fatture, inserire componenti manualmente e vedere l’archivio dei documenti caricati',
     group: 'Fatture',
   },
   {
@@ -75,6 +76,12 @@ export const PERMISSIONS = [
     key: 'canViewNotifications',
     label: 'Notifiche',
     description: 'Può vedere e gestire le notifiche',
+    group: 'Notifiche',
+  },
+  {
+    key: 'canDeleteNotifications',
+    label: 'Elimina notifiche',
+    description: 'Può eliminare singole notifiche, notifiche lette o tutto lo storico notifiche',
     group: 'Notifiche',
   },
   {
@@ -112,6 +119,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canManageCategories: false,
     canManageThresholds: false,
     canViewNotifications: false,
+    canDeleteNotifications: false,
     canManageMaterials: false,
     canManageUsers: false,
     canViewAuditLog: false,
@@ -131,6 +139,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canManageCategories: true,
     canManageThresholds: true,
     canViewNotifications: true,
+    canDeleteNotifications: true,
     canManageMaterials: false,
     canManageUsers: false,
     canViewAuditLog: false,
@@ -150,6 +159,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canManageCategories: false,
     canManageThresholds: false,
     canViewNotifications: true,
+    canDeleteNotifications: true,
     canManageMaterials: false,
     canManageUsers: false,
     canViewAuditLog: false,
@@ -169,6 +179,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canManageCategories: true,
     canManageThresholds: true,
     canViewNotifications: true,
+    canDeleteNotifications: true,
     canManageMaterials: true,
     canManageUsers: true,
     canViewAuditLog: true,
@@ -212,6 +223,8 @@ export function getEffectivePermissions(user) {
       canViewHistory: true,
       canExportMovements: true,
       canImportInvoices: true,
+      canViewNotifications: true,
+      canDeleteNotifications: true,
     };
   }
 
