@@ -50,8 +50,11 @@ function isDatore(user) {
 
 function formatDate(iso) {
   if (!iso) return '';
+
   const d = new Date(iso);
+
   if (Number.isNaN(d.getTime())) return '';
+
   return d.toLocaleDateString('it-IT', {
     day: '2-digit',
     month: '2-digit',
@@ -61,8 +64,11 @@ function formatDate(iso) {
 
 function formatTime(iso) {
   if (!iso) return '';
+
   const d = new Date(iso);
+
   if (Number.isNaN(d.getTime())) return '';
+
   return d.toLocaleTimeString('it-IT', {
     hour: '2-digit',
     minute: '2-digit',
@@ -142,6 +148,7 @@ export default function Dashboard() {
       setSupabaseUsage(usage);
     } catch (err) {
       console.error('Errore memoria Supabase:', err);
+
       setSupabaseUsageError(
         err.message ||
           'Non riesco a leggere la memoria Supabase. Verifica i permessi Storage o la funzione SQL.'
@@ -258,7 +265,10 @@ export default function Dashboard() {
     };
 
     document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+    };
   }, []);
 
   const belowThreshold = useMemo(() => {
@@ -386,8 +396,17 @@ export default function Dashboard() {
         },
       },
       scales: {
-        x: { grid: { display: false } },
-        y: { grid: { color: '#f1f5f9' }, beginAtZero: true },
+        x: {
+          grid: {
+            display: false,
+          },
+        },
+        y: {
+          grid: {
+            color: '#f1f5f9',
+          },
+          beginAtZero: true,
+        },
       },
     };
   }, []);
@@ -427,6 +446,7 @@ export default function Dashboard() {
 
   const componentSuggestions = useMemo(() => {
     const q = safeLower(searchComponent.trim());
+
     if (!q) return [];
 
     return materials
@@ -441,6 +461,7 @@ export default function Dashboard() {
 
   const operatorSuggestions = useMemo(() => {
     const q = safeLower(searchOperator.trim());
+
     if (!q) return [];
 
     return users
@@ -456,6 +477,7 @@ export default function Dashboard() {
   const clientSuggestions = useMemo(() => {
     const allClients = [...new Set(movements.map((m) => m.clientName).filter(Boolean))];
     const q = safeLower(searchClient.trim());
+
     if (!q) return [];
 
     return allClients.filter((c) => safeLower(c).includes(q)).slice(0, 8);
@@ -478,15 +500,19 @@ export default function Dashboard() {
         safeLower(mov.userName).includes(operatorQ);
 
       const matchClient = !clientQ || safeLower(mov.clientName).includes(clientQ);
-
       const matchDate = !searchDate || String(mov.date || '').startsWith(searchDate);
 
       return matchComponent && matchOperator && matchClient && matchDate;
     });
   }, [movements, searchComponent, searchOperator, searchClient, searchDate]);
 
-  const usagePercent = supabaseUsage ? calcPercent(supabaseUsage.totalBytes, getUsageLimitBytes()) : 0;
-  const remainingBytes = supabaseUsage ? getRemainingBytes(supabaseUsage.totalBytes) : getUsageLimitBytes();
+  const usagePercent = supabaseUsage
+    ? calcPercent(supabaseUsage.totalBytes, getUsageLimitBytes())
+    : 0;
+
+  const remainingBytes = supabaseUsage
+    ? getRemainingBytes(supabaseUsage.totalBytes)
+    : getUsageLimitBytes();
 
   if (!datoreView) {
     return <Navigate to="/inventario" replace />;
@@ -496,7 +522,11 @@ export default function Dashboard() {
     return (
       <div
         className="animate-slideUp"
-        style={{ display: 'flex', justifyContent: 'center', padding: 80 }}
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: 80,
+        }}
       >
         <div className="text-muted">Caricamento dashboard in corso...</div>
       </div>
@@ -1112,8 +1142,31 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="chart-container">
-            {supabaseUsageLoading ? (
+          <div className="chart-container" style={{ position: 'relative' }}>
+            {supabaseUsage ? (
+              <>
+                <Doughnut data={supabaseUsageChartData} options={doughnutOptions} />
+
+                {supabaseUsageLoading && (
+                  <div
+                    className="text-xs text-muted"
+                    style={{
+                      position: 'absolute',
+                      right: 16,
+                      bottom: 12,
+                      background: 'rgba(255,255,255,0.92)',
+                      border: '1px solid var(--gray-200)',
+                      borderRadius: 999,
+                      padding: '4px 10px',
+                      fontWeight: 800,
+                      boxShadow: '0 6px 18px rgba(15,23,42,0.08)',
+                    }}
+                  >
+                    Aggiornamento...
+                  </div>
+                )}
+              </>
+            ) : supabaseUsageLoading ? (
               <div className="empty-state">
                 <div className="empty-state-text">Calcolo memoria Supabase...</div>
               </div>
@@ -1123,8 +1176,6 @@ export default function Dashboard() {
                 <div className="empty-state-title">Memoria non leggibile</div>
                 <div className="empty-state-text">{supabaseUsageError}</div>
               </div>
-            ) : supabaseUsage ? (
-              <Doughnut data={supabaseUsageChartData} options={doughnutOptions} />
             ) : (
               <div className="empty-state">
                 <div className="empty-state-text">Nessun dato memoria disponibile</div>
