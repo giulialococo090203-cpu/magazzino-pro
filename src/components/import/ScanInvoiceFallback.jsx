@@ -1,189 +1,331 @@
 import { useMemo } from 'react';
 
-function createEmptyRow() {
+export function createEmptyRow() {
   return {
     code: '',
     description: '',
-    unit: 'PZ',
     quantity: 1,
+    unit: 'ST',
     price: 0,
+    brand: '',
+    category: '',
+    location: 'A1-01',
   };
 }
 
+function parseNumber(value) {
+  const parsed = Number.parseFloat(String(value || '0').replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function ScanInvoiceFallback({
-  fileName,
-  rows,
+  fileName = '',
+  rows = [],
   onChangeRow,
   onAddRow,
   onRemoveRow,
   onCancel,
   onContinue,
 }) {
-  const isValid = useMemo(() => {
-    if (!rows || rows.length === 0) return false;
+  const validRows = useMemo(() => {
+    return (rows || []).filter((row) => {
+      const code = String(row.code || '').trim();
+      const description = String(row.description || '').trim();
+      const quantity = parseNumber(row.quantity);
 
-    return rows.some((row) => {
-      const hasCode = String(row.code || '').trim().length > 0;
-      const hasDescription = String(row.description || '').trim().length > 0;
-      const qty = Number(row.quantity || 0);
-      return hasCode && hasDescription && qty > 0;
+      return code && description && quantity > 0;
     });
   }, [rows]);
 
-  const validRowsCount = useMemo(() => {
-    return (rows || []).filter((row) => {
-      const hasCode = String(row.code || '').trim().length > 0;
-      const hasDescription = String(row.description || '').trim().length > 0;
-      const qty = Number(row.quantity || 0);
-      return hasCode && hasDescription && qty > 0;
-    }).length;
-  }, [rows]);
+  const totalQuantity = useMemo(() => {
+    return validRows.reduce((sum, row) => sum + parseNumber(row.quantity), 0);
+  }, [validRows]);
+
+  const totalValue = useMemo(() => {
+    return validRows.reduce(
+      (sum, row) => sum + parseNumber(row.quantity) * parseNumber(row.price),
+      0
+    );
+  }, [validRows]);
 
   return (
     <div className="card animate-fadeIn">
-      <div className="card-header" style={{ background: 'var(--warning-50)' }}>
-        <h3 className="card-title">🖼️ Compilazione guidata da scansione</h3>
-        <p className="text-sm mt-1">
-          Il file <strong>{fileName}</strong> è una scansione. Inserisci manualmente le righe prodotto
-          leggendo la fattura e poi continua con l’importazione.
-        </p>
-      </div>
+      <div
+        className="card-header"
+        style={{
+          background: 'var(--warning-50)',
+          alignItems: 'flex-start',
+          gap: 16,
+        }}
+      >
+        <div>
+          <h3 className="card-title">✍️ Inserimento guidato componenti</h3>
+          <p className="card-subtitle">
+            {fileName
+              ? `Documento: ${fileName}`
+              : 'Compila manualmente le righe da caricare in magazzino'}
+          </p>
+        </div>
 
-      <div className="card-body" style={{ overflowX: 'auto' }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th style={{ width: 160 }}>Codice</th>
-              <th>Descrizione</th>
-              <th style={{ width: 100 }}>UM</th>
-              <th style={{ width: 120 }}>Quantità</th>
-              <th style={{ width: 130 }}>Prezzo</th>
-              <th style={{ width: 90 }}>Totale</th>
-              <th style={{ width: 80 }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(rows || []).map((row, index) => {
-              const qty = Number(row.quantity || 0);
-              const price = Number(row.price || 0);
-              const total = qty * price;
-
-              return (
-                <tr key={index}>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={row.code}
-                      onChange={(e) => onChangeRow(index, 'code', e.target.value)}
-                      placeholder="Codice"
-                    />
-                  </td>
-
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={row.description}
-                      onChange={(e) => onChangeRow(index, 'description', e.target.value)}
-                      placeholder="Descrizione materiale"
-                    />
-                  </td>
-
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={row.unit}
-                      onChange={(e) => onChangeRow(index, 'unit', e.target.value.toUpperCase())}
-                      placeholder="PZ"
-                    />
-                  </td>
-
-                  <td>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="form-control"
-                      value={row.quantity}
-                      onChange={(e) => onChangeRow(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    />
-                  </td>
-
-                  <td>
-                    <input
-                      type="number"
-                      step="0.0001"
-                      min="0"
-                      className="form-control"
-                      value={row.price}
-                      onChange={(e) => onChangeRow(index, 'price', parseFloat(e.target.value) || 0)}
-                    />
-                  </td>
-
-                  <td>
-                    <div style={{ fontWeight: 700 }}>
-                      {Number.isFinite(total) ? total.toFixed(2) : '0.00'}
-                    </div>
-                  </td>
-
-                  <td>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => onRemoveRow(index)}
-                      disabled={(rows || []).length <= 1}
-                    >
-                      ✕
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        <div style={{ marginTop: 16 }}>
-          <button className="btn btn-secondary" onClick={onAddRow}>
+        <div className="btn-group">
+          <button type="button" className="btn btn-sm btn-secondary" onClick={onCancel}>
+            Annulla
+          </button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={onAddRow}>
             + Aggiungi riga
           </button>
+        </div>
+      </div>
+
+      <div className="card-body">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 12,
+            marginBottom: 18,
+          }}
+        >
+          <div className="kpi-card" style={{ minHeight: 86, padding: 14 }}>
+            <div className="kpi-icon blue">📄</div>
+            <div className="kpi-content">
+              <div className="kpi-label">Righe valide</div>
+              <div className="kpi-value" style={{ fontSize: 22 }}>
+                {validRows.length}
+              </div>
+              <div className="kpi-detail">complete e importabili</div>
+            </div>
+          </div>
+
+          <div className="kpi-card" style={{ minHeight: 86, padding: 14 }}>
+            <div className="kpi-icon green">📦</div>
+            <div className="kpi-content">
+              <div className="kpi-label">Quantità totale</div>
+              <div className="kpi-value" style={{ fontSize: 22 }}>
+                {totalQuantity}
+              </div>
+              <div className="kpi-detail">pezzi / unità</div>
+            </div>
+          </div>
+
+          <div className="kpi-card" style={{ minHeight: 86, padding: 14 }}>
+            <div className="kpi-icon purple">€</div>
+            <div className="kpi-content">
+              <div className="kpi-label">Valore stimato</div>
+              <div className="kpi-value" style={{ fontSize: 22 }}>
+                € {totalValue.toFixed(2)}
+              </div>
+              <div className="kpi-detail">quantità × prezzo netto</div>
+            </div>
+          </div>
         </div>
 
         <div
           style={{
-            marginTop: 18,
             padding: 14,
             borderRadius: 'var(--border-radius-md)',
-            background: 'var(--gray-50)',
-            color: 'var(--gray-700)',
-            fontSize: 14,
+            background: 'var(--primary-50)',
+            border: '1px solid var(--primary-100)',
+            marginBottom: 16,
           }}
         >
-          <strong>Righe valide inserite:</strong> {validRowsCount}
-          <div style={{ marginTop: 6 }}>
-            Compila almeno <strong>codice</strong>, <strong>descrizione</strong> e <strong>quantità</strong>.
+          <div style={{ fontWeight: 900, color: 'var(--primary-700)', marginBottom: 4 }}>
+            Come funziona
           </div>
+          <div className="text-sm" style={{ color: 'var(--gray-700)' }}>
+            Inserisci codice, descrizione e quantità. Dopo aver premuto “Continua” andrai
+            nell’anteprima, dove potrai correggere categoria, marca, prezzo e posizione prima del
+            salvataggio definitivo.
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table className="data-table" style={{ minWidth: 980 }}>
+            <thead>
+              <tr>
+                <th style={{ width: 52 }}>#</th>
+                <th>Codice *</th>
+                <th>Descrizione *</th>
+                <th>Qtà *</th>
+                <th>UM</th>
+                <th>Prezzo Netto</th>
+                <th>Marca</th>
+                <th>Categoria testo</th>
+                <th>Posizione</th>
+                <th style={{ width: 80 }}>Azioni</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {(rows || []).map((row, index) => {
+                const codeMissing = !String(row.code || '').trim();
+                const descriptionMissing = !String(row.description || '').trim();
+                const quantityInvalid = parseNumber(row.quantity) <= 0;
+
+                return (
+                  <tr key={index}>
+                    <td style={{ fontWeight: 900 }}>{index + 1}</td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.code || ''}
+                        onChange={(e) => onChangeRow(index, 'code', e.target.value)}
+                        placeholder="Es. 8-738-722-157"
+                        style={{
+                          minWidth: 150,
+                          borderColor: codeMissing
+                            ? 'var(--warning-400)'
+                            : 'var(--gray-300)',
+                        }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.description || ''}
+                        onChange={(e) => onChangeRow(index, 'description', e.target.value)}
+                        placeholder="Descrizione componente"
+                        style={{
+                          minWidth: 260,
+                          borderColor: descriptionMissing
+                            ? 'var(--warning-400)'
+                            : 'var(--gray-300)',
+                        }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="form-control"
+                        value={row.quantity ?? 1}
+                        onChange={(e) => onChangeRow(index, 'quantity', e.target.value)}
+                        style={{
+                          width: 90,
+                          borderColor: quantityInvalid
+                            ? 'var(--warning-400)'
+                            : 'var(--gray-300)',
+                        }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.unit || 'ST'}
+                        onChange={(e) => onChangeRow(index, 'unit', e.target.value)}
+                        style={{ width: 80 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="form-control"
+                        value={row.price ?? 0}
+                        onChange={(e) => onChangeRow(index, 'price', e.target.value)}
+                        style={{ width: 120 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.brand || ''}
+                        onChange={(e) => onChangeRow(index, 'brand', e.target.value)}
+                        placeholder="Es. Bosch"
+                        style={{ minWidth: 130 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.category || ''}
+                        onChange={(e) => onChangeRow(index, 'category', e.target.value)}
+                        placeholder="Es. ricambi"
+                        style={{ minWidth: 140 }}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        className="form-control"
+                        value={row.location || 'A1-01'}
+                        onChange={(e) => onChangeRow(index, 'location', e.target.value)}
+                        style={{ width: 110 }}
+                      />
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost text-danger"
+                        onClick={() => onRemoveRow(index)}
+                        disabled={(rows || []).length <= 1}
+                        title="Elimina riga"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {(!rows || rows.length === 0) && (
+                <tr>
+                  <td colSpan="10" style={{ padding: 32 }}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">📄</div>
+                      <div className="empty-state-title">Nessuna riga presente</div>
+                      <div className="empty-state-text">
+                        Aggiungi una riga per continuare con l’importazione.
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       <div
         className="card-footer"
-        style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
       >
-        <button className="btn btn-secondary" onClick={onCancel}>
-          ← Annulla
-        </button>
+        <div className="text-sm text-muted">
+          Campi obbligatori: <strong>codice</strong>, <strong>descrizione</strong>,{' '}
+          <strong>quantità maggiore di zero</strong>.
+        </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={onContinue}
-          disabled={!isValid}
-        >
-          Continua con l’importazione →
-        </button>
+        <div className="btn-group">
+          <button type="button" className="btn btn-secondary" onClick={onCancel}>
+            ← Annulla
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onContinue}
+            disabled={validRows.length === 0}
+          >
+            Continua all’anteprima →
+          </button>
+        </div>
       </div>
     </div>
   );
 }
-
-export { createEmptyRow };

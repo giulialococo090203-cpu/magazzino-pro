@@ -1,251 +1,574 @@
 /**
- * BRUTE FORCE RECOGNITION ENGINE
- * Un motore di identificazione materiali e categorie ad alta resilienza.
+ * CLASSIFICATION ENGINE
+ * Motore di riconoscimento materiali/categorie ad alta resilienza.
+ * Migliorato per import fatture, ricambi, codici Bosch/Ariston e descrizioni tecniche.
  */
 
-/**
- * DIZIONARIO SINONIMI E ABBREVIAZIONI
- * Gestisce le varianti comuni nel settore edile/ferramenta.
- */
 const SYNONYMS_DICTIONARY = {
-  'vt': 'vite',
-  'viti': 'vite',
-  'bl': 'bullone',
-  'bulloni': 'bullone',
-  'pz': 'pezzi',
-  'mt': 'metri',
-  'idr': 'idraulica',
-  'ele': 'elettrico',
-  'ferr': 'ferramenta',
-  'zinc': 'zincato',
-  'inox': 'inossidabile',
-  'diam': 'diametro',
-  'spess': 'spessore',
-  'pann': 'pannello',
-  'racc': 'raccordo',
-  'interr': 'interruttore',
-  'diff': 'differenziale',
-  'magn': 'magnetotermico'
+  vt: 'vite',
+  viti: 'vite',
+  vite: 'vite',
+  bl: 'bullone',
+  bulloni: 'bullone',
+  bullone: 'bullone',
+  pz: 'pezzi',
+  pce: 'pezzi',
+  nr: 'pezzi',
+  st: 'pezzi',
+  mt: 'metri',
+  mtl: 'metri',
+  ml: 'metri',
+  kg: 'chilogrammi',
+  lt: 'litri',
+  l: 'litri',
+  conf: 'confezione',
+  scat: 'scatola',
+  idr: 'idraulica',
+  ele: 'elettrico',
+  ferr: 'ferramenta',
+  zinc: 'zincato',
+  inox: 'inossidabile',
+  diam: 'diametro',
+  dia: 'diametro',
+  spess: 'spessore',
+  pann: 'pannello',
+  racc: 'raccordo',
+  raccordi: 'raccordo',
+  interr: 'interruttore',
+  diff: 'differenziale',
+  magn: 'magnetotermico',
+  magnotermico: 'magnetotermico',
+  valv: 'valvola',
+  valvole: 'valvola',
+  guarn: 'guarnizione',
+  ricambi: 'ricambio',
+  bruc: 'bruciatore',
+  circ: 'circolatore',
+  ventil: 'ventilatore',
+  vaso: 'vaso',
+  espans: 'espansione',
+  scheda: 'scheda',
+  termost: 'termostato',
 };
 
 const KEYWORDS_DICTIONARY = {
-  'Ferramenta': ['vite', 'bullone', 'dado', 'rondella', 'chiodo', 'rivetto', 'tassello', 'zincato', 'inox', 'm8', 'm10', 'm12', 'm6', 'staffa', 'cerniera', 'serratura'],
-  'Elettrico': ['cavo', 'interruttore', 'differenziale', 'presa', 'spina', 'morsetto', 'quadro', 'magnetotermico', 'corrugato', 'led', 'lampada', 'scatola', 'canalina', 'frutto', 'placchetta'],
-  'Idraulica': ['tubo', 'raccordo', 'valvola', 'guarnizione', 'rubinetto', 'sifone', 'multistrato', 'rame', 'pvc', 'geberit', 'pompa', 'flussostato', 'collettore', 'caldaia'],
-  'Edilizia': ['cemento', 'calce', 'malta', 'mattone', 'colla', 'intonaco', 'cartongesso', 'sabbia', 'premiscelato', 'mapei', 'tegola', 'guaina', 'isolante', 'pannello'],
-  'Sicurezza': ['guanti', 'casco', 'scarpe', 'occhiali', 'dpi', 'visiera', 'maschera', 'imbracatura', 'antinfortunistica', 'estintore', 'cartellistica'],
-  'Utensileria': ['trapano', 'avvitatore', 'cacciavite', 'pinza', 'martello', 'mola', 'seghetto', 'chiave', 'fresa', 'disco', 'punte', 'makita', 'bosch', 'dewalt', 'beta', 'hilti'],
-  'Colori e Vernici': ['pittura', 'vernice', 'smalto', 'pennello', 'rullo', 'diluente', 'colore', 'tintometro', 'stucco', 'primer', 'fissativo', 'idropittura'],
-  'Legname': ['tavola', 'listello', 'pannello', 'compensato', 'abete', 'pino', 'osb', 'mdf', 'multistrato', 'truciolare', 'travatura', 'perlinato']
+  Ferramenta: [
+    'vite',
+    'bullone',
+    'dado',
+    'rondella',
+    'chiodo',
+    'rivetto',
+    'tassello',
+    'zincato',
+    'inox',
+    'm8',
+    'm10',
+    'm12',
+    'm6',
+    'staffa',
+    'cerniera',
+    'serratura',
+    'barra',
+    'filettata',
+    'fischer',
+  ],
+  Elettrico: [
+    'cavo',
+    'interruttore',
+    'differenziale',
+    'presa',
+    'spina',
+    'morsetto',
+    'quadro',
+    'magnetotermico',
+    'corrugato',
+    'led',
+    'lampada',
+    'scatola',
+    'canalina',
+    'frutto',
+    'placchetta',
+    'wago',
+    'gewiss',
+    'abb',
+    'elettrico',
+    'scheda',
+    'centralina',
+    'sonda',
+    'sensore',
+  ],
+  Idraulica: [
+    'tubo',
+    'raccordo',
+    'valvola',
+    'guarnizione',
+    'rubinetto',
+    'sifone',
+    'multistrato',
+    'rame',
+    'pvc',
+    'geberit',
+    'pompa',
+    'flussostato',
+    'collettore',
+    'caldaia',
+    'bruciatore',
+    'vaso',
+    'espansione',
+    'circolatore',
+    'scambiatore',
+    'termostato',
+    'pressostato',
+    'ventilatore',
+    'manometro',
+    'caldaie',
+    'bosch',
+    'ariston',
+    'caleffi',
+    'giacomini',
+  ],
+  Edilizia: [
+    'cemento',
+    'calce',
+    'malta',
+    'mattone',
+    'colla',
+    'intonaco',
+    'cartongesso',
+    'sabbia',
+    'premiscelato',
+    'mapei',
+    'tegola',
+    'guaina',
+    'isolante',
+    'pannello',
+    'laterizio',
+    'rasante',
+  ],
+  Sicurezza: [
+    'guanti',
+    'casco',
+    'scarpe',
+    'occhiali',
+    'dpi',
+    'visiera',
+    'maschera',
+    'imbracatura',
+    'antinfortunistica',
+    'estintore',
+    'cartellistica',
+    'protezione',
+  ],
+  Utensileria: [
+    'trapano',
+    'avvitatore',
+    'cacciavite',
+    'pinza',
+    'martello',
+    'mola',
+    'seghetto',
+    'chiave',
+    'fresa',
+    'disco',
+    'punte',
+    'makita',
+    'bosch',
+    'dewalt',
+    'beta',
+    'hilti',
+    'utensile',
+  ],
+  'Colori e Vernici': [
+    'pittura',
+    'vernice',
+    'smalto',
+    'pennello',
+    'rullo',
+    'diluente',
+    'colore',
+    'tintometro',
+    'stucco',
+    'primer',
+    'fissativo',
+    'idropittura',
+    'boero',
+    'saratoga',
+  ],
+  Legname: [
+    'tavola',
+    'listello',
+    'pannello',
+    'compensato',
+    'abete',
+    'pino',
+    'osb',
+    'mdf',
+    'multistrato',
+    'truciolare',
+    'travatura',
+    'perlinato',
+    'legno',
+  ],
 };
 
-/**
- * NORMALIZZAZIONE ESTREMA
- */
+const STOP_WORDS = new Set([
+  'di',
+  'a',
+  'da',
+  'in',
+  'con',
+  'su',
+  'per',
+  'tra',
+  'fra',
+  'il',
+  'lo',
+  'la',
+  'i',
+  'gli',
+  'le',
+  'un',
+  'una',
+  'uno',
+  'del',
+  'della',
+  'dello',
+  'dei',
+  'degli',
+  'delle',
+  'al',
+  'allo',
+  'alla',
+  'ai',
+  'agli',
+  'alle',
+  'e',
+  'o',
+  'ed',
+  'cod',
+  'codice',
+  'art',
+  'articolo',
+  'ricambio',
+  'ricambi',
+  'prodotto',
+  'pezzi',
+]);
+
+function safeString(value) {
+  return String(value ?? '').trim();
+}
+
+function normalizeCode(value) {
+  return safeString(value)
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[^\w./-]/g, '');
+}
+
 export const normalize = (text) => {
   if (!text) return '';
-  const stopWords = ['di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra', 'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'una', 'uno'];
-  
-  let clean = text.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Rimuove accenti
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")     // Rimuove punteggiatura
-    .replace(/\s+/g, " ")                             // Rimuove doppi spazi
+
+  const clean = safeString(text)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.,/#!$%^&*;:{}=_`~()[\]"'<>?+|\\]/g, ' ')
+    .replace(/[-–—]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 
-  // Sostituzione sinonimi/abbreviazioni
-  const words = clean.split(' ').map(w => SYNONYMS_DICTIONARY[w] || w);
-  
+  const words = clean.split(' ').map((word) => SYNONYMS_DICTIONARY[word] || word);
+
   return words
-    .filter(word => word.length > 1 && !stopWords.includes(word))
+    .filter((word) => word.length > 1 && !STOP_WORDS.has(word))
     .join(' ');
 };
 
-/**
- * DISTANZA DI LEVENSHTEIN (FUZZY MATCHING)
- */
+export const tokenize = (text) => {
+  return normalize(text).split(/\s+/).filter(Boolean);
+};
+
 export const levenshtein = (a, b) => {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
+  const s1 = safeString(a);
+  const s2 = safeString(b);
+
+  if (s1.length === 0) return s2.length;
+  if (s2.length === 0) return s1.length;
+
   const matrix = [];
-  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+
+  for (let i = 0; i <= s2.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= s1.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= s2.length; i++) {
+    for (let j = 1; j <= s1.length; j++) {
+      if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
         matrix[i][j] = matrix[i - 1][j - 1];
       } else {
-        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
       }
     }
   }
-  return matrix[b.length][a.length];
+
+  return matrix[s2.length][s1.length];
 };
 
 export const calculateSimilarity = (s1, s2) => {
-  if (!s1 || !s2) return 0;
-  if (s1 === s2) return 1.0;
-  const longer = s1.length > s2.length ? s1 : s2;
-  const shorter = s1.length > s2.length ? s2 : s1;
-  const longerLength = longer.length;
-  if (longerLength === 0) return 1.0;
-  return (longerLength - levenshtein(longer, shorter)) / longerLength;
+  const a = safeString(s1);
+  const b = safeString(s2);
+
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+
+  const longer = a.length > b.length ? a : b;
+  const shorter = a.length > b.length ? b : a;
+
+  if (!longer.length) return 1;
+
+  return (longer.length - levenshtein(longer, shorter)) / longer.length;
 };
 
-/**
- * ANALISI N-GRAMMI PER SIMILARITÀ SEMANTICA
- */
 export const getNGrams = (text, n = 3) => {
   const grams = [];
-  const clean = text.replace(/\s+/g, '');
+  const clean = safeString(text).replace(/\s+/g, '');
+
+  if (clean.length < n) return clean ? [clean] : [];
+
   for (let i = 0; i <= clean.length - n; i++) {
     grams.push(clean.substring(i, i + n));
   }
+
   return grams;
 };
 
 export const calculateSemanticSimilarity = (s1, s2) => {
   const g1 = getNGrams(s1);
   const g2 = getNGrams(s2);
+
   if (g1.length === 0 || g2.length === 0) return calculateSimilarity(s1, s2);
-  
-  const intersection = g1.filter(g => g2.includes(g)).length;
-  const union = new Set([...g1, ...g2]).size;
-  return intersection / union;
+
+  const set1 = new Set(g1);
+  const set2 = new Set(g2);
+
+  let intersection = 0;
+
+  set1.forEach((gram) => {
+    if (set2.has(gram)) intersection++;
+  });
+
+  const union = new Set([...set1, ...set2]).size;
+
+  return union === 0 ? 0 : intersection / union;
 };
 
-/**
- * MOTORE AGGRESSIVO DI IDENTIFICAZIONE (BRUTE FORCE)
- */
-export const aggressiveMatch = (inputData, { materials = [], categories = [] }) => {
-  const { code: inputCode = '', description: inputDesc = '' } = 
-    typeof inputData === 'string' ? { description: inputData } : inputData;
+function tokenOverlapScore(inputTokens, targetText) {
+  const target = normalize(targetText);
+  if (!inputTokens.length || !target) return 0;
 
-  const rawCode = String(inputCode || '').trim();
-  const rawDesc = String(inputDesc || '').trim();
-  
-  if (!rawCode && !rawDesc) return { match: null, alternatives: [], confidence: 'none' };
+  let hits = 0;
 
+  inputTokens.forEach((token) => {
+    if (target.includes(token)) hits++;
+  });
+
+  return hits / inputTokens.length;
+}
+
+function detectCategoryByKeywords(inputTokens, categoryName) {
+  const keywords = KEYWORDS_DICTIONARY[categoryName] || [];
+
+  if (!keywords.length || !inputTokens.length) return 0;
+
+  let score = 0;
+
+  inputTokens.forEach((token) => {
+    if (keywords.includes(token)) score += 42;
+    else if (keywords.some((kw) => token.includes(kw) || kw.includes(token))) score += 18;
+  });
+
+  return Math.min(95, score);
+}
+
+function getConfidenceFromScore(bestMatch) {
+  if (!bestMatch) return 'none';
+
+  if (bestMatch.type === 'material' && bestMatch.score >= 145) return 'certi';
+  if (bestMatch.score >= 90) return 'certi';
+  if (bestMatch.score >= 55) return 'probabili';
+  if (bestMatch.score >= 25) return 'da_confermare';
+
+  return 'none';
+}
+
+export const aggressiveMatch = (inputData, { materials = [], categories = [] } = {}) => {
+  const { code: inputCode = '', description: inputDesc = '', brand: inputBrand = '' } =
+    typeof inputData === 'string' ? { description: inputData } : inputData || {};
+
+  const rawCode = safeString(inputCode);
+  const rawDesc = safeString(inputDesc);
+  const rawBrand = safeString(inputBrand);
+
+  if (!rawCode && !rawDesc && !rawBrand) {
+    return {
+      bestMatch: null,
+      match: null,
+      alternatives: [],
+      confidence: 'none',
+      allCandidates: [],
+    };
+  }
+
+  const normInputCode = normalizeCode(rawCode);
   const normInputDesc = normalize(rawDesc);
-  const inputTokens = normInputDesc.split(' ');
-  
+  const normInputBrand = normalize(rawBrand);
+  const inputTokens = tokenize(`${rawDesc} ${rawBrand}`);
+
   const candidates = [];
 
-  // --- 1. BRUTE FORCE MATCH AGAINST MATERIALS ---
-  materials.forEach(mat => {
+  materials.forEach((mat) => {
     let score = 0;
-    const matCode = String(mat.code || '').trim();
-    const normMatCode = matCode.toLowerCase();
+
+    const matCode = safeString(mat.code);
+    const normMatCode = normalizeCode(matCode);
     const normMatDesc = normalize(mat.description);
     const normMatBrand = normalize(mat.brand || '');
 
-    // A. EXACT CODE MATCH (Priorità Assoluta - 100+ punti per forzare il match)
-    if (rawCode && rawCode.toLowerCase() === normMatCode) {
-      score += 150; // Valore sopra 100 per garantire che vinca sempre
-    } else if (rawCode && normMatCode.includes(rawCode.toLowerCase()) && rawCode.length > 3) {
-      score += 80;
+    if (normInputCode && normMatCode) {
+      if (normInputCode === normMatCode) {
+        score += 170;
+      } else if (
+        normInputCode.length >= 5 &&
+        (normMatCode.includes(normInputCode) || normInputCode.includes(normMatCode))
+      ) {
+        score += 95;
+      } else {
+        const codeSimilarity = calculateSimilarity(normInputCode, normMatCode);
+        if (codeSimilarity >= 0.86) score += codeSimilarity * 80;
+      }
     }
 
-    // B. Description Matching
-    if (normInputDesc && normInputDesc === normMatDesc) score += 95;
-    else if (normInputDesc && (normMatDesc.includes(normInputDesc) || normInputDesc.includes(normMatDesc))) score += 60;
+    if (normInputDesc && normMatDesc) {
+      if (normInputDesc === normMatDesc) {
+        score += 100;
+      } else if (normMatDesc.includes(normInputDesc) || normInputDesc.includes(normMatDesc)) {
+        score += 68;
+      }
 
-    // C. Keyword Matching
-    if (inputTokens.length > 0 && inputTokens[0] !== '') {
-      let keywordHits = 0;
-      inputTokens.forEach(t => {
-        if (normMatDesc.includes(t) || normMatCode.includes(t) || normMatBrand.includes(t)) keywordHits++;
-      });
-      score += (keywordHits / inputTokens.length) * 50;
-    }
-
-    // D. Fuzzy/Semantic
-    if (normInputDesc) {
       const fuzzySim = calculateSimilarity(normInputDesc, normMatDesc);
-      if (fuzzySim > 0.8) score += fuzzySim * 40;
+      if (fuzzySim > 0.74) score += fuzzySim * 46;
 
       const semanticSim = calculateSemanticSimilarity(normInputDesc, normMatDesc);
-      score += semanticSim * 30;
+      score += semanticSim * 36;
+
+      const overlap = tokenOverlapScore(inputTokens, `${mat.description || ''} ${mat.brand || ''}`);
+      score += overlap * 58;
     }
 
-    if (score > 15) {
-      candidates.push({ 
-        type: 'material', 
-        id: mat.id, 
-        name: mat.description, 
-        code: mat.code, 
-        score: Math.min(200, score), // Cap a 200 per gestire la priorità codice
-        original: mat 
+    if (normInputBrand && normMatBrand) {
+      if (normInputBrand === normMatBrand) score += 25;
+      else if (normMatBrand.includes(normInputBrand) || normInputBrand.includes(normMatBrand)) {
+        score += 16;
+      }
+    }
+
+    if (score > 18) {
+      candidates.push({
+        type: 'material',
+        id: mat.id,
+        name: mat.description,
+        code: mat.code,
+        score: Math.min(220, score),
+        original: mat,
       });
     }
   });
 
-  // --- 2. BRUTE FORCE MATCH AGAINST CATEGORIES ---
-  categories.forEach(cat => {
+  categories.forEach((cat) => {
     let score = 0;
-    const normName = normalize(cat.name);
-    const keywords = KEYWORDS_DICTIONARY[cat.name] || [];
 
-    // Priorità se la descrizione dell'input contiene esattamente il nome categoria
-    if (normInputDesc === normName) score += 90;
-    else if (normInputDesc.includes(normName)) score += 70;
+    const catName = safeString(cat.name);
+    const normName = normalize(catName);
 
-    // Keyword dictionary match
-    let hitCount = 0;
-    inputTokens.forEach(token => {
-      if (keywords.includes(token)) hitCount += 40;
-      else if (keywords.some(kw => token.includes(kw) || kw.includes(token))) hitCount += 15;
-    });
-    score += Math.min(80, hitCount);
+    if (normInputDesc && normName) {
+      if (normInputDesc === normName) score += 90;
+      else if (normInputDesc.includes(normName) || normName.includes(normInputDesc)) score += 58;
+    }
 
-    if (score > 20) {
-      candidates.push({ type: 'category', id: cat.id, name: cat.name, score: Math.min(100, score), original: cat });
+    score += detectCategoryByKeywords(inputTokens, catName);
+
+    if (rawCode) {
+      const codePrefix = rawCode.split(/[-_/.\s]/)[0]?.toLowerCase();
+
+      if (codePrefix) {
+        const categoryPrefix = normalize(catName).slice(0, 4);
+        if (categoryPrefix && codePrefix.includes(categoryPrefix.slice(0, 3))) {
+          score += 14;
+        }
+      }
+    }
+
+    if (score > 18) {
+      candidates.push({
+        type: 'category',
+        id: cat.id,
+        name: cat.name,
+        score: Math.min(110, score),
+        original: cat,
+      });
     }
   });
 
-  // RANKING E FINALIZZAZIONE
   const sorted = candidates.sort((a, b) => b.score - a.score);
-  
+
   const unique = [];
   const seen = new Set();
-  sorted.forEach(c => {
-    const key = `${c.type}-${c.id}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      unique.push(c);
-    }
+
+  sorted.forEach((candidate) => {
+    const key = `${candidate.type}-${candidate.id}`;
+    if (seen.has(key)) return;
+
+    seen.add(key);
+    unique.push(candidate);
   });
 
   const bestMatch = unique[0] || null;
-  
-  // Confidenza basata sui nuovi punteggi
-  let confidence = 'none';
-  if (bestMatch) {
-    if (bestMatch.score >= 150) confidence = 'certi'; // Match codice
-    else if (bestMatch.score > 85) confidence = 'certi'; // Match descrizione perfetta
-    else if (bestMatch.score > 50) confidence = 'probabili';
-    else confidence = 'da_confermare';
-  }
+  const confidence = getConfidenceFromScore(bestMatch);
 
   return {
     bestMatch,
-    alternatives: unique.slice(1, 4),
+    match: bestMatch,
+    alternatives: unique.slice(1, 5),
     confidence,
-    allCandidates: unique
+    allCandidates: unique,
   };
 };
 
-
-/**
- * BACKWARD COMPATIBILITY: CLASSIFY
- */
 export const classify = (description, categories) => {
   const result = aggressiveMatch(description, { categories });
+
   return result.allCandidates
-    .filter(c => c.type === 'category')
-    .map(c => ({
-      id: c.id,
-      name: c.name,
-      score: c.score,
-      confidence: c.score > 75 ? 'high' : c.score > 40 ? 'medium' : 'low'
+    .filter((candidate) => candidate.type === 'category')
+    .map((candidate) => ({
+      id: candidate.id,
+      name: candidate.name,
+      score: candidate.score,
+      confidence:
+        candidate.score > 75 ? 'high' : candidate.score > 40 ? 'medium' : 'low',
     }));
+};
+
+export default {
+  normalize,
+  tokenize,
+  levenshtein,
+  calculateSimilarity,
+  calculateSemanticSimilarity,
+  aggressiveMatch,
+  classify,
 };

@@ -4,6 +4,17 @@ import mammoth from 'mammoth';
 const PDF_TEXT_PARSER_URL =
   import.meta.env.VITE_PDF_TEXT_PARSER_URL || 'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
+const STANDARD_HEADER = [
+  'Codice',
+  'Descrizione',
+  'Quantità',
+  'UM',
+  'Prezzo Netto',
+  'Marca',
+  'Categoria',
+  'Posizione',
+];
+
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
 }
@@ -46,13 +57,44 @@ function normalizeSpaces(text = '') {
 }
 
 function parseItalianNumber(value = '') {
-  const text = normalizeSpaces(value)
-    .replace(/\./g, '')
-    .replace(',', '.')
-    .replace(/[^\d.-]/g, '');
+  if (typeof value === 'number') return value;
+
+  const raw = normalizeSpaces(value);
+
+  if (!raw) return 0;
+
+  let text = raw;
+
+  const hasComma = text.includes(',');
+  const hasDot = text.includes('.');
+
+  if (hasComma && hasDot) {
+    text = text.replace(/\./g, '').replace(',', '.');
+  } else if (hasComma && !hasDot) {
+    text = text.replace(',', '.');
+  }
+
+  text = text.replace(/[^\d.-]/g, '');
 
   const parsed = Number.parseFloat(text);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function cleanDescription(value = '') {
+  let text = normalizeSpaces(value);
+
+  text = text.replace(/\bTipo dato:\s*[^,]+,?/gi, '');
+  text = text.replace(/\bRiferimento testo:\s*[A-Z0-9]+,?/gi, '');
+  text = text.replace(/\bRICAMBIO\b$/gi, '');
+  text = text.replace(/\bRICAMBI\b$/gi, '');
+  text = text.replace(/\bPILE\b/gi, '');
+  text = text.replace(/\bAEE\b/gi, '');
+  text = text.replace(/\s*,\s*/g, ' ');
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/^[-–—,\s]+/, '');
+  text = text.replace(/[-–—,\s]+$/, '');
+
+  return text.trim();
 }
 
 function cleanBoschDescription(value = '') {
@@ -181,17 +223,6 @@ function parseBoschInvoiceTextToRows(text = '') {
     .map((line) => normalizeSpaces(line))
     .filter(Boolean);
 
-  const header = [
-    'Codice',
-    'Descrizione',
-    'Quantità',
-    'UM',
-    'Prezzo Netto',
-    'Marca',
-    'Categoria',
-    'Posizione',
-  ];
-
   const rows = [];
 
   const itemRegex =
@@ -250,7 +281,7 @@ function parseBoschInvoiceTextToRows(text = '') {
       code,
       description || code,
       quantity,
-      'PZ',
+      'ST',
       price,
       'Bosch',
       '',
@@ -260,7 +291,7 @@ function parseBoschInvoiceTextToRows(text = '') {
 
   if (!rows.length) return [];
 
-  return [header, ...rows];
+  return [STANDARD_HEADER, ...rows];
 }
 
 function parserObjectRowToMatrixRow(row = {}) {
@@ -276,7 +307,7 @@ function parserObjectRowToMatrixRow(row = {}) {
         ''
     ),
     normalizeCell(row.quantity ?? row.qty ?? row.quantita ?? row.quantità ?? ''),
-    normalizeCell(row.unit || row.um || row.unita || row.unitaMisura || 'PZ'),
+    normalizeCell(row.unit || row.um || row.unita || row.unitaMisura || 'ST'),
     normalizeCell(row.price ?? row.netPrice ?? row.prezzoNetto ?? row.prezzo ?? ''),
     normalizeCell(row.brand || row.marca || ''),
     normalizeCell(row.category || row.categoria || ''),
@@ -285,22 +316,11 @@ function parserObjectRowToMatrixRow(row = {}) {
 }
 
 function normalizeObjectRows(rows = []) {
-  const header = [
-    'Codice',
-    'Descrizione',
-    'Quantità',
-    'UM',
-    'Prezzo Netto',
-    'Marca',
-    'Categoria',
-    'Posizione',
-  ];
-
   const matrixRows = rows.map(parserObjectRowToMatrixRow).filter(hasEnoughUsefulCells);
 
   if (!matrixRows.length) return [];
 
-  return [header, ...matrixRows];
+  return [STANDARD_HEADER, ...matrixRows];
 }
 
 function normalizeTextParserRows(data) {
@@ -370,7 +390,14 @@ async function parseExcelFile(file) {
     throw new Error('Il file Excel non contiene righe utili.');
   }
 
-  return cleaned;
+  return {
+    source: 'excel',
+    matrix: cleaned,
+    meta: {
+      source: 'excel',
+      fileName: file.name,
+    },
+  };
 }
 
 async function parseCsvFile(file) {
@@ -401,7 +428,122 @@ async function parseCsvFile(file) {
     throw new Error('Il CSV non contiene righe utili.');
   }
 
-  return cleaned;
+  return {
+    source: 'csv',
+    matrix: cleaned,
+    meta: {
+      source: 'csv',
+      fileName: file.name,
+    },
+  };
+}
+
+function getXmlText(parent, selector, fallback = '') {
+  const node = parent?.querySelector?.(selector);
+  return normalizeSpaces(node?.textContent || fallback);
+}
+
+function getFirstXmlText(xml, selectors = []) {
+  for (const selector of selectors) {
+    const value = getXmlText(xml, selector);
+    if (value) return value;
+  }
+
+  return '';
+}
+
+function extractXmlMeta(xml, fileName = '') {
+  const supplierName =
+    getFirstXmlText(xml, [
+      'CedentePrestatore DatiAnagrafici Anagrafica Denominazione',
+      'CedentePrestatore DatiAnagrafici Anagrafica Nome',
+    ]) || '';
+
+  const supplierSurname = getFirstXmlText(xml, [
+    'CedentePrestatore DatiAnagrafici Anagrafica Cognome',
+  ]);
+
+  const invoiceNumber = getFirstXmlText(xml, [
+    'DatiGeneraliDocumento Numero',
+    'FatturaElettronicaBody DatiGenerali DatiGeneraliDocumento Numero',
+  ]);
+
+  const invoiceDate = getFirstXmlText(xml, [
+    'DatiGeneraliDocumento Data',
+    'FatturaElettronicaBody DatiGenerali DatiGeneraliDocumento Data',
+  ]);
+
+  const documentTotal = parseItalianNumber(
+    getFirstXmlText(xml, [
+      'DatiGeneraliDocumento ImportoTotaleDocumento',
+      'FatturaElettronicaBody DatiGenerali DatiGeneraliDocumento ImportoTotaleDocumento',
+    ])
+  );
+
+  const vatCountry = getFirstXmlText(xml, [
+    'CedentePrestatore DatiAnagrafici IdFiscaleIVA IdPaese',
+  ]);
+
+  const vatCode = getFirstXmlText(xml, [
+    'CedentePrestatore DatiAnagrafici IdFiscaleIVA IdCodice',
+  ]);
+
+  const fullSupplierName = normalizeSpaces(`${supplierName} ${supplierSurname}`);
+
+  return {
+    source: 'xml_fattura_elettronica',
+    fileName,
+    supplierName: fullSupplierName,
+    invoiceNumber,
+    invoiceDate,
+    documentTotal,
+    vatNumber: vatCode ? `${vatCountry}${vatCode}` : '',
+  };
+}
+
+function getCodeFromDettaglioLinee(lineNode) {
+  const codiceArticoloNodes = Array.from(lineNode.querySelectorAll('CodiceArticolo'));
+
+  for (const node of codiceArticoloNodes) {
+    const codiceTipo = getXmlText(node, 'CodiceTipo').toLowerCase();
+    const codiceValore = getXmlText(node, 'CodiceValore');
+
+    if (!codiceValore) continue;
+
+    if (
+      codiceTipo.includes('fornitore') ||
+      codiceTipo.includes('articolo') ||
+      codiceTipo.includes('sap') ||
+      codiceTipo.includes('material') ||
+      codiceTipo.includes('cod')
+    ) {
+      return codiceValore;
+    }
+  }
+
+  const firstCode = lineNode.querySelector('CodiceArticolo CodiceValore');
+  return normalizeSpaces(firstCode?.textContent || '');
+}
+
+function shouldSkipXmlLine(description = '', code = '') {
+  const text = normalizeSpaces(`${code} ${description}`).toLowerCase();
+
+  if (!text) return true;
+
+  const bad = [
+    'addebito trasporto',
+    'trasporto',
+    'spese trasporto',
+    'spesa accessoria',
+    'contributo ambientale',
+    'conai',
+    'bollo',
+    'arrotondamento',
+    'sconto',
+    'iva',
+  ];
+
+  return bad.some((word) => text.includes(word));
 }
 
 async function parseXmlFile(file) {
@@ -413,7 +555,47 @@ async function parseXmlFile(file) {
     throw new Error('XML non valido.');
   }
 
-  const rows = [];
+  const meta = extractXmlMeta(xml, file.name);
+  const dettaglioLinee = Array.from(xml.querySelectorAll('DettaglioLinee'));
+
+  if (dettaglioLinee.length > 0) {
+    const rows = dettaglioLinee
+      .map((lineNode) => {
+        const code = getCodeFromDettaglioLinee(lineNode);
+        const description = cleanDescription(getXmlText(lineNode, 'Descrizione'));
+        const quantity = parseItalianNumber(getXmlText(lineNode, 'Quantita') || '1');
+        const unit = getXmlText(lineNode, 'UnitaMisura') || 'ST';
+        const price = parseItalianNumber(getXmlText(lineNode, 'PrezzoUnitario'));
+        const total = parseItalianNumber(getXmlText(lineNode, 'PrezzoTotale'));
+
+        const finalPrice = price || (quantity > 0 && total > 0 ? total / quantity : 0);
+
+        if (shouldSkipXmlLine(description, code)) return null;
+        if (!description || quantity <= 0) return null;
+
+        return [
+          code || description.slice(0, 24).replace(/\s+/g, '_').toUpperCase(),
+          description,
+          quantity,
+          unit,
+          finalPrice,
+          meta.supplierName || '',
+          '',
+          '',
+        ];
+      })
+      .filter(Boolean);
+
+    if (rows.length > 0) {
+      return {
+        source: 'xml_fattura_elettronica',
+        matrix: [STANDARD_HEADER, ...rows],
+        meta,
+      };
+    }
+  }
+
+  const genericRows = [];
   const allNodes = Array.from(xml.querySelectorAll('*'));
 
   allNodes.forEach((node) => {
@@ -422,15 +604,19 @@ async function parseXmlFile(file) {
 
     const row = children.map((child) => normalizeCell(child.textContent));
     if (hasEnoughUsefulCells(row)) {
-      rows.push(row);
+      genericRows.push(row);
     }
   });
 
-  if (!rows.length) {
+  if (!genericRows.length) {
     throw new Error('XML letto ma senza righe utili.');
   }
 
-  return rows;
+  return {
+    source: 'xml_generico',
+    matrix: genericRows,
+    meta,
+  };
 }
 
 async function parseDocxFile(file) {
@@ -447,11 +633,19 @@ async function parseDocxFile(file) {
     throw new Error('DOCX senza testo utile.');
   }
 
-  return lines.map((line) => [line]);
+  return {
+    source: 'docx',
+    matrix: lines.map((line) => [line]),
+    meta: {
+      source: 'docx',
+      fileName: file.name,
+    },
+  };
 }
 
 async function parseDocFile(file) {
   const text = await fileToText(file);
+
   const lines = text
     .split('\n')
     .map((line) => line.trim())
@@ -461,7 +655,14 @@ async function parseDocFile(file) {
     throw new Error('DOC senza testo utile.');
   }
 
-  return lines.map((line) => [line]);
+  return {
+    source: 'doc',
+    matrix: lines.map((line) => [line]),
+    meta: {
+      source: 'doc',
+      fileName: file.name,
+    },
+  };
 }
 
 async function callPdfTextParser(file) {
@@ -519,6 +720,7 @@ async function callPdfTextParser(file) {
 function buildPdfManualFallback(file, message) {
   return {
     ok: true,
+    source: 'pdf_scan',
     mode: 'scan',
     scanDetected: true,
     fileName: file?.name || '',
@@ -527,6 +729,41 @@ function buildPdfManualFallback(file, message) {
       'Il PDF è stato letto, ma non sono state riconosciute righe articolo utilizzabili. Puoi completare l’importazione con inserimento guidato.',
     rows: [],
     matrix: [],
+    meta: {
+      source: 'pdf_scan',
+      fileName: file?.name || '',
+    },
+  };
+}
+
+function extractPdfMeta(textResult = {}, fileName = '') {
+  const text = extractTextFromParserResult(textResult);
+
+  const supplierMatch =
+    text.match(/(ROBERT BOSCH[^\n]+)/i) ||
+    text.match(/(ARISTON[^\n]+)/i) ||
+    text.match(/Cedente\/Prestatore\s+([^\n]+)/i);
+
+  const invoiceNumberMatch =
+    text.match(/Fattura\s+(?:Nr\.?|N\.?|Numero)?\s*([A-Z0-9./-]+)/i) ||
+    text.match(/Numero\s+documento\s*([A-Z0-9./-]+)/i);
+
+  const invoiceDateMatch =
+    text.match(/Data\s+(?:documento)?\s*(\d{2}[./-]\d{2}[./-]\d{4})/i) ||
+    text.match(/del\s+(\d{2}[./-]\d{2}[./-]\d{4})/i);
+
+  const totalMatch =
+    text.match(/Totale\s+documento\s*€?\s*([\d.,]+)/i) ||
+    text.match(/Netto\s+a\s+pagare\s*€?\s*([\d.,]+)/i);
+
+  return {
+    source: 'pdf',
+    fileName,
+    supplierName: supplierMatch ? normalizeSpaces(supplierMatch[1]) : '',
+    invoiceNumber: invoiceNumberMatch ? normalizeSpaces(invoiceNumberMatch[1]) : '',
+    invoiceDate: invoiceDateMatch ? normalizeSpaces(invoiceDateMatch[1]) : '',
+    documentTotal: totalMatch ? parseItalianNumber(totalMatch[1]) : 0,
+    vatNumber: '',
   };
 }
 
@@ -547,7 +784,14 @@ export async function parseFile(file) {
     const textResult = await callPdfTextParser(file);
 
     if (textResult?.scanDetected) {
-      return textResult;
+      return {
+        ...textResult,
+        source: 'pdf_scan',
+        meta: {
+          source: 'pdf_scan',
+          fileName: file.name,
+        },
+      };
     }
 
     const rows = normalizeTextParserRows(textResult);
@@ -563,7 +807,11 @@ export async function parseFile(file) {
       );
     }
 
-    return { matrix: rows };
+    return {
+      source: 'pdf',
+      matrix: rows,
+      meta: extractPdfMeta(textResult, file.name),
+    };
   }
 
   throw new Error(`Formato file non supportato: .${ext || 'sconosciuto'}`);
