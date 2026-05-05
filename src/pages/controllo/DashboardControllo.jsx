@@ -19,6 +19,15 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 
 const CHART_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316'];
 
+function safeLower(value) {
+  return String(value || '').toLowerCase();
+}
+
+function safeDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export default function DashboardControllo() {
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState([]);
@@ -45,6 +54,7 @@ export default function DashboardControllo() {
     async function loadData() {
       try {
         setLoading(true);
+
         const [mats, cats, unread, mostMoved, evs, allMovements, usrs] = await Promise.all([
           materialStore.getAll(),
           categoryStore.getAll(),
@@ -55,165 +65,228 @@ export default function DashboardControllo() {
           userStore.getAll()
         ]);
 
-        setMaterials(mats);
-        setCategories(cats);
-        setNotifications(unread);
-        setMovementsData({ mostMoved, entriesVsExits: evs });
-        setMovements(allMovements);
-        setUsers(usrs);
+        setMaterials(Array.isArray(mats) ? mats : []);
+        setCategories(Array.isArray(cats) ? cats : []);
+        setNotifications(Array.isArray(unread) ? unread : []);
+        setMovementsData({
+          mostMoved: Array.isArray(mostMoved) ? mostMoved : [],
+          entriesVsExits: Array.isArray(evs) ? evs : []
+        });
+        setMovements(Array.isArray(allMovements) ? allMovements : []);
+        setUsers(Array.isArray(usrs) ? usrs : []);
       } catch (err) {
         console.error('Errore caricamento dati controllo:', err);
       } finally {
         setLoading(false);
       }
     }
+
     loadData();
   }, []);
 
   useEffect(() => {
     const onClickOutside = (e) => {
-      if (componentRef.current && !componentRef.current.contains(e.target)) setShowComponentSuggestions(false);
-      if (operatorRef.current && !operatorRef.current.contains(e.target)) setShowOperatorSuggestions(false);
-      if (clientRef.current && !clientRef.current.contains(e.target)) setShowClientSuggestions(false);
+      if (componentRef.current && !componentRef.current.contains(e.target)) {
+        setShowComponentSuggestions(false);
+      }
+
+      if (operatorRef.current && !operatorRef.current.contains(e.target)) {
+        setShowOperatorSuggestions(false);
+      }
+
+      if (clientRef.current && !clientRef.current.contains(e.target)) {
+        setShowClientSuggestions(false);
+      }
     };
+
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="animate-slideUp" style={{ display: 'flex', justifyContent: 'center', padding: 100 }}>
-        <div className="text-muted">Analisi dati magazzino in corso...</div>
-      </div>
-    );
-  }
-
   const { mostMoved, entriesVsExits } = movementsData;
-  const belowThreshold = materials.filter((m) => m.quantity <= m.minThreshold && m.minThreshold > 0);
-  const exhausted = materials.filter((m) => m.quantity <= 0);
 
-  const catDist = {};
-  materials.forEach((m) => {
-    const catName = categories.find((c) => c.id === m.category)?.name || 'Altro';
-    catDist[catName] = (catDist[catName] || 0) + 1;
-  });
+  const belowThreshold = useMemo(() => {
+    return materials.filter((m) => Number(m.quantity || 0) <= Number(m.minThreshold || 0) && Number(m.minThreshold || 0) > 0);
+  }, [materials]);
 
-  const categoryChartData = {
-    labels: Object.keys(catDist),
-    datasets: [{
-      data: Object.values(catDist),
-      backgroundColor: CHART_COLORS.slice(0, Object.keys(catDist).length),
-      borderWidth: 0
-    }]
-  };
+  const exhausted = useMemo(() => {
+    return materials.filter((m) => Number(m.quantity || 0) <= 0);
+  }, [materials]);
 
-  const evChartData = {
-    labels: entriesVsExits.map((d) => {
-      const p = d.date.split('-');
-      return `${p[2]}/${p[1]}`;
-    }),
-    datasets: [
-      {
-        label: 'Entrate',
-        data: entriesVsExits.map((d) => d.entries),
-        backgroundColor: 'rgba(34,197,94,0.7)',
-        borderRadius: 4
+  const categoryChartData = useMemo(() => {
+    const catDist = {};
+
+    materials.forEach((m) => {
+      const catName = categories.find((c) => c.id === m.category)?.name || 'Altro';
+      catDist[catName] = (catDist[catName] || 0) + 1;
+    });
+
+    return {
+      labels: Object.keys(catDist),
+      datasets: [
+        {
+          data: Object.values(catDist),
+          backgroundColor: CHART_COLORS.slice(0, Object.keys(catDist).length),
+          borderWidth: 0
+        }
+      ]
+    };
+  }, [materials, categories]);
+
+  const evChartData = useMemo(() => {
+    return {
+      labels: entriesVsExits.map((d) => {
+        const p = String(d.date || '').split('-');
+        return p.length === 3 ? `${p[2]}/${p[1]}` : String(d.date || '');
+      }),
+      datasets: [
+        {
+          label: 'Entrate',
+          data: entriesVsExits.map((d) => Number(d.entries || 0)),
+          backgroundColor: 'rgba(34,197,94,0.7)',
+          borderRadius: 4
+        },
+        {
+          label: 'Uscite',
+          data: entriesVsExits.map((d) => Number(d.exits || 0)),
+          backgroundColor: 'rgba(239,68,68,0.7)',
+          borderRadius: 4
+        }
+      ]
+    };
+  }, [entriesVsExits]);
+
+  const mostMovedData = useMemo(() => {
+    return {
+      labels: mostMoved.map((m) => m.code || m.materialCode || '—'),
+      datasets: [
+        {
+          label: 'Quantità totale movimentata',
+          data: mostMoved.map((m) => Number(m.totalMoved || 0)),
+          backgroundColor: 'rgba(59,130,246,0.7)',
+          borderRadius: 4
+        }
+      ]
+    };
+  }, [mostMoved]);
+
+  const belowData = useMemo(() => {
+    const items = belowThreshold.slice(0, 10);
+
+    return {
+      labels: items.map((m) => m.code || '—'),
+      datasets: [
+        {
+          label: 'Quantità attuale',
+          data: items.map((m) => Number(m.quantity || 0)),
+          backgroundColor: 'rgba(239,68,68,0.7)',
+          borderRadius: 4
+        },
+        {
+          label: 'Soglia minima',
+          data: items.map((m) => Number(m.minThreshold || 0)),
+          backgroundColor: 'rgba(251,191,36,0.4)',
+          borderRadius: 4
+        }
+      ]
+    };
+  }, [belowThreshold]);
+
+  const barOptions = useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            padding: 16,
+            font: { size: 12, family: 'Inter' }
+          }
+        }
       },
-      {
-        label: 'Uscite',
-        data: entriesVsExits.map((d) => d.exits),
-        backgroundColor: 'rgba(239,68,68,0.7)',
-        borderRadius: 4
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
       }
-    ]
-  };
+    };
+  }, []);
 
-  const mostMovedData = {
-    labels: mostMoved.map((m) => m.code),
-    datasets: [{
-      label: 'Quantità totale movimentata',
-      data: mostMoved.map((m) => m.totalMoved),
-      backgroundColor: 'rgba(59,130,246,0.7)',
-      borderRadius: 4
-    }]
-  };
-
-  const belowData = {
-    labels: belowThreshold.slice(0, 10).map((m) => m.code),
-    datasets: [
-      {
-        label: 'Quantità attuale',
-        data: belowThreshold.slice(0, 10).map((m) => m.quantity),
-        backgroundColor: 'rgba(239,68,68,0.7)',
-        borderRadius: 4
+  const doughnutOptions = useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            padding: 12,
+            font: { size: 12, family: 'Inter' }
+          }
+        }
       },
-      {
-        label: 'Soglia minima',
-        data: belowThreshold.slice(0, 10).map((m) => m.minThreshold),
-        backgroundColor: 'rgba(251,191,36,0.4)',
-        borderRadius: 4
-      }
-    ]
-  };
-
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12, family: 'Inter' } } } },
-    scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, beginAtZero: true } }
-  };
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, font: { size: 12, family: 'Inter' } } } },
-    cutout: '65%'
-  };
+      cutout: '65%'
+    };
+  }, []);
 
   const componentSuggestions = useMemo(() => {
-    const q = searchComponent.trim().toLowerCase();
+    const q = safeLower(searchComponent.trim());
+
     if (!q) return [];
+
     return materials
       .filter((m) =>
-        m.code?.toLowerCase().includes(q) ||
-        m.description?.toLowerCase().includes(q)
+        safeLower(m.code).includes(q) ||
+        safeLower(m.description).includes(q) ||
+        safeLower(m.name).includes(q)
       )
       .slice(0, 8);
   }, [searchComponent, materials]);
 
   const operatorSuggestions = useMemo(() => {
-    const q = searchOperator.trim().toLowerCase();
+    const q = safeLower(searchOperator.trim());
+
     if (!q) return [];
+
     return users
       .filter((u) =>
-        u.fullName?.toLowerCase().includes(q) ||
-        u.username?.toLowerCase().includes(q)
+        safeLower(u.fullName).includes(q) ||
+        safeLower(u.username).includes(q) ||
+        safeLower(u.name).includes(q)
       )
       .slice(0, 8);
   }, [searchOperator, users]);
 
   const clientSuggestions = useMemo(() => {
     const allClients = [...new Set(movements.map((m) => m.clientName).filter(Boolean))];
-    const q = searchClient.trim().toLowerCase();
+    const q = safeLower(searchClient.trim());
+
     if (!q) return [];
-    return allClients.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
+
+    return allClients.filter((c) => safeLower(c).includes(q)).slice(0, 8);
   }, [searchClient, movements]);
 
   const monitoredRows = useMemo(() => {
+    const componentQ = safeLower(searchComponent);
+    const operatorQ = safeLower(searchOperator);
+    const clientQ = safeLower(searchClient);
+
     return movements.filter((mov) => {
       const matchComponent =
-        !searchComponent ||
-        mov.materialCode?.toLowerCase().includes(searchComponent.toLowerCase()) ||
-        mov.materialDescription?.toLowerCase().includes(searchComponent.toLowerCase());
+        !componentQ ||
+        safeLower(mov.materialCode).includes(componentQ) ||
+        safeLower(mov.materialDescription).includes(componentQ);
 
       const matchOperator =
-        !searchOperator ||
-        mov.operatorName?.toLowerCase().includes(searchOperator.toLowerCase()) ||
-        mov.userName?.toLowerCase().includes(searchOperator.toLowerCase());
+        !operatorQ ||
+        safeLower(mov.operatorName).includes(operatorQ) ||
+        safeLower(mov.userName).includes(operatorQ);
 
       const matchClient =
-        !searchClient ||
-        mov.clientName?.toLowerCase().includes(searchClient.toLowerCase());
+        !clientQ ||
+        safeLower(mov.clientName).includes(clientQ);
 
       const matchDate =
         !searchDate ||
@@ -222,6 +295,14 @@ export default function DashboardControllo() {
       return matchComponent && matchOperator && matchClient && matchDate;
     });
   }, [movements, searchComponent, searchOperator, searchClient, searchDate]);
+
+  if (loading) {
+    return (
+      <div className="animate-slideUp" style={{ display: 'flex', justifyContent: 'center', padding: 100 }}>
+        <div className="text-muted">Analisi dati magazzino in corso...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-slideUp">
@@ -270,6 +351,7 @@ export default function DashboardControllo() {
         <div className="card-header">
           <h3 className="card-title">🔎 Monitoraggio Datore</h3>
         </div>
+
         <div className="card-body">
           <div className="filters-row">
             <div className="filter-group" ref={componentRef} style={{ position: 'relative', minWidth: 240 }}>
@@ -284,6 +366,7 @@ export default function DashboardControllo() {
                 onFocus={() => setShowComponentSuggestions(true)}
                 placeholder="Codice o descrizione..."
               />
+
               {showComponentSuggestions && componentSuggestions.length > 0 && (
                 <div
                   style={{
@@ -305,7 +388,7 @@ export default function DashboardControllo() {
                       key={item.id}
                       type="button"
                       onClick={() => {
-                        setSearchComponent(item.code);
+                        setSearchComponent(item.code || item.description || '');
                         setShowComponentSuggestions(false);
                       }}
                       style={{
@@ -318,7 +401,7 @@ export default function DashboardControllo() {
                         borderBottom: '1px solid var(--gray-100)'
                       }}
                     >
-                      <div style={{ fontWeight: 700 }}>{item.code}</div>
+                      <div style={{ fontWeight: 700 }}>{item.code || 'Senza codice'}</div>
                       <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.description}</div>
                     </button>
                   ))}
@@ -338,6 +421,7 @@ export default function DashboardControllo() {
                 onFocus={() => setShowOperatorSuggestions(true)}
                 placeholder="Nome, cognome o username..."
               />
+
               {showOperatorSuggestions && operatorSuggestions.length > 0 && (
                 <div
                   style={{
@@ -359,7 +443,7 @@ export default function DashboardControllo() {
                       key={item.id}
                       type="button"
                       onClick={() => {
-                        setSearchOperator(item.fullName || item.username);
+                        setSearchOperator(item.fullName || item.username || item.name || '');
                         setShowOperatorSuggestions(false);
                       }}
                       style={{
@@ -372,7 +456,7 @@ export default function DashboardControllo() {
                         borderBottom: '1px solid var(--gray-100)'
                       }}
                     >
-                      <div style={{ fontWeight: 700 }}>{item.fullName}</div>
+                      <div style={{ fontWeight: 700 }}>{item.fullName || item.name || item.username}</div>
                       <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>{item.username}</div>
                     </button>
                   ))}
@@ -392,6 +476,7 @@ export default function DashboardControllo() {
                 onFocus={() => setShowClientSuggestions(true)}
                 placeholder="Nome cliente..."
               />
+
               {showClientSuggestions && clientSuggestions.length > 0 && (
                 <div
                   style={{
@@ -457,6 +542,7 @@ export default function DashboardControllo() {
               <th>Autorizzato da</th>
             </tr>
           </thead>
+
           <tbody>
             {monitoredRows.length === 0 ? (
               <tr>
@@ -469,27 +555,35 @@ export default function DashboardControllo() {
                 </td>
               </tr>
             ) : (
-              monitoredRows.slice(0, 100).map((mov) => (
-                <tr key={mov.id}>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>
-                      {new Date(mov.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    </div>
-                    <div className="text-xs text-muted">
-                      {new Date(mov.date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </td>
-                  <td>{mov.type}</td>
-                  <td><strong>{mov.materialCode}</strong></td>
-                  <td>{mov.materialDescription}</td>
-                  <td>{mov.quantity}</td>
-                  <td>{mov.previousQty ?? '—'}</td>
-                  <td>{mov.newQty ?? '—'}</td>
-                  <td>{mov.operatorName || mov.userName || '—'}</td>
-                  <td>{mov.clientName || '—'}</td>
-                  <td>{mov.authorizedBy || '—'}</td>
-                </tr>
-              ))
+              monitoredRows.slice(0, 100).map((mov) => {
+                const date = safeDate(mov.date);
+
+                return (
+                  <tr key={mov.id}>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>
+                        {date
+                          ? date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                          : '—'}
+                      </div>
+                      <div className="text-xs text-muted">
+                        {date
+                          ? date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+                          : ''}
+                      </div>
+                    </td>
+                    <td>{mov.type}</td>
+                    <td><strong>{mov.materialCode}</strong></td>
+                    <td>{mov.materialDescription}</td>
+                    <td>{mov.quantity}</td>
+                    <td>{mov.previousQty ?? '—'}</td>
+                    <td>{mov.newQty ?? '—'}</td>
+                    <td>{mov.operatorName || mov.userName || '—'}</td>
+                    <td>{mov.clientName || '—'}</td>
+                    <td>{mov.authorizedBy || '—'}</td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -510,7 +604,11 @@ export default function DashboardControllo() {
         <div className="card">
           <div className="card-header"><h3 className="card-title">🏷️ Distribuzione per Categoria</h3></div>
           <div className="chart-container">
-            <Doughnut data={categoryChartData} options={doughnutOptions} />
+            {categoryChartData.labels.length > 0 ? (
+              <Doughnut data={categoryChartData} options={doughnutOptions} />
+            ) : (
+              <div className="empty-state"><div className="empty-state-text">Nessun dato disponibile</div></div>
+            )}
           </div>
         </div>
 
