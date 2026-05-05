@@ -9,10 +9,50 @@ PDFParse.setWorker(getData());
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors());
-app.use(express.json());
+const ALLOWED_ORIGINS = [
+  'https://magazzino-pro.vercel.app',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+];
 
-app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin non consentita dal CORS: ${origin}`));
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+app.options('*', cors());
+
+app.use(express.json({ limit: '10mb' }));
+
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'pdf-parser',
+    endpoints: ['/parse', '/api/parse-invoice-pdf'],
+    allowedOrigins: ALLOWED_ORIGINS,
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    status: 'running',
+  });
+});
+
+app.post('/parse', upload.single('file'), parseInvoicePdfHandler);
+app.post('/api/parse-invoice-pdf', upload.single('file'), parseInvoicePdfHandler);
+
+async function parseInvoicePdfHandler(req, res) {
   let parser = null;
 
   try {
@@ -33,27 +73,31 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
       data: new Uint8Array(req.file.buffer),
     });
 
-    console.log('Parser creato');
-
     const result = await parser.getText();
     const text = String(result?.text || '');
 
     console.log('Testo estratto, lunghezza:', text.length);
-    console.log('Prime 1000 battute:\n', text.slice(0, 1000));
+    console.log('Prime 1500 battute:\n', text.slice(0, 1500));
 
     if (!text.trim()) {
       console.log('PDF senza testo estraibile');
-      return res.status(400).json({ error: 'PDF senza testo estraibile.' });
+      return res.status(400).json({
+        error: 'PDF senza testo estraibile. Probabilmente è una scansione/immagine.',
+      });
     }
 
     const rows = extractInvoiceRows(text);
 
     console.log('Righe trovate:', rows.length);
-    console.log('Prime 5 righe:', rows.slice(0, 5));
+    console.log('Prime 10 righe:', rows.slice(0, 10));
 
     if (!rows.length) {
       return res.status(400).json({
-        error: 'Nessuna riga articolo riconosciuta nel PDF.',
+        error: 'Il PDF non contiene righe utilizzabili.',
+        debug: {
+          textLength: text.length,
+          preview: text.slice(0, 2000),
+        },
       });
     }
 
@@ -62,7 +106,16 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
       fileName: req.file.originalname,
       rows,
       matrix: [
-        ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo', 'Marca', 'Categoria', 'Posizione'],
+        [
+          'Codice',
+          'Descrizione',
+          'Quantità',
+          'UM',
+          'Prezzo Netto',
+          'Marca',
+          'Categoria',
+          'Posizione',
+        ],
         ...rows.map((row) => [
           row.code || '',
           row.description || '',
@@ -77,6 +130,7 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
     });
   } catch (err) {
     console.error('parse-invoice-pdf error:', err);
+
     return res.status(500).json({
       error: err?.message || 'Errore interno parsing PDF.',
     });
@@ -89,7 +143,7 @@ app.post('/api/parse-invoice-pdf', upload.single('file'), async (req, res) => {
       }
     }
   }
-});
+}
 
 function extractInvoiceRows(text) {
   const normalized = String(text || '')
@@ -98,64 +152,40 @@ function extractInvoiceRows(text) {
     .replace(/\n{2,}/g, '\n')
     .trim();
 
-  const sectionMatch = normalized.match(
-    /PRODOTTI E SERVIZI([\s\S]*?)(METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA)/i
-  );
-
-  if (!sectionMatch) {
-    console.log('Sezione PRODOTTI E SERVIZI non trovata');
-    return [];
-  }
-
-  const section = sectionMatch[1];
+  const section = extractProductsSection(normalized);
   const lines = section
     .split('\n')
-    .map((l) => l.trim())
+    .map((line) => line.trim())
     .filter(Boolean);
 
-  console.log('Righe nella sezione prodotti:', lines.length);
+  console.log('Righe analizzate:', lines.length);
 
   const results = [];
   let currentItem = null;
 
   for (const line of lines) {
-    if (/^NR\s+DESCRIZIONE\s+QUANTITA/i.test(line)) continue;
+    if (isIgnoredLine(line)) {
+      continue;
+    }
 
-    const codeMatch = line.match(/Cod\.valore:\s*([A-Z0-9\-]+)/i);
+    const codeMatch = line.match(/Cod\.?\s*valore\s*:?\s*([A-Z0-9._/-]+)/i);
     if (codeMatch && currentItem) {
       currentItem.code = codeMatch[1].trim();
       continue;
     }
 
-    // Esempio:
-    // 1 GRUPPO RITORNO 1 ST 75,98000000 € 75,98 € 22 % -
-    const productMatch = line.match(
-      /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,5})\s+(\d+(?:[.,]\d+)?)\s+€\s+(\d+(?:[.,]\d+)?)\s+€/i
-    );
+    const product = parseProductLine(line);
 
-    if (productMatch) {
+    if (product) {
       if (currentItem) {
         results.push(finalizeItem(currentItem));
       }
 
-      currentItem = {
-        rowNumber: productMatch[1],
-        description: cleanDescription(productMatch[2]),
-        quantity: parseItalianNumber(productMatch[3]),
-        unit: productMatch[4].trim(),
-        price: parseItalianNumber(productMatch[5]),
-        total: parseItalianNumber(productMatch[6]),
-        code: '',
-      };
+      currentItem = product;
       continue;
     }
 
-    if (
-      currentItem &&
-      line.length > 2 &&
-      !/Cod\.tipo:|Cod\.valore:/i.test(line) &&
-      !/METODO DI PAGAMENTO|REGIME FISCALE|DATI AGGIUNTIVI|RIEPILOGO IVA|CALCOLO FATTURA/i.test(line)
-    ) {
+    if (currentItem && isContinuationLine(line)) {
       currentItem.description = `${currentItem.description} ${cleanDescription(line)}`
         .replace(/\s+/g, ' ')
         .trim();
@@ -167,6 +197,85 @@ function extractInvoiceRows(text) {
   }
 
   return results.filter((item) => item.description && item.quantity > 0);
+}
+
+function extractProductsSection(normalized) {
+  const sectionMatch = normalized.match(
+    /PRODOTTI\s+E\s+SERVIZI([\s\S]*?)(METODO\s+DI\s+PAGAMENTO|REGIME\s+FISCALE|DATI\s+AGGIUNTIVI|RIEPILOGO\s+IVA|CALCOLO\s+FATTURA|SCADENZE|TOTALE\s+DOCUMENTO)/i
+  );
+
+  if (sectionMatch) {
+    console.log('Sezione PRODOTTI E SERVIZI trovata');
+    return sectionMatch[1];
+  }
+
+  console.log('Sezione PRODOTTI E SERVIZI non trovata, provo su tutto il testo');
+  return normalized;
+}
+
+function parseProductLine(line) {
+  const cleanLine = String(line || '').replace(/\s+/g, ' ').trim();
+
+  const patterns = [
+    // 1 GRUPPO RITORNO 1 ST 75,98000000 € 75,98 € 22 % -
+    /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,6})\s+(\d+(?:[.,]\d+)?)\s*€?\s+(\d+(?:[.,]\d+)?)\s*€?/i,
+
+    // 1 GRUPPO RITORNO ST 1 75,98000000 75,98
+    /^(\d+)\s+(.+?)\s+([A-Z]{1,6})\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)/i,
+
+    // 1 GRUPPO RITORNO 1 ST 75,98000000
+    /^(\d+)\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+([A-Z]{1,6})\s+(\d+(?:[.,]\d+)?)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = cleanLine.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    if (pattern === patterns[1]) {
+      return {
+        rowNumber: match[1],
+        description: cleanDescription(match[2]),
+        unit: match[3].trim(),
+        quantity: parseItalianNumber(match[4]),
+        price: parseItalianNumber(match[5]),
+        total: parseItalianNumber(match[6]),
+        code: '',
+      };
+    }
+
+    return {
+      rowNumber: match[1],
+      description: cleanDescription(match[2]),
+      quantity: parseItalianNumber(match[3]),
+      unit: match[4].trim(),
+      price: parseItalianNumber(match[5]),
+      total: parseItalianNumber(match[6] || ''),
+      code: '',
+    };
+  }
+
+  return null;
+}
+
+function isIgnoredLine(line) {
+  return (
+    /^NR\s+DESCRIZIONE/i.test(line) ||
+    /^DESCRIZIONE\s+QUANTITA/i.test(line) ||
+    /^COD\.?\s*TIPO/i.test(line) ||
+    /METODO\s+DI\s+PAGAMENTO|REGIME\s+FISCALE|DATI\s+AGGIUNTIVI|RIEPILOGO\s+IVA|CALCOLO\s+FATTURA/i.test(line)
+  );
+}
+
+function isContinuationLine(line) {
+  return (
+    line.length > 2 &&
+    !/^Cod\.?\s*tipo/i.test(line) &&
+    !/^Cod\.?\s*valore/i.test(line) &&
+    !/^\d+\s+/.test(line)
+  );
 }
 
 function finalizeItem(item) {
@@ -197,6 +306,8 @@ function parseItalianNumber(value) {
   return Number.isFinite(num) ? num : 0;
 }
 
-app.listen(3001, () => {
-  console.log('PDF parser server attivo su http://localhost:3001');
+const port = process.env.PORT || 3001;
+
+app.listen(port, () => {
+  console.log(`PDF parser server attivo su http://localhost:${port}`);
 });
