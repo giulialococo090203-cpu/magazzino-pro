@@ -120,6 +120,7 @@ export default function Dashboard() {
   const [supabaseUsage, setSupabaseUsage] = useState(null);
   const [supabaseUsageError, setSupabaseUsageError] = useState('');
   const [supabaseUsageLoading, setSupabaseUsageLoading] = useState(false);
+  const [supabaseUsageUpdatedAt, setSupabaseUsageUpdatedAt] = useState(null);
 
   const [searchComponent, setSearchComponent] = useState('');
   const [searchOperator, setSearchOperator] = useState('');
@@ -146,6 +147,7 @@ export default function Dashboard() {
       const usage = await getSupabaseUsageMonitor();
 
       setSupabaseUsage(usage);
+      setSupabaseUsageUpdatedAt(new Date());
     } catch (err) {
       console.error('Errore memoria Supabase:', err);
 
@@ -1138,9 +1140,23 @@ export default function Dashboard() {
               onClick={loadSupabaseUsage}
               disabled={supabaseUsageLoading}
             >
-              {supabaseUsageLoading ? 'Aggiorno...' : '↻ Aggiorna'}
+              {supabaseUsageLoading ? 'Aggiornamento...' : '🔄 Aggiorna spazio usato'}
             </button>
           </div>
+
+          {supabaseUsageUpdatedAt && (
+            <div
+              className="text-xs text-muted"
+              style={{
+                padding: '0 20px 12px',
+                marginTop: -4,
+                fontWeight: 700,
+              }}
+            >
+              Ultimo aggiornamento:{' '}
+              {supabaseUsageUpdatedAt.toLocaleString('it-IT')}
+            </div>
+          )}
 
           <div className="chart-container" style={{ position: 'relative' }}>
             {supabaseUsage ? (
