@@ -70,6 +70,14 @@ function chunkArray(array = [], size = 100) {
   return chunks;
 }
 
+
+function isValidSupabaseUuid(value) {
+  return (
+    typeof value === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
 function notifySupabaseUsageChanged() {
   try {
     window.dispatchEvent(new CustomEvent('wm_supabase_usage_refresh'));
@@ -292,11 +300,7 @@ const mapImportedInvoice = {
       tipo_file: model.fileType,
       // Firebase Auth usa UID testuali, Supabase fatture_importate.utente_id vuole UUID.
       // Se non è UUID valido, salvo null e tengo comunque il nome in utente_nome.
-      utente_id:
-        typeof model.userId === 'string' &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
-          ? model.userId
-          : null,
+      utente_id: isValidSupabaseUuid(model.userId) ? model.userId : null,
       utente_nome: model.userName || null,
       stato_importazione: model.status,
       numero_materiali_rilevati: model.detectedItems,
