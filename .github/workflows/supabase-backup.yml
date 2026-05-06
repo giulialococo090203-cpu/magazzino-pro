@@ -1,0 +1,39 @@
+name: Backup Supabase
+
+on:
+  schedule:
+    # Ogni giorno alle 02:30 UTC
+    # In Italia: 03:30 in inverno, 04:30 in estate
+    - cron: "30 2 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Export Supabase tables
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Supabase backup
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/backup-supabase.mjs
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 30
