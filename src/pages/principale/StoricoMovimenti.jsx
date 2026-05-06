@@ -16,16 +16,29 @@ import autoTable from 'jspdf-autotable';
 
 function formatDate(iso) {
   if (!iso) return '';
+
   const d = new Date(iso);
+
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  return d.toLocaleDateString('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 function formatTime(iso) {
   if (!iso) return '';
+
   const d = new Date(iso);
+
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+  return d.toLocaleTimeString('it-IT', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function formatMovType(t) {
@@ -48,6 +61,13 @@ function getExportDateName() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getOperatorName(mov) {
+  return (
+    String(mov?.operatorName || mov?.userName || 'Senza operatore').trim() ||
+    'Senza operatore'
+  );
+}
+
 function buildExportRows(movements = []) {
   return movements.map((mov) => ({
     Data: formatDate(mov.date),
@@ -59,11 +79,63 @@ function buildExportRows(movements = []) {
     Prima: mov.previousQty ?? '',
     Dopo: mov.newQty ?? '',
     Motivazione: formatReason(mov.reason),
-    Operatore: mov.operatorName || mov.userName || '',
+    Operatore: getOperatorName(mov),
     Cliente: mov.clientName || '',
     'Autorizzato da': mov.authorizedBy || '',
     Note: mov.notes || '',
   }));
+}
+
+function buildEmployeeHistoryRows(movements = []) {
+  return [...movements]
+    .sort((a, b) => {
+      const operatorA = getOperatorName(a).toLowerCase();
+      const operatorB = getOperatorName(b).toLowerCase();
+
+      if (operatorA !== operatorB) {
+        return operatorA.localeCompare(operatorB, 'it');
+      }
+
+      return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+    })
+    .map((mov) => ({
+      Operatore: getOperatorName(mov),
+      Data: formatDate(mov.date),
+      Ora: formatTime(mov.date),
+      Tipo: formatMovType(mov.type),
+      'Codice materiale': mov.materialCode || '',
+      'Descrizione materiale': mov.materialDescription || '',
+      Quantità: mov.quantity ?? '',
+      Prima: mov.previousQty ?? '',
+      Dopo: mov.newQty ?? '',
+      Motivazione: formatReason(mov.reason),
+      Cliente: mov.clientName || '',
+      'Autorizzato da': mov.authorizedBy || '',
+      Note: mov.notes || '',
+    }));
+}
+
+function groupMovementsByOperator(movements = []) {
+  const groups = {};
+
+  movements.forEach((mov) => {
+    const operator = getOperatorName(mov);
+
+    if (!groups[operator]) {
+      groups[operator] = [];
+    }
+
+    groups[operator].push(mov);
+  });
+
+  return Object.entries(groups)
+    .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase(), 'it'))
+    .map(([operator, rows]) => ({
+      operator,
+      rows: rows.sort(
+        (a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
+      ),
+    }));
 }
 
 function downloadTextFile(filename, content, mimeType = 'text/plain;charset=utf-8;') {
@@ -83,6 +155,7 @@ function downloadTextFile(filename, content, mimeType = 'text/plain;charset=utf-
 function csvEscape(value) {
   const raw = String(value ?? '');
   const escaped = raw.replace(/"/g, '""');
+
   return `"${escaped}"`;
 }
 
@@ -125,9 +198,9 @@ export default function StoricoMovimenti() {
         userStore.getAll(),
       ]);
 
-      setCategories(cats);
-      setMaterials(mats);
-      setUsers(usrs);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setMaterials(Array.isArray(mats) ? mats : []);
+      setUsers(Array.isArray(usrs) ? usrs : []);
     } catch (err) {
       console.error('Errore caricamento dati statici:', err);
     }
@@ -150,7 +223,7 @@ export default function StoricoMovimenti() {
           )
         : filtered;
 
-      setMovements(clientFiltered);
+      setMovements(Array.isArray(clientFiltered) ? clientFiltered : []);
       setPage(1);
     } catch (err) {
       console.error('Errore caricamento movimenti:', err);
@@ -173,7 +246,10 @@ export default function StoricoMovimenti() {
     };
 
     document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+    };
   }, []);
 
   const clientSuggestions = useMemo(() => {
@@ -300,7 +376,11 @@ export default function StoricoMovimenti() {
       ...exportRows.map((row) => headers.map((h) => csvEscape(row[h])).join(';')),
     ];
 
-    downloadTextFile(`${exportFileBaseName}.csv`, lines.join('\n'), 'text/csv;charset=utf-8;');
+    downloadTextFile(
+      `${exportFileBaseName}.csv`,
+      `\uFEFF${lines.join('\n')}`,
+      'text/csv;charset=utf-8;'
+    );
   };
 
   const exportPDF = () => {
@@ -338,7 +418,9 @@ export default function StoricoMovimenti() {
 
     if (userLabel) filterDescriptions.push(`Utente: ${userLabel}`);
     if (categoryLabel) filterDescriptions.push(`Categoria: ${categoryLabel}`);
-    if (materialLabel) filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
+    if (materialLabel) {
+      filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
+    }
 
     if (filterDescriptions.length > 0) {
       doc.text(`Filtri: ${filterDescriptions.join(' · ')}`, 14, 35, { maxWidth: 265 });
@@ -371,7 +453,7 @@ export default function StoricoMovimenti() {
         mov.previousQty ?? '',
         mov.newQty ?? '',
         formatReason(mov.reason),
-        mov.operatorName || mov.userName || '',
+        getOperatorName(mov),
         mov.clientName || '',
         mov.authorizedBy || '',
         mov.notes || '',
@@ -409,6 +491,152 @@ export default function StoricoMovimenti() {
     doc.save(`${exportFileBaseName}.pdf`);
   };
 
+  const exportEmployeeCSV = () => {
+    if (movements.length === 0) {
+      alert('Non ci sono movimenti da esportare.');
+      return;
+    }
+
+    const rows = buildEmployeeHistoryRows(movements);
+    const headers = Object.keys(rows[0] || {});
+
+    const lines = [
+      headers.map(csvEscape).join(';'),
+      ...rows.map((row) => headers.map((h) => csvEscape(row[h])).join(';')),
+    ];
+
+    downloadTextFile(
+      `${exportFileBaseName}_Dipendenti.csv`,
+      `\uFEFF${lines.join('\n')}`,
+      'text/csv;charset=utf-8;'
+    );
+  };
+
+  const exportEmployeePDF = () => {
+    if (movements.length === 0) {
+      alert('Non ci sono movimenti da esportare.');
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    doc.setFontSize(17);
+    doc.setFont(undefined, 'bold');
+    doc.text('Storico Dipendenti - Movimenti Magazzino', 14, 18);
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.text(
+      `Generato il ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT')}`,
+      14,
+      25
+    );
+    doc.text(`Movimenti esportati: ${movements.length}`, 14, 30);
+
+    const filterDescriptions = [];
+
+    if (dateFrom) filterDescriptions.push(`Dal: ${formatDate(dateFrom)}`);
+    if (dateTo) filterDescriptions.push(`Al: ${formatDate(dateTo)}`);
+    if (filterType) filterDescriptions.push(`Tipo: ${formatMovType(filterType)}`);
+    if (filterClient) filterDescriptions.push(`Cliente: ${filterClient}`);
+
+    const userLabel = users.find((u) => String(u.id) === String(filterUser))?.fullName;
+    const categoryLabel = categories.find((c) => String(c.id) === String(filterCategory))?.name;
+    const materialLabel = materials.find((m) => String(m.id) === String(filterMaterial));
+
+    if (userLabel) filterDescriptions.push(`Utente: ${userLabel}`);
+    if (categoryLabel) filterDescriptions.push(`Categoria: ${categoryLabel}`);
+    if (materialLabel) {
+      filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
+    }
+
+    if (filterDescriptions.length > 0) {
+      doc.text(`Filtri: ${filterDescriptions.join(' · ')}`, 14, 35, { maxWidth: 265 });
+    }
+
+    const grouped = groupMovementsByOperator(movements);
+
+    let startY = filterDescriptions.length > 0 ? 45 : 38;
+
+    grouped.forEach((group, index) => {
+      if (index > 0) {
+        startY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 12 : startY + 12;
+      }
+
+      if (startY > 180) {
+        doc.addPage();
+        startY = 18;
+      }
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${group.operator} — ${group.rows.length} operazioni`, 14, startY);
+
+      autoTable(doc, {
+        startY: startY + 5,
+        head: [[
+          'Data',
+          'Ora',
+          'Tipo',
+          'Codice',
+          'Materiale',
+          'Qtà',
+          'Prima',
+          'Dopo',
+          'Motivo',
+          'Cliente',
+          'Autorizzato da',
+          'Note',
+        ]],
+        body: group.rows.map((mov) => [
+          formatDate(mov.date),
+          formatTime(mov.date),
+          formatMovType(mov.type),
+          mov.materialCode || '',
+          mov.materialDescription || '',
+          mov.quantity ?? '',
+          mov.previousQty ?? '',
+          mov.newQty ?? '',
+          formatReason(mov.reason),
+          mov.clientName || '',
+          mov.authorizedBy || '',
+          mov.notes || '',
+        ]),
+        styles: {
+          fontSize: 7,
+          cellPadding: 2,
+          overflow: 'linebreak',
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252],
+        },
+        columnStyles: {
+          0: { cellWidth: 16 },
+          1: { cellWidth: 13 },
+          2: { cellWidth: 18 },
+          3: { cellWidth: 20 },
+          4: { cellWidth: 44 },
+          5: { cellWidth: 10, halign: 'center' },
+          6: { cellWidth: 10, halign: 'center' },
+          7: { cellWidth: 10, halign: 'center' },
+          8: { cellWidth: 24 },
+          9: { cellWidth: 26 },
+          10: { cellWidth: 28 },
+          11: { cellWidth: 42 },
+        },
+      });
+
+      startY = doc.lastAutoTable?.finalY || startY;
+    });
+
+    doc.save(`${exportFileBaseName}_Dipendenti.pdf`);
+  };
+
   return (
     <div className="animate-slideUp">
       <div className="page-header">
@@ -420,14 +648,44 @@ export default function StoricoMovimenti() {
         <div className="btn-group">
           {canExportMovements && (
             <>
-              <button className="btn btn-secondary" onClick={exportExcel} disabled={movements.length === 0}>
+              <button
+                className="btn btn-secondary"
+                onClick={exportExcel}
+                disabled={movements.length === 0}
+              >
                 📊 Excel
               </button>
-              <button className="btn btn-secondary" onClick={exportCSV} disabled={movements.length === 0}>
+
+              <button
+                className="btn btn-secondary"
+                onClick={exportCSV}
+                disabled={movements.length === 0}
+              >
                 🧾 CSV
               </button>
-              <button className="btn btn-secondary" onClick={exportPDF} disabled={movements.length === 0}>
+
+              <button
+                className="btn btn-secondary"
+                onClick={exportPDF}
+                disabled={movements.length === 0}
+              >
                 📄 PDF
+              </button>
+
+              <button
+                className="btn btn-secondary"
+                onClick={exportEmployeeCSV}
+                disabled={movements.length === 0}
+              >
+                👥 Dipendenti CSV
+              </button>
+
+              <button
+                className="btn btn-secondary"
+                onClick={exportEmployeePDF}
+                disabled={movements.length === 0}
+              >
+                👥 Dipendenti PDF
               </button>
             </>
           )}
@@ -461,11 +719,14 @@ export default function StoricoMovimenti() {
         >
           <div className="card-body" style={{ padding: 14 }}>
             <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
-              ✅ Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}. File eliminati: {emptyHistoryResult.filesDeleted}.
+              ✅ Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}.
+              File eliminati: {emptyHistoryResult.filesDeleted}.
             </div>
+
             {emptyHistoryResult.fileErrors?.length > 0 && (
               <div className="text-xs text-warning" style={{ marginTop: 6 }}>
-                Alcuni file non sono stati eliminati dallo Storage: {emptyHistoryResult.fileErrors.join(' · ')}
+                Alcuni file non sono stati eliminati dallo Storage:{' '}
+                {emptyHistoryResult.fileErrors.join(' · ')}
               </div>
             )}
           </div>
@@ -475,6 +736,7 @@ export default function StoricoMovimenti() {
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <h3 className="card-title">🔍 Filtri di Ricerca</h3>
+
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
           </button>
@@ -484,12 +746,20 @@ export default function StoricoMovimenti() {
           <div className="filters-row">
             <div className="filter-group">
               <label>Dal:</label>
-              <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
             </div>
 
             <div className="filter-group">
               <label>Al:</label>
-              <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
             </div>
 
             <div className="filter-group">
@@ -506,7 +776,10 @@ export default function StoricoMovimenti() {
 
             <div className="filter-group">
               <label>Categoria:</label>
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
                 <option value="">Tutte</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -518,7 +791,10 @@ export default function StoricoMovimenti() {
 
             <div className="filter-group">
               <label>Materiale:</label>
-              <select value={filterMaterial} onChange={(e) => setFilterMaterial(e.target.value)}>
+              <select
+                value={filterMaterial}
+                onChange={(e) => setFilterMaterial(e.target.value)}
+              >
                 <option value="">Tutti</option>
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -673,7 +949,7 @@ export default function StoricoMovimenti() {
                   </td>
 
                   <td className="text-sm">{formatReason(mov.reason)}</td>
-                  <td className="text-sm">{mov.operatorName || mov.userName || '—'}</td>
+                  <td className="text-sm">{getOperatorName(mov)}</td>
                   <td className="text-sm">{mov.clientName || '—'}</td>
                   <td className="text-sm">{mov.authorizedBy || '—'}</td>
                   <td className="text-sm text-muted">{mov.notes || '—'}</td>
@@ -737,6 +1013,7 @@ export default function StoricoMovimenti() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Svuotare lo storico?</h3>
+
               <button
                 className="modal-close"
                 onClick={() => setConfirmEmptyHistory(false)}
@@ -748,6 +1025,7 @@ export default function StoricoMovimenti() {
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
               <div className="confirm-icon danger">🗑️</div>
+
               <p className="confirm-message">
                 Questa operazione eliminerà <strong>tutti i movimenti</strong>, i record delle
                 <strong> fatture importate</strong> e i <strong>file originali</strong> salvati nel bucket Supabase <strong>fatture</strong>.
