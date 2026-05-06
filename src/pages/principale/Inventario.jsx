@@ -4,6 +4,12 @@ import { materialStore, categoryStore, movementStore } from '../../data/store';
 import { MOVEMENT_TYPES } from '../../data/initialData';
 import { useAuth } from '../../App';
 import { hasPermission } from '../../data/permissions';
+import {
+  DEFAULT_PRICE_SETTINGS,
+  calcInstallerPrice,
+  calcListPrice,
+  getPriceSettings,
+} from '../../utils/priceSettings';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -38,14 +44,6 @@ function canSeeInstallerPrice(role) {
   return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
     normalizeRole(role)
   );
-}
-
-function calcListPrice(netPrice) {
-  return Number(netPrice || 0) * 1.22;
-}
-
-function calcInstallerPrice(netPrice) {
-  return Number(netPrice || 0) * 0.9 * 1.22;
 }
 
 function formatCurrency(value) {
@@ -86,6 +84,7 @@ export default function Inventario() {
 
   const [materials, setMaterials] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [priceSettings, setPriceSettings] = useState({ ...DEFAULT_PRICE_SETTINGS });
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -100,6 +99,8 @@ export default function Inventario() {
   const showInstallerPrice = canSeeInstallerPrice(user?.role);
   const canExportInventory = hasPermission(user, 'canExportInventory');
 
+  const installerPriceLabel = priceSettings.installerPriceLabel || 'Prezzo installatore';
+
   const refresh = async () => {
     try {
       const mats = await materialStore.getAll();
@@ -112,8 +113,35 @@ export default function Inventario() {
     }
   };
 
+  const loadPriceSettings = async () => {
+    try {
+      const settings = await getPriceSettings();
+      setPriceSettings(settings);
+    } catch (err) {
+      console.error('Errore caricamento impostazioni prezzi:', err);
+      setPriceSettings({ ...DEFAULT_PRICE_SETTINGS });
+    }
+  };
+
   useEffect(() => {
     refresh();
+    loadPriceSettings();
+  }, []);
+
+  useEffect(() => {
+    const onPriceSettingsChanged = (event) => {
+      if (event?.detail) {
+        setPriceSettings(event.detail);
+      } else {
+        loadPriceSettings();
+      }
+    };
+
+    window.addEventListener('wm_price_settings_changed', onPriceSettingsChanged);
+
+    return () => {
+      window.removeEventListener('wm_price_settings_changed', onPriceSettingsChanged);
+    };
   }, []);
 
   useEffect(() => {
@@ -202,11 +230,11 @@ export default function Inventario() {
       };
 
       if (showListPrice) {
-        row['Prezzo di listino'] = Number(calcListPrice(m.netPrice).toFixed(2));
+        row['Prezzo di listino'] = Number(calcListPrice(m.netPrice, priceSettings).toFixed(2));
       }
 
       if (showInstallerPrice) {
-        row['Prezzo installatore'] = Number(calcInstallerPrice(m.netPrice).toFixed(2));
+        row[installerPriceLabel] = Number(calcInstallerPrice(m.netPrice, priceSettings).toFixed(2));
       }
 
       return row;
@@ -261,7 +289,7 @@ export default function Inventario() {
     const head = ['Codice', 'Descrizione', 'Marca', 'Categoria', 'Qtà', 'UM'];
 
     if (showListPrice) head.push('Prezzo listino');
-    if (showInstallerPrice) head.push('Prezzo installatore');
+    if (showInstallerPrice) head.push(installerPriceLabel);
 
     head.push('Stato', 'Posizione', 'Fornitore');
 
@@ -275,8 +303,8 @@ export default function Inventario() {
         m.unit || '',
       ];
 
-      if (showListPrice) row.push(formatCurrency(calcListPrice(m.netPrice)));
-      if (showInstallerPrice) row.push(formatCurrency(calcInstallerPrice(m.netPrice)));
+      if (showListPrice) row.push(formatCurrency(calcListPrice(m.netPrice, priceSettings)));
+      if (showInstallerPrice) row.push(formatCurrency(calcInstallerPrice(m.netPrice, priceSettings)));
 
       row.push(formatStatus(m.status), m.location || '', m.supplier || '');
 
@@ -454,7 +482,7 @@ export default function Inventario() {
               <th style={{ textAlign: 'center' }}>Quantità</th>
               <th>UM</th>
               {showListPrice && <th>Prezzo di listino</th>}
-              {showInstallerPrice && <th>Prezzo installatore</th>}
+              {showInstallerPrice && <th>{installerPriceLabel}</th>}
               <th>Stato</th>
               <th>Posizione</th>
               <th>Fornitore</th>
@@ -503,10 +531,12 @@ export default function Inventario() {
                   </td>
                   <td className="text-muted">{m.unit}</td>
 
-                  {showListPrice && <td>{formatCurrency(calcListPrice(m.netPrice))}</td>}
+                  {showListPrice && (
+                    <td>{formatCurrency(calcListPrice(m.netPrice, priceSettings))}</td>
+                  )}
 
                   {showInstallerPrice && (
-                    <td>{formatCurrency(calcInstallerPrice(m.netPrice))}</td>
+                    <td>{formatCurrency(calcInstallerPrice(m.netPrice, priceSettings))}</td>
                   )}
 
                   <td>
@@ -596,14 +626,16 @@ export default function Inventario() {
                   {showListPrice && (
                     <div>
                       <span className="text-sm text-muted fw-semibold">Prezzo di listino:</span>{' '}
-                      <strong>{formatCurrency(calcListPrice(detailMaterial.netPrice))}</strong>
+                      <strong>{formatCurrency(calcListPrice(detailMaterial.netPrice, priceSettings))}</strong>
                     </div>
                   )}
 
                   {showInstallerPrice && (
                     <div>
-                      <span className="text-sm text-muted fw-semibold">Prezzo installatore:</span>{' '}
-                      <strong>{formatCurrency(calcInstallerPrice(detailMaterial.netPrice))}</strong>
+                      <span className="text-sm text-muted fw-semibold">{installerPriceLabel}:</span>{' '}
+                      <strong>
+                        {formatCurrency(calcInstallerPrice(detailMaterial.netPrice, priceSettings))}
+                      </strong>
                     </div>
                   )}
                 </div>

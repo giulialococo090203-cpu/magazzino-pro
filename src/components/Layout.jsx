@@ -88,6 +88,12 @@ const NAV_SECTIONS = [
         icon: '⚙️',
         permission: 'canManageThresholds',
       },
+      {
+        path: '/gestione/prezzi',
+        label: 'Impostazioni Prezzi',
+        icon: '💶',
+        permission: 'canManagePriceSettings',
+      },
     ],
   },
   {
@@ -145,6 +151,7 @@ const PAGE_TITLES = {
   '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
   '/gestione/categorie': 'Gestione Categorie',
+  '/gestione/prezzi': 'Impostazioni Prezzi',
   '/gestione/utenti': 'Gestione Utenti',
   '/gestione/log': 'Audit Log',
   '/controllo': 'Dashboard',
