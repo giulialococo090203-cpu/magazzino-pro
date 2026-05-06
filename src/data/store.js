@@ -974,9 +974,78 @@ export const userStore = {
       throw new Error('Password obbligatoria per creare un nuovo utente.');
     }
 
+    // 1. Crea o aggiorna l'utente in Firebase Auth + Firestore tramite backend Vercel.
     const created = await createFirebaseUserFromAdmin(user);
 
+    // 2. Mantiene una copia compatibile nella vecchia tabella Supabase "utenti",
+    // così la schermata Gestione Utenti continua a mostrare subito il nuovo utente.
+    const compatibilityUser = {
+      ...user,
+      username: user.username || created.email,
+      fullName: user.fullName || created.fullName,
+      email: created.email,
+      role: normalizeRole(user.role || created.role),
+      active: user.active !== undefined ? Boolean(user.active) : true,
+      permissions:
+        user.permissions && typeof user.permissions === 'object'
+          ? user.permissions
+          : {},
+    };
+
+    const row = mapUser.toRow(compatibilityUser);
+
+    if (row.password) {
+      row.password = await hashPassword(row.password);
+    }
+
+    let supabaseUser = null;
+
+    try {
+      const { data: existing, error: existingError } = await supabase
+        .from('utenti')
+        .select('id')
+        .eq('username', row.username)
+        .maybeSingle();
+
+      if (existingError) throw existingError;
+
+      if (existing?.id) {
+        const { data, error } = await supabase
+          .from('utenti')
+          .update({
+            ...row,
+            attivo: row.attivo ?? true,
+            permessi: row.permessi ?? {},
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        supabaseUser = data;
+      } else {
+        const { data, error } = await supabase
+          .from('utenti')
+          .insert({
+            ...row,
+            attivo: row.attivo ?? true,
+            permessi: row.permessi ?? {},
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        supabaseUser = data;
+      }
+    } catch (error) {
+      console.warn('Utente creato in Firebase, ma copia Supabase non salvata:', error);
+    }
+
     notifySupabaseUsageChanged();
+
+    if (supabaseUser) {
+      return mapUser.toModel(supabaseUser);
+    }
 
     return {
       id: created.uid,
@@ -984,15 +1053,12 @@ export const userStore = {
       authUid: created.uid,
       companyId: created.companyId,
       company_id: created.companyId,
-      username: created.email,
+      username: compatibilityUser.username,
       email: created.email,
       fullName: created.fullName,
       role: normalizeRole(created.role),
       active: true,
-      permissions:
-        user.permissions && typeof user.permissions === 'object'
-          ? user.permissions
-          : {},
+      permissions: compatibilityUser.permissions,
       createdAt: new Date().toISOString(),
     };
   },
