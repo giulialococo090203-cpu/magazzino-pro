@@ -142,6 +142,12 @@ const NAV_SECTIONS = [
         permission: 'canManageUsers',
       },
       {
+        path: '/gestione/backup',
+        label: 'Backup Sistema',
+        icon: '💾',
+        permission: 'canManageUsers',
+      },
+      {
         path: '/gestione/log',
         label: 'Audit Log',
         icon: '📜',
@@ -168,6 +174,7 @@ const PAGE_TITLES = {
   '/gestione/prezzi': 'Impostazioni Prezzi',
   '/gestione/utenti': 'Gestione Utenti',
   '/gestione/log': 'Audit Log',
+  '/gestione/backup': 'Backup Sistema',
   '/controllo': 'Dashboard',
   '/controllo/soglie': 'Soglie Scorta',
   '/controllo/notifiche': 'Centro Notifiche',
