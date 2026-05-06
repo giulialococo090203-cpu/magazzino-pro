@@ -4,7 +4,12 @@
 
 import { supabase } from '../supabaseClient';
 import { INITIAL_UNITS } from './initialData';
+
+const ADMIN_CREATE_USER_URL =
+  import.meta.env.VITE_ADMIN_CREATE_USER_URL ||
+  'https://pdf-parser-vercel-wheat.vercel.app/api/admin/create-user';
 import { authStore } from './authStore';
+import { firebaseAuth } from '../firebaseClient';
 
 // --- Auth Helper ---
 const hashPassword = async (password) => {
@@ -85,6 +90,66 @@ function notifySupabaseUsageChanged() {
   } catch {
     // Non bloccare mai le operazioni se il browser non permette l’evento.
   }
+}
+
+
+async function createFirebaseUserFromAdmin(user) {
+  const currentFirebaseUser = firebaseAuth.currentUser;
+
+  if (!currentFirebaseUser) {
+    throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come datore.');
+  }
+
+  const token = await currentFirebaseUser.getIdToken(true);
+
+  const currentAppUser = authStore.getCurrentUser();
+  const companyId =
+    user.companyId ||
+    user.company_id ||
+    currentAppUser?.companyId ||
+    currentAppUser?.company_id ||
+    'cl_thermoservice';
+
+  const response = await fetch(ADMIN_CREATE_USER_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: String(user.email || user.username || '').trim(),
+      password: String(user.password || '').trim(),
+      fullName: String(user.fullName || user.nome || user.username || '').trim(),
+      role: normalizeRole(user.role || user.ruolo || 'operaio'),
+      active: user.active !== undefined ? Boolean(user.active) : true,
+      permissions:
+        user.permissions && typeof user.permissions === 'object'
+          ? user.permissions
+          : {},
+      companyId,
+    }),
+  });
+
+  const responseText = await response.text();
+
+  let payload = null;
+  try {
+    payload = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      payload?.detail ||
+      payload?.message ||
+      responseText ||
+      `Errore creazione utente Firebase (${response.status}).`;
+
+    throw new Error(message);
+  }
+
+  return payload;
 }
 
 // --- Field Mappings DB Snake Case <-> App Camel Case ---
@@ -901,27 +966,35 @@ export const userStore = {
   },
 
   async create(user) {
-    const row = mapUser.toRow(user);
-
-    if (row.password) {
-      row.password = await hashPassword(row.password);
+    if (!user?.email && !user?.username) {
+      throw new Error('Email obbligatoria per creare un utente.');
     }
 
-    const { data, error } = await supabase
-      .from('utenti')
-      .insert({
-        ...row,
-        attivo: row.attivo ?? true,
-        permessi: row.permessi ?? {},
-      })
-      .select()
-      .single();
+    if (!user?.password) {
+      throw new Error('Password obbligatoria per creare un nuovo utente.');
+    }
 
-    if (error) throw error;
+    const created = await createFirebaseUserFromAdmin(user);
 
     notifySupabaseUsageChanged();
 
-    return mapUser.toModel(data);
+    return {
+      id: created.uid,
+      uid: created.uid,
+      authUid: created.uid,
+      companyId: created.companyId,
+      company_id: created.companyId,
+      username: created.email,
+      email: created.email,
+      fullName: created.fullName,
+      role: normalizeRole(created.role),
+      active: true,
+      permissions:
+        user.permissions && typeof user.permissions === 'object'
+          ? user.permissions
+          : {},
+      createdAt: new Date().toISOString(),
+    };
   },
 
   async update(id, updates) {
