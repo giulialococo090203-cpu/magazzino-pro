@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { supabase } from '../../supabaseClient';
 
 const TABLES = [
@@ -60,6 +61,24 @@ function downloadJson(fileName, data) {
   URL.revokeObjectURL(url);
 }
 
+
+function downloadExcelBackup(fileName, backup) {
+  const workbook = XLSX.utils.book_new();
+
+  Object.entries(backup.tables || {}).forEach(([tableName, rows]) => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const sheet = XLSX.utils.json_to_sheet(safeRows);
+    const safeSheetName = tableName.slice(0, 31);
+
+    XLSX.utils.book_append_sheet(workbook, sheet, safeSheetName);
+  });
+
+  const manifestSheet = XLSX.utils.json_to_sheet(backup.manifest.tables || []);
+  XLSX.utils.book_append_sheet(workbook, manifestSheet, 'manifest');
+
+  XLSX.writeFile(workbook, fileName);
+}
+
 async function readAllRows(tableName) {
   const pageSize = 1000;
   let from = 0;
@@ -94,7 +113,7 @@ export default function BackupSistema() {
   const [error, setError] = useState('');
   const [progress, setProgress] = useState({ current: 0, total: TABLES.length });
 
-  const runBackup = async () => {
+  const runBackup = async (format = 'json') => {
     setLoading(true);
     setError('');
     setLastBackup(null);
@@ -149,11 +168,21 @@ export default function BackupSistema() {
 
       backup.completedAt = new Date().toISOString();
 
-      const fileName = `magazzino-pro-backup-${getTimestamp()}.json`;
-      downloadJson(fileName, backup);
+      const timestamp = getTimestamp();
+      const fileName =
+        format === 'excel'
+          ? `magazzino-pro-backup-${timestamp}.xlsx`
+          : `magazzino-pro-backup-${timestamp}.json`;
+
+      if (format === 'excel') {
+        downloadExcelBackup(fileName, backup);
+      } else {
+        downloadJson(fileName, backup);
+      }
 
       setLastBackup({
         fileName,
+        format,
         createdAt: backup.completedAt,
         totalTables: backup.manifest.tables.length,
         errors: backup.manifest.errors,
@@ -185,20 +214,31 @@ export default function BackupSistema() {
         <div className="card-body">
           <p className="text-muted" style={{ marginBottom: 16 }}>
             Il backup include materiali, categorie, movimenti, notifiche, log,
-            archivio fatture, utenti e sessioni inventario. Verrà scaricato un file
-            JSON sul tuo computer.
+            archivio fatture, utenti e sessioni inventario. Puoi scaricarlo in JSON
+            tecnico completo oppure in Excel leggibile.
           </p>
 
-          <button
-            type="button"
-            className="btn btn-primary btn-lg"
-            onClick={runBackup}
-            disabled={loading}
-          >
-            {loading
-              ? `Creazione backup... ${progress.current}/${progress.total}`
-              : '⬇️ Scarica backup completo'}
-          </button>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-lg"
+              onClick={() => runBackup('json')}
+              disabled={loading}
+            >
+              {loading
+                ? `Creazione backup... ${progress.current}/${progress.total}`
+                : '⬇️ Scarica backup JSON completo'}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-lg"
+              onClick={() => runBackup('excel')}
+              disabled={loading}
+            >
+              📊 Scarica backup Excel leggibile
+            </button>
+          </div>
 
           {loading && (
             <div style={{ marginTop: 18 }}>
