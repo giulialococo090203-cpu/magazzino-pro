@@ -4,7 +4,6 @@
 
 import { supabase } from '../supabaseClient';
 import { INITIAL_UNITS } from './initialData';
-import { authStore } from './authStore';
 
 // --- Auth Helper ---
 const hashPassword = async (password) => {
@@ -161,23 +160,11 @@ const mapMovement = {
       quantita: model.quantity,
       motivo: model.reason,
       note: model.notes,
-
-      // Firebase Auth usa UID testuali, Supabase qui si aspetta UUID.
-      // Se non è un UUID valido, salvo null in utente_id e tengo il nome in operatore_nome.
-      utente_id:
-        typeof model.userId === 'string' &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
-          ? model.userId
-          : null,
-
+      utente_id: model.userId,
       data_movimento: model.date || new Date().toISOString(),
       cliente_nome: model.clientName || null,
       autorizzato_da: model.authorizedBy || null,
-      operatore_nome:
-        model.operatorName ||
-        model.userName ||
-        model.fullName ||
-        null,
+      operatore_nome: model.operatorName || null,
       previous_qty: model.previousQty ?? null,
       new_qty: model.newQty ?? null,
     }),
@@ -247,14 +234,7 @@ const mapLog = {
 
   toRow: (model) =>
     clean({
-      // Firebase Auth usa UID testuali, Supabase log_modifiche.utente_id vuole UUID.
-      // Se non è UUID valido, lo salvo null e tengo comunque il nome utente nella descrizione/azione.
-      utente_id:
-        typeof model.userId === 'string' &&
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
-          ? model.userId
-          : null,
-
+      utente_id: model.userId,
       entita: model.entity,
       entita_id: model.entityId,
       azione: model.action,
@@ -859,20 +839,51 @@ export const userStore = {
     return data.map(mapUser.toModel);
   },
 
-  async authenticate(email, password) {
-    return authStore.authenticate(email, password);
+  async authenticate(username, password) {
+    const trimmedUsername = username.trim();
+    const hashedPassword = await hashPassword(password);
+
+    const { data, error } = await supabase
+      .from('utenti')
+      .select('*')
+      .ilike('username', trimmedUsername)
+      .eq('password', hashedPassword)
+      .eq('attivo', true)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Login fallito per:', trimmedUsername, error.message);
+      return null;
+    }
+
+    if (!data) {
+      console.warn('Login fallito per:', trimmedUsername, 'nessun utente trovato');
+      return null;
+    }
+
+    const user = mapUser.toModel(data);
+
+    localStorage.setItem('wm_current_user', JSON.stringify(user));
+
+    return user;
   },
 
   getCurrentUser() {
-    return authStore.getCurrentUser();
+    const data = localStorage.getItem('wm_current_user');
+    return data ? JSON.parse(data) : null;
   },
 
   setCurrentUser(user) {
-    authStore.setCurrentUser(user);
+    if (!user) {
+      localStorage.removeItem('wm_current_user');
+      return;
+    }
+
+    localStorage.setItem('wm_current_user', JSON.stringify(user));
   },
 
   logout() {
-    authStore.logout();
+    localStorage.removeItem('wm_current_user');
   },
 
   async create(user) {

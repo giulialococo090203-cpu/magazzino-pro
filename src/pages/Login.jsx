@@ -1,19 +1,56 @@
 import { useState } from 'react';
-import { userStore } from '../data/store';
+import { authStore } from '../data/authStore';
 
 export default function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const getReadableError = (err) => {
+    const code = err?.code || '';
+    const message = err?.message || '';
+
+    if (code.includes('auth/invalid-credential')) {
+      return 'Email o password non corretti.';
+    }
+
+    if (code.includes('auth/user-not-found')) {
+      return 'Utente non trovato.';
+    }
+
+    if (code.includes('auth/wrong-password')) {
+      return 'Password non corretta.';
+    }
+
+    if (code.includes('auth/too-many-requests')) {
+      return 'Troppi tentativi. Riprova tra qualche minuto.';
+    }
+
+    if (message.includes('profilo non trovato')) {
+      return 'Utente autenticato, ma profilo non trovato nel database.';
+    }
+
+    if (message.includes('Account disattivato')) {
+      return 'Account disattivato.';
+    }
+
+    if (message.includes('Azienda non associata')) {
+      return 'Azienda non associata all’utente.';
+    }
+
+    return 'Problema di connessione o credenziali non valide.';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError('');
     setLoading(true);
 
     try {
-      const user = await userStore.authenticate(username.trim(), password.trim());
+      const user = await authStore.authenticate(email, password);
+
       if (user) {
         onLogin(user);
       } else {
@@ -21,7 +58,7 @@ export default function Login({ onLogin }) {
       }
     } catch (err) {
       console.error('Login Error:', err);
-      setError('Problema di connessione ricollegarsi tra pochi istanti.');
+      setError(getReadableError(err));
     } finally {
       setLoading(false);
     }
@@ -40,13 +77,13 @@ export default function Login({ onLogin }) {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label className="form-label">Email</label>
             <input
-              type="text"
+              type="email"
               className="form-control"
-              placeholder="Inserisci il tuo username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
+              placeholder="Inserisci la tua email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               autoFocus
               required
             />
@@ -59,7 +96,7 @@ export default function Login({ onLogin }) {
               className="form-control"
               placeholder="Inserisci la tua password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
@@ -72,7 +109,6 @@ export default function Login({ onLogin }) {
             {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
           </button>
         </form>
-
       </div>
     </div>
   );

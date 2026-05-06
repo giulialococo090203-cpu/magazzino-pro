@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { userStore } from './data/store';
+import { authStore } from './data/authStore';
 import { INITIAL_UNITS } from './data/initialData';
 import { hasPermission, getDefaultRouteForUser } from './data/permissions';
 
@@ -71,7 +71,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const user = userStore.getCurrentUser();
+    const user = authStore.getCurrentUser();
 
     if (user) {
       setCurrentUser(user);
@@ -92,11 +92,11 @@ function App() {
     if (!updatedUser) return;
 
     setCurrentUser(updatedUser);
-    userStore.setCurrentUser(updatedUser);
+    authStore.setCurrentUser(updatedUser);
   };
 
-  const logout = () => {
-    userStore.logout();
+  const logout = async () => {
+    await authStore.logout();
     setCurrentUser(null);
   };
 
