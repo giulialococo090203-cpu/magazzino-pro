@@ -30,6 +30,18 @@ const NAV_SECTIONS = [
         permission: 'canViewInventory',
       },
       {
+        path: '/riordino',
+        label: 'Riordino Automatico',
+        icon: '🛒',
+        permission: 'canManageReorderProposals',
+      },
+      {
+        path: '/inventario-fisico',
+        label: 'Inventario Fisico',
+        icon: '🧮',
+        permission: 'canPhysicalInventory',
+      },
+      {
         path: '/movimento/entrata',
         label: 'Carico Materiale',
         icon: '📥',
@@ -54,12 +66,6 @@ const NAV_SECTIONS = [
         permission: 'canRectify',
       },
       {
-        path: '/inventario-fisico',
-        label: 'Inventario Fisico',
-        icon: '🧾',
-        permission: 'canManagePhysicalInventory',
-      },
-      {
         path: '/storico',
         label: 'Storico Movimenti',
         icon: '📅',
@@ -81,12 +87,6 @@ const NAV_SECTIONS = [
         label: 'Archivio Fatture',
         icon: '🗂️',
         permission: 'canImportInvoices',
-      },
-      {
-        path: '/riordino',
-        label: 'Riordino Automatico',
-        icon: '🛒',
-        permission: 'canManageReorders',
       },
       {
         path: '/gestione/categorie',
@@ -154,13 +154,13 @@ const NAV_SECTIONS = [
 const PAGE_TITLES = {
   '/': 'Dashboard',
   '/inventario': 'Giacenza',
+  '/riordino': 'Riordino Automatico',
+  '/inventario-fisico': 'Inventario Fisico',
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
   '/movimento/reintegro': 'Reintegra Materiale',
   '/movimento/rettifica': 'Rettifica Magazzino',
-  '/inventario-fisico': 'Inventario Fisico',
   '/storico': 'Storico Movimenti',
-  '/riordino': 'Riordino Automatico',
   '/importa': 'Importa / Inserisci',
   '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
@@ -177,10 +177,10 @@ const SECTION_NAMES = {
   '/controllo/notifiche': 'Notifiche',
   '/controllo/soglie': 'Configurazione',
   '/inventario-fisico': 'Magazzino',
+  '/riordino': 'Magazzino',
   '/inventario': 'Magazzino',
   '/movimento': 'Magazzino',
   '/storico': 'Magazzino',
-  '/riordino': 'Configurazione',
   '/importa': 'Fatture',
   '/fatture': 'Fatture',
   '/gestione': 'Configurazione',
@@ -192,7 +192,12 @@ function getSection(pathname) {
   const orderedPrefixes = Object.keys(SECTION_NAMES).sort((a, b) => b.length - a.length);
 
   for (const prefix of orderedPrefixes) {
-    if (pathname === prefix || pathname.startsWith(`${prefix}/`) || prefix === '/') {
+    if (prefix === '/') {
+      if (pathname === '/') return SECTION_NAMES[prefix];
+      continue;
+    }
+
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
       return SECTION_NAMES[prefix];
     }
   }

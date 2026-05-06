@@ -138,6 +138,24 @@ function App() {
               />
 
               <Route
+                path="/riordino"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
+                    <RiordinoAutomatico />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/inventario-fisico"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canPhysicalInventory">
+                    <InventarioFisico />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/movimento/:tipo"
                 element={<ProtectedMovementRoute user={currentUser} />}
               />
@@ -147,24 +165,6 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canViewHistory">
                     <StoricoMovimenti />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/riordino"
-                element={
-                  <ProtectedRoute user={currentUser} permission="canManageReorders">
-                    <RiordinoAutomatico />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/inventario-fisico"
-                element={
-                  <ProtectedRoute user={currentUser} permission="canManagePhysicalInventory">
-                    <InventarioFisico />
                   </ProtectedRoute>
                 }
               />
