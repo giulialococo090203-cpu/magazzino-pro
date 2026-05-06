@@ -290,7 +290,13 @@ const mapImportedInvoice = {
       bucket: model.bucket || 'fatture',
       dimensione_file: model.fileSize,
       tipo_file: model.fileType,
-      utente_id: model.userId || null,
+      // Firebase Auth usa UID testuali, Supabase fatture_importate.utente_id vuole UUID.
+      // Se non è UUID valido, salvo null e tengo comunque il nome in utente_nome.
+      utente_id:
+        typeof model.userId === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
+          ? model.userId
+          : null,
       utente_nome: model.userName || null,
       stato_importazione: model.status,
       numero_materiali_rilevati: model.detectedItems,
@@ -361,7 +367,13 @@ const mapReorderProposal = {
       fornitore: model.supplier || 'Senza fornitore',
       stato: model.status || 'aperta',
       note: model.notes || null,
-      utente_id: model.userId || null,
+      // Firebase Auth usa UID testuali, Supabase fatture_importate.utente_id vuole UUID.
+      // Se non è UUID valido, salvo null e tengo comunque il nome in utente_nome.
+      utente_id:
+        typeof model.userId === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
+          ? model.userId
+          : null,
       utente_nome: model.userName || null,
       totale_righe: model.totalRows || 0,
       totale_quantita: model.totalQuantity || 0,
@@ -446,7 +458,13 @@ const mapInventorySession = {
       stato: model.status || 'aperta',
       categoria_id: model.category || null,
       note: model.notes || null,
-      utente_id: model.userId || null,
+      // Firebase Auth usa UID testuali, Supabase fatture_importate.utente_id vuole UUID.
+      // Se non è UUID valido, salvo null e tengo comunque il nome in utente_nome.
+      utente_id:
+        typeof model.userId === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(model.userId)
+          ? model.userId
+          : null,
       utente_nome: model.userName || null,
       totale_righe: model.totalRows || 0,
       righe_contate: model.countedRows || 0,
