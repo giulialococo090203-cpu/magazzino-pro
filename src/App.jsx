@@ -15,6 +15,8 @@ import MovimentiForm from './pages/principale/MovimentiForm';
 import StoricoMovimenti from './pages/principale/StoricoMovimenti';
 import ImportaFatture from './pages/principale/ImportaFatture';
 import ArchivioFatture from './pages/principale/ArchivioFatture';
+import RiordinoAutomatico from './pages/principale/RiordinoAutomatico';
+import InventarioFisico from './pages/principale/InventarioFisico';
 
 // Pagine - Gestione
 import GestioneCategorie from './pages/gestione/GestioneCategorie';
@@ -145,6 +147,24 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canViewHistory">
                     <StoricoMovimenti />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/riordino"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManageReorders">
+                    <RiordinoAutomatico />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/inventario-fisico"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManagePhysicalInventory">
+                    <InventarioFisico />
                   </ProtectedRoute>
                 }
               />

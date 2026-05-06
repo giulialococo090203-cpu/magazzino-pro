@@ -280,6 +280,162 @@ const mapImportedInvoice = {
     }),
 };
 
+const mapReorderProposalRow = {
+  toModel: (row) => ({
+    id: row.id,
+    proposalId: row.proposta_id,
+    materialId: row.materiale_id,
+    code: row.codice,
+    description: row.descrizione,
+    brand: row.marca || '',
+    category: row.categoria_id,
+    unit: row.unita_misura || '',
+    currentQty: Number(row.quantita_attuale || 0),
+    minThreshold: Number(row.soglia_minima || 0),
+    suggestedQty: Number(row.quantita_consigliata || 0),
+    supplier: row.fornitore || 'Senza fornitore',
+    location: row.posizione || '',
+    notes: row.note || '',
+    createdAt: row.created_at,
+  }),
+
+  toRow: (model) =>
+    clean({
+      proposta_id: model.proposalId,
+      materiale_id: model.materialId,
+      codice: model.code,
+      descrizione: model.description,
+      marca: model.brand || null,
+      categoria_id: model.category || null,
+      unita_misura: model.unit || null,
+      quantita_attuale: model.currentQty || 0,
+      soglia_minima: model.minThreshold || 0,
+      quantita_consigliata: model.suggestedQty || 0,
+      fornitore: model.supplier || 'Senza fornitore',
+      posizione: model.location || null,
+      note: model.notes || null,
+    }),
+};
+
+const mapReorderProposal = {
+  toModel: (row) => ({
+    id: row.id,
+    number: row.numero,
+    supplier: row.fornitore || 'Senza fornitore',
+    status: row.stato || 'aperta',
+    notes: row.note || '',
+    userId: row.utente_id,
+    userName: row.utente_nome || '',
+    totalRows: Number(row.totale_righe || 0),
+    totalQuantity: Number(row.totale_quantita || 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    rows: Array.isArray(row.righe_proposta_ordine)
+      ? row.righe_proposta_ordine.map(mapReorderProposalRow.toModel)
+      : [],
+  }),
+
+  toRow: (model) =>
+    clean({
+      numero: model.number,
+      fornitore: model.supplier || 'Senza fornitore',
+      stato: model.status || 'aperta',
+      note: model.notes || null,
+      utente_id: model.userId || null,
+      utente_nome: model.userName || null,
+      totale_righe: model.totalRows || 0,
+      totale_quantita: model.totalQuantity || 0,
+      updated_at: model.updatedAt || new Date().toISOString(),
+    }),
+};
+
+const mapInventoryRow = {
+  toModel: (row) => ({
+    id: row.id,
+    sessionId: row.sessione_id,
+    materialId: row.materiale_id,
+    code: row.codice,
+    description: row.descrizione,
+    brand: row.marca || '',
+    category: row.categoria_id || '',
+    unit: row.unita_misura || '',
+    theoreticalQty: Number(row.quantita_teorica || 0),
+    countedQty:
+      row.quantita_contata === null || row.quantita_contata === undefined
+        ? ''
+        : Number(row.quantita_contata),
+    difference: Number(row.differenza || 0),
+    location: row.posizione || '',
+    notes: row.note || '',
+    counted: Boolean(row.contato),
+    rectified: Boolean(row.rettificato),
+    movementId: row.movimento_id || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }),
+
+  toRow: (model) =>
+    clean({
+      sessione_id: model.sessionId,
+      materiale_id: model.materialId,
+      codice: model.code,
+      descrizione: model.description,
+      marca: model.brand || null,
+      categoria_id: model.category || null,
+      unita_misura: model.unit || null,
+      quantita_teorica: model.theoreticalQty || 0,
+      quantita_contata:
+        model.countedQty === '' || model.countedQty === null || model.countedQty === undefined
+          ? null
+          : Number(model.countedQty),
+      differenza: Number(model.difference || 0),
+      posizione: model.location || null,
+      note: model.notes || null,
+      contato: Boolean(model.counted),
+      rettificato: Boolean(model.rectified),
+      movimento_id: model.movementId || null,
+      updated_at: model.updatedAt || new Date().toISOString(),
+    }),
+};
+
+const mapInventorySession = {
+  toModel: (row) => ({
+    id: row.id,
+    number: row.numero,
+    title: row.titolo,
+    status: row.stato || 'aperta',
+    category: row.categoria_id || '',
+    notes: row.note || '',
+    userId: row.utente_id,
+    userName: row.utente_nome || '',
+    totalRows: Number(row.totale_righe || 0),
+    countedRows: Number(row.righe_contate || 0),
+    differences: Number(row.differenze || 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    closedAt: row.closed_at,
+    rows: Array.isArray(row.righe_inventario)
+      ? row.righe_inventario.map(mapInventoryRow.toModel)
+      : [],
+  }),
+
+  toRow: (model) =>
+    clean({
+      numero: model.number,
+      titolo: model.title,
+      stato: model.status || 'aperta',
+      categoria_id: model.category || null,
+      note: model.notes || null,
+      utente_id: model.userId || null,
+      utente_nome: model.userName || null,
+      totale_righe: model.totalRows || 0,
+      righe_contate: model.countedRows || 0,
+      differenze: model.differences || 0,
+      updated_at: model.updatedAt || new Date().toISOString(),
+      closed_at: model.closedAt || null,
+    }),
+};
+
 // ============================================================
 // STORES
 // ============================================================
@@ -1224,6 +1380,417 @@ export const invoiceImportStore = {
   async deleteAllWithFiles() {
     const invoices = await this.getAll();
     return this.deleteManyWithFiles(invoices.map((invoice) => invoice.id));
+  },
+};
+
+export const reorderProposalStore = {
+  getSuggestedQty(material, multiplier = 2) {
+    const current = Number(material.quantity || 0);
+    const threshold = Number(material.minThreshold || 0);
+    const safeMultiplier = Math.max(1, Number(multiplier || 2));
+    const target = Math.max(threshold * safeMultiplier, threshold + 1);
+
+    return Math.max(0, Math.ceil(target - current));
+  },
+
+  async getUnderThresholdMaterials({ categoryId = '', supplier = '' } = {}) {
+    const materials = await materialStore.getAll();
+
+    return materials
+      .filter((m) => {
+        const threshold = Number(m.minThreshold || 0);
+        const quantity = Number(m.quantity || 0);
+        const matchThreshold = threshold > 0 && quantity <= threshold;
+        const matchCategory = !categoryId || m.category === categoryId;
+        const matchSupplier =
+          !supplier ||
+          String(m.supplier || '').toLowerCase().includes(String(supplier).toLowerCase());
+
+        return matchThreshold && matchCategory && matchSupplier;
+      })
+      .sort((a, b) => {
+        const supplierA = String(a.supplier || 'Senza fornitore');
+        const supplierB = String(b.supplier || 'Senza fornitore');
+        const supplierCompare = supplierA.localeCompare(supplierB);
+
+        if (supplierCompare !== 0) return supplierCompare;
+
+        return String(a.code || '').localeCompare(String(b.code || ''));
+      });
+  },
+
+  async getAll() {
+    const { data, error } = await supabase
+      .from('proposte_ordine')
+      .select('*, righe_proposta_ordine(*)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(mapReorderProposal.toModel);
+  },
+
+  async getById(id) {
+    const { data, error } = await supabase
+      .from('proposte_ordine')
+      .select('*, righe_proposta_ordine(*)')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    return mapReorderProposal.toModel(data);
+  },
+
+  async createFromMaterials({ materials = [], user, notes = '', multiplier = 2 } = {}) {
+    const validMaterials = (materials || []).filter(
+      (m) => this.getSuggestedQty(m, multiplier) > 0
+    );
+
+    if (validMaterials.length === 0) {
+      throw new Error('Nessun materiale sotto soglia da inserire in proposta.');
+    }
+
+    const supplierGroups = validMaterials.reduce((groups, material) => {
+      const key = material.supplier?.trim() || 'Senza fornitore';
+
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(material);
+
+      return groups;
+    }, {});
+
+    const created = [];
+
+    for (const [supplierName, groupMaterials] of Object.entries(supplierGroups)) {
+      const totalQty = groupMaterials.reduce(
+        (sum, material) => sum + this.getSuggestedQty(material, multiplier),
+        0
+      );
+
+      const now = new Date();
+      const number = `PO-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${String(
+        Date.now()
+      ).slice(-6)}`;
+
+      const { data: proposalData, error: proposalError } = await supabase
+        .from('proposte_ordine')
+        .insert(
+          mapReorderProposal.toRow({
+            number,
+            supplier: supplierName,
+            status: 'aperta',
+            notes,
+            userId: user?.id || null,
+            userName: user?.fullName || user?.username || '',
+            totalRows: groupMaterials.length,
+            totalQuantity: totalQty,
+          })
+        )
+        .select()
+        .single();
+
+      if (proposalError) throw proposalError;
+
+      const proposal = mapReorderProposal.toModel(proposalData);
+
+      const rows = groupMaterials.map((material) =>
+        mapReorderProposalRow.toRow({
+          proposalId: proposal.id,
+          materialId: material.id,
+          code: material.code,
+          description: material.description,
+          brand: material.brand,
+          category: material.category,
+          unit: material.unit,
+          currentQty: material.quantity,
+          minThreshold: material.minThreshold,
+          suggestedQty: this.getSuggestedQty(material, multiplier),
+          supplier: supplierName,
+          location: material.location,
+          notes: '',
+        })
+      );
+
+      const { error: rowsError } = await supabase.from('righe_proposta_ordine').insert(rows);
+
+      if (rowsError) throw rowsError;
+
+      created.push(await this.getById(proposal.id));
+    }
+
+    notifySupabaseUsageChanged();
+
+    return created;
+  },
+
+  async updateStatus(id, status) {
+    const { data, error } = await supabase
+      .from('proposte_ordine')
+      .update({
+        stato: status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select('*, righe_proposta_ordine(*)')
+      .single();
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
+
+    return mapReorderProposal.toModel(data);
+  },
+
+  async delete(id) {
+    const { error } = await supabase.from('proposte_ordine').delete().eq('id', id);
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
+  },
+};
+
+export const physicalInventoryStore = {
+  async getAllSessions() {
+    const { data, error } = await supabase
+      .from('sessioni_inventario')
+      .select('*, righe_inventario(*)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(mapInventorySession.toModel);
+  },
+
+  async getSessionById(id) {
+    const { data, error } = await supabase
+      .from('sessioni_inventario')
+      .select('*, righe_inventario(*)')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    const session = mapInventorySession.toModel(data);
+
+    session.rows = session.rows.sort((a, b) =>
+      String(a.code || '').localeCompare(String(b.code || ''))
+    );
+
+    return session;
+  },
+
+  async createSession({ title, category = '', notes = '', user } = {}) {
+    const materials = await materialStore.getAll();
+    const filteredMaterials = category
+      ? materials.filter((m) => m.category === category)
+      : materials;
+
+    if (filteredMaterials.length === 0) {
+      throw new Error('Nessun materiale disponibile per creare la sessione inventario.');
+    }
+
+    const now = new Date();
+    const number = `INV-${now.toISOString().slice(0, 10).replace(/-/g, '')}-${String(
+      Date.now()
+    ).slice(-6)}`;
+
+    const { data: sessionData, error: sessionError } = await supabase
+      .from('sessioni_inventario')
+      .insert(
+        mapInventorySession.toRow({
+          number,
+          title: title || `Inventario ${now.toLocaleDateString('it-IT')}`,
+          status: 'aperta',
+          category: category || null,
+          notes,
+          userId: user?.id || null,
+          userName: user?.fullName || user?.username || '',
+          totalRows: filteredMaterials.length,
+          countedRows: 0,
+          differences: 0,
+        })
+      )
+      .select()
+      .single();
+
+    if (sessionError) throw sessionError;
+
+    const session = mapInventorySession.toModel(sessionData);
+
+    const rows = filteredMaterials.map((material) =>
+      mapInventoryRow.toRow({
+        sessionId: session.id,
+        materialId: material.id,
+        code: material.code,
+        description: material.description,
+        brand: material.brand,
+        category: material.category,
+        unit: material.unit,
+        theoreticalQty: material.quantity,
+        countedQty: null,
+        difference: 0,
+        location: material.location,
+        notes: '',
+        counted: false,
+        rectified: false,
+      })
+    );
+
+    for (const chunk of chunkArray(rows, 100)) {
+      const { error: rowsError } = await supabase.from('righe_inventario').insert(chunk);
+
+      if (rowsError) throw rowsError;
+    }
+
+    notifySupabaseUsageChanged();
+
+    return this.getSessionById(session.id);
+  },
+
+  async updateCount(rowId, countedQty, notes = '') {
+    const { data: currentRow, error: readError } = await supabase
+      .from('righe_inventario')
+      .select('*')
+      .eq('id', rowId)
+      .single();
+
+    if (readError) throw readError;
+
+    const theoreticalQty = Number(currentRow.quantita_teorica || 0);
+    const cleanCounted = Number(countedQty || 0);
+    const difference = cleanCounted - theoreticalQty;
+
+    const { data, error } = await supabase
+      .from('righe_inventario')
+      .update({
+        quantita_contata: cleanCounted,
+        differenza: difference,
+        note: notes || null,
+        contato: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', rowId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await this.recalculateSession(currentRow.sessione_id);
+
+    notifySupabaseUsageChanged();
+
+    return mapInventoryRow.toModel(data);
+  },
+
+  async recalculateSession(sessionId) {
+    const { data: rows, error } = await supabase
+      .from('righe_inventario')
+      .select('*')
+      .eq('sessione_id', sessionId);
+
+    if (error) throw error;
+
+    const countedRows = (rows || []).filter((row) => row.contato).length;
+    const differences = (rows || []).filter(
+      (row) => Number(row.differenza || 0) !== 0
+    ).length;
+
+    const { error: updateError } = await supabase
+      .from('sessioni_inventario')
+      .update({
+        righe_contate: countedRows,
+        differenze: differences,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId);
+
+    if (updateError) throw updateError;
+  },
+
+  async applyRectifications(sessionId, user) {
+    const session = await this.getSessionById(sessionId);
+    const rowsToRectify = session.rows.filter(
+      (row) => row.counted && !row.rectified && Number(row.difference || 0) !== 0
+    );
+
+    if (rowsToRectify.length === 0) {
+      throw new Error('Nessuna differenza da rettificare.');
+    }
+
+    for (const row of rowsToRectify) {
+      const movement = await movementStore.create({
+        materialId: row.materialId,
+        type: 'rettifica',
+        quantity: Number(row.countedQty || 0),
+        reason: 'inventario_fisico',
+        notes: `Rettifica da inventario fisico ${session.number || session.title}. Teorica: ${
+          row.theoreticalQty
+        }, contata: ${row.countedQty}, differenza: ${row.difference}. ${row.notes || ''}`,
+        userId: user?.id,
+        userName: user?.fullName || user?.username || '',
+        operatorName: user?.fullName || user?.username || 'Inventario fisico',
+        clientName: '',
+        authorizedBy: user?.fullName || user?.username || '',
+      });
+
+      const { error } = await supabase
+        .from('righe_inventario')
+        .update({
+          rettificato: true,
+          movimento_id: movement.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', row.id);
+
+      if (error) throw error;
+    }
+
+    const { error: sessionError } = await supabase
+      .from('sessioni_inventario')
+      .update({
+        stato: 'rettificata',
+        updated_at: new Date().toISOString(),
+        closed_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId);
+
+    if (sessionError) throw sessionError;
+
+    notifySupabaseUsageChanged();
+
+    return this.getSessionById(sessionId);
+  },
+
+  async closeSession(sessionId) {
+    const { data, error } = await supabase
+      .from('sessioni_inventario')
+      .update({
+        stato: 'chiusa',
+        updated_at: new Date().toISOString(),
+        closed_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId)
+      .select('*, righe_inventario(*)')
+      .single();
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
+
+    return mapInventorySession.toModel(data);
+  },
+
+  async deleteSession(sessionId) {
+    const { error } = await supabase
+      .from('sessioni_inventario')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
   },
 };
 

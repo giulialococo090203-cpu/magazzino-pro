@@ -54,6 +54,12 @@ const NAV_SECTIONS = [
         permission: 'canRectify',
       },
       {
+        path: '/inventario-fisico',
+        label: 'Inventario Fisico',
+        icon: '🧾',
+        permission: 'canManagePhysicalInventory',
+      },
+      {
         path: '/storico',
         label: 'Storico Movimenti',
         icon: '📅',
@@ -75,6 +81,12 @@ const NAV_SECTIONS = [
         label: 'Archivio Fatture',
         icon: '🗂️',
         permission: 'canImportInvoices',
+      },
+      {
+        path: '/riordino',
+        label: 'Riordino Automatico',
+        icon: '🛒',
+        permission: 'canManageReorders',
       },
       {
         path: '/gestione/categorie',
@@ -146,7 +158,9 @@ const PAGE_TITLES = {
   '/movimento/uscita': 'Scarica Materiale',
   '/movimento/reintegro': 'Reintegra Materiale',
   '/movimento/rettifica': 'Rettifica Magazzino',
+  '/inventario-fisico': 'Inventario Fisico',
   '/storico': 'Storico Movimenti',
+  '/riordino': 'Riordino Automatico',
   '/importa': 'Importa / Inserisci',
   '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
@@ -162,9 +176,11 @@ const PAGE_TITLES = {
 const SECTION_NAMES = {
   '/controllo/notifiche': 'Notifiche',
   '/controllo/soglie': 'Configurazione',
+  '/inventario-fisico': 'Magazzino',
   '/inventario': 'Magazzino',
   '/movimento': 'Magazzino',
   '/storico': 'Magazzino',
+  '/riordino': 'Configurazione',
   '/importa': 'Fatture',
   '/fatture': 'Fatture',
   '/gestione': 'Configurazione',
