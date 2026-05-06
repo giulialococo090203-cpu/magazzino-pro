@@ -1,9 +1,9 @@
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-const PDF_TEXT_PARSER_URL = import.meta.env.DEV
-  ? import.meta.env.VITE_PDF_TEXT_PARSER_URL || 'https://pdf-parser-vercel-wheat.vercel.app/parse'
-  : 'https://pdf-parser-vercel-wheat.vercel.app/api/pdf-parse';
+const PDF_TEXT_PARSER_URL =
+  import.meta.env.VITE_PDF_TEXT_PARSER_URL ||
+  'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
