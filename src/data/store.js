@@ -8,6 +8,10 @@ import { INITIAL_UNITS } from './initialData';
 const ADMIN_CREATE_USER_URL =
   import.meta.env.VITE_ADMIN_CREATE_USER_URL ||
   'https://pdf-parser-vercel-wheat.vercel.app/api/admin/create-user';
+
+const ADMIN_DELETE_USER_URL =
+  import.meta.env.VITE_ADMIN_DELETE_USER_URL ||
+  'https://pdf-parser-vercel-wheat.vercel.app/api/admin/delete-user';
 import { authStore } from './authStore';
 import { firebaseAuth } from '../firebaseClient';
 
@@ -145,6 +149,59 @@ async function createFirebaseUserFromAdmin(user) {
       payload?.message ||
       responseText ||
       `Errore creazione utente Firebase (${response.status}).`;
+
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+
+async function deleteFirebaseUserFromAdmin(user) {
+  const currentFirebaseUser = firebaseAuth.currentUser;
+
+  if (!currentFirebaseUser) {
+    throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come datore.');
+  }
+
+  const token = await currentFirebaseUser.getIdToken(true);
+
+  const currentAppUser = authStore.getCurrentUser();
+  const companyId =
+    user?.companyId ||
+    user?.company_id ||
+    currentAppUser?.companyId ||
+    currentAppUser?.company_id ||
+    'cl_thermoservice';
+
+  const response = await fetch(ADMIN_DELETE_USER_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      uid: user?.authUid || user?.uid || '',
+      email: user?.email || user?.username || '',
+      companyId,
+    }),
+  });
+
+  const responseText = await response.text();
+
+  let payload = null;
+  try {
+    payload = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      payload?.detail ||
+      payload?.message ||
+      responseText ||
+      `Errore eliminazione utente Firebase (${response.status}).`;
 
     throw new Error(message);
   }
@@ -1092,6 +1149,22 @@ export const userStore = {
   },
 
   async delete(id) {
+    const { data: existingUser, error: readError } = await supabase
+      .from('utenti')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (readError) throw readError;
+
+    if (existingUser) {
+      try {
+        await deleteFirebaseUserFromAdmin(mapUser.toModel(existingUser));
+      } catch (error) {
+        console.warn('Utente non eliminato da Firebase/Auth oppure già assente:', error);
+      }
+    }
+
     const { error } = await supabase.from('utenti').delete().eq('id', id);
 
     if (error) throw error;
