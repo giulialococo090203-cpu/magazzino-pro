@@ -298,10 +298,13 @@ const mapImportedInvoice = {
       bucket: model.bucket || 'fatture',
       dimensione_file: model.fileSize,
       tipo_file: model.fileType,
-      // Firebase Auth usa UID testuali, Supabase fatture_importate.utente_id vuole UUID.
-      // Se non è UUID valido, salvo null e tengo comunque il nome in utente_nome.
+
+      // Firebase Auth usa UID testuali.
+      // Supabase fatture_importate.utente_id accetta solo UUID.
+      // Se non è UUID valido, salvo null e mantengo il nome in utente_nome.
       utente_id: isValidSupabaseUuid(model.userId) ? model.userId : null,
       utente_nome: model.userName || null,
+
       stato_importazione: model.status,
       numero_materiali_rilevati: model.detectedItems,
       numero_materiali_creati: model.createdItems,
