@@ -39,6 +39,8 @@ export default function StoricoPrezzi() {
   const [query, setQuery] = useState('');
   const [supplier, setSupplier] = useState('');
   const [origin, setOrigin] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -124,6 +126,72 @@ export default function StoricoPrezzi() {
       increases,
     };
   }, [filteredRows]);
+
+  const filteredIds = useMemo(() => filteredRows.map((row) => row.id), [filteredRows]);
+
+  const selectedVisibleIds = useMemo(
+    () => selectedIds.filter((id) => filteredIds.includes(id)),
+    [selectedIds, filteredIds]
+  );
+
+  const allVisibleSelected =
+    filteredIds.length > 0 && filteredIds.every((id) => selectedIds.includes(id));
+
+  const toggleRowSelection = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !filteredIds.includes(id)));
+      return;
+    }
+
+    setSelectedIds((prev) => [...new Set([...prev, ...filteredIds])]);
+  };
+
+  const deleteSelectedRows = async () => {
+    const idsToDelete = selectedVisibleIds;
+
+    if (idsToDelete.length === 0) {
+      alert('Seleziona almeno una riga di storico prezzi da eliminare.');
+      return;
+    }
+
+    const firstConfirm = window.confirm(
+      `Vuoi eliminare ${idsToDelete.length} righe dallo storico prezzi?\n\n` +
+        'Questa operazione serve solo per pulizia dati.'
+    );
+
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(
+      `Conferma definitiva:\n\n` +
+        `stai per eliminare ${idsToDelete.length} righe dallo storico prezzi.\n\n` +
+        'L’operazione non può essere annullata.'
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      setDeleting(true);
+
+      await priceHistoryStore.deleteMany(idsToDelete);
+
+      setRows((prev) => prev.filter((row) => !idsToDelete.includes(row.id)));
+      setSelectedIds((prev) => prev.filter((id) => !idsToDelete.includes(id)));
+
+      alert(`Eliminate ${idsToDelete.length} righe dallo storico prezzi.`);
+    } catch (err) {
+      console.error('Errore eliminazione storico prezzi:', err);
+      alert(err?.message || 'Errore durante l’eliminazione dello storico prezzi.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
 
   return (
     <div className="animate-slideUp">
@@ -221,10 +289,59 @@ export default function StoricoPrezzi() {
         </div>
       </div>
 
+      {!loading && filteredRows.length > 0 && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 16,
+            border: '1px solid var(--gray-200)',
+            background: 'var(--gray-50)',
+          }}
+        >
+          <div
+            className="card-body"
+            style={{
+              padding: 14,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div className="text-sm" style={{ fontWeight: 900 }}>
+              {selectedVisibleIds.length} righe selezionate su {filteredRows.length} visibili
+            </div>
+
+            <div className="btn-group">
+              <button className="btn btn-sm btn-secondary" onClick={toggleAllVisible}>
+                {allVisibleSelected ? 'Deseleziona tutte' : 'Seleziona tutte'}
+              </button>
+
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={deleteSelectedRows}
+                disabled={selectedVisibleIds.length === 0 || deleting}
+              >
+                {deleting ? 'Eliminazione...' : '🗑️ Elimina selezionate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: 44, textAlign: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={toggleAllVisible}
+                  title="Seleziona tutte le righe visibili"
+                />
+              </th>
               <th>Data</th>
               <th>Codice</th>
               <th>Descrizione</th>
