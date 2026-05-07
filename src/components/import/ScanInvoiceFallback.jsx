@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const UNIT_OPTIONS = [
   'PZ',
@@ -50,6 +50,78 @@ function getInstallerPrice(value = 0) {
   return Number(value || 0) * 0.9 * 1.22;
 }
 
+function UnitDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = value || 'PZ';
+
+  return (
+    <div style={{ position: 'relative', minWidth: 95 }}>
+      <button
+        type="button"
+        className="form-control"
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          textAlign: 'left',
+          fontWeight: 800,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+        }}
+      >
+        <span>{selected}</span>
+        <span style={{ fontSize: 12 }}>▾</span>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            width: 130,
+            maxHeight: 260,
+            overflowY: 'auto',
+            background: 'white',
+            border: '1px solid var(--gray-200)',
+            borderRadius: 14,
+            boxShadow: '0 18px 40px rgba(15,23,42,0.18)',
+            zIndex: 99999,
+            padding: 6,
+          }}
+        >
+          {UNIT_OPTIONS.map((unit) => (
+            <button
+              key={unit}
+              type="button"
+              onClick={() => {
+                onChange(unit);
+                setOpen(false);
+              }}
+              style={{
+                width: '100%',
+                border: 'none',
+                background: unit === selected ? 'var(--primary-50)' : 'white',
+                color: unit === selected ? 'var(--primary-700)' : 'var(--gray-800)',
+                padding: '9px 10px',
+                borderRadius: 10,
+                textAlign: 'left',
+                fontWeight: unit === selected ? 900 : 700,
+                cursor: 'pointer',
+              }}
+            >
+              {unit === selected ? '✓ ' : ''}
+              {unit}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ScanInvoiceFallback({
   fileName,
   rows,
@@ -81,7 +153,7 @@ export default function ScanInvoiceFallback({
         </p>
       </div>
 
-      <div className="card-body" style={{ overflowX: 'auto' }}>
+      <div className="card-body" style={{ overflowX: 'auto', overflowY: 'visible' }}>
         <datalist id="manual-supplier-suggestions">
           {(supplierSuggestions || []).map((supplier) => (
             <option key={supplier} value={supplier} />
@@ -134,17 +206,10 @@ export default function ScanInvoiceFallback({
                   </td>
 
                   <td>
-                    <select
-                      className="form-control"
+                    <UnitDropdown
                       value={row.unit || 'PZ'}
-                      onChange={(e) => onChangeRow(index, 'unit', e.target.value)}
-                    >
-                      {UNIT_OPTIONS.map((unit) => (
-                        <option key={unit} value={unit}>
-                          {unit}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(unit) => onChangeRow(index, 'unit', unit)}
+                    />
                   </td>
 
                   <td>
