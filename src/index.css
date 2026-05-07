@@ -7932,3 +7932,33 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   MOBILE SIDEBAR: profilo/logout visibile in fondo
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  .sidebar {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 18px !important;
+  }
+
+  .sidebar-user {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background: inherit !important;
+    padding-bottom: 12px !important;
+    z-index: 2 !important;
+  }
+
+  .sidebar-section:last-of-type {
+    padding-bottom: 12px !important;
+  }
+}
+
