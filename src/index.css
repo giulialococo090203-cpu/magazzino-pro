@@ -3902,3 +3902,428 @@ textarea:focus {
   border-radius: 8px !important;
   box-shadow: none !important;
 }
+
+/* ============================================================
+   THEME RESET - Gestionale chiaro tecnico
+   Sidebar chiara, no nero/blu, no gradienti
+   ============================================================ */
+
+:root {
+  --pro-bg: #f3f4f6;
+  --pro-surface: #ffffff;
+  --pro-surface-soft: #f9fafb;
+  --pro-border: #e5e7eb;
+  --pro-border-strong: #d1d5db;
+
+  --pro-text: #111827;
+  --pro-muted: #6b7280;
+  --pro-muted-soft: #9ca3af;
+
+  --pro-sidebar: #f8fafc;
+  --pro-sidebar-border: #e5e7eb;
+  --pro-sidebar-text: #374151;
+  --pro-sidebar-muted: #6b7280;
+
+  --pro-accent: #f97316;
+  --pro-accent-hover: #ea580c;
+  --pro-accent-soft: rgba(249, 115, 22, 0.12);
+  --pro-accent-border: rgba(249, 115, 22, 0.32);
+
+  --pro-success: #15803d;
+  --pro-warning: #b45309;
+  --pro-danger: #dc2626;
+}
+
+/* Base chiara */
+html,
+body,
+.app-layout,
+.main-content {
+  background: var(--pro-bg) !important;
+  color: var(--pro-text) !important;
+}
+
+/* Sidebar: cambio vero, non più scura */
+.sidebar,
+.sidebar:hover {
+  background: var(--pro-sidebar) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--pro-sidebar-border) !important;
+  color: var(--pro-sidebar-text) !important;
+  box-shadow: none !important;
+}
+
+/* Dimensioni sidebar */
+.sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  flex: 0 0 82px !important;
+  width: 82px !important;
+  min-width: 82px !important;
+  z-index: 30 !important;
+  transition: width 0.16s ease, flex-basis 0.16s ease !important;
+}
+
+.sidebar:hover {
+  flex-basis: 280px !important;
+  width: 280px !important;
+  min-width: 280px !important;
+}
+
+.app-layout {
+  display: flex !important;
+}
+
+.main-content {
+  margin-left: 0 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+/* Logo più simile a prodotto SaaS */
+.sidebar-header {
+  border-bottom: 1px solid var(--pro-border) !important;
+  background: #ffffff !important;
+}
+
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: var(--pro-accent) !important;
+  color: #ffffff !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+.sidebar-logo-text h1,
+.sidebar-user-name {
+  color: var(--pro-text) !important;
+}
+
+.sidebar-logo-text h1 {
+  font-size: 24px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.sidebar-logo-text span,
+.sidebar-user-role {
+  color: var(--pro-muted) !important;
+  font-weight: 450 !important;
+}
+
+.sidebar-user {
+  background: #ffffff !important;
+  border-top: 1px solid var(--pro-border) !important;
+}
+
+.sidebar-logout {
+  color: var(--pro-muted) !important;
+}
+
+.sidebar-logout:hover {
+  background: var(--pro-surface-soft) !important;
+  color: var(--pro-text) !important;
+}
+
+/* Gruppi sidebar chiari */
+.sidebar-section-toggle {
+  background: transparent !important;
+  color: var(--pro-sidebar-muted) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  font-size: 12px !important;
+  font-weight: 730 !important;
+  letter-spacing: 0.035em !important;
+  text-transform: uppercase !important;
+}
+
+.sidebar-section-toggle:hover {
+  background: #eef2f7 !important;
+  color: var(--pro-text) !important;
+}
+
+.sidebar-section-accordion.open > .sidebar-section-toggle,
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: #eef2f7 !important;
+  color: var(--pro-text) !important;
+  box-shadow: none !important;
+}
+
+/* Icone gruppi */
+.sidebar-section-icon,
+.sidebar-link-icon {
+  background: transparent !important;
+  border: 0 !important;
+  color: currentColor !important;
+}
+
+/* Voci interne */
+.sidebar:hover .sidebar-nav-collapsible {
+  margin: 4px 12px 12px 30px !important;
+  padding-left: 12px !important;
+  border-left: 1px solid var(--pro-border-strong) !important;
+}
+
+.sidebar:hover .sidebar-link {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  margin: 2px 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #4b5563 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 520 !important;
+}
+
+.sidebar:hover .sidebar-link:hover {
+  background: #eef2f7 !important;
+  color: var(--pro-text) !important;
+}
+
+.sidebar:hover .sidebar-link.active {
+  background: var(--pro-accent-soft) !important;
+  color: var(--pro-accent-hover) !important;
+  box-shadow: inset 3px 0 0 var(--pro-accent) !important;
+}
+
+.sidebar:hover .sidebar-link.active .sidebar-link-icon {
+  color: var(--pro-accent-hover) !important;
+}
+
+/* Sidebar chiusa */
+.sidebar:not(:hover) .sidebar-logo-text,
+.sidebar:not(:hover) .sidebar-user-details,
+.sidebar:not(:hover) .sidebar-logout,
+.sidebar:not(:hover) .sidebar-section-toggle-left > span:not(.sidebar-section-icon),
+.sidebar:not(:hover) .sidebar-section-chevron,
+.sidebar:not(:hover) .sidebar-nav,
+.sidebar:not(:hover) .sidebar-nav-collapsible {
+  display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-logo {
+  justify-content: center !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 8px 0 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle:hover {
+  background: #eef2f7 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  color: #6b7280 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon .material-symbols-rounded {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-size: 23px !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: var(--pro-accent-soft) !important;
+  box-shadow: inset 3px 0 0 var(--pro-accent) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: var(--pro-accent-hover) !important;
+}
+
+/* Header */
+.header {
+  height: 66px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--pro-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.header-breadcrumb {
+  color: var(--pro-muted) !important;
+  font-size: 14px !important;
+  font-weight: 450 !important;
+}
+
+.header-breadcrumb span:last-child {
+  color: var(--pro-text) !important;
+  font-weight: 720 !important;
+}
+
+/* Contenuto */
+.page-content {
+  padding: 28px 32px !important;
+}
+
+.page-title {
+  font-size: 30px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+  color: var(--pro-text) !important;
+}
+
+.page-subtitle {
+  color: var(--pro-muted) !important;
+  font-size: 15px !important;
+  font-weight: 450 !important;
+}
+
+/* Card compatte */
+.card,
+.kpi-card,
+.table-container,
+.modal,
+.import-dropzone,
+.login-card {
+  background: var(--pro-surface) !important;
+  border: 1px solid var(--pro-border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05) !important;
+}
+
+.card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--pro-border) !important;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+/* KPI */
+.kpi-icon {
+  background: #f3f4f6 !important;
+  color: var(--pro-text) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.kpi-label {
+  color: var(--pro-muted) !important;
+}
+
+.kpi-value {
+  color: var(--pro-text) !important;
+  font-weight: 760 !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+}
+
+.kpi-detail {
+  color: var(--pro-muted-soft) !important;
+}
+
+/* Bottoni */
+.btn,
+button {
+  border-radius: 7px !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+}
+
+.btn-primary,
+.btn.btn-primary {
+  background: var(--pro-accent) !important;
+  border-color: var(--pro-accent) !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: var(--pro-accent-hover) !important;
+  border-color: var(--pro-accent-hover) !important;
+}
+
+.btn-secondary,
+.btn.btn-secondary {
+  background: #ffffff !important;
+  border: 1px solid var(--pro-border-strong) !important;
+  color: var(--pro-text) !important;
+}
+
+.btn-secondary:hover,
+.btn.btn-secondary:hover {
+  background: var(--pro-surface-soft) !important;
+}
+
+/* Form */
+.form-control,
+select,
+input,
+textarea {
+  background: #ffffff !important;
+  border: 1px solid var(--pro-border-strong) !important;
+  color: var(--pro-text) !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus,
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--pro-accent) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13) !important;
+}
+
+/* Tabelle */
+.data-table th {
+  background: #f9fafb !important;
+  color: var(--pro-muted) !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  letter-spacing: 0.04em !important;
+  border-bottom: 1px solid var(--pro-border) !important;
+}
+
+.data-table td {
+  color: #374151 !important;
+  border-bottom: 1px solid var(--pro-border) !important;
+  font-weight: 450 !important;
+}
+
+.data-table td strong {
+  color: var(--pro-text) !important;
+  font-weight: 700 !important;
+}
+
+.data-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+/* Rimuove residui scuri/blu/petrolio precedenti */
+.sidebar,
+.sidebar:hover,
+.sidebar-section-toggle,
+.sidebar-section-toggle:hover,
+.sidebar-section-accordion.open > .sidebar-section-toggle,
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background-image: none !important;
+}
+
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  box-shadow: none !important;
+}
