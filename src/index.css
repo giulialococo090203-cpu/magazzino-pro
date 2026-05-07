@@ -2995,3 +2995,31 @@ textarea:focus {
 .kpi-grid {
   position: relative;
 }
+
+/* Fix: solo il gruppo realmente attivo deve avere colore petrolio */
+.sidebar-section-accordion:not(.has-active) > .sidebar-section-toggle,
+.sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle,
+.sidebar-section-accordion.closed:not(.has-active) > .sidebar-section-toggle,
+.sidebar:hover .sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle,
+.sidebar:hover .sidebar-section-accordion.closed:not(.has-active) > .sidebar-section-toggle {
+  background: transparent !important;
+  color: rgba(203, 213, 225, 0.82) !important;
+  box-shadow: none !important;
+}
+
+.sidebar-section-accordion:not(.has-active) > .sidebar-section-toggle .sidebar-section-icon,
+.sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle .sidebar-section-icon,
+.sidebar-section-accordion.closed:not(.has-active) > .sidebar-section-toggle .sidebar-section-icon {
+  color: rgba(203, 213, 225, 0.82) !important;
+}
+
+/* Solo la sezione attiva */
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(15, 118, 110, 0.16) !important;
+  color: #99f6e4 !important;
+  box-shadow: inset 3px 0 0 #0f766e !important;
+}
+
+.sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon {
+  color: #99f6e4 !important;
+}
