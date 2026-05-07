@@ -7894,3 +7894,41 @@ header [title="Notifiche"] {
 
 }
 
+/* ============================================================
+   MOBILE SAFE OFFSET
+   Solo telefono: lascia la sidebar com'è e sposta il contenuto
+   quel tanto che basta per non finire sotto la barra laterale.
+   Desktop invariato.
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    margin-left: 76px !important;
+    width: calc(100vw - 76px) !important;
+    max-width: calc(100vw - 76px) !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .page-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-container,
+  .table-responsive,
+  .table-wrapper {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table,
+  .data-table {
+    min-width: 680px !important;
+  }
+}
+
