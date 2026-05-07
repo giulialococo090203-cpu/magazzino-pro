@@ -75,6 +75,7 @@ export default function RendicontazioneEconomica() {
   const [supplier, setSupplier] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const refresh = async () => {
     try {
@@ -90,6 +91,14 @@ export default function RendicontazioneEconomica() {
       setMaterials(Array.isArray(mats) ? mats : []);
       setMovements(Array.isArray(movs) ? movs : []);
       setPrices(Array.isArray(priceRows) ? priceRows : []);
+
+      setSuccess(
+        `Dati aggiornati: ${Array.isArray(mats) ? mats.length : 0} materiali, ` +
+          `${Array.isArray(movs) ? movs.length : 0} movimenti, ` +
+          `${Array.isArray(priceRows) ? priceRows.length : 0} prezzi.`
+      );
+
+      setTimeout(() => setSuccess(''), 3500);
     } catch (err) {
       console.error('Errore rendicontazione economica:', err);
       setError(err?.message || 'Errore durante il caricamento della rendicontazione.');
@@ -121,28 +130,17 @@ export default function RendicontazioneEconomica() {
   const report = useMemo(() => {
     const { start, end } = getPeriodRange(period);
 
-    const periodMovements = movements.filter((movement) =>
-      isWithinRange(getMovementDate(movement), start, end)
-    );
-
     const periodPrices = prices.filter((price) =>
       isWithinRange(price.date || price.createdAt, start, end)
     );
 
-    const filteredMovements = periodMovements.filter((movement) => {
-      if (!supplier) return true;
-
-      const material = materialById.get(String(movement.materialId));
-      return String(material?.supplier || '').trim() === supplier;
-    });
-
     const filteredPrices = periodPrices.filter((price) => {
       if (!supplier) return true;
-      return String(price.supplier || '').trim() === supplier;
+      return String(price.supplier || '').trim() === String(supplier || '').trim();
     });
 
     const stockValue = materials
-      .filter((material) => !supplier || String(material.supplier || '').trim() === supplier)
+      .filter((material) => !supplier || String(material.supplier || '').trim() === String(supplier || '').trim())
       .reduce(
         (sum, material) =>
           sum + Number(material.quantity || 0) * Number(material.netPrice || 0),
@@ -153,21 +151,6 @@ export default function RendicontazioneEconomica() {
       (sum, row) => sum + Number(row.netPrice || 0) * Number(row.quantity || 0),
       0
     );
-
-    const exitsValue = filteredMovements
-      .filter((movement) => String(movement.type || '').toLowerCase() === 'uscita')
-      .reduce((sum, movement) => {
-        const material = materialById.get(String(movement.materialId));
-        return sum + Number(movement.quantity || 0) * Number(material?.netPrice || 0);
-      }, 0);
-
-    const movementsCount = filteredMovements.length;
-    const entriesCount = filteredMovements.filter((m) =>
-      ['entrata', 'reintegro'].includes(String(m.type || '').toLowerCase())
-    ).length;
-    const exitsCount = filteredMovements.filter(
-      (m) => String(m.type || '').toLowerCase() === 'uscita'
-    ).length;
 
     const supplierGroups = {};
 
@@ -188,7 +171,15 @@ export default function RendicontazioneEconomica() {
       supplierGroups[key].quantity += Number(row.quantity || 0);
       supplierGroups[key].value += Number(row.netPrice || 0) * Number(row.quantity || 0);
 
-      if (String(row.origin || '').toLowerCase().includes('fattura')) {
+      const origin = String(row.origin || '').toLowerCase();
+      const document = String(row.document || '').toLowerCase();
+
+      if (
+        origin.includes('fattura') ||
+        origin.includes('import') ||
+        document.includes('fattura') ||
+        document.includes('.pdf')
+      ) {
         supplierGroups[key].invoices += 1;
       }
     });
@@ -196,7 +187,7 @@ export default function RendicontazioneEconomica() {
     const materialGroups = {};
 
     filteredPrices.forEach((row) => {
-      const key = String(row.code || '').trim() || row.id;
+      const key = `${String(row.code || '').trim()}|${String(row.supplier || '').trim()}` || row.id;
 
       if (!materialGroups[key]) {
         materialGroups[key] = {
@@ -224,17 +215,17 @@ export default function RendicontazioneEconomica() {
       end,
       stockValue,
       entriesValue,
-      exitsValue,
-      netBalance: entriesValue - exitsValue,
-      movementsCount,
-      entriesCount,
-      exitsCount,
+      exitsValue: 0,
+      netBalance: entriesValue,
+      movementsCount: filteredPrices.length,
+      entriesCount: filteredPrices.length,
+      exitsCount: 0,
       supplierRows,
       materialRows,
-      filteredMovements,
+      filteredMovements: [],
       filteredPrices,
     };
-  }, [period, supplier, movements, prices, materials, materialById]);
+  }, [period, supplier, prices, materials]);
 
   const exportExcel = async () => {
     const workbook = XLSX.utils.book_new();
@@ -320,6 +311,22 @@ export default function RendicontazioneEconomica() {
 
       {error && <div className="login-error" style={{ marginBottom: 16 }}>{error}</div>}
 
+      {success && (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: '12px 16px',
+            borderRadius: 'var(--border-radius-md)',
+            background: 'var(--success-50)',
+            border: '1px solid var(--success-100)',
+            color: 'var(--success-700)',
+            fontWeight: 800,
+          }}
+        >
+          ✅ {success}
+        </div>
+      )}
+
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <h3 className="card-title">Filtri rendicontazione</h3>
@@ -351,6 +358,10 @@ export default function RendicontazioneEconomica() {
 
             <div className="text-sm text-muted" style={{ fontWeight: 700 }}>
               Dal {formatDate(report.start)} al {formatDate(report.end)}
+              {' · '}
+              Prezzi nel periodo: {report.filteredPrices.length}
+              {' · '}
+              Movimenti nel periodo: {report.filteredMovements.length}
             </div>
           </div>
         </div>
@@ -362,7 +373,7 @@ export default function RendicontazioneEconomica() {
           <div className="kpi-content">
             <div className="kpi-label">Valore carichi</div>
             <div className="kpi-value">{formatCurrency(report.entriesValue)}</div>
-            <div className="kpi-detail">da fatture e inserimenti con prezzo</div>
+            <div className="kpi-detail">da storico economico permanente</div>
           </div>
         </div>
 
@@ -387,10 +398,10 @@ export default function RendicontazioneEconomica() {
         <div className="kpi-card">
           <div className="kpi-icon purple">🔁</div>
           <div className="kpi-content">
-            <div className="kpi-label">Movimenti periodo</div>
+            <div className="kpi-label">Righe economiche periodo</div>
             <div className="kpi-value">{report.movementsCount}</div>
             <div className="kpi-detail">
-              {report.entriesCount} entrate · {report.exitsCount} uscite
+              {report.filteredPrices.length} righe registrate
             </div>
           </div>
         </div>
