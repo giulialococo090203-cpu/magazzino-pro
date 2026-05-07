@@ -9154,3 +9154,157 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   LOGIN BANNER VERY COMPACT
+   Riduce drasticamente il banner arancione su telefono/finestra stretta.
+   ============================================================ */
+
+@media screen and (max-width: 900px) {
+  .login-card > div:first-child,
+  .auth-card > div:first-child,
+  .login-panel > div:first-child,
+  .auth-panel > div:first-child,
+  .login-hero,
+  .auth-hero,
+  .login-brand,
+  .auth-brand,
+  .login-left,
+  .auth-left {
+    height: 96px !important;
+    min-height: 96px !important;
+    max-height: 96px !important;
+    padding: 12px 18px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  .login-card > div:first-child .logo,
+  .auth-card > div:first-child .logo,
+  .login-panel > div:first-child .logo,
+  .auth-panel > div:first-child .logo,
+  .login-hero .logo,
+  .auth-hero .logo,
+  .login-brand .logo,
+  .auth-brand .logo,
+  .login-left .logo,
+  .auth-left .logo,
+  .login-logo,
+  .auth-logo {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  .login-card > div:first-child .badge,
+  .auth-card > div:first-child .badge,
+  .login-panel > div:first-child .badge,
+  .auth-panel > div:first-child .badge,
+  .login-hero .badge,
+  .auth-hero .badge,
+  .login-brand .badge,
+  .auth-brand .badge,
+  .login-left .badge,
+  .auth-left .badge {
+    display: none !important;
+  }
+
+  .login-card > div:first-child h1,
+  .auth-card > div:first-child h1,
+  .login-panel > div:first-child h1,
+  .auth-panel > div:first-child h1,
+  .login-hero h1,
+  .auth-hero h1,
+  .login-brand h1,
+  .auth-brand h1,
+  .login-left h1,
+  .auth-left h1 {
+    font-size: 20px !important;
+    line-height: 1.05 !important;
+    margin: 0 0 4px 0 !important;
+  }
+
+  .login-card > div:first-child p,
+  .auth-card > div:first-child p,
+  .login-panel > div:first-child p,
+  .auth-panel > div:first-child p,
+  .login-hero p,
+  .auth-hero p,
+  .login-brand p,
+  .auth-brand p,
+  .login-left p,
+  .auth-left p {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    max-height: 30px !important;
+    overflow: hidden !important;
+  }
+
+  .login-card form,
+  .auth-card form,
+  .login-form,
+  .auth-form,
+  .login-right,
+  .auth-right {
+    padding-top: 14px !important;
+  }
+}
+
+/* Ancora più compatto su telefoni bassi o tastiera aperta */
+@media screen and (max-width: 768px) and (pointer: coarse) {
+  .login-card > div:first-child,
+  .auth-card > div:first-child,
+  .login-panel > div:first-child,
+  .auth-panel > div:first-child,
+  .login-hero,
+  .auth-hero,
+  .login-brand,
+  .auth-brand,
+  .login-left,
+  .auth-left {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 8px 14px !important;
+  }
+
+  .login-card > div:first-child h1,
+  .auth-card > div:first-child h1,
+  .login-panel > div:first-child h1,
+  .auth-panel > div:first-child h1,
+  .login-hero h1,
+  .auth-hero h1,
+  .login-brand h1,
+  .auth-brand h1,
+  .login-left h1,
+  .auth-left h1 {
+    font-size: 18px !important;
+  }
+
+  .login-card > div:first-child p,
+  .auth-card > div:first-child p,
+  .login-panel > div:first-child p,
+  .auth-panel > div:first-child p,
+  .login-hero p,
+  .auth-hero p,
+  .login-brand p,
+  .auth-brand p,
+  .login-left p,
+  .auth-left p {
+    display: none !important;
+  }
+
+  .login-logo,
+  .auth-logo {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+}
+
