@@ -7426,3 +7426,24 @@ button .app-text-icon {
 
 }
 
+
+/* Rimozione definitiva placeholder/bottone notifiche header */
+.header-notification-btn,
+.notification-btn,
+.notification-button,
+.header-bell,
+.header-actions .header-notification-btn,
+.header-right .header-notification-btn,
+header a[href="/controllo/notifiche"],
+header [title="Notifiche"] {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
