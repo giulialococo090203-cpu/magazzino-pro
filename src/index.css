@@ -1946,3 +1946,248 @@ textarea {
   font-weight: 500;
   opacity: 0.88;
 }
+
+/* ============================================================
+
+   Font gestionale: Sans Serif + numeri tabulari + gerarchia pesi
+
+   ============================================================ */
+
+:root {
+
+  --app-font:
+
+    Inter,
+
+    "SF Pro Text",
+
+    "SF Pro Display",
+
+    -apple-system,
+
+    BlinkMacSystemFont,
+
+    "Segoe UI",
+
+    Roboto,
+
+    "Helvetica Neue",
+
+    Arial,
+
+    sans-serif;
+
+}
+
+html,
+
+body,
+
+button,
+
+input,
+
+select,
+
+textarea {
+
+  font-family: var(--app-font);
+
+  font-optical-sizing: auto;
+
+  text-rendering: geometricPrecision;
+
+  -webkit-font-smoothing: antialiased;
+
+  -moz-osx-font-smoothing: grayscale;
+
+}
+
+/* Gerarchia più professionale */
+
+.page-title {
+
+  font-weight: 850;
+
+  letter-spacing: -0.04em;
+
+}
+
+.card-title,
+
+.modal-title,
+
+.empty-state-title {
+
+  font-weight: 820;
+
+  letter-spacing: -0.025em;
+
+}
+
+.page-subtitle,
+
+.card-subtitle,
+
+.header-breadcrumb,
+
+.text-muted,
+
+.empty-state-text {
+
+  font-weight: 500;
+
+  letter-spacing: -0.01em;
+
+}
+
+.sidebar-link,
+
+.sidebar-section-toggle,
+
+.btn {
+
+  font-weight: 750;
+
+  letter-spacing: -0.012em;
+
+}
+
+/* Numeri tabulari: fondamentale per gestionale/finanza/tabelle */
+
+.data-table,
+
+.data-table th,
+
+.data-table td,
+
+.kpi-value,
+
+.kpi-detail,
+
+.status-badge,
+
+input[type='number'],
+
+input[inputmode='decimal'],
+
+.price,
+
+.currency,
+
+.amount,
+
+.numeric,
+
+.text-number {
+
+  font-variant-numeric: tabular-nums lining-nums;
+
+  font-feature-settings: "tnum" 1, "lnum" 1;
+
+}
+
+/* Tabelle: leggibili, meno “pesanti” */
+
+.data-table th {
+
+  font-weight: 800;
+
+  letter-spacing: 0.035em;
+
+}
+
+.data-table td {
+
+  font-weight: 520;
+
+}
+
+.data-table td strong {
+
+  font-weight: 780;
+
+}
+
+/* KPI economici e quantità più allineati */
+
+.kpi-value {
+
+  font-weight: 850;
+
+  letter-spacing: -0.035em;
+
+}
+
+.kpi-label {
+
+  font-weight: 800;
+
+  letter-spacing: 0.035em;
+
+}
+
+.kpi-detail {
+
+  font-weight: 520;
+
+}
+
+/* Form più puliti */
+
+.form-label,
+
+.filter-group label {
+
+  font-weight: 760;
+
+  letter-spacing: -0.01em;
+
+}
+
+.form-control,
+
+select,
+
+input,
+
+textarea {
+
+  font-weight: 520;
+
+  font-variant-numeric: tabular-nums lining-nums;
+
+  font-feature-settings: "tnum" 1, "lnum" 1;
+
+}
+
+/* Sidebar: meno giocosa, più gestionale */
+
+.sidebar-logo-text h1 {
+
+  font-weight: 850;
+
+  letter-spacing: -0.04em;
+
+}
+
+.sidebar-logo-text span {
+
+  font-weight: 520;
+
+}
+
+.sidebar-section-toggle {
+
+  font-weight: 850;
+
+  letter-spacing: 0.065em;
+
+}
+
+.sidebar-link {
+
+  font-weight: 740;
+
+}
+
