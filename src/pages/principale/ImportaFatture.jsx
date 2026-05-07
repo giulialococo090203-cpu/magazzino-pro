@@ -16,6 +16,25 @@ import ScanInvoiceFallback, {
 } from '../../components/import/ScanInvoiceFallback.jsx';
 
 const MAX_FILE_SIZE_MB = 15;
+
+function isPlaceholderSupplier(value = '') {
+  const normalized = String(value || '').trim().toLowerCase();
+
+  return ['', 'importato', 'senza fornitore', 'da assegnare'].includes(normalized);
+}
+
+function chooseImportedSupplier(invoiceSupplier = '', brand = '', existingSupplier = '') {
+  const supplierFromInvoice = String(invoiceSupplier || '').trim();
+  const brandValue = String(brand || '').trim();
+  const existingValue = String(existingSupplier || '').trim();
+
+  if (supplierFromInvoice) return supplierFromInvoice;
+  if (existingValue && !isPlaceholderSupplier(existingValue)) return existingValue;
+  if (brandValue && !isPlaceholderSupplier(brandValue)) return brandValue;
+
+  return existingValue || 'Importato';
+}
+
 const SUPPORTED_EXTENSIONS = ['pdf', 'xlsx', 'xls', 'csv', 'xml', 'doc', 'docx'];
 
 function getFileExtension(fileName = '') {
@@ -522,7 +541,7 @@ export default function ImportaFatture() {
           brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
           minThreshold: existing?.minThreshold || 10,
           location: location || existing?.location || 'A1-01',
-          supplier: (typeof supplierFromRow !== 'undefined' ? supplierFromRow : String(row?.[8] || '').trim()) || existing?.supplier || brand || 'Importato',
+          supplier: chooseImportedSupplier(typeof supplierFromRow !== 'undefined' ? supplierFromRow : row?.[8], brand, existing?.supplier),
           notes: `Import: ${currentFileName}`,
           existingMaterial: existing,
         };
@@ -649,7 +668,7 @@ export default function ImportaFatture() {
         brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
         minThreshold: existing?.minThreshold || 10,
         location: location || existing?.location || 'A1-01',
-        supplier: String((typeof supplierValue !== 'undefined' ? supplierValue : row?.[8]) || '').trim() || existing?.supplier || brand || 'Importato',
+        supplier: chooseImportedSupplier(typeof supplierValue !== 'undefined' ? supplierValue : row?.[8], brand, existing?.supplier),
         notes: `Import: ${currentFileName}`,
         existingMaterial: existing,
       });
