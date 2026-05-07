@@ -353,7 +353,7 @@ export default function MovimentiForm() {
             gap: 8
           }}
         >
-          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
+          <FaIcon name="check_circle" className="ui-inline-icon" /> {success}
         </div>
       )}
 
@@ -372,7 +372,7 @@ export default function MovimentiForm() {
             gap: 8
           }}
         >
-          <span className="ui-inline-icon material-symbols-rounded">warning</span> {error}
+          <FaIcon name="warning" className="ui-inline-icon" /> {error}
         </div>
       )}
 
@@ -616,7 +616,7 @@ export default function MovimentiForm() {
           {material ? (
             <div className="card">
               <div className="card-header">
-                <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span> Materiale Selezionato</h3>
+                <h3 className="card-title"><FaIcon name="inventory_2" className="ui-inline-icon" /> Materiale Selezionato</h3>
               </div>
 
               <div className="card-body">
@@ -684,7 +684,7 @@ export default function MovimentiForm() {
             <div className="card">
               <div className="card-body">
                 <div className="empty-state">
-                  <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+                  <div className="empty-state-icon"><FaIcon name="inventory_2" className="ui-inline-icon" /></div>
                   <div className="empty-state-title">Seleziona un materiale</div>
                   <div className="empty-state-text">
                     Scegli un materiale dall'elenco a sinistra per visualizzarne i dettagli e registrare il movimento.

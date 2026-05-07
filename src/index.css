@@ -6392,3 +6392,102 @@ button .app-icon {
   display: none !important;
 }
 
+
+/* ============================================================
+   Font Awesome definitivo: nessun testo Material Symbols residuo
+   ============================================================ */
+
+.fa-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  flex: 0 0 auto !important;
+}
+
+.ui-title-icon,
+.fa-title-icon {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  margin-right: 14px !important;
+  border-radius: 11px !important;
+  background: rgba(249, 115, 22, 0.10) !important;
+  color: #f97316 !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+}
+
+.ui-title-icon .fa-icon,
+.fa-title-icon .fa-icon {
+  font-size: 20px !important;
+}
+
+.ui-inline-icon,
+.ui-section-icon {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  margin-right: 8px !important;
+  color: currentColor !important;
+}
+
+.card-title .ui-inline-icon,
+.card-title .ui-section-icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  border-radius: 8px !important;
+  background: #f4f6f8 !important;
+  color: #475467 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+  font-size: 15px !important;
+}
+
+.search-bar-icon .fa-icon,
+.global-search-icon .fa-icon,
+.header-notification-btn .fa-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: currentColor !important;
+}
+
+.btn .fa-icon,
+button .fa-icon {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  margin-right: 7px !important;
+}
+
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f4f6f8 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kpi-icon .fa-icon,
+.kpi-icon .ui-inline-icon {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  margin: 0 !important;
+  color: #475467 !important;
+}
+
+/* Se qualche vecchio span Material resta, non deve apparire come testo enorme */
+.material-symbols-rounded {
+  display: none !important;
+}
+

@@ -7,6 +7,7 @@ import {
   normalizeRole,
 } from '../data/permissions';
 import { useState, useEffect } from 'react';
+import FaIcon from './FaIcon';
 
 function SidebarIcon({ name, className = '' }) {
   return (
@@ -478,7 +479,7 @@ export default function Layout({ children }) {
           <div className="header-right">
             {hasPermission(user, 'canViewInventory') && (
               <div className="global-search-container">
-                <span className="global-search-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
+                <span className="global-search-icon"><FaIcon name="search" className="ui-inline-icon" /></span>
                 <input
                   type="text"
                   className="global-search-input"
@@ -500,7 +501,7 @@ export default function Layout({ children }) {
                 className="header-notification-btn"
                 title="Notifiche"
               >
-                <span className="ui-inline-icon material-symbols-rounded">notifications</span>
+                <FaIcon name="notifications" className="ui-inline-icon" />
                 {unreadCount > 0 && (
                   <span className="header-notification-badge">{unreadCount}</span>
                 )}
