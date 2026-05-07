@@ -7847,3 +7847,71 @@ img {
   }
 }
 
+
+/* ============================================================
+   FIX: ripristino stile originale sidebar
+   ============================================================ */
+
+@media (min-width: 641px) {
+  .sidebar {
+    background:
+      radial-gradient(circle at 20% 0%, rgba(249, 115, 22, 0.14), transparent 34%),
+      linear-gradient(180deg, #111827 0%, #1f2937 100%) !important;
+    color: #f9fafb !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.10) !important;
+  }
+
+  .sidebar-logo-text h1,
+  .sidebar-logo-text span,
+  .sidebar-section-title,
+  .sidebar-link,
+  .sidebar-user-name,
+  .sidebar-user-role {
+    color: inherit !important;
+  }
+
+  .sidebar-link {
+    color: rgba(249, 250, 251, 0.82) !important;
+  }
+
+  .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+  }
+
+  .sidebar-link.active {
+    background: rgba(249, 115, 22, 0.18) !important;
+    color: #ffffff !important;
+    box-shadow: inset 3px 0 0 #f97316 !important;
+  }
+
+  .sidebar-user {
+    border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+  }
+
+  .sidebar-avatar,
+  .sidebar-logo-icon {
+    background: #f97316 !important;
+    color: #ffffff !important;
+  }
+}
+
+/* Anche su telefono resta coerente, ma leggibile */
+@media (max-width: 640px) {
+  .sidebar {
+    background: #111827 !important;
+    color: #f9fafb !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+  }
+
+  .sidebar-link {
+    color: rgba(249, 250, 251, 0.78) !important;
+  }
+
+  .sidebar-link.active {
+    background: rgba(249, 115, 22, 0.20) !important;
+    color: #ffffff !important;
+  }
+}
+
