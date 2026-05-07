@@ -6573,3 +6573,59 @@ button .fa-icon {
   display: none !important;
 }
 
+
+/* ============================================================
+   Final fix centratura icone SVG
+   ============================================================ */
+
+.card-title,
+.page-title,
+.btn,
+.sidebar-link,
+.header-notification-btn,
+.global-search-container,
+.search-bar,
+.empty-state {
+  align-items: center;
+}
+
+svg.fa-icon,
+.fa-icon {
+  display: inline-block !important;
+  overflow: visible !important;
+  vertical-align: middle !important;
+}
+
+.ui-title-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ui-title-icon.fa-icon,
+svg.ui-title-icon {
+  padding: 10px !important;
+}
+
+.kpi-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kpi-icon:empty::before {
+  content: "□";
+  color: #64748b;
+  font-size: 18px;
+}
+
+.kpi-icon svg {
+  display: block !important;
+}
+
+.empty-state-icon svg,
+.confirm-icon svg {
+  display: block !important;
+  margin: 0 auto !important;
+}
+

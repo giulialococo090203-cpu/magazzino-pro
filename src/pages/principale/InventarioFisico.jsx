@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 function formatDateTime() {
   return new Date().toLocaleString('it-IT', {

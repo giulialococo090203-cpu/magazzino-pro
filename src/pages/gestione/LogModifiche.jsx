@@ -9,6 +9,16 @@ function isDatore(user) {
   return normalizeRole(user?.role) === 'datore';
 }
 
+function getLogIcon(type) {
+  if (type === 'materiale') return <FaIcon name="sell" className="ui-inline-icon" />;
+  if (type === 'utente') return <FaIcon name="manage_accounts" className="ui-inline-icon" />;
+  if (type === 'importazione') return <FaIcon name="upload_file" className="ui-inline-icon" />;
+  if (type === 'notifica') return <FaIcon name="notifications" className="ui-inline-icon" />;
+  if (type === 'eliminazione') return <FaIcon name="delete" className="ui-inline-icon" />;
+  if (type === 'sistema') return <FaIcon name="history_edu" className="ui-inline-icon" />;
+  return <FaIcon name="history_edu" className="ui-inline-icon" />;
+}
+
 export default function LogModifiche() {
   const { user } = useAuth();
 
@@ -55,7 +65,7 @@ export default function LogModifiche() {
       case 'fattura':
         return <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />;
       default:
-        return '<FaIcon name="history_edu" className="ui-inline-icon" />';
+        return <FaIcon name="history_edu" className="ui-inline-icon" />;
     }
   };
 

@@ -8,6 +8,7 @@ import {
 } from '../../data/store';
 import { useAuth } from '../../App';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('it-IT', {
@@ -317,7 +318,7 @@ export default function RendicontazioneEconomica() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🧾 Rendicontazione Economica</h1>
+          <h1 className="page-title"><FaIcon name="euro" className="ui-title-icon" />Rendicontazione Economica</h1>
           <p className="page-subtitle">
             Analisi economica per periodo: carichi, uscite, stock, fornitori e materiali.
           </p>

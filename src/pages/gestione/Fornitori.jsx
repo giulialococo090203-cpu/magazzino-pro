@@ -12,6 +12,7 @@ import {
   adminLogStore,
 } from '../../data/store';
 import { useAuth } from '../../App';
+import FaIcon from '../../components/FaIcon';
 
 function normalizeSupplier(value = '') {
   const text = String(value || '').trim();

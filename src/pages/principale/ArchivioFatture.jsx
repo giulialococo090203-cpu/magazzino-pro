@@ -3,6 +3,7 @@ import { invoiceImportStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { hasPermission, normalizeRole } from '../../data/permissions';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 function formatDateTime(iso) {
   if (!iso) return '—';

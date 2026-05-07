@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { reorderProposalStore } from '../../data/store';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 function formatDate(value) {
   if (!value) return '—';
