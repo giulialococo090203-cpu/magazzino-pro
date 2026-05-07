@@ -3023,3 +3023,49 @@ textarea:focus {
 .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon {
   color: #99f6e4 !important;
 }
+
+/* ============================================================
+   Sidebar: il gruppo aperto resta neutro, si evidenzia solo la voce attiva
+   ============================================================ */
+
+/* Gruppo attivo: non deve sembrare selezionato come una pagina */
+.sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar:hover .sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: transparent !important;
+  color: rgba(203, 213, 225, 0.88) !important;
+  box-shadow: none !important;
+}
+
+/* Icona del gruppo attivo resta neutra */
+.sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon {
+  color: rgba(203, 213, 225, 0.88) !important;
+}
+
+/* Gruppo aperto: appena più visibile, ma non selezionato */
+.sidebar-section-accordion.open > .sidebar-section-toggle {
+  background: rgba(148, 163, 184, 0.06) !important;
+  color: rgba(226, 232, 240, 0.92) !important;
+  box-shadow: none !important;
+}
+
+/* Solo la voce interna attiva è evidenziata */
+.sidebar-link.active {
+  background: rgba(15, 118, 110, 0.16) !important;
+  color: #99f6e4 !important;
+  box-shadow: inset 3px 0 0 #0f766e !important;
+}
+
+.sidebar-link.active .sidebar-link-icon {
+  color: #99f6e4 !important;
+}
+
+/* Sidebar compressa: solo icona gruppo attivo con una barra sottile, non blocco pieno */
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(15, 118, 110, 0.08) !important;
+  box-shadow: inset 3px 0 0 #0f766e !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon {
+  color: #99f6e4 !important;
+}
