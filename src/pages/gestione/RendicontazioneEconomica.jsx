@@ -255,12 +255,14 @@ export default function RendicontazioneEconomica() {
   const exportExcel = async () => {
     const workbook = XLSX.utils.book_new();
 
+    const selectedSupplierLabel = supplier || 'Tutti i fornitori';
+
     const summaryRows = [
       {
         Periodo: period,
         Dal: formatDate(report.start),
         Al: formatDate(report.end),
-        Fornitore: supplier || 'Tutti',
+        Fornitore: selectedSupplierLabel,
         'Valore carichi': Number(report.entriesValue || 0),
         'Valore uscite stimato': Number(report.exitsValue || 0),
         'Saldo stimato': Number(report.netBalance || 0),
@@ -283,18 +285,89 @@ export default function RendicontazioneEconomica() {
     );
     XLSX.utils.book_append_sheet(workbook, suppliersSheet, 'Fornitori');
 
-    const materialsSheet = XLSX.utils.json_to_sheet(
-      report.materialRows.map((row) => ({
-        Codice: row.code,
-        Descrizione: row.description,
-        Fornitore: row.supplier,
-        Righe: row.rows,
-        Quantità: row.quantity,
-        'Ultimo prezzo': Number(row.lastPrice || 0),
-        Valore: Number(row.value || 0),
-      }))
-    );
-    XLSX.utils.book_append_sheet(workbook, materialsSheet, 'Materiali');
+    const sortedMaterialRows = [...report.materialRows].sort((a, b) => {
+      const supplierCompare = String(a.supplier || 'Senza fornitore').localeCompare(
+        String(b.supplier || 'Senza fornitore'),
+        'it'
+      );
+
+      if (supplierCompare !== 0) return supplierCompare;
+
+      return String(a.description || a.code || '').localeCompare(
+        String(b.description || b.code || ''),
+        'it'
+      );
+    });
+
+    const materialRowsForExcel = [];
+
+    if (supplier) {
+      sortedMaterialRows.forEach((row) => {
+        materialRowsForExcel.push({
+          Fornitore: row.supplier || 'Senza fornitore',
+          Codice: row.code,
+          Descrizione: row.description,
+          Righe: row.rows,
+          Quantità: row.quantity,
+          'Ultimo prezzo': Number(row.lastPrice || 0),
+          Valore: Number(row.value || 0),
+        });
+      });
+    } else {
+      const groupedBySupplier = sortedMaterialRows.reduce((acc, row) => {
+        const supplierName = String(row.supplier || '').trim() || 'Senza fornitore';
+
+        if (!acc[supplierName]) {
+          acc[supplierName] = [];
+        }
+
+        acc[supplierName].push(row);
+        return acc;
+      }, {});
+
+      Object.entries(groupedBySupplier)
+        .sort(([a], [b]) => a.localeCompare(b, 'it'))
+        .forEach(([supplierName, rows]) => {
+          const supplierTotal = rows.reduce((sum, row) => sum + Number(row.value || 0), 0);
+          const supplierQuantity = rows.reduce((sum, row) => sum + Number(row.quantity || 0), 0);
+          const supplierRowCount = rows.reduce((sum, row) => sum + Number(row.rows || 0), 0);
+
+          materialRowsForExcel.push({
+            Fornitore: supplierName,
+            Codice: '',
+            Descrizione: `TOTALE ${supplierName}`,
+            Righe: supplierRowCount,
+            Quantità: supplierQuantity,
+            'Ultimo prezzo': '',
+            Valore: Number(supplierTotal || 0),
+          });
+
+          rows.forEach((row) => {
+            materialRowsForExcel.push({
+              Fornitore: supplierName,
+              Codice: row.code,
+              Descrizione: row.description,
+              Righe: row.rows,
+              Quantità: row.quantity,
+              'Ultimo prezzo': Number(row.lastPrice || 0),
+              Valore: Number(row.value || 0),
+            });
+          });
+
+          materialRowsForExcel.push({
+            Fornitore: '',
+            Codice: '',
+            Descrizione: '',
+            Righe: '',
+            Quantità: '',
+            'Ultimo prezzo': '',
+            Valore: '',
+          });
+        });
+    }
+
+    const materialsSheet = XLSX.utils.json_to_sheet(materialRowsForExcel);
+    XLSX.utils.book_append_sheet(workbook, materialsSheet, 'Materiali per fornitore');
 
     XLSX.writeFile(
       workbook,
