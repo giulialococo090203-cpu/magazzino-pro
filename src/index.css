@@ -458,23 +458,9 @@ table {
   font-weight: 600;
 }
 
-.header-notification-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  border: 1px solid var(--border-soft);
-  background: white;
-  color: var(--gray-500);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-size: 17px;
-}
 
-.header-notification-btn:hover {
-  box-shadow: var(--shadow-sm);
-}
+
+
 
 .header-notification-badge {
   position: absolute;
@@ -2210,11 +2196,7 @@ textarea {
 .modal,
 .login-card,
 .import-dropzone,
-.header-notification-btn,
-.global-search-container {
-  border-radius: 10px !important;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06) !important;
-}
+
 
 /* Tabelle più da gestionale */
 .data-table {
@@ -3898,10 +3880,7 @@ textarea:focus {
   color: #fed7aa !important;
 }
 
-.header-notification-btn {
-  border-radius: 8px !important;
-  box-shadow: none !important;
-}
+
 
 /* ============================================================
    THEME RESET - Gestionale chiaro tecnico
@@ -5956,17 +5935,7 @@ textarea {
 /* Search/header: niente quadratini dentro l'input */
 .global-search-icon .ui-inline-icon,
 .search-bar-icon .ui-inline-icon,
-.header-notification-btn .ui-inline-icon {
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: currentColor !important;
-  font-size: 20px !important;
-}
+
 
 /* KPI: icone visibili, centrate, non vuote */
 .kpi-icon {
@@ -6163,26 +6132,11 @@ button .ui-inline-icon {
 /* Search, header e bottoni: nessun badge intorno */
 .search-bar-icon .ui-inline-icon,
 .global-search-icon .ui-inline-icon,
-.header-notification-btn .ui-inline-icon,
-.btn .ui-inline-icon,
-button .ui-inline-icon {
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  margin: 0 6px 0 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: currentColor !important;
-  font-size: 18px !important;
-}
+
 
 .search-bar-icon .ui-inline-icon,
 .global-search-icon .ui-inline-icon,
-.header-notification-btn .ui-inline-icon {
-  margin: 0 !important;
-  font-size: 20px !important;
-}
+
 
 /* Quick action più sobrie */
 .quick-action-card,
@@ -6286,24 +6240,11 @@ button .ui-inline-icon {
 /* Search, header e bottoni */
 .search-bar-icon .app-icon,
 .global-search-icon .app-icon,
-.header-notification-btn .app-icon,
-.btn .app-icon,
-button .app-icon {
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  margin: 0 6px 0 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: currentColor !important;
-}
+
 
 .search-bar-icon .app-icon,
 .global-search-icon .app-icon,
-.header-notification-btn .app-icon {
-  margin: 0 !important;
-}
+
 
 /* Quick actions: colori meno pastello e più gestionali */
 .quick-action-card .ui-inline-icon,
@@ -6446,16 +6387,7 @@ button .app-icon {
 
 .search-bar-icon .fa-icon,
 .global-search-icon .fa-icon,
-.header-notification-btn .fa-icon {
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: currentColor !important;
-}
+
 
 .btn .fa-icon,
 button .fa-icon {
@@ -6549,16 +6481,7 @@ button .fa-icon {
 
 .search-bar-icon .fa-icon,
 .global-search-icon .fa-icon,
-.header-notification-btn .fa-icon {
-  width: 17px !important;
-  height: 17px !important;
-  min-width: 17px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: currentColor !important;
-}
+
 
 .btn .fa-icon,
 button .fa-icon {
@@ -6582,12 +6505,7 @@ button .fa-icon {
 .page-title,
 .btn,
 .sidebar-link,
-.header-notification-btn,
-.global-search-container,
-.search-bar,
-.empty-state {
-  align-items: center;
-}
+
 
 svg.fa-icon,
 .fa-icon {
@@ -6741,15 +6659,7 @@ svg.ui-title-icon {
 
 .global-search-icon svg,
 .search-bar-icon svg,
-.header-notification-btn svg {
-  width: 17px !important;
-  height: 17px !important;
-  min-width: 17px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: none !important;
-  box-shadow: none !important;
-}
+
 
 
 /* ============================================================
@@ -6842,15 +6752,7 @@ svg.ui-title-icon {
 /* Search e notifiche header */
 .global-search-icon svg,
 .search-bar-icon svg,
-.header-notification-btn svg {
-  width: 17px !important;
-  height: 17px !important;
-  min-width: 17px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
+
 
 /* Bottoni */
 .btn svg,
@@ -6981,17 +6883,7 @@ button svg {
 /* Search, header, bottoni */
 .search-bar-icon .app-text-icon,
 .global-search-icon .app-text-icon,
-.header-notification-btn .app-text-icon {
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  font-size: 15px !important;
-  color: currentColor !important;
-}
+
 
 .btn .app-text-icon,
 button .app-text-icon {
@@ -7105,15 +6997,7 @@ button .app-text-icon {
 
 .search-bar-icon .app-svg-icon,
 .global-search-icon .app-svg-icon,
-.header-notification-btn .app-svg-icon {
-  width: 17px !important;
-  height: 17px !important;
-  min-width: 17px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
+
 
 .btn .app-svg-icon,
 button .app-svg-icon {
@@ -7306,10 +7190,7 @@ button .app-text-icon {
 
 
 /* Pulizia finale icone ridotte */
-.header-notification-btn:empty,
-.header-notification-btn .app-svg-icon:only-child {
-  display: none !important;
-}
+
 
 .page-title {
   display: flex !important;
@@ -7363,45 +7244,12 @@ button .app-text-icon {
   margin-right: 2px;
 }
 
-.header-notification-btn,
-.topbar-notification,
-.notification-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+
 
 /* === FIX DEFINITIVO CAMPANELLA HEADER === */
-.header-notification-btn {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: relative !important;
-  border: 1px solid var(--gray-200) !important;
-  border-radius: 12px !important;
-  background: #fff !important;
-  color: #475569 !important;
-  text-decoration: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  overflow: visible !important;
-}
 
-.header-notification-btn svg,
-.header-notification-btn .safe-icon,
-.header-notification-btn [class*="icon"] {
-  width: 20px !important;
-  height: 20px !important;
-  min-width: 20px !important;
-  display: block !important;
-  color: #475569 !important;
-  stroke: currentColor !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
+
+
 
 .header-notification-badge {
   position: absolute !important;
@@ -7420,30 +7268,31 @@ button .app-text-icon {
   justify-content: center !important;
 }
 
-.header-notification-btn {
 
-  display: none !important;
-
-}
 
 
 /* Rimozione definitiva placeholder/bottone notifiche header */
+
+
+
+/* Header: notifiche rimosse definitivamente */
 .header-notification-btn,
 .notification-btn,
-.notification-button,
 .header-bell,
-.header-actions .header-notification-btn,
-.header-right .header-notification-btn,
 header a[href="/controllo/notifiche"],
 header [title="Notifiche"] {
   display: none !important;
+  visibility: hidden !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   height: 0 !important;
   min-height: 0 !important;
+  max-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   border: 0 !important;
+  opacity: 0 !important;
   overflow: hidden !important;
   pointer-events: none !important;
 }
