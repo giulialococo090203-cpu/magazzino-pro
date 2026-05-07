@@ -7626,3 +7626,186 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   MOBILE SIDEBAR FIX - sidebar visibile laterale, non in basso
+   Sovrascrive il fix precedente solo sotto 640px.
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app-layout {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sidebar {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    right: auto !important;
+
+    width: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+    height: 100vh !important;
+
+    padding: 12px 8px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+
+    background: linear-gradient(180deg, #1f252d 0%, #171d24 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .main-content {
+    margin-left: 76px !important;
+    width: calc(100% - 76px) !important;
+    max-width: calc(100% - 76px) !important;
+    min-width: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .sidebar-header {
+    display: flex !important;
+    padding: 0 !important;
+    margin: 0 0 18px 0 !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .sidebar-logo-text,
+  .sidebar-section-title,
+  .sidebar-user .user-info,
+  .sidebar-user .logout-btn,
+  .sidebar-link span:not(.sidebar-link-icon):not(.sidebar-badge),
+  .sidebar-link-label,
+  .sidebar-chevron {
+    display: none !important;
+  }
+
+  .sidebar-nav,
+  .sidebar-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sidebar-link {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 14px !important;
+    position: relative !important;
+  }
+
+  .sidebar-link-icon,
+  .sidebar-link svg,
+  .sidebar-link .safe-icon,
+  .sidebar-link .app-icon {
+    margin: 0 !important;
+  }
+
+  .sidebar-user {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+
+  .user-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .page-content {
+    padding: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .page-title {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+  }
+
+  .page-subtitle {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+  }
+
+  .header {
+    padding: 12px 14px !important;
+  }
+
+  .header-date {
+    display: none !important;
+  }
+
+  .btn-group,
+  .page-header-actions,
+  .page-header .btn-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .btn-group .btn,
+  .page-header-actions .btn,
+  .page-header .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+
+  .dashboard-grid,
+  .kpi-grid,
+  .stats-grid,
+  .cards-grid,
+  .form-row,
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-container,
+  .table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .data-table {
+    min-width: 720px !important;
+  }
+
+  input,
+  select,
+  textarea,
+  .form-control {
+    font-size: 16px !important;
+    max-width: 100% !important;
+  }
+}
+
