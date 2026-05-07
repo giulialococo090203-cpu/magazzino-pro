@@ -327,7 +327,7 @@ export default function RendicontazioneEconomica() {
             ↻ Aggiorna
           </button>
           <button className="btn btn-primary" onClick={exportExcel} disabled={loading}>
-            📊 Esporta Excel
+            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Esporta Excel
           </button>
         </div>
       </div>
@@ -346,7 +346,7 @@ export default function RendicontazioneEconomica() {
             fontWeight: 800,
           }}
         >
-          ✅ {success}
+          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
         </div>
       )}
 
@@ -416,7 +416,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon green">📥</div>
+          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">move_to_inbox</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore carichi</div>
             <div className="kpi-value">{formatCurrency(report.entriesValue)}</div>
@@ -425,7 +425,7 @@ export default function RendicontazioneEconomica() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon red">📤</div>
+          <div className="kpi-icon red"><span className="ui-inline-icon material-symbols-rounded">outbox</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore uscite stimato</div>
             <div className="kpi-value">{formatCurrency(report.exitsValue)}</div>
@@ -434,7 +434,7 @@ export default function RendicontazioneEconomica() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon blue">📦</div>
+          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore stock attuale</div>
             <div className="kpi-value">{formatCurrency(report.stockValue)}</div>
@@ -456,7 +456,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🏭 Spesa per fornitore</h3>
+          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">factory</span> Spesa per fornitore</h3>
         </div>
 
         <div className="table-container">
@@ -479,7 +479,7 @@ export default function RendicontazioneEconomica() {
                 <tr>
                   <td colSpan="5">
                     <div className="empty-state">
-                      <div className="empty-state-icon">💶</div>
+                      <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">euro</span></div>
                       <div className="empty-state-title">Nessun dato economico nel periodo</div>
                     </div>
                   </td>

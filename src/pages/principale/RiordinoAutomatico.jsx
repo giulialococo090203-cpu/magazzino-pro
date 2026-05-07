@@ -519,16 +519,16 @@ export default function RiordinoAutomatico() {
             ↻ Aggiorna
           </button>
           <button className="btn btn-secondary" onClick={exportExcel} disabled={rowsToExport.length === 0}>
-            📊 Excel
+            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Excel
           </button>
           <button className="btn btn-secondary" onClick={exportCSV} disabled={rowsToExport.length === 0}>
             🧾 CSV
           </button>
           <button className="btn btn-secondary" onClick={saveProposal} disabled={rowsToExport.length === 0}>
-            💾 Salva proposta
+            <span className="ui-inline-icon material-symbols-rounded">backup</span> Salva proposta
           </button>
           <button className="btn btn-primary" onClick={exportPDF} disabled={rowsToExport.length === 0}>
-            📄 PDF
+            <span className="ui-inline-icon material-symbols-rounded">upload_file</span> PDF
           </button>
         </div>
       </div>
@@ -545,7 +545,7 @@ export default function RiordinoAutomatico() {
             fontWeight: 800,
           }}
         >
-          ✅ {success}
+          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
         </div>
       )}
 
@@ -557,7 +557,7 @@ export default function RiordinoAutomatico() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon yellow">⚠️</div>
+          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali da riordinare</div>
             <div className="kpi-value">{filteredRows.length}</div>
@@ -566,7 +566,7 @@ export default function RiordinoAutomatico() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon blue">🏭</div>
+          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">factory</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Fornitori coinvolti</div>
             <div className="kpi-value">{Object.keys(groupedBySupplier).length}</div>
@@ -575,7 +575,7 @@ export default function RiordinoAutomatico() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">💶</div>
+          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">euro</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Totale stimato</div>
             <div className="kpi-value">{formatCurrency(totalEstimated)}</div>
@@ -588,7 +588,7 @@ export default function RiordinoAutomatico() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Filtri proposta</h3>
+          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri proposta</h3>
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
           </button>
@@ -597,7 +597,7 @@ export default function RiordinoAutomatico() {
         <div className="card-body">
           <div className="filters-row">
             <div className="search-bar" style={{ flex: 1, minWidth: 260 }}>
-              <span className="search-bar-icon">🔍</span>
+              <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
               <input
                 type="text"
                 className="form-control"
@@ -654,7 +654,7 @@ export default function RiordinoAutomatico() {
       {Object.keys(groupedBySupplier).length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-header">
-            <h3 className="card-title">🏭 Proposte rapide per fornitore</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">factory</span> Proposte rapide per fornitore</h3>
           </div>
 
           <div className="card-body">
@@ -672,7 +672,7 @@ export default function RiordinoAutomatico() {
                       onClick={() => exportSupplierPDF(supplier === 'Senza fornitore' ? '' : supplier)}
                       title="Genera PDF solo per questo fornitore"
                     >
-                      📄 {supplier} · {items.length} righe · {formatCurrency(total)}
+                      <span className="ui-inline-icon material-symbols-rounded">upload_file</span> {supplier} · {items.length} righe · {formatCurrency(total)}
                     </button>
                   );
                 })}
@@ -716,7 +716,7 @@ export default function RiordinoAutomatico() {
               <tr>
                 <td colSpan="13" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">✅</div>
+                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
                     <div className="empty-state-title">Nessun riordino necessario</div>
                     <div className="empty-state-text">
                       Non ci sono materiali sotto soglia con i filtri selezionati.

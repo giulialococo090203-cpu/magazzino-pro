@@ -548,7 +548,7 @@ export default function Dashboard() {
 
       <div className="kpi-grid">
         <div className="kpi-card">
-          <div className="kpi-icon blue">📦</div>
+          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali Totali</div>
             <div className="kpi-value">{stats.totalMaterials ?? materials.length}</div>
@@ -559,7 +559,7 @@ export default function Dashboard() {
         </div>
 
         <div className={`kpi-card ${belowThreshold.length > 0 ? 'warning' : ''}`}>
-          <div className="kpi-icon yellow">⚠️</div>
+          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Sotto Soglia</div>
             <div className="kpi-value">
@@ -570,7 +570,7 @@ export default function Dashboard() {
         </div>
 
         <div className={`kpi-card ${exhausted.length > 0 ? 'danger' : ''}`}>
-          <div className="kpi-icon red">🚫</div>
+          <div className="kpi-icon red"><span className="ui-inline-icon material-symbols-rounded">block</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Esauriti</div>
             <div className="kpi-value">{stats.exhaustedCount ?? exhausted.length}</div>
@@ -579,7 +579,7 @@ export default function Dashboard() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">📋</div>
+          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">assignment</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Movimenti Oggi</div>
             <div className="kpi-value">{stats.todayMovements ?? 0}</div>
@@ -588,7 +588,7 @@ export default function Dashboard() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple">🔔</div>
+          <div className="kpi-icon purple"><span className="ui-inline-icon material-symbols-rounded">notifications</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Notifiche Attive</div>
             <div className="kpi-value">
@@ -599,7 +599,7 @@ export default function Dashboard() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon teal">🏷️</div>
+          <div className="kpi-icon teal"><span className="ui-inline-icon material-symbols-rounded">sell</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Categorie</div>
             <div className="kpi-value">{stats.totalCategories ?? categories.length}</div>
@@ -618,7 +618,7 @@ export default function Dashboard() {
             className="quick-action-icon"
             style={{ background: '#f3e8ff', color: '#7c3aed' }}
           >
-            🔍
+            <span className="ui-inline-icon material-symbols-rounded">search</span>
           </div>
           <span>Cerca Materiale</span>
         </Link>
@@ -628,7 +628,7 @@ export default function Dashboard() {
             className="quick-action-icon"
             style={{ background: '#dcfce7', color: '#16a34a' }}
           >
-            📥
+            <span className="ui-inline-icon material-symbols-rounded">move_to_inbox</span>
           </div>
           <span>Carica Materiale</span>
         </Link>
@@ -638,7 +638,7 @@ export default function Dashboard() {
             className="quick-action-icon"
             style={{ background: '#fee2e2', color: '#dc2626' }}
           >
-            📤
+            <span className="ui-inline-icon material-symbols-rounded">outbox</span>
           </div>
           <span>Scarica Materiale</span>
         </Link>
@@ -648,7 +648,7 @@ export default function Dashboard() {
             className="quick-action-icon"
             style={{ background: '#dbeafe', color: '#2563eb' }}
           >
-            📄
+            <span className="ui-inline-icon material-symbols-rounded">upload_file</span>
           </div>
           <span>Importa / Inserisci</span>
         </Link>
@@ -658,7 +658,7 @@ export default function Dashboard() {
             className="quick-action-icon"
             style={{ background: '#ecfdf5', color: '#059669' }}
           >
-            📊
+            <span className="ui-inline-icon material-symbols-rounded">analytics</span>
           </div>
           <span>Storico Movimenti</span>
         </Link>
@@ -744,7 +744,7 @@ export default function Dashboard() {
           <div className="card-body" style={{ padding: 0 }}>
             {belowThreshold.length === 0 && exhausted.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
-                <div className="empty-state-icon">✅</div>
+                <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
                 <div className="empty-state-title">Tutto in ordine</div>
                 <div className="empty-state-text">
                   Nessun materiale in stato critico
@@ -1072,7 +1072,7 @@ export default function Dashboard() {
       <div className="charts-grid">
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">📊 Entrate vs Uscite (30 giorni)</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">analytics</span> Entrate vs Uscite (30 giorni)</h3>
           </div>
           <div className="chart-container">
             {entriesVsExits.length > 0 ? (
@@ -1087,7 +1087,7 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">🏷️ Distribuzione per Categoria</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">sell</span> Distribuzione per Categoria</h3>
           </div>
           <div className="chart-container">
             {categoryChartData.labels.length > 0 ? (
@@ -1117,14 +1117,14 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">⚠️ Materiali Sotto Soglia</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">warning</span> Materiali Sotto Soglia</h3>
           </div>
           <div className="chart-container">
             {belowThreshold.length > 0 ? (
               <Bar data={belowData} options={barOptions} />
             ) : (
               <div className="empty-state" style={{ padding: 40 }}>
-                <div className="empty-state-icon">✅</div>
+                <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
                 <div className="empty-state-title">Tutto in ordine</div>
               </div>
             )}
@@ -1140,7 +1140,7 @@ export default function Dashboard() {
               onClick={loadSupabaseUsage}
               disabled={supabaseUsageLoading}
             >
-              {supabaseUsageLoading ? 'Aggiornamento...' : '🔄 Aggiorna spazio usato'}
+              {supabaseUsageLoading ? 'Aggiornamento...' : '<span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna spazio usato'}
             </button>
           </div>
 
@@ -1188,7 +1188,7 @@ export default function Dashboard() {
               </div>
             ) : supabaseUsageError ? (
               <div className="empty-state" style={{ padding: 28 }}>
-                <div className="empty-state-icon">⚠️</div>
+                <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
                 <div className="empty-state-title">Memoria non leggibile</div>
                 <div className="empty-state-text">{supabaseUsageError}</div>
               </div>
@@ -1225,7 +1225,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-icon green">📊</div>
+                  <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">analytics</span></div>
                   <div className="kpi-content">
                     <div className="kpi-label">Totale Usato</div>
                     <div className="kpi-value">

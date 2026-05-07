@@ -237,7 +237,7 @@ export default function ArchivioProposteOrdine() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue">📑</div>
+          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">request_quote</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Proposte</div>
             <div className="kpi-value">{totals.proposals}</div>
@@ -255,7 +255,7 @@ export default function ArchivioProposteOrdine() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">📦</div>
+          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Righe</div>
             <div className="kpi-value">{totals.rows}</div>
@@ -275,7 +275,7 @@ export default function ArchivioProposteOrdine() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Filtri</h3>
+          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri</h3>
         </div>
 
         <div className="card-body">
@@ -338,7 +338,7 @@ export default function ArchivioProposteOrdine() {
                 onClick={deleteSelectedProposals}
                 disabled={selectedVisibleIds.length === 0 || savingId === 'delete-selected'}
               >
-                {savingId === 'delete-selected' ? 'Eliminazione...' : '🗑️ Elimina selezionate'}
+                {savingId === 'delete-selected' ? 'Eliminazione...' : '<span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate'}
               </button>
             </div>
           </div>
@@ -379,7 +379,7 @@ export default function ArchivioProposteOrdine() {
               <tr>
                 <td colSpan="9" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">📑</div>
+                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">request_quote</span></div>
                     <div className="empty-state-title">Nessuna proposta trovata</div>
                     <div className="empty-state-text">
                       Vai nel Riordino Automatico e usa “Salva proposta”.
@@ -443,7 +443,7 @@ export default function ArchivioProposteOrdine() {
                         onClick={() => deleteProposal(proposal)}
                         disabled={savingId === proposal.id}
                       >
-                        🗑️
+                        <span className="ui-inline-icon material-symbols-rounded">delete</span>
                       </button>
                     </div>
                   </td>

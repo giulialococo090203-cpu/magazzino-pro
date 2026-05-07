@@ -466,7 +466,7 @@ export default function GestioneUtenti() {
                         onClick={() => openEdit(u)}
                         title="Modifica"
                       >
-                        ✏️
+                        <span className="ui-inline-icon material-symbols-rounded">edit_square</span>
                       </button>
 
                       {u.id !== currentUser.id ? (
@@ -494,7 +494,7 @@ export default function GestioneUtenti() {
                           onClick={() => setConfirmDelete(u)}
                           title="Elimina"
                         >
-                          🗑️
+                          <span className="ui-inline-icon material-symbols-rounded">delete</span>
                         </button>
                       )}
                     </div>
@@ -795,7 +795,7 @@ export default function GestioneUtenti() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">🗑️</div>
+              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
               <p className="confirm-message">
                 Eliminare l'utente <strong>{confirmDelete.fullName}</strong> ({confirmDelete.username})?
                 <br />

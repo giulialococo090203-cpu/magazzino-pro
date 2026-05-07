@@ -641,7 +641,7 @@ export default function StoricoMovimenti() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📋 Storico Movimenti</h1>
+          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">assignment</span> Storico Movimenti</h1>
           <p className="page-subtitle">{movements.length} movimenti trovati</p>
         </div>
 
@@ -653,7 +653,7 @@ export default function StoricoMovimenti() {
                 onClick={exportExcel}
                 disabled={movements.length === 0}
               >
-                📊 Excel
+                <span className="ui-inline-icon material-symbols-rounded">analytics</span> Excel
               </button>
 
               <button
@@ -669,7 +669,7 @@ export default function StoricoMovimenti() {
                 onClick={exportPDF}
                 disabled={movements.length === 0}
               >
-                📄 PDF
+                <span className="ui-inline-icon material-symbols-rounded">upload_file</span> PDF
               </button>
 
               <button
@@ -696,7 +696,7 @@ export default function StoricoMovimenti() {
               onClick={() => setConfirmEmptyHistory(true)}
               disabled={emptyingHistory}
             >
-              🗑️ Svuota storico
+              <span className="ui-inline-icon material-symbols-rounded">delete</span> Svuota storico
             </button>
           )}
         </div>
@@ -719,7 +719,7 @@ export default function StoricoMovimenti() {
         >
           <div className="card-body" style={{ padding: 14 }}>
             <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
-              ✅ Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}.
+              <span className="ui-inline-icon material-symbols-rounded">check_circle</span> Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}.
               File eliminati: {emptyHistoryResult.filesDeleted}.
             </div>
 
@@ -735,7 +735,7 @@ export default function StoricoMovimenti() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Filtri di Ricerca</h3>
+          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri di Ricerca</h3>
 
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
@@ -897,7 +897,7 @@ export default function StoricoMovimenti() {
               <tr>
                 <td colSpan="12" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">📋</div>
+                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">assignment</span></div>
                     <div className="empty-state-title">Nessun movimento trovato</div>
                     <div className="empty-state-text">Prova a modificare i filtri di ricerca</div>
                   </div>
@@ -1024,7 +1024,7 @@ export default function StoricoMovimenti() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">🗑️</div>
+              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
 
               <p className="confirm-message">
                 Questa operazione eliminerà <strong>tutti i movimenti</strong>, i record delle

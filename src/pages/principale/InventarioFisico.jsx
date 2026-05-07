@@ -417,13 +417,13 @@ export default function InventarioFisico() {
             ↻ Aggiorna
           </button>
           <button className="btn btn-secondary" onClick={exportExcel}>
-            📊 Excel
+            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Excel
           </button>
           <button className="btn btn-secondary" onClick={exportCSV}>
             🧾 CSV
           </button>
           <button className="btn btn-secondary" onClick={exportPDF}>
-            📄 PDF
+            <span className="ui-inline-icon material-symbols-rounded">upload_file</span> PDF
           </button>
           <button
             className="btn btn-primary"
@@ -447,7 +447,7 @@ export default function InventarioFisico() {
             fontWeight: 800,
           }}
         >
-          ✅ {success}
+          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
         </div>
       )}
 
@@ -459,7 +459,7 @@ export default function InventarioFisico() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue">📦</div>
+          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali totali</div>
             <div className="kpi-value">{materials.length}</div>
@@ -477,7 +477,7 @@ export default function InventarioFisico() {
         </div>
 
         <div className={`kpi-card ${differentRows.length > 0 ? 'warning' : ''}`}>
-          <div className="kpi-icon yellow">⚠️</div>
+          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
           <div className="kpi-content">
             <div className="kpi-label">Differenze</div>
             <div className="kpi-value">{differentRows.length}</div>
@@ -497,7 +497,7 @@ export default function InventarioFisico() {
         <div className="card-body">
           <div className="filters-row">
             <div className="search-bar" style={{ flex: 1, minWidth: 260 }}>
-              <span className="search-bar-icon">🔍</span>
+              <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
               <input
                 type="text"
                 className="form-control"
@@ -575,7 +575,7 @@ export default function InventarioFisico() {
               <tr>
                 <td colSpan="10" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">📦</div>
+                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
                     <div className="empty-state-title">Nessun materiale trovato</div>
                     <div className="empty-state-text">
                       Prova a modificare i filtri.
@@ -667,7 +667,7 @@ export default function InventarioFisico() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon warning">🧮</div>
+              <div className="confirm-icon warning"><span className="ui-inline-icon material-symbols-rounded">fact_check</span></div>
 
               <p className="confirm-message">
                 Verranno registrate <strong>{differentRows.length}</strong> rettifiche di magazzino.

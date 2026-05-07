@@ -67,7 +67,7 @@ export default function GestioneCategorie() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🏷️ Gestione Categorie</h1>
+          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">sell</span> Gestione Categorie</h1>
           <p className="page-subtitle">{categories.length} categorie configurate</p>
         </div>
         <button className="btn btn-primary" onClick={openNew}>+ Nuova Categoria</button>
@@ -85,7 +85,7 @@ export default function GestioneCategorie() {
           </thead>
           <tbody>
             {categories.length === 0 ? (
-              <tr><td colSpan="4"><div className="empty-state"><div className="empty-state-icon">🏷️</div><div className="empty-state-title">Nessuna categoria</div></div></td></tr>
+              <tr><td colSpan="4"><div className="empty-state"><div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">sell</span></div><div className="empty-state-title">Nessuna categoria</div></div></td></tr>
             ) : categories.map(cat => (
               <tr key={cat.id}>
                 <td><strong>{cat.name}</strong></td>
@@ -93,8 +93,8 @@ export default function GestioneCategorie() {
                 <td className="text-sm text-muted">{cat.createdAt ? new Date(cat.createdAt).toLocaleDateString('it-IT') : '—'}</td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-sm btn-ghost" onClick={() => openEdit(cat)}>✏️ Modifica</button>
-                    <button className="btn btn-sm btn-ghost text-danger" onClick={() => setConfirmDelete(cat)}>🗑️</button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => openEdit(cat)}><span className="ui-inline-icon material-symbols-rounded">edit_square</span> Modifica</button>
+                    <button className="btn btn-sm btn-ghost text-danger" onClick={() => setConfirmDelete(cat)}><span className="ui-inline-icon material-symbols-rounded">delete</span></button>
                   </div>
                 </td>
               </tr>
@@ -139,7 +139,7 @@ export default function GestioneCategorie() {
               <button className="modal-close" onClick={() => setConfirmDelete(null)}>✕</button>
             </div>
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">🗑️</div>
+              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
               <p className="confirm-message">Sei sicuro di voler eliminare la categoria <strong>"{confirmDelete.name}"</strong>? Questa azione non può essere annullata.</p>
             </div>
             <div className="modal-footer">

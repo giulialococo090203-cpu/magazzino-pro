@@ -828,7 +828,7 @@ export default function ImportaFatture() {
           : 'data non disponibile';
 
         const confirmed = window.confirm(
-          `⚠️ Questa fattura sembra già essere stata caricata.\n\n` +
+          `<span className="ui-inline-icon material-symbols-rounded">warning</span> Questa fattura sembra già essere stata caricata.\n\n` +
             `File: ${file.name}\n` +
             `Caricata il: ${duplicateDate}\n\n` +
             `Vuoi continuare comunque con l'importazione?`
@@ -1240,7 +1240,7 @@ export default function ImportaFatture() {
         >
           <div className="card-body" style={{ padding: 16 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div style={{ fontSize: 22 }}>⚠️</div>
+              <div style={{ fontSize: 22 }}><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
               <div>
                 <div style={{ fontWeight: 800, marginBottom: 4 }}>Avviso archivio fatture</div>
                 <div className="text-sm" style={{ color: 'var(--gray-700)' }}>
@@ -1263,7 +1263,7 @@ export default function ImportaFatture() {
         >
           <div className="card-body" style={{ padding: 14 }}>
             <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
-              ✅ File originale salvato in Supabase Storage · Stato archivio: {invoiceRecord.status}
+              <span className="ui-inline-icon material-symbols-rounded">check_circle</span> File originale salvato in Supabase Storage · Stato archivio: {invoiceRecord.status}
             </div>
             <div className="text-xs text-muted" style={{ marginTop: 4 }}>
               {invoiceRecord.originalFileName || invoiceRecord.fileName}
@@ -1363,7 +1363,7 @@ export default function ImportaFatture() {
         <div className="card">
           <div className="card-body" style={{ padding: 40 }}>
             <div className="import-dropzone" onClick={() => fileInputRef.current?.click()}>
-              <div className="import-dropzone-icon">📄</div>
+              <div className="import-dropzone-icon"><span className="ui-inline-icon material-symbols-rounded">upload_file</span></div>
               <div className="import-dropzone-text">
                 Clicca per selezionare un file o trascinalo qui
               </div>
@@ -1513,7 +1513,7 @@ export default function ImportaFatture() {
             className="card-header"
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <h3 className="card-title">📋 Materiali rilevati da: {fileName}</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">assignment</span> Materiali rilevati da: {fileName}</h3>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-sm btn-outline-primary" onClick={applyAllSuggestions}>
                 🪄 Applica Suggerimenti Auto
@@ -1751,7 +1751,7 @@ export default function ImportaFatture() {
       {step === 4 && (
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">✅ Riepilogo Importazione</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">check_circle</span> Riepilogo Importazione</h3>
           </div>
           <div className="card-body">
             <div style={{ marginBottom: 20 }}>
@@ -1783,7 +1783,7 @@ export default function ImportaFatture() {
       {step === 5 && results && (
         <div className="card">
           <div className="card-body" style={{ textAlign: 'center', padding: 48 }}>
-            <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
+            <div style={{ fontSize: 64, marginBottom: 16 }}><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16 }}>
               Importazione Completata
             </h2>
@@ -1879,7 +1879,7 @@ export default function ImportaFatture() {
                 Importa un altro documento
               </button>
               <Link to="/inventario" className="btn btn-secondary btn-lg">
-                📦 Vai all'Inventario
+                <span className="ui-inline-icon material-symbols-rounded">inventory_2</span> Vai all'Inventario
               </Link>
             </div>
           </div>

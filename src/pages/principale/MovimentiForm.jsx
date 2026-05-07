@@ -8,7 +8,7 @@ const TIPO_CONFIG = {
   entrata: {
     title: 'Carica Materiale',
     subtitle: 'Registra un nuovo ingresso di materiale in magazzino',
-    icon: '📥',
+    icon: '<span className="ui-inline-icon material-symbols-rounded">move_to_inbox</span>',
     color: 'var(--success-600)',
     btnLabel: 'Conferma Carico',
     btnClass: 'btn-success',
@@ -17,7 +17,7 @@ const TIPO_CONFIG = {
   uscita: {
     title: 'Scarica Materiale',
     subtitle: "Registra un'uscita di materiale dal magazzino",
-    icon: '📤',
+    icon: '<span className="ui-inline-icon material-symbols-rounded">outbox</span>',
     color: 'var(--danger-600)',
     btnLabel: 'Conferma Scarico',
     btnClass: 'btn-danger',
@@ -26,7 +26,7 @@ const TIPO_CONFIG = {
   reintegro: {
     title: 'Reintegra Materiale',
     subtitle: 'Rientra materiale precedentemente uscito e non utilizzato',
-    icon: '🔄',
+    icon: '<span className="ui-inline-icon material-symbols-rounded">sync</span>',
     color: 'var(--info-600)',
     btnLabel: 'Conferma Reintegro',
     btnClass: 'btn-primary',
@@ -35,7 +35,7 @@ const TIPO_CONFIG = {
   rettifica: {
     title: 'Rettifica Inventario',
     subtitle: 'Correggi la quantità a seguito di controllo inventariale',
-    icon: '✏️',
+    icon: '<span className="ui-inline-icon material-symbols-rounded">edit_square</span>',
     color: 'var(--warning-600)',
     btnLabel: 'Conferma Rettifica',
     btnClass: 'btn-warning',
@@ -368,7 +368,7 @@ export default function MovimentiForm() {
             gap: 8
           }}
         >
-          ✅ {success}
+          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
         </div>
       )}
 
@@ -387,7 +387,7 @@ export default function MovimentiForm() {
             gap: 8
           }}
         >
-          ⚠️ {error}
+          <span className="ui-inline-icon material-symbols-rounded">warning</span> {error}
         </div>
       )}
 
@@ -631,7 +631,7 @@ export default function MovimentiForm() {
           {material ? (
             <div className="card">
               <div className="card-header">
-                <h3 className="card-title">📦 Materiale Selezionato</h3>
+                <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span> Materiale Selezionato</h3>
               </div>
 
               <div className="card-body">
@@ -699,7 +699,7 @@ export default function MovimentiForm() {
             <div className="card">
               <div className="card-body">
                 <div className="empty-state">
-                  <div className="empty-state-icon">📦</div>
+                  <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
                   <div className="empty-state-title">Seleziona un materiale</div>
                   <div className="empty-state-text">
                     Scegli un materiale dall'elenco a sinistra per visualizzarne i dettagli e registrare il movimento.

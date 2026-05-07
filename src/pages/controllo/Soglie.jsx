@@ -109,7 +109,7 @@ export default function Soglie() {
 
       {success && (
         <div style={{ background: 'var(--success-50)', border: '1px solid var(--success-100)', color: 'var(--success-700)', padding: '12px 20px', borderRadius: 'var(--border-radius-md)', marginBottom: 16, fontWeight: 600 }}>
-          ✅ {success}
+          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
         </div>
       )}
 
@@ -143,7 +143,7 @@ export default function Soglie() {
         <div className="card-body" style={{ paddingBottom: 0 }}>
           <div className="filters-row">
             <div className="search-bar" style={{ flex: 1, maxWidth: 300 }}>
-              <span className="search-bar-icon">🔍</span>
+              <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
               <input type="text" className="form-control" placeholder="Cerca materiale..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 40 }} />
             </div>
             <div className="filter-group">
@@ -205,7 +205,7 @@ export default function Soglie() {
                           <button className="btn btn-sm btn-ghost" onClick={() => setEditId(null)}>✕</button>
                         </div>
                       ) : (
-                        <button className="btn btn-sm btn-outline-primary" onClick={() => startEdit(m)}>✏️ Modifica</button>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => startEdit(m)}><span className="ui-inline-icon material-symbols-rounded">edit_square</span> Modifica</button>
                       )}
                     </td>
                   </tr>

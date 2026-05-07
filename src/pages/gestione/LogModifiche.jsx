@@ -45,13 +45,13 @@ export default function LogModifiche() {
   const getEntityIcon = (entity) => {
     switch (entity) {
       case 'categoria':
-        return '🏷️';
+        return '<span className="ui-inline-icon material-symbols-rounded">sell</span>';
       case 'materiale':
         return '🔧';
       case 'utente':
-        return '👤';
+        return '<span className="ui-inline-icon material-symbols-rounded">manage_accounts</span>';
       case 'fattura':
-        return '📄';
+        return '<span className="ui-inline-icon material-symbols-rounded">upload_file</span>';
       default:
         return '📝';
     }
@@ -92,7 +92,7 @@ export default function LogModifiche() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadLogs} disabled={loading || deletingAll}>
-            🔄 Aggiorna
+            <span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna
           </button>
 
           {canDeleteAll && logs.length > 0 && (
@@ -101,7 +101,7 @@ export default function LogModifiche() {
               onClick={() => setShowConfirmDeleteAll(true)}
               disabled={loading || deletingAll}
             >
-              🗑️ Svuota storico
+              <span className="ui-inline-icon material-symbols-rounded">delete</span> Svuota storico
             </button>
           )}
         </div>
@@ -216,7 +216,7 @@ export default function LogModifiche() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">🗑️</div>
+              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
 
               <p className="confirm-message">
                 Vuoi eliminare definitivamente tutti i log amministrativi?

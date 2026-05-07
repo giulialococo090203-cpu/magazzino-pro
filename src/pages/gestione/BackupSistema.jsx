@@ -199,7 +199,7 @@ export default function BackupSistema() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">💾 Backup Sistema</h1>
+          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">backup</span> Backup Sistema</h1>
           <p className="page-subtitle">
             Scarica una copia completa dei dati del magazzino direttamente dal sito.
           </p>
@@ -236,7 +236,7 @@ export default function BackupSistema() {
               onClick={() => runBackup('excel')}
               disabled={loading}
             >
-              📊 Scarica backup Excel leggibile
+              <span className="ui-inline-icon material-symbols-rounded">analytics</span> Scarica backup Excel leggibile
             </button>
           </div>
 
@@ -277,7 +277,7 @@ export default function BackupSistema() {
       {lastBackup && (
         <div className="card animate-fadeIn">
           <div className="card-header" style={{ background: 'var(--success-50)' }}>
-            <h3 className="card-title">✅ Backup scaricato</h3>
+            <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">check_circle</span> Backup scaricato</h3>
           </div>
 
           <div className="card-body">
