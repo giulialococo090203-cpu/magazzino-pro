@@ -107,7 +107,7 @@ export default function LogModifiche() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadLogs} disabled={loading || deletingAll}>
-            <Icon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna
+            <FaIcon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna
           </button>
 
           {canDeleteAll && logs.length > 0 && (
@@ -116,7 +116,7 @@ export default function LogModifiche() {
               onClick={() => setShowConfirmDeleteAll(true)}
               disabled={loading || deletingAll}
             >
-              <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Svuota storico
+              <FaIcon name="delete" className="ui-inline-icon" aria-hidden="true" /> Svuota storico
             </button>
           )}
         </div>
@@ -231,7 +231,7 @@ export default function LogModifiche() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
+              <div className="confirm-icon danger"><FaIcon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Vuoi eliminare definitivamente tutti i log amministrativi?
