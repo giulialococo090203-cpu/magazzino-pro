@@ -4791,3 +4791,280 @@ body,
   background: #ea580c !important;
   border-color: #ea580c !important;
 }
+
+/* ============================================================
+   LOGIN FINAL - colori originali blu/arancio + layout reference
+   ============================================================ */
+
+.login-page,
+.login-container,
+.login-wrapper {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(249, 115, 22, 0.18) 0, transparent 24%),
+    radial-gradient(circle at 86% 82%, rgba(37, 99, 235, 0.20) 0, transparent 34%),
+    linear-gradient(135deg, #0b1220 0%, #102a5c 54%, #1d4ed8 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* griglia tecnica leggera */
+.login-page::before,
+.login-container::before,
+.login-wrapper::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity: 0.38;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent 86%);
+}
+
+/* card login larga, divisa in due aree */
+.login-card {
+  position: relative !important;
+  width: min(920px, calc(100vw - 48px)) !important;
+  max-width: 920px !important;
+  min-height: 520px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-columns: 42% 58% !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.36),
+    0 1px 0 rgba(255,255,255,0.75) inset !important;
+}
+
+/* pannello sinistro grafico, nei tuoi colori */
+.login-card::before {
+  content: '';
+  grid-column: 1;
+  grid-row: 1 / span 20;
+  background:
+    linear-gradient(135deg, rgba(249,115,22,0.92) 0%, rgba(249,115,22,0.78) 34%, rgba(29,78,216,0.86) 100%),
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.28) 0, transparent 28%);
+  clip-path: polygon(0 0, 86% 0, 68% 50%, 86% 100%, 0 100%);
+  z-index: 0;
+}
+
+/* forme geometriche sul pannello */
+.login-card::after {
+  content: '';
+  position: absolute;
+  left: 42px;
+  top: 62px;
+  width: 250px;
+  height: 360px;
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 28px;
+  transform: rotate(45deg);
+  opacity: 0.38;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* tutto il contenuto sopra */
+.login-card > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* blocco brand: niente banner, posizionato nel lato sinistro */
+.login-card > div:first-child {
+  grid-column: 1 !important;
+  align-self: center !important;
+  justify-self: center !important;
+  width: 250px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  text-align: left !important;
+  color: #ffffff !important;
+}
+
+/* logo M */
+.login-logo,
+.login-logo-icon,
+.logo-icon,
+.login-card > div:first-child > div:first-child {
+  width: 66px !important;
+  height: 66px !important;
+  margin: 0 0 22px 0 !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,0.16) !important;
+  border: 1px solid rgba(255,255,255,0.32) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 32px !important;
+  font-weight: 850 !important;
+}
+
+/* brand text sul lato sinistro */
+.login-card h1,
+.login-title {
+  color: #ffffff !important;
+  text-align: left !important;
+  font-size: 34px !important;
+  line-height: 1.02 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+  margin: 0 0 12px !important;
+}
+
+.login-card p,
+.login-subtitle {
+  color: rgba(255,255,255,0.78) !important;
+  text-align: left !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  max-width: 230px !important;
+}
+
+/* form a destra */
+.login-card form,
+.login-form {
+  grid-column: 2 !important;
+  align-self: center !important;
+  justify-self: center !important;
+  width: min(390px, calc(100% - 72px)) !important;
+  margin: 0 !important;
+}
+
+/* titolo form aggiunto via CSS */
+.login-card form::before,
+.login-form::before {
+  content: 'Accedi al sistema';
+  display: block;
+  color: #111827;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  margin-bottom: 8px;
+}
+
+.login-card form::after,
+.login-form::after {
+  content: 'Inserisci le credenziali per continuare';
+  display: block;
+  color: #667085;
+  font-size: 14px;
+  margin-top: -2px;
+  margin-bottom: 26px;
+  order: -1;
+}
+
+/* campi */
+.login-card label,
+.login-form label {
+  color: #475467 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  margin-bottom: 7px !important;
+}
+
+.login-card input,
+.login-form input {
+  height: 46px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d0d5dd !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 15px !important;
+  box-shadow: none !important;
+}
+
+.login-card input::placeholder,
+.login-form input::placeholder {
+  color: #98a2b3 !important;
+}
+
+.login-card input:focus,
+.login-form input:focus {
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.13) !important;
+}
+
+/* bottone nei tuoi colori, arancio */
+.login-card .btn-primary,
+.login-form .btn-primary,
+.login-card button[type='submit'],
+.login-form button[type='submit'] {
+  height: 46px !important;
+  border-radius: 8px !important;
+  background: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+  box-shadow: 0 12px 22px rgba(249, 115, 22, 0.22) !important;
+  margin-top: 10px !important;
+}
+
+.login-card .btn-primary:hover,
+.login-form .btn-primary:hover,
+.login-card button[type='submit']:hover,
+.login-form button[type='submit']:hover {
+  background: #ea580c !important;
+  border-color: #ea580c !important;
+}
+
+/* mobile */
+@media (max-width: 760px) {
+  .login-card {
+    grid-template-columns: 1fr !important;
+    max-width: 460px !important;
+    min-height: auto !important;
+    padding: 34px !important;
+  }
+
+  .login-card::before,
+  .login-card::after {
+    display: none !important;
+  }
+
+  .login-card > div:first-child,
+  .login-card form,
+  .login-form {
+    grid-column: 1 !important;
+    width: 100% !important;
+  }
+
+  .login-card > div:first-child {
+    text-align: center !important;
+    margin-bottom: 28px !important;
+  }
+
+  .login-logo,
+  .login-logo-icon,
+  .logo-icon,
+  .login-card > div:first-child > div:first-child {
+    margin: 0 auto 16px !important;
+    background: #f97316 !important;
+  }
+
+  .login-card h1,
+  .login-card p,
+  .login-title,
+  .login-subtitle {
+    text-align: center !important;
+    color: #111827 !important;
+    max-width: none !important;
+  }
+
+  .login-card p,
+  .login-subtitle {
+    color: #667085 !important;
+  }
+}
