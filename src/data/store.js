@@ -282,6 +282,8 @@ const mapMovement = {
     operatorName: row.operatore_nome || row.utenti?.nome || '',
     previousQty: row.previous_qty ?? null,
     newQty: row.new_qty ?? null,
+    supplier: row.fornitore || '',
+    fornitore: row.fornitore || '',
   }),
 
   toRow: (model) =>
@@ -310,6 +312,7 @@ const mapMovement = {
         null,
       previous_qty: model.previousQty ?? null,
       new_qty: model.newQty ?? null,
+      fornitore: model.supplier || model.fornitore || null,
     }),
 };
 
@@ -408,6 +411,8 @@ const mapImportedInvoice = {
     createdItems: Number(row.numero_materiali_creati || 0),
     updatedItems: Number(row.numero_materiali_aggiornati || 0),
     errors: row.eventuali_errori || '',
+    supplier: row.fornitore || '',
+    fornitore: row.fornitore || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }),
@@ -420,6 +425,7 @@ const mapImportedInvoice = {
       bucket: model.bucket || 'fatture',
       dimensione_file: model.fileSize,
       tipo_file: model.fileType,
+      fornitore: model.supplier || model.fornitore || null,
 
       // Firebase Auth usa UID testuali.
       // Supabase fatture_importate.utente_id accetta solo UUID.

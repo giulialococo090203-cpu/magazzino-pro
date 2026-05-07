@@ -1,10 +1,15 @@
 // ============================================================
-// FORNITORI.JSX - Monitoraggio fornitori da materiali e movimenti
+// FORNITORI.JSX - Monitoraggio fornitori da fatture e inserimenti
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { materialStore, movementStore, adminLogStore } from '../../data/store';
+import {
+  materialStore,
+  movementStore,
+  invoiceImportStore,
+  adminLogStore,
+} from '../../data/store';
 import { useAuth } from '../../App';
 
 function normalizeSupplier(value = '') {
@@ -21,7 +26,6 @@ function formatCurrency(value = 0) {
 
 function formatDate(value) {
   if (!value) return '—';
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
 
@@ -32,6 +36,22 @@ function formatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function getMovementDate(movement) {
+  return movement.date || movement.createdAt || '';
+}
+
+function isInvoiceMovement(movement) {
+  const reason = String(movement.reason || '').toLowerCase();
+  const notes = String(movement.notes || '').toLowerCase();
+
+  return (
+    reason.includes('fattura') ||
+    reason.includes('importazione') ||
+    notes.includes('fattura') ||
+    notes.includes('importazione')
+  );
 }
 
 function sanitizeSheetName(value = '') {
@@ -46,25 +66,26 @@ export default function Fornitori() {
 
   const [materials, setMaterials] = useState([]);
   const [movements, setMovements] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [fixSupplierName, setFixSupplierName] = useState('');
-  const [fixingSupplier, setFixingSupplier] = useState(false);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError('');
 
-      const [mats, movs] = await Promise.all([
+      const [mats, movs, invs] = await Promise.all([
         materialStore.getAll(),
         movementStore.getAll(),
+        invoiceImportStore.getAll(),
       ]);
 
       setMaterials(Array.isArray(mats) ? mats : []);
       setMovements(Array.isArray(movs) ? movs : []);
+      setInvoices(Array.isArray(invs) ? invs : []);
     } catch (err) {
       console.error('Errore caricamento fornitori:', err);
       setError(err?.message || 'Errore durante il caricamento dei fornitori.');
@@ -79,92 +100,100 @@ export default function Fornitori() {
 
   const supplierRows = useMemo(() => {
     const materialById = new Map(materials.map((m) => [String(m.id), m]));
-
     const groups = {};
 
-    materials.forEach((material) => {
-      const supplier = normalizeSupplier(material.supplier);
+    const ensureGroup = (supplierName) => {
+      const supplier = normalizeSupplier(supplierName);
 
       if (!groups[supplier]) {
         groups[supplier] = {
           supplier,
-          materials: [],
+          invoices: [],
           movements: [],
+          manualMovements: [],
+          invoiceMovements: [],
+          materials: [],
+          invoiceCount: 0,
+          manualCount: 0,
+          movementCount: 0,
           materialCount: 0,
           totalQuantity: 0,
+          estimatedValue: 0,
           stockValue: 0,
-          entriesQuantity: 0,
-          exitsQuantity: 0,
-          invoiceEntries: 0,
-          lastMovementAt: null,
+          createdItems: 0,
+          updatedItems: 0,
+          detectedItems: 0,
+          lastActivityAt: null,
         };
       }
 
-      groups[supplier].materials.push(material);
-      groups[supplier].materialCount += 1;
-      groups[supplier].totalQuantity += Number(material.quantity || 0);
-      groups[supplier].stockValue +=
-        Number(material.quantity || 0) * Number(material.netPrice || 0);
+      return groups[supplier];
+    };
+
+    invoices.forEach((invoice) => {
+      const supplier = normalizeSupplier(invoice.supplier || invoice.fornitore);
+      const group = ensureGroup(supplier);
+
+      group.invoices.push(invoice);
+      group.invoiceCount += 1;
+      group.createdItems += Number(invoice.createdItems || 0);
+      group.updatedItems += Number(invoice.updatedItems || 0);
+      group.detectedItems += Number(invoice.detectedItems || 0);
+
+      const date = invoice.createdAt || invoice.updatedAt;
+      if (date && (!group.lastActivityAt || new Date(date) > new Date(group.lastActivityAt))) {
+        group.lastActivityAt = date;
+      }
     });
 
     movements.forEach((movement) => {
       const material = materialById.get(String(movement.materialId));
-      const supplier = normalizeSupplier(material?.supplier);
-
-      if (!groups[supplier]) {
-        groups[supplier] = {
-          supplier,
-          materials: [],
-          movements: [],
-          materialCount: 0,
-          totalQuantity: 0,
-          stockValue: 0,
-          entriesQuantity: 0,
-          exitsQuantity: 0,
-          invoiceEntries: 0,
-          lastMovementAt: null,
-        };
-      }
-
-      groups[supplier].movements.push(movement);
+      const supplier = normalizeSupplier(movement.supplier || movement.fornitore || material?.supplier);
+      const group = ensureGroup(supplier);
 
       const qty = Number(movement.quantity || 0);
+      const price = Number(material?.netPrice || 0);
+      const value = qty * price;
       const type = String(movement.type || '').toLowerCase();
-      const reason = String(movement.reason || '').toLowerCase();
-      const notes = String(movement.notes || '').toLowerCase();
 
-      if (type === 'entrata') groups[supplier].entriesQuantity += qty;
-      if (type === 'uscita') groups[supplier].exitsQuantity += qty;
+      group.movements.push({ ...movement, material });
+      group.movementCount += 1;
 
-      if (
-        reason.includes('fattura') ||
-        reason.includes('importazione') ||
-        notes.includes('fattura') ||
-        notes.includes('importazione')
-      ) {
-        groups[supplier].invoiceEntries += 1;
+      if (type === 'entrata') {
+        group.totalQuantity += qty;
+        group.estimatedValue += value;
       }
 
-      const movementDate = movement.date || movement.createdAt;
-      if (
-        movementDate &&
-        (!groups[supplier].lastMovementAt ||
-          new Date(movementDate) > new Date(groups[supplier].lastMovementAt))
-      ) {
-        groups[supplier].lastMovementAt = movementDate;
+      if (isInvoiceMovement(movement)) {
+        group.invoiceMovements.push({ ...movement, material });
+      } else if (type === 'entrata') {
+        group.manualMovements.push({ ...movement, material });
+        group.manualCount += 1;
+      }
+
+      const date = getMovementDate(movement);
+      if (date && (!group.lastActivityAt || new Date(date) > new Date(group.lastActivityAt))) {
+        group.lastActivityAt = date;
       }
     });
 
-    return Object.values(groups)
-      .map((row) => ({
-        ...row,
-        movementCount: row.movements.length,
-      }))
-      .sort((a, b) => {
-        if (b.stockValue !== a.stockValue) return b.stockValue - a.stockValue;
-        return a.supplier.localeCompare(b.supplier);
-      });
-  }, [materials, movements]);
+    materials.forEach((material) => {
+      const supplier = normalizeSupplier(material.supplier);
+      const group = ensureGroup(supplier);
+
+      group.materials.push(material);
+      group.materialCount += 1;
+      group.stockValue += Number(material.quantity || 0) * Number(material.netPrice || 0);
+    });
+
+    return Object.values(groups).sort((a, b) => {
+      const dateA = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
+      const dateB = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
+
+      if (dateB !== dateA) return dateB - dateA;
+      return a.supplier.localeCompare(b.supplier);
+    });
+  }, [materials, movements, invoices]);
 
   const filteredSuppliers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -174,8 +203,11 @@ export default function Fornitori() {
 
       return (
         row.supplier.toLowerCase().includes(q) ||
-        row.materials.some((m) =>
-          `${m.code || ''} ${m.description || ''} ${m.brand || ''}`
+        row.invoices.some((invoice) =>
+          `${invoice.originalFileName || ''} ${invoice.fileName || ''}`.toLowerCase().includes(q)
+        ) ||
+        row.movements.some((movement) =>
+          `${movement.materialCode || ''} ${movement.materialDescription || ''} ${movement.notes || ''}`
             .toLowerCase()
             .includes(q)
         )
@@ -193,16 +225,18 @@ export default function Fornitori() {
       filteredSuppliers.reduce(
         (acc, row) => {
           acc.suppliers += 1;
-          acc.materials += row.materialCount;
-          acc.stockValue += row.stockValue;
-          acc.invoiceEntries += row.invoiceEntries;
+          acc.invoices += row.invoiceCount;
+          acc.manual += row.manualCount;
+          acc.value += row.estimatedValue;
+          acc.quantity += row.totalQuantity;
           return acc;
         },
         {
           suppliers: 0,
-          materials: 0,
-          stockValue: 0,
-          invoiceEntries: 0,
+          invoices: 0,
+          manual: 0,
+          value: 0,
+          quantity: 0,
         }
       ),
     [filteredSuppliers]
@@ -218,51 +252,49 @@ export default function Fornitori() {
 
     const summaryRows = filteredSuppliers.map((row) => ({
       Fornitore: row.supplier,
-      Materiali: row.materialCount,
-      'Quantità totale': row.totalQuantity,
-      'Valore magazzino stimato': Number(row.stockValue || 0),
-      'Movimenti totali': row.movementCount,
-      'Entrate totali': row.entriesQuantity,
-      'Uscite totali': row.exitsQuantity,
-      'Movimenti da fatture/import': row.invoiceEntries,
-      'Ultimo movimento': formatDate(row.lastMovementAt),
+      Fatture: row.invoiceCount,
+      'Inserimenti manuali': row.manualCount,
+      Movimenti: row.movementCount,
+      'Quantità caricata': row.totalQuantity,
+      'Valore acquisti stimato': Number(row.estimatedValue || 0),
+      'Materiali collegati': row.materialCount,
+      'Ultima attività': formatDate(row.lastActivityAt),
     }));
 
     const summarySheet = XLSX.utils.json_to_sheet(summaryRows);
-    summarySheet['!cols'] = [
-      { wch: 28 },
-      { wch: 12 },
-      { wch: 16 },
-      { wch: 22 },
-      { wch: 16 },
-      { wch: 16 },
-      { wch: 16 },
-      { wch: 24 },
-      { wch: 20 },
-    ];
-
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Fornitori');
 
     filteredSuppliers.forEach((supplier) => {
-      const rows = supplier.materials.map((material) => ({
-        Codice: material.code || '',
-        Descrizione: material.description || '',
-        Marca: material.brand || '',
-        Categoria: material.category || '',
-        Quantità: Number(material.quantity || 0),
-        UM: material.unit || '',
-        'Prezzo netto': Number(material.netPrice || 0),
-        'Valore stock': Number(material.quantity || 0) * Number(material.netPrice || 0),
-        Posizione: material.location || '',
-        Soglia: Number(material.minThreshold || 0),
-        Note: material.notes || '',
-      }));
+      const rows = [
+        ...supplier.invoices.map((invoice) => ({
+          Tipo: 'Fattura',
+          Data: formatDate(invoice.createdAt),
+          Documento: invoice.originalFileName || invoice.fileName || '',
+          Codice: '',
+          Descrizione: '',
+          Quantità: '',
+          Valore: '',
+          Note: invoice.errors || '',
+        })),
+        ...supplier.movements.map((movement) => ({
+          Tipo: isInvoiceMovement(movement) ? 'Movimento da fattura' : 'Inserimento manuale',
+          Data: formatDate(getMovementDate(movement)),
+          Documento: movement.notes || '',
+          Codice: movement.material?.code || movement.materialCode || '',
+          Descrizione: movement.material?.description || movement.materialDescription || '',
+          Quantità: Number(movement.quantity || 0),
+          Valore:
+            Number(movement.quantity || 0) *
+            Number(movement.material?.netPrice || 0),
+          Note: movement.reason || '',
+        })),
+      ];
 
       const sheet = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(workbook, sheet, sanitizeSheetName(supplier.supplier));
     });
 
-    XLSX.writeFile(workbook, `Fornitori_Magazzino_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(workbook, `Fornitori_${new Date().toISOString().slice(0, 10)}.xlsx`);
 
     try {
       await adminLogStore.create({
@@ -276,77 +308,19 @@ export default function Fornitori() {
     }
   };
 
-
-  const fixImportedSupplier = async () => {
-    const supplier = fixSupplierName.trim();
-
-    if (!supplier) {
-      alert('Inserisci il nome del fornitore da assegnare.');
-      return;
-    }
-
-    const targetMaterials = materials.filter((material) => {
-      const currentSupplier = String(material.supplier || '').trim().toLowerCase();
-
-      return ['', 'importato', 'senza fornitore', 'da assegnare'].includes(currentSupplier);
-    });
-
-    if (targetMaterials.length === 0) {
-      alert('Non ci sono materiali con fornitore Importato/vuoto da correggere.');
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Vuoi assegnare il fornitore "${supplier}" a ${targetMaterials.length} materiali attualmente senza fornitore reale?`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setFixingSupplier(true);
-
-      for (const material of targetMaterials) {
-        await materialStore.update(material.id, {
-          supplier,
-        });
-      }
-
-      try {
-        await adminLogStore.create({
-          userId: user?.id,
-          entity: 'fornitori',
-          action: 'correzione_fornitore',
-          details: `Assegnato fornitore "${supplier}" a ${targetMaterials.length} materiali Importato/vuoti.`,
-        });
-      } catch (err) {
-        console.warn('Log correzione fornitore non salvato:', err);
-      }
-
-      setFixSupplierName('');
-      await loadData();
-
-      alert(`Fornitore aggiornato su ${targetMaterials.length} materiali.`);
-    } catch (err) {
-      console.error('Errore correzione fornitore:', err);
-      alert(err?.message || 'Errore durante la correzione del fornitore.');
-    } finally {
-      setFixingSupplier(false);
-    }
-  };
-
   return (
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
           <h1 className="page-title">🏭 Fornitori</h1>
           <p className="page-subtitle">
-            Monitora fornitori, materiali collegati, valore a magazzino e movimenti da fatture/importazioni.
+            Fatture, inserimenti manuali, movimenti e materiali raggruppati per fornitore.
           </p>
         </div>
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadData} disabled={loading}>
-            🔄 Aggiorna
+            {loading ? 'Aggiorno...' : '🔄 Aggiorna'}
           </button>
           <button className="btn btn-primary" onClick={exportExcel} disabled={loading}>
             📊 Esporta Excel
@@ -362,79 +336,49 @@ export default function Fornitori() {
           <div className="kpi-content">
             <div className="kpi-label">Fornitori</div>
             <div className="kpi-value">{totals.suppliers}</div>
-            <div className="kpi-detail">fornitori visualizzati</div>
+            <div className="kpi-detail">fornitori con storico</div>
           </div>
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">📦</div>
+          <div className="kpi-icon purple">📄</div>
           <div className="kpi-content">
-            <div className="kpi-label">Materiali collegati</div>
-            <div className="kpi-value">{totals.materials}</div>
-            <div className="kpi-detail">componenti/anagrafiche</div>
+            <div className="kpi-label">Fatture</div>
+            <div className="kpi-value">{totals.invoices}</div>
+            <div className="kpi-detail">documenti collegati</div>
           </div>
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple">💶</div>
+          <div className="kpi-icon teal">✍️</div>
           <div className="kpi-content">
-            <div className="kpi-label">Valore stock stimato</div>
-            <div className="kpi-value">{formatCurrency(totals.stockValue)}</div>
-            <div className="kpi-detail">quantità × prezzo netto</div>
+            <div className="kpi-label">Manuali</div>
+            <div className="kpi-value">{totals.manual}</div>
+            <div className="kpi-detail">carichi manuali</div>
           </div>
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon teal">📄</div>
+          <div className="kpi-icon green">💶</div>
           <div className="kpi-content">
-            <div className="kpi-label">Movimenti da fatture</div>
-            <div className="kpi-value">{totals.invoiceEntries}</div>
-            <div className="kpi-detail">importazioni/fatture rilevate</div>
+            <div className="kpi-label">Valore stimato</div>
+            <div className="kpi-value">{formatCurrency(totals.value)}</div>
+            <div className="kpi-detail">entrate × prezzo netto</div>
           </div>
         </div>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Cerca fornitore o materiale</h3>
+          <h3 className="card-title">🔍 Cerca fornitore, fattura o materiale</h3>
         </div>
         <div className="card-body">
           <input
             className="form-control"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cerca fornitore, codice materiale, descrizione o marca..."
+            placeholder="Cerca fornitore, file fattura, codice, descrizione..."
           />
-        </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: 20, border: '1px solid var(--warning-200)', background: 'var(--warning-50)' }}>
-        <div className="card-header">
-          <h3 className="card-title">🛠️ Correggi fornitori Importato</h3>
-        </div>
-
-        <div className="card-body">
-          <p className="text-sm text-muted" style={{ marginBottom: 12 }}>
-            Usa questa funzione per assegnare un fornitore reale ai materiali che risultano ancora come “Importato”.
-          </p>
-
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <input
-              className="form-control"
-              style={{ maxWidth: 320 }}
-              value={fixSupplierName}
-              onChange={(e) => setFixSupplierName(e.target.value)}
-              placeholder="Es. Ariston SpA / Robert Bosch S.p.A."
-            />
-
-            <button
-              className="btn btn-warning"
-              onClick={fixImportedSupplier}
-              disabled={fixingSupplier || !fixSupplierName.trim()}
-            >
-              {fixingSupplier ? 'Correzione...' : 'Correggi materiali Importato'}
-            </button>
-          </div>
         </div>
       </div>
 
@@ -443,12 +387,12 @@ export default function Fornitori() {
           <thead>
             <tr>
               <th>Fornitore</th>
-              <th>Materiali</th>
-              <th>Quantità totale</th>
-              <th>Valore stock</th>
+              <th>Fatture</th>
+              <th>Inserimenti manuali</th>
               <th>Movimenti</th>
-              <th>Da fatture/import</th>
-              <th>Ultimo movimento</th>
+              <th>Quantità caricata</th>
+              <th>Valore stimato</th>
+              <th>Ultima attività</th>
               <th>Azioni</th>
             </tr>
           </thead>
@@ -467,7 +411,7 @@ export default function Fornitori() {
                     <div className="empty-state-icon">🏭</div>
                     <div className="empty-state-title">Nessun fornitore trovato</div>
                     <div className="empty-state-text">
-                      Inserisci il fornitore nei materiali o importa fatture con materiali collegati.
+                      Importa fatture o registra carichi manuali con fornitore.
                     </div>
                   </div>
                 </td>
@@ -475,15 +419,13 @@ export default function Fornitori() {
             ) : (
               filteredSuppliers.map((row) => (
                 <tr key={row.supplier}>
-                  <td>
-                    <strong>{row.supplier}</strong>
-                  </td>
-                  <td style={{ fontWeight: 800 }}>{row.materialCount}</td>
-                  <td>{row.totalQuantity}</td>
-                  <td style={{ fontWeight: 800 }}>{formatCurrency(row.stockValue)}</td>
+                  <td><strong>{row.supplier}</strong></td>
+                  <td style={{ fontWeight: 800 }}>{row.invoiceCount}</td>
+                  <td style={{ fontWeight: 800 }}>{row.manualCount}</td>
                   <td>{row.movementCount}</td>
-                  <td>{row.invoiceEntries}</td>
-                  <td>{formatDate(row.lastMovementAt)}</td>
+                  <td>{row.totalQuantity}</td>
+                  <td style={{ fontWeight: 800 }}>{formatCurrency(row.estimatedValue)}</td>
+                  <td>{formatDate(row.lastActivityAt)}</td>
                   <td>
                     <button
                       className="btn btn-sm btn-primary"
@@ -500,14 +442,8 @@ export default function Fornitori() {
       </div>
 
       {selectedSupplierData && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedSupplier(null)}
-        >
-          <div
-            className="modal modal-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-overlay" onClick={() => setSelectedSupplier(null)}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
                 <h3 className="modal-title">Dettaglio fornitore</h3>
@@ -522,58 +458,98 @@ export default function Fornitori() {
             <div className="modal-body">
               <div className="grid-2" style={{ marginBottom: 20 }}>
                 <div>
-                  <div className="text-sm text-muted fw-semibold">Materiali collegati</div>
-                  <div style={{ fontWeight: 900 }}>{selectedSupplierData.materialCount}</div>
+                  <div className="text-sm text-muted fw-semibold">Fatture</div>
+                  <div style={{ fontWeight: 900 }}>{selectedSupplierData.invoiceCount}</div>
                 </div>
-
                 <div>
-                  <div className="text-sm text-muted fw-semibold">Valore stock stimato</div>
-                  <div style={{ fontWeight: 900 }}>{formatCurrency(selectedSupplierData.stockValue)}</div>
+                  <div className="text-sm text-muted fw-semibold">Inserimenti manuali</div>
+                  <div style={{ fontWeight: 900 }}>{selectedSupplierData.manualCount}</div>
                 </div>
-
                 <div>
-                  <div className="text-sm text-muted fw-semibold">Entrate totali</div>
-                  <div style={{ fontWeight: 900 }}>{selectedSupplierData.entriesQuantity}</div>
+                  <div className="text-sm text-muted fw-semibold">Quantità caricata</div>
+                  <div style={{ fontWeight: 900 }}>{selectedSupplierData.totalQuantity}</div>
                 </div>
-
                 <div>
-                  <div className="text-sm text-muted fw-semibold">Ultimo movimento</div>
-                  <div style={{ fontWeight: 900 }}>{formatDate(selectedSupplierData.lastMovementAt)}</div>
+                  <div className="text-sm text-muted fw-semibold">Valore stimato</div>
+                  <div style={{ fontWeight: 900 }}>{formatCurrency(selectedSupplierData.estimatedValue)}</div>
                 </div>
               </div>
 
+              <h4 style={{ marginBottom: 10 }}>📄 Fatture collegate</h4>
+              <div className="table-container" style={{ marginBottom: 24 }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>File</th>
+                      <th>Rilevati</th>
+                      <th>Creati</th>
+                      <th>Aggiornati</th>
+                      <th>Stato</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedSupplierData.invoices.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-muted">Nessuna fattura collegata.</td>
+                      </tr>
+                    ) : (
+                      selectedSupplierData.invoices.map((invoice) => (
+                        <tr key={invoice.id}>
+                          <td>{formatDate(invoice.createdAt)}</td>
+                          <td><strong>{invoice.originalFileName || invoice.fileName}</strong></td>
+                          <td>{invoice.detectedItems}</td>
+                          <td>{invoice.createdItems}</td>
+                          <td>{invoice.updatedItems}</td>
+                          <td>{invoice.status}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <h4 style={{ marginBottom: 10 }}>📦 Movimenti / inserimenti</h4>
               <div className="table-container">
                 <table className="data-table">
                   <thead>
                     <tr>
+                      <th>Data</th>
+                      <th>Tipo</th>
                       <th>Codice</th>
                       <th>Descrizione</th>
-                      <th>Marca</th>
                       <th>Qtà</th>
-                      <th>Prezzo netto</th>
                       <th>Valore</th>
-                      <th>Posizione</th>
+                      <th>Note</th>
                     </tr>
                   </thead>
-
                   <tbody>
-                    {selectedSupplierData.materials.map((material) => {
-                      const value = Number(material.quantity || 0) * Number(material.netPrice || 0);
+                    {selectedSupplierData.movements.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="text-muted">Nessun movimento collegato.</td>
+                      </tr>
+                    ) : (
+                      selectedSupplierData.movements
+                        .slice()
+                        .sort((a, b) => new Date(getMovementDate(b)) - new Date(getMovementDate(a)))
+                        .map((movement) => {
+                          const value =
+                            Number(movement.quantity || 0) *
+                            Number(movement.material?.netPrice || 0);
 
-                      return (
-                        <tr key={material.id}>
-                          <td>
-                            <strong>{material.code}</strong>
-                          </td>
-                          <td>{material.description}</td>
-                          <td>{material.brand || '—'}</td>
-                          <td>{material.quantity}</td>
-                          <td>{formatCurrency(material.netPrice)}</td>
-                          <td>{formatCurrency(value)}</td>
-                          <td>{material.location || '—'}</td>
-                        </tr>
-                      );
-                    })}
+                          return (
+                            <tr key={movement.id}>
+                              <td>{formatDate(getMovementDate(movement))}</td>
+                              <td>{isInvoiceMovement(movement) ? 'Da fattura' : 'Manuale'}</td>
+                              <td><strong>{movement.material?.code || movement.materialCode || '—'}</strong></td>
+                              <td>{movement.material?.description || movement.materialDescription || '—'}</td>
+                              <td>{movement.quantity}</td>
+                              <td>{formatCurrency(value)}</td>
+                              <td>{movement.notes || movement.reason || '—'}</td>
+                            </tr>
+                          );
+                        })
+                    )}
                   </tbody>
                 </table>
               </div>

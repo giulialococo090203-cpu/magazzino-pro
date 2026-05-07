@@ -998,6 +998,7 @@ export default function ImportaFatture() {
             userId: user?.id,
             userName: user?.fullName || user?.username || '',
             operatorName: user?.fullName || user?.username || '',
+            supplier: item.supplier || '',
           });
 
           loaded++;
@@ -1025,6 +1026,10 @@ export default function ImportaFatture() {
           createdItems: created,
           updatedItems: loaded,
           errors,
+          supplier:
+            selectedItems.map((item) => String(item.supplier || '').trim()).find(Boolean) ||
+            invoiceRecord?.supplier ||
+            '',
         });
 
         setInvoiceRecord(updated);
@@ -1344,6 +1349,7 @@ export default function ImportaFatture() {
                         <option value="brand">Marca</option>
                         <option value="category">Categoria</option>
                         <option value="location">Posizione</option>
+                        <option value="supplier">Fornitore</option>
                       </select>
                       <div style={{ color: 'var(--gray-400)', fontSize: 10 }}>Col {colIdx + 1}</div>
                     </th>
