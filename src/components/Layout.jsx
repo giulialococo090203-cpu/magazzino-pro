@@ -375,19 +375,7 @@ const [openSections, setOpenSections] = useState({});
       return next;
     });
   };
-
-  const handleGlobalSearchKeyDown = (e) => {
-    if (e.key !== 'Enter') return;
-
-    const q = globalSearch.trim();
-
-    if (!q) return;
-
-    navigate(`/inventario?q=${encodeURIComponent(q)}`);
-    setGlobalSearch('');
-  };
-
-  return (
+return (
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-header">
@@ -477,19 +465,6 @@ const [openSections, setOpenSections] = useState({});
           </div>
 
           <div className="header-right">
-            {hasPermission(user, 'canViewInventory') && (
-              <div className="global-search-container">
-                <span className="global-search-icon"><FaIcon name="search" className="ui-inline-icon" /></span>
-                <input
-                  type="text"
-                  className="global-search-input"
-                  placeholder="Cerca codice materiale..."
-                  value={globalSearch}
-                  onChange={(e) => setGlobalSearch(e.target.value)}
-                  onKeyDown={handleGlobalSearchKeyDown}
-                />
-              </div>
-            )}
 
             <span className="header-date" style={{ textTransform: 'capitalize' }}>
               {today}
