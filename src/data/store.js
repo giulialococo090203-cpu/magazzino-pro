@@ -1366,18 +1366,47 @@ export const invoiceImportStore = {
   async findDuplicateFile(file) {
     if (!file) return null;
 
+    const normalizeInvoiceName = (value = '') =>
+      String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\.[a-z0-9]+$/i, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const currentName = normalizeInvoiceName(file.name);
+    const currentSize = Number(file.size || 0);
+
     const { data, error } = await supabase
       .from('fatture_importate')
       .select('*')
-      .eq('nome_file_originale', file.name)
-      .eq('dimensione_file', file.size || 0)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(500);
 
     if (error) throw error;
 
-    return data ? mapImportedInvoice.toModel(data) : null;
+    const rows = Array.isArray(data) ? data : [];
+
+    const duplicate = rows.find((row) => {
+      const originalName = normalizeInvoiceName(row.nome_file_originale);
+      const storedName = normalizeInvoiceName(row.nome_file);
+      const storedSize = Number(row.dimensione_file || 0);
+
+      const sameOriginalName = originalName && originalName === currentName;
+      const sameStoredName = storedName && storedName === currentName;
+      const sameSize = currentSize > 0 && storedSize > 0 && currentSize === storedSize;
+
+      // Stessa fattura probabile:
+      // - stesso nome originale
+      // - oppure stesso nome salvato
+      // - oppure stesso nome e stessa dimensione
+      return sameOriginalName || sameStoredName || ((sameOriginalName || sameStoredName) && sameSize);
+    });
+
+    return duplicate ? mapImportedInvoice.toModel(duplicate) : null;
   },
 
   async uploadOriginalFile(file, user) {
