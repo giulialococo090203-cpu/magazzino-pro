@@ -28,14 +28,14 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
 const CHART_COLORS = [
-  '#3b82f6',
-  '#22c55e',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#06b6d4',
-  '#ec4899',
-  '#f97316',
+  'rgba(249, 115, 22, 0.78)',
+  'rgba(71, 85, 105, 0.78)',
+  'rgba(16, 185, 129, 0.72)',
+  'rgba(245, 158, 11, 0.72)',
+  'rgba(100, 116, 139, 0.72)',
+  'rgba(20, 184, 166, 0.70)',
+  'rgba(244, 99, 76, 0.70)',
+  'rgba(148, 163, 184, 0.70)',
 ];
 
 const SUPABASE_USAGE_LIMIT_BYTES = 500 * 1024 * 1024;
@@ -315,13 +315,13 @@ export default function Dashboard() {
         {
           label: 'Entrate',
           data: entriesVsExits.map((d) => Number(d.entries || 0)),
-          backgroundColor: 'rgba(34,197,94,0.7)',
+          backgroundColor: 'rgba(16, 185, 129, 0.78)',
           borderRadius: 4,
         },
         {
           label: 'Uscite',
           data: entriesVsExits.map((d) => Number(d.exits || 0)),
-          backgroundColor: 'rgba(239,68,68,0.7)',
+          backgroundColor: 'rgba(244, 99, 76, 0.78)',
           borderRadius: 4,
         },
       ],
@@ -335,7 +335,7 @@ export default function Dashboard() {
         {
           label: 'Quantità movimentata',
           data: mostMoved.map((m) => Number(m.totalMoved || 0)),
-          backgroundColor: 'rgba(59,130,246,0.7)',
+          backgroundColor: 'rgba(71, 85, 105, 0.78)',
           borderRadius: 4,
         },
       ],
@@ -351,13 +351,13 @@ export default function Dashboard() {
         {
           label: 'Quantità attuale',
           data: items.map((m) => Number(m.quantity || 0)),
-          backgroundColor: 'rgba(239,68,68,0.7)',
+          backgroundColor: 'rgba(244, 99, 76, 0.78)',
           borderRadius: 4,
         },
         {
           label: 'Soglia minima',
           data: items.map((m) => Number(m.minThreshold || 0)),
-          backgroundColor: 'rgba(251,191,36,0.4)',
+          backgroundColor: 'rgba(249, 115, 22, 0.22)',
           borderRadius: 4,
         },
       ],
@@ -380,7 +380,7 @@ export default function Dashboard() {
             Number(supabaseUsage.databaseBytes || 0) / 1024 / 1024,
             Number(supabaseUsage.storageBytes || 0) / 1024 / 1024,
           ],
-          backgroundColor: ['rgba(59,130,246,0.75)', 'rgba(139,92,246,0.75)'],
+          backgroundColor: ['rgba(71, 85, 105, 0.78)', 'rgba(249, 115, 22, 0.72)'],
           borderWidth: 0,
         },
       ],

@@ -6033,3 +6033,31 @@ button .ui-inline-icon {
   font-size: inherit !important;
 }
 
+
+/* ============================================================
+   Grafici Chart.js più gestionali
+   ============================================================ */
+
+.chart-container,
+.card canvas {
+  max-width: 100%;
+}
+
+.card:has(canvas) {
+  background: #ffffff !important;
+}
+
+.card:has(canvas) .card-header {
+  background: #ffffff !important;
+}
+
+.card:has(canvas) .card-title {
+  font-size: 17px !important;
+  font-weight: 740 !important;
+  color: #101828 !important;
+}
+
+.card:has(canvas) canvas {
+  filter: saturate(0.82);
+}
+
