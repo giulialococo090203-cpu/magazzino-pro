@@ -65,50 +65,72 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">
-          <div className="login-logo-icon">M</div>
-          <h2>MagazzinoPro</h2>
-          <p>Sistema di Gestione Magazzino</p>
-        </div>
+    <div className="login-page login-scenic-page">
+      <div className="login-scenic-shell">
+        <section className="login-scenic-brand" aria-label="MagazzinoPro">
+          <div className="login-brand-mark">M</div>
 
-        {error && <div className="login-error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Inserisci la tua email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoFocus
-              required
-            />
+          <div className="login-brand-copy">
+            <div className="login-brand-kicker">Gestionale tecnico</div>
+            <h1>MagazzinoPro</h1>
+            <p>
+              Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.
+            </p>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Inserisci la tua password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="login-brand-lines" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        </section>
+
+        <section className="login-scenic-panel">
+          <div className="login-form-header">
+            <div className="login-form-icon">M</div>
+            <div>
+              <h2>Accedi</h2>
+              <p>Sistema di Gestione Magazzino</p>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary login-btn"
-            disabled={loading}
-          >
-            {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
-          </button>
-        </form>
+          {error && <div className="login-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Inserisci la tua email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Inserisci la tua password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary login-btn"
+              disabled={loading}
+            >
+              {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
+            </button>
+          </form>
+        </section>
       </div>
     </div>
   );
