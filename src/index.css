@@ -6890,3 +6890,140 @@ button svg {
   font-family: inherit !important;
 }
 
+
+/* ============================================================
+   SISTEMA ICONE DEFINITIVO - Badge testuali gestionali
+   Zero font esterni, zero SVG, zero CDN.
+   ============================================================ */
+
+.app-text-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  color: currentColor !important;
+}
+
+/* Titoli pagina */
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.page-title .app-text-icon,
+.app-text-icon.ui-title-icon {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(249, 115, 22, 0.11) !important;
+  color: #f97316 !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.24) !important;
+  font-size: 13px !important;
+}
+
+/* KPI */
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f6f8fb !important;
+  color: #475569 !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kpi-icon .app-text-icon,
+.kpi-icon .ui-inline-icon {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  color: #475569 !important;
+}
+
+/* Titoli card */
+.card-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.card-title .app-text-icon,
+.card-title .ui-inline-icon,
+.card-title .ui-section-icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background: #f6f8fb !important;
+  color: #475569 !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+  font-size: 10px !important;
+}
+
+/* Search, header, bottoni */
+.search-bar-icon .app-text-icon,
+.global-search-icon .app-text-icon,
+.header-notification-btn .app-text-icon {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+  color: currentColor !important;
+}
+
+.btn .app-text-icon,
+button .app-text-icon {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin-right: 7px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  color: currentColor !important;
+}
+
+/* Sidebar */
+.sidebar-link .app-text-icon {
+  width: 22px !important;
+  min-width: 22px !important;
+  font-size: 10px !important;
+}
+
+/* Empty state / modali */
+.empty-state-icon .app-text-icon,
+.confirm-icon .app-text-icon {
+  font-size: 18px !important;
+}
+
+/* Disattiva definitivamente vecchi sistemi */
+.material-symbols-rounded,
+.material-symbols-outlined,
+.fa-solid,
+.fa-regular {
+  display: none !important;
+}
+
