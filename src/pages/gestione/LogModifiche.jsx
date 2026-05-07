@@ -3,6 +3,7 @@ import { adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalizeRole } from '../../data/permissions';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 function isDatore(user) {
   return normalizeRole(user?.role) === 'datore';
@@ -54,7 +55,7 @@ export default function LogModifiche() {
       case 'fattura':
         return <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />;
       default:
-        return '📝';
+        return '<FaIcon name="history_edu" className="ui-inline-icon" />';
     }
   };
 
@@ -87,7 +88,7 @@ export default function LogModifiche() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📝 Log Modifiche Amministrative</h1>
+          <h1 className="page-title"><FaIcon name="history_edu" className="ui-title-icon" />Log Modifiche Amministrative</h1>
           <p className="page-subtitle">{filtered.length} operazioni registrate</p>
         </div>
 
@@ -142,7 +143,7 @@ export default function LogModifiche() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon">📝</div>
+              <div className="empty-state-icon"><FaIcon name="history_edu" className="ui-inline-icon" /></div>
               <div className="empty-state-title">Nessun log registrato</div>
               <div className="empty-state-text">Le modifiche amministrative verranno registrate qui</div>
             </div>

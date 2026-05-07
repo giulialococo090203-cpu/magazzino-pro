@@ -9,6 +9,7 @@ import {
   normalizeRole,
 } from '../../data/permissions';
 import Icon from '../../components/Icon';
+import FaIcon from '../../components/FaIcon';
 
 const USER_ROLES = [
   {
@@ -318,7 +319,7 @@ export default function GestioneUtenti() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">👥 Gestione Utenti</h1>
+          <h1 className="page-title"><FaIcon name="manage_accounts" className="ui-title-icon" />Gestione Utenti</h1>
           <p className="page-subtitle">
             {users.length} utenti registrati nel sistema · permessi personalizzabili per singolo utente
           </p>
