@@ -1756,3 +1756,67 @@ textarea.form-control {
   background: rgba(255, 255, 255, 0.075);
   color: white;
 }
+
+/* Fix sidebar stretta: icone centrate e active state non schiacciato */
+.sidebar:not(:hover) .sidebar-section-toggle {
+  width: 64px;
+  height: 64px;
+  min-height: 64px;
+  margin: 8px auto;
+  padding: 0;
+  border-radius: 20px;
+  justify-content: center;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle-left {
+  width: 100%;
+  justify-content: center;
+  gap: 0;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+.sidebar:not(:hover) .sidebar-section-chevron {
+  display: none;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  width: 64px;
+  min-width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  text-align: center;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar:not(:hover) .sidebar-section-accordion.open > .sidebar-section-toggle {
+  background: rgba(56, 189, 248, 0.16);
+  box-shadow: inset 4px 0 0 #38bdf8;
+  color: #7dd3fc;
+}
+
+.sidebar:not(:hover) .sidebar-nav,
+.sidebar:not(:hover) .sidebar-nav-collapsible {
+  display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion {
+  margin-bottom: 10px;
+}
+
+/* evita la linea verticale mentre è compressa */
+.sidebar:not(:hover) .sidebar-nav-collapsible {
+  border-left: 0;
+}
+
+/* quando è larga, mantiene le voci belle allineate */
+.sidebar:hover .sidebar-section-toggle {
+  width: calc(100% - 24px);
+}
+
+.sidebar:hover .sidebar-section-icon {
+  width: 28px;
+  min-width: 28px;
+}
