@@ -342,7 +342,7 @@ export default function ArchivioFatture() {
       <div className="animate-slideUp">
         <div className="page-header">
           <div>
-            <h1 className="page-title">🗂️ Archivio Fatture</h1>
+            <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">folder_open</span>Archivio Fatture</h1>
             <p className="page-subtitle">Documenti importati e salvati su Supabase Storage</p>
           </div>
         </div>
@@ -366,7 +366,7 @@ export default function ArchivioFatture() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🗂️ Archivio Fatture</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">folder_open</span>Archivio Fatture</h1>
           <p className="page-subtitle">
             {filteredInvoices.length} documenti visualizzati su {invoices.length} caricati
           </p>

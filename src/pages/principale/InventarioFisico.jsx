@@ -406,7 +406,7 @@ export default function InventarioFisico() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🧮 Inventario Fisico</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">fact_check</span>Inventario Fisico</h1>
           <p className="page-subtitle">
             Procedura guidata per conteggio, differenze e rettifiche automatiche
           </p>
@@ -488,7 +488,7 @@ export default function InventarioFisico() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Filtri e strumenti conteggio</h3>
+          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">filter_alt</span>Filtri e strumenti conteggio</h3>
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
           </button>

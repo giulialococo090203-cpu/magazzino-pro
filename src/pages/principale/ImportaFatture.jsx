@@ -1155,7 +1155,7 @@ export default function ImportaFatture() {
       <div className="animate-slideUp">
         <div className="page-header">
           <div>
-            <h1 className="page-title">📄 Importa da Fatture</h1>
+            <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">upload_file</span>Importa da Fatture</h1>
             <p className="page-subtitle">Carica materiali partendo da documenti di ordine o fatture</p>
           </div>
         </div>
@@ -1224,7 +1224,7 @@ export default function ImportaFatture() {
 
       <div className="page-header">
         <div>
-          <h1 className="page-title">📄 Importa da Fatture</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">upload_file</span>Importa da Fatture</h1>
           <p className="page-subtitle">Carica materiali partendo da documenti di ordine o fatture</p>
         </div>
       </div>

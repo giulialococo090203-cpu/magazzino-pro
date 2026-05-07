@@ -613,7 +613,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="card">
-          <div className="card-header"><h3 className="card-title">🔥 Materiali Più Movimentati</h3></div>
+          <div className="card-header"><h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">local_fire_department</span>Materiali Più Movimentati</h3></div>
           <div className="chart-container">
             {mostMoved.length > 0 ? (
               <Bar data={mostMovedData} options={{ ...barOptions, indexAxis: 'y' }} />

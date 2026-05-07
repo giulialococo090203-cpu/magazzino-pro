@@ -5663,3 +5663,183 @@ textarea {
   gap: 10px;
 }
 
+
+/* ============================================================
+   Icon system admin dashboard - niente emoji/cartoon
+   ============================================================ */
+
+/* Annulla il vecchio “grayscale emoji”: ora usiamo vere icone */
+.kpi-icon,
+.empty-state-icon,
+.quick-action-icon,
+.action-icon,
+.card-title > span:first-child,
+.page-title > span:first-child,
+.btn span:first-child {
+  filter: none !important;
+}
+
+/* Icona titolo pagina: piccola, pulita, professionale */
+.ui-title-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  border-radius: 12px;
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
+  font-size: 25px !important;
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.18);
+}
+
+/* Icone sezioni/card */
+.ui-section-icon {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 9px;
+  border-radius: 9px;
+  background: #f3f4f6;
+  color: #475467;
+  font-size: 20px !important;
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+/* Material symbols sempre puliti */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 520,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Page title più simile alle reference */
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  font-size: 30px !important;
+  font-weight: 780 !important;
+  letter-spacing: -0.035em !important;
+}
+
+/* Card dashboard/admin: più compatte, meno giocose */
+.card,
+.kpi-card,
+.table-container {
+  border-radius: 9px !important;
+  border: 1px solid #e1e6ef !important;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.055) !important;
+}
+
+.card-header {
+  min-height: 54px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* KPI con icona stile widget dashboard */
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 12px !important;
+  background: #f6f7f9 !important;
+  color: #344054 !important;
+  box-shadow: inset 0 0 0 1px #edf0f4 !important;
+  font-size: 0 !important;
+}
+
+/* Se dentro kpi-icon resta un emoji, lo riduciamo molto */
+.kpi-icon::first-letter {
+  font-size: 21px !important;
+}
+
+/* Button icons meno emoji */
+.btn {
+  gap: 7px !important;
+}
+
+.btn .material-symbols-rounded {
+  font-size: 18px !important;
+}
+
+/* Colori grafici più “dashboard admin” */
+.recharts-cartesian-grid line {
+  stroke: #edf0f4 !important;
+}
+
+.recharts-text {
+  fill: #667085 !important;
+  font-size: 12px !important;
+}
+
+.recharts-legend-item-text {
+  color: #667085 !important;
+}
+
+/* ============================================================
+   Fix tabella Ultimi Movimenti / ultime colonne tagliate
+   ============================================================ */
+
+.table-container {
+  overflow-x: auto !important;
+}
+
+.data-table {
+  min-width: 720px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 13px 18px !important;
+  white-space: nowrap !important;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  width: 170px !important;
+  min-width: 170px !important;
+  max-width: none !important;
+  padding-right: 32px !important;
+  overflow: visible !important;
+  text-align: left;
+}
+
+.data-table td:last-child > *,
+.data-table td:last-child .status-badge {
+  overflow: visible !important;
+  max-width: none !important;
+}
+
+.status-badge {
+  min-width: 88px !important;
+  white-space: nowrap !important;
+  padding: 6px 11px !important;
+  border-radius: 999px !important;
+}
+
+/* Se una tabella ha solo 3 colonne, evita che la terza venga schiacciata */
+.data-table th:nth-child(3):last-child,
+.data-table td:nth-child(3):last-child {
+  min-width: 190px !important;
+}

@@ -667,7 +667,7 @@ export default function Dashboard() {
       <div className="grid-2" style={{ marginTop: 20 }}>
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">📋 Ultimi Movimenti</h3>
+            <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">assignment</span>Ultimi Movimenti</h3>
             <Link to="/storico" className="btn btn-sm btn-ghost">
               Vedi tutti →
             </Link>
@@ -735,7 +735,7 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">⚠️ Materiali Critici</h3>
+            <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">warning</span>Materiali Critici</h3>
             <Link to="/controllo/notifiche" className="btn btn-sm btn-ghost">
               Vedi tutti →
             </Link>
@@ -1102,7 +1102,7 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">🔥 Materiali Più Movimentati</h3>
+            <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">local_fire_department</span>Materiali Più Movimentati</h3>
           </div>
           <div className="chart-container">
             {mostMoved.length > 0 ? (
@@ -1133,7 +1133,7 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">🧠 Memoria Supabase</h3>
+            <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">database</span>Memoria Supabase</h3>
             <button
               type="button"
               className="btn btn-sm btn-secondary"

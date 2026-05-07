@@ -232,7 +232,7 @@ export default function StoricoPrezzi() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📈 Storico Prezzi</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">trending_up</span>Storico Prezzi</h1>
           <p className="page-subtitle">
             Elenco compatto dei prezzi registrati da fatture e inserimenti manuali.
           </p>

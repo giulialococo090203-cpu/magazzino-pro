@@ -220,7 +220,7 @@ export default function ArchivioProposteOrdine() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">📑 Proposte Ordine</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">request_quote</span>Proposte Ordine</h1>
           <p className="page-subtitle">
             Archivio delle proposte generate dal riordino automatico, divise per fornitore.
           </p>

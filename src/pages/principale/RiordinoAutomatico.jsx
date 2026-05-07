@@ -508,7 +508,7 @@ export default function RiordinoAutomatico() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🛒 Riordino Automatico</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">shopping_cart</span>Riordino Automatico</h1>
           <p className="page-subtitle">
             Genera proposte d’ordine dai materiali sotto soglia o esauriti
           </p>

@@ -662,7 +662,7 @@ export default function Inventario() {
               )}
 
               <h4 className="section-title" style={{ marginTop: 16 }}>
-                📋 Ultimi Movimenti
+                <span className="ui-section-icon material-symbols-rounded">assignment</span>Ultimi Movimenti
               </h4>
 
               {materialMovements.length === 0 ? (

@@ -318,7 +318,7 @@ export default function Fornitori() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🏭 Fornitori</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">factory</span>Fornitori</h1>
           <p className="page-subtitle">
             Fatture, inserimenti manuali, movimenti e materiali raggruppati per fornitore.
           </p>

@@ -212,7 +212,7 @@ export default function GestioneMateriali() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🔧 Gestione Materiali</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">construction</span>Gestione Materiali</h1>
           <p className="page-subtitle">Anagrafica completa dei materiali — {materials.length} registrati</p>
         </div>
         <div className="btn-group">

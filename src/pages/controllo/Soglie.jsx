@@ -101,7 +101,7 @@ export default function Soglie() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">⚙️ Soglie e Unità di Misura</h1>
+          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">settings</span>Soglie e Unità di Misura</h1>
           <p className="page-subtitle">Gestisci le soglie minime per ogni materiale e le unità di misura</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowUnitModal(true)}>+ Nuova Unità di Misura</button>
@@ -116,7 +116,7 @@ export default function Soglie() {
       {/* Units section */}
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="card-header">
-          <h3 className="card-title">📏 Unità di Misura Configurate</h3>
+          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">straighten</span>Unità di Misura Configurate</h3>
         </div>
         <div className="card-body">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -138,7 +138,7 @@ export default function Soglie() {
       {/* Thresholds table */}
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">📊 Soglie Minime per Materiale</h3>
+          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">bar_chart</span>Soglie Minime per Materiale</h3>
         </div>
         <div className="card-body" style={{ paddingBottom: 0 }}>
           <div className="filters-row">
