@@ -4668,3 +4668,126 @@ body,
 .login-subtitle {
   color: #667085 !important;
 }
+
+/* ============================================================
+   Login v2: più elegante, meno blocco arancione
+   ============================================================ */
+
+/* Sfondo più sobrio, meno “macchia” arancione */
+.login-page,
+.login-container,
+.login-wrapper {
+  background:
+    radial-gradient(circle at 15% 18%, rgba(249, 115, 22, 0.08) 0, transparent 24%),
+    radial-gradient(circle at 85% 78%, rgba(30, 41, 59, 0.34) 0, transparent 38%),
+    linear-gradient(135deg, #10151d 0%, #1c2430 48%, #263241 100%) !important;
+}
+
+/* Card più sottile */
+.login-card {
+  max-width: 460px !important;
+  padding: 44px 46px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.975) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.30),
+    0 1px 0 rgba(255,255,255,0.75) inset !important;
+}
+
+/* Rimuove il banner arancione gigante in alto */
+.login-card > div:first-child {
+  background: transparent !important;
+  background-image: none !important;
+  padding: 0 !important;
+  margin-bottom: 34px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Logo piccolo e professionale */
+.login-logo,
+.login-logo-icon,
+.logo-icon,
+.login-card > div:first-child > div:first-child {
+  width: 64px !important;
+  height: 64px !important;
+  margin: 0 auto 18px !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 30px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 12px 26px rgba(249, 115, 22, 0.24) !important;
+}
+
+/* Titolo centrato, senza “fascia” */
+.login-card h1,
+.login-title {
+  color: #101828 !important;
+  text-align: center !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+  margin: 0 0 6px !important;
+}
+
+.login-card p,
+.login-subtitle {
+  text-align: center !important;
+  color: #667085 !important;
+  font-size: 15px !important;
+  font-weight: 450 !important;
+  margin-bottom: 32px !important;
+}
+
+/* Form più compatto */
+.login-card label,
+.login-form label {
+  font-size: 13px !important;
+  color: #475467 !important;
+  font-weight: 700 !important;
+  margin-bottom: 7px !important;
+}
+
+.login-card input,
+.login-form input {
+  height: 46px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d0d5dd !important;
+  font-size: 15px !important;
+  font-weight: 480 !important;
+}
+
+.login-card input:focus,
+.login-form input:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12) !important;
+}
+
+/* Pulsante meno “gigante” ma ancora chiaro */
+.login-card .btn-primary,
+.login-form .btn-primary,
+.login-card button[type='submit'],
+.login-form button[type='submit'] {
+  height: 46px !important;
+  border-radius: 8px !important;
+  background: #f97316 !important;
+  border-color: #f97316 !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+  margin-top: 8px !important;
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.18) !important;
+}
+
+.login-card .btn-primary:hover,
+.login-form .btn-primary:hover,
+.login-card button[type='submit']:hover,
+.login-form button[type='submit']:hover {
+  background: #ea580c !important;
+  border-color: #ea580c !important;
+}
