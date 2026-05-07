@@ -1,137 +1,125 @@
 import { useState } from 'react';
 import { authStore } from '../data/authStore';
 
+function getLoginErrorMessage(err) {
+  const code = String(err?.code || err?.message || '').toLowerCase();
+
+  if (code.includes('auth/invalid-credential')) {
+    return 'Credenziali non valide. Controlla email e password.';
+  }
+
+  if (code.includes('auth/user-not-found')) {
+    return 'Utente non trovato.';
+  }
+
+  if (code.includes('auth/wrong-password')) {
+    return 'Password non corretta.';
+  }
+
+  if (code.includes('auth/too-many-requests')) {
+    return 'Troppi tentativi. Riprova più tardi.';
+  }
+
+  return err?.message || 'Errore durante l’accesso.';
+}
+
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const getReadableError = (err) => {
-    const code = err?.code || '';
-    const message = err?.message || '';
-
-    if (code.includes('auth/invalid-credential')) {
-      return 'Email o password non corretti.';
-    }
-
-    if (code.includes('auth/user-not-found')) {
-      return 'Utente non trovato.';
-    }
-
-    if (code.includes('auth/wrong-password')) {
-      return 'Password non corretta.';
-    }
-
-    if (code.includes('auth/too-many-requests')) {
-      return 'Troppi tentativi. Riprova tra qualche minuto.';
-    }
-
-    if (message.includes('profilo non trovato')) {
-      return 'Utente autenticato, ma profilo non trovato nel database.';
-    }
-
-    if (message.includes('Account disattivato')) {
-      return 'Account disattivato.';
-    }
-
-    if (message.includes('Azienda non associata')) {
-      return 'Azienda non associata all’utente.';
-    }
-
-    return 'Problema di connessione o credenziali non valide.';
-  };
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError('');
-    setLoading(true);
+    if (!email.trim() || !password) {
+      setError('Inserisci email e password.');
+      return;
+    }
 
     try {
-      const user = await authStore.authenticate(email, password);
+      setLoading(true);
+      setError('');
 
-      if (user) {
-        onLogin(user);
-      } else {
-        setError('Credenziali non valide o account non attivo.');
-      }
+      const user = await authStore.authenticate(email.trim(), password);
+      onLogin(user);
     } catch (err) {
-      console.error('Login Error:', err);
-      setError(getReadableError(err));
+      setError(getLoginErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-page login-scenic-page">
-      <div className="login-scenic-shell">
-        <section className="login-scenic-brand" aria-label="MagazzinoPro">
-          <div className="login-brand-mark">M</div>
+    <main className="login-page login-redesign-page">
+      <div className="login-redesign-card">
+        <section className="login-redesign-brand" aria-label="MagazzinoPro">
+          <div className="login-redesign-mark">M</div>
 
-          <div className="login-brand-copy">
-            <div className="login-brand-kicker">Gestionale tecnico</div>
+          <div className="login-redesign-brand-content">
+            <div className="login-redesign-kicker">Gestionale tecnico</div>
             <h1>MagazzinoPro</h1>
-            <p>
-              Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.
-            </p>
-          </div>
-
-          <div className="login-brand-lines" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+            <p>Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.</p>
           </div>
         </section>
 
-        <section className="login-scenic-panel">
-          <div className="login-form-header">
-            <div className="login-form-icon">M</div>
+        <section className="login-redesign-form-panel">
+          <div className="login-redesign-heading">
+            <div className="login-redesign-small-mark">M</div>
             <div>
               <h2>Accedi</h2>
               <p>Sistema di Gestione Magazzino</p>
             </div>
           </div>
 
-          {error && <div className="login-error">{error}</div>}
+          <form onSubmit={handleSubmit} className="login-redesign-form">
+            <div>
+              <h3>Accedi al sistema</h3>
+              <p className="login-redesign-helper">Inserisci le credenziali per continuare</p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label className="form-label">Email</label>
+            {error && <div className="login-error">{error}</div>}
+
+            <label className="login-redesign-field">
+              <span>Email</span>
               <input
                 type="email"
-                className="form-control"
-                placeholder="Inserisci la tua email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                autoFocus
-                required
+                placeholder="Inserisci la tua email"
               />
-            </div>
+            </label>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Inserisci la tua password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <label className="login-redesign-field">
+              <span>Password</span>
+              <div className="login-redesign-password-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Inserisci la tua password"
+                />
 
-            <button
-              type="submit"
-              className="btn btn-primary login-btn"
-              disabled={loading}
-            >
+                <button
+                  type="button"
+                  className="login-redesign-password-toggle"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+                >
+                  {showPassword ? 'Nascondi' : 'Mostra'}
+                </button>
+              </div>
+            </label>
+
+            <button type="submit" className="btn btn-primary login-redesign-submit" disabled={loading}>
               {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
             </button>
           </form>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

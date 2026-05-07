@@ -10263,3 +10263,432 @@ header [title="Notifiche"] {
   }
 }
 
+/* ============================================================
+   LOGIN REDESIGN FINAL
+   Desktop: card orizzontale.
+   Mobile: card verticale compatta.
+   ============================================================ */
+
+.login-redesign-page {
+  min-height: 100dvh;
+  width: 100%;
+  padding: clamp(18px, 4vw, 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(255, 106, 20, 0.22), transparent 32%),
+    radial-gradient(circle at 80% 88%, rgba(255, 106, 20, 0.16), transparent 38%),
+    linear-gradient(135deg, #151922 0%, #101318 55%, #1a1714 100%);
+}
+
+.login-redesign-card {
+  width: min(1040px, 100%);
+  min-height: 520px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  overflow: hidden;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.36);
+}
+
+.login-redesign-brand {
+  position: relative;
+  min-height: 520px;
+  padding: 72px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(255, 120, 24, 0.96), rgba(255, 106, 20, 0.74) 48%, rgba(20, 24, 32, 0.76)),
+    radial-gradient(circle at 18% 88%, rgba(255, 255, 255, 0.18), transparent 36%);
+}
+
+.login-redesign-brand::before,
+.login-redesign-brand::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  pointer-events: none;
+}
+
+.login-redesign-brand::before {
+  width: 420px;
+  height: 420px;
+  left: -170px;
+  bottom: -180px;
+  border-radius: 999px;
+  border: 88px solid rgba(255, 255, 255, 0.12);
+}
+
+.login-redesign-brand::after {
+  width: 340px;
+  height: 130%;
+  right: -110px;
+  top: -15%;
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(-38deg);
+}
+
+.login-redesign-mark,
+.login-redesign-small-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6a14;
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow: 0 16px 34px rgba(255, 106, 20, 0.24);
+}
+
+.login-redesign-mark {
+  width: 86px;
+  height: 86px;
+  border-radius: 24px;
+  font-size: 44px;
+  margin-bottom: 46px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-redesign-brand-content {
+  position: relative;
+  z-index: 1;
+}
+
+.login-redesign-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 10px 18px;
+  margin-bottom: 26px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.login-redesign-brand h1 {
+  margin: 0 0 18px;
+  font-size: clamp(42px, 4vw, 58px);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.login-redesign-brand p {
+  max-width: 440px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 20px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.login-redesign-form-panel {
+  min-height: 520px;
+  padding: 68px 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 94% 14%, rgba(255, 106, 20, 0.08), transparent 26%),
+    radial-gradient(circle at 100% 96%, rgba(255, 106, 20, 0.12), transparent 38%),
+    #ffffff;
+}
+
+.login-redesign-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 34px;
+}
+
+.login-redesign-small-mark {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 15px;
+  font-size: 28px;
+}
+
+.login-redesign-heading h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.login-redesign-heading p {
+  margin: 7px 0 0;
+  color: #667085;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.login-redesign-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-redesign-form h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.login-redesign-helper {
+  margin: 7px 0 0;
+  color: #7b8497;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-redesign-field {
+  display: grid;
+  gap: 7px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.login-redesign-field input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid #d0d5dd;
+  outline: none;
+  color: #101828;
+  background: rgba(255, 255, 255, 0.84);
+  font-size: 16px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.login-redesign-field input:focus {
+  border-color: #ff6a14;
+  box-shadow: 0 0 0 4px rgba(255, 106, 20, 0.13);
+}
+
+.login-redesign-password-wrap {
+  position: relative;
+}
+
+.login-redesign-password-wrap input {
+  padding-right: 82px;
+}
+
+.login-redesign-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  height: 34px;
+  padding: 0 10px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 9px;
+  background: #f2f4f7;
+  color: #475467;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.login-redesign-submit {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 8px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* Finestra dimezzata: resta proporzionata e non si taglia */
+@media screen and (max-width: 980px) {
+  .login-redesign-page {
+    padding: 18px;
+    align-items: flex-start;
+  }
+
+  .login-redesign-card {
+    max-width: 760px;
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .login-redesign-brand {
+    min-height: 170px;
+    padding: 28px 34px;
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .login-redesign-mark {
+    width: 70px;
+    height: 70px;
+    min-width: 70px;
+    margin: 0;
+    border-radius: 20px;
+    font-size: 36px;
+  }
+
+  .login-redesign-kicker {
+    display: none;
+  }
+
+  .login-redesign-brand h1 {
+    font-size: 34px;
+    margin-bottom: 8px;
+  }
+
+  .login-redesign-brand p {
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .login-redesign-form-panel {
+    min-height: 0;
+    padding: 34px;
+  }
+}
+
+/* Telefono */
+@media screen and (max-width: 540px) {
+  .login-redesign-page {
+    padding: 10px;
+  }
+
+  .login-redesign-card {
+    border-radius: 22px;
+  }
+
+  .login-redesign-brand {
+    min-height: 96px;
+    padding: 14px 18px;
+    grid-template-columns: 50px 1fr;
+    gap: 14px;
+  }
+
+  .login-redesign-mark {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 15px;
+    font-size: 28px;
+  }
+
+  .login-redesign-brand h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .login-redesign-brand p {
+    max-height: 34px;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .login-redesign-form-panel {
+    padding: 20px 18px;
+  }
+
+  .login-redesign-heading {
+    margin-bottom: 16px;
+  }
+
+  .login-redesign-small-mark {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 12px;
+    font-size: 22px;
+  }
+
+  .login-redesign-heading h2 {
+    font-size: 25px;
+  }
+
+  .login-redesign-heading p {
+    font-size: 13px;
+  }
+
+  .login-redesign-form {
+    gap: 11px;
+  }
+
+  .login-redesign-form h3 {
+    font-size: 26px;
+  }
+
+  .login-redesign-helper {
+    display: none;
+  }
+
+  .login-redesign-field input {
+    height: 43px;
+    font-size: 16px;
+  }
+
+  .login-redesign-submit {
+    min-height: 44px;
+    margin-top: 4px;
+  }
+}
+
+/* Tastiera aperta su telefono: banner mini, bottone raggiungibile */
+@media screen and (max-width: 540px) and (pointer: coarse) {
+  .login-redesign-page:focus-within {
+    padding-bottom: 48vh;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-brand {
+    min-height: 58px;
+    padding: 8px 14px;
+    grid-template-columns: 36px 1fr;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-mark {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 11px;
+    font-size: 20px;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-brand h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-brand p,
+  .login-redesign-page:focus-within .login-redesign-heading p {
+    display: none;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-form-panel {
+    padding: 14px 16px;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-heading {
+    margin-bottom: 10px;
+  }
+}
+
