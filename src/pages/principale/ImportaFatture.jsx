@@ -569,7 +569,7 @@ export default function ImportaFatture() {
           code: existing?.code || code,
           description: existing ? existing.description : desc,
           quantity: qty,
-          unit: existing ? existing.unit : unit,
+          unit: existing ? existing.unit : String(unit || 'PZ').toUpperCase(),
           price: price || existing?.netPrice || 0,
           isNew: !existing,
           selected: true,
@@ -621,6 +621,7 @@ export default function ImportaFatture() {
       const rawBrand = mapping.brand !== undefined && mapping.brand !== -1 ? row?.[mapping.brand] : '';
       const rawCategory = mapping.category !== undefined && mapping.category !== -1 ? row?.[mapping.category] : '';
       const rawLocation = mapping.location !== undefined && mapping.location !== -1 ? row?.[mapping.location] : '';
+      const rawSupplier = mapping.supplier !== undefined && mapping.supplier !== -1 ? row?.[mapping.supplier] : '';
 
       const code = String(rawCode || '').trim();
       const desc = String(rawDescription || '').trim();
@@ -628,6 +629,7 @@ export default function ImportaFatture() {
       const brand = String(rawBrand || '').trim();
       const explicitCat = String(rawCategory || '').trim();
       const location = String(rawLocation || 'A1-01').trim();
+      const supplierValue = String(rawSupplier || '').trim();
 
       const qtyStr = String(rawQuantity || '0').replace(',', '.');
       const qty = parseFloat(qtyStr.replace(/[^0-9.]/g, '')) || 0;
@@ -696,7 +698,7 @@ export default function ImportaFatture() {
         code: existing?.code || code,
         description: existing ? existing.description : desc || code,
         quantity: qty,
-        unit: existing ? existing.unit : unit,
+        unit: existing ? existing.unit : String(unit || 'PZ').toUpperCase(),
         price: price || existing?.netPrice || 0,
         isNew: !existing,
         selected: true,
@@ -729,28 +731,31 @@ export default function ImportaFatture() {
 
   const continueFromScanFallback = async () => {
     const validRows = (scanRows || []).filter((row) => {
-      const hasCode = String(row.code || '').trim().length > 0;
-      const hasDescription = String(row.description || '').trim().length > 0;
-      const qty = Number(row.quantity || 0);
-      return hasCode && hasDescription && qty > 0;
+      const code = String(row.code || '').trim();
+      const description = String(row.description || '').trim();
+      const supplier = String(row.supplier || '').trim();
+      const qty = parseImportNumber(row.quantity);
+
+      return code && description && supplier && qty > 0;
     });
 
     if (validRows.length === 0) {
-      alert('Inserisci almeno una riga valida con codice, descrizione e quantità.');
+      alert('Inserisci almeno una riga valida con codice, descrizione, quantità e fornitore.');
       return;
     }
 
     const matrix = [
-      ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo Netto', 'Marca', 'Categoria', 'Posizione'],
+      ['Codice', 'Descrizione', 'Quantità', 'UM', 'Prezzo Netto', 'Marca', 'Categoria', 'Posizione', 'Fornitore'],
       ...validRows.map((row) => [
-        row.code || '',
-        row.description || '',
+        String(row.code || '').trim(),
+        String(row.description || '').trim(),
         parseImportNumber(row.quantity),
-        row.unit || 'PZ',
+        String(row.unit || 'PZ').trim().toUpperCase(),
         parseImportNumber(row.price),
-        row.brand || '',
-        row.category || '',
-        row.location || 'A1-01',
+        String(row.brand || '').trim(),
+        String(row.category || '').trim(),
+        String(row.location || 'A1-01').trim(),
+        String(row.supplier || '').trim(),
       ]),
     ];
 
@@ -758,7 +763,22 @@ export default function ImportaFatture() {
     setScanDetected(false);
     setScanMessage('');
 
-    await buildParsedItemsFromPdfRows(matrix.slice(1), fileName || 'Inserimento manuale', invoiceRecord);
+    await processItems(
+      matrix.slice(1),
+      {
+        code: 0,
+        description: 1,
+        quantity: 2,
+        unit: 3,
+        price: 4,
+        brand: 5,
+        category: 6,
+        location: 7,
+        supplier: 8,
+      },
+      fileName || 'Inserimento manuale',
+      invoiceRecord
+    );
   };
 
   const uploadInvoiceFileSafe = async (file) => {
