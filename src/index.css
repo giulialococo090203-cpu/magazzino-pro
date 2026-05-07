@@ -8947,3 +8947,210 @@ header [title="Notifiche"] {
   }
 }
 
+/* ============================================================
+   LOGIN MOBILE KEYBOARD FINAL
+   Quando la tastiera è aperta, nasconde il riquadro alto e rende
+   il form scrollabile. Solo telefoni/tablet touch.
+   ============================================================ */
+
+@media screen and (max-width: 900px) and (pointer: coarse) {
+  .login-page,
+  .auth-page,
+  .login-container,
+  .auth-container,
+  [class*="login" i],
+  [class*="auth" i] {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .login-page,
+  .auth-page,
+  .login-container,
+  .auth-container {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 10px !important;
+  }
+
+  .login-card,
+  .auth-card,
+  .login-panel,
+  .auth-panel,
+  [class*="login" i][class*="card" i],
+  [class*="auth" i][class*="card" i],
+  [class*="login" i][class*="panel" i],
+  [class*="auth" i][class*="panel" i] {
+    width: 100% !important;
+    max-width: 430px !important;
+    margin: 0 auto !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  /* Riquadro arancione alto più basso anche senza tastiera */
+  .login-card > div:first-child,
+  .auth-card > div:first-child,
+  .login-panel > div:first-child,
+  .auth-panel > div:first-child,
+  .login-hero,
+  .auth-hero,
+  .login-brand,
+  .auth-brand,
+  .login-left,
+  .auth-left,
+  [class*="hero" i],
+  [class*="brand" i][class*="panel" i] {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 210px !important;
+    padding: 18px 22px !important;
+    overflow: hidden !important;
+  }
+
+  .login-card > div:first-child h1,
+  .auth-card > div:first-child h1,
+  .login-panel > div:first-child h1,
+  .auth-panel > div:first-child h1,
+  .login-hero h1,
+  .auth-hero h1,
+  .login-brand h1,
+  .auth-brand h1,
+  .login-left h1,
+  .auth-left h1 {
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+    margin: 8px 0 !important;
+  }
+
+  .login-card > div:first-child p,
+  .auth-card > div:first-child p,
+  .login-panel > div:first-child p,
+  .auth-panel > div:first-child p,
+  .login-hero p,
+  .auth-hero p,
+  .login-brand p,
+  .auth-brand p,
+  .login-left p,
+  .auth-left p {
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+  }
+
+  .login-card form,
+  .auth-card form,
+  .login-form,
+  .auth-form,
+  .login-right,
+  .auth-right {
+    padding: 18px 22px !important;
+  }
+
+  .login-card h1,
+  .auth-card h1,
+  .login-form h1,
+  .auth-form h1,
+  .login-right h1,
+  .auth-right h1 {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .login-card input,
+  .auth-card input,
+  .login-form input,
+  .auth-form input,
+  .login-right input,
+  .auth-right input {
+    height: 44px !important;
+    min-height: 44px !important;
+    font-size: 16px !important;
+  }
+
+  .login-card button,
+  .auth-card button,
+  .login-form button,
+  .auth-form button,
+  .login-right button,
+  .auth-right button {
+    min-height: 44px !important;
+    font-size: 15px !important;
+    padding: 10px 14px !important;
+  }
+
+  /* Tastiera aperta: nasconde davvero il riquadro arancione */
+  .login-page:focus-within .login-card > div:first-child,
+  .auth-page:focus-within .auth-card > div:first-child,
+  .login-container:focus-within .login-card > div:first-child,
+  .auth-container:focus-within .auth-card > div:first-child,
+  .login-page:focus-within .login-panel > div:first-child,
+  .auth-page:focus-within .auth-panel > div:first-child,
+  .login-container:focus-within .login-panel > div:first-child,
+  .auth-container:focus-within .auth-panel > div:first-child,
+  .login-page:focus-within .login-hero,
+  .auth-page:focus-within .auth-hero,
+  .login-container:focus-within .login-hero,
+  .auth-container:focus-within .auth-hero,
+  .login-page:focus-within .login-brand,
+  .auth-page:focus-within .auth-brand,
+  .login-container:focus-within .login-brand,
+  .auth-container:focus-within .auth-brand,
+  .login-page:focus-within .login-left,
+  .auth-page:focus-within .auth-left,
+  .login-container:focus-within .login-left,
+  .auth-container:focus-within .auth-left {
+    display: none !important;
+  }
+
+  .login-page:focus-within,
+  .auth-page:focus-within,
+  .login-container:focus-within,
+  .auth-container:focus-within {
+    padding: 6px 10px 58vh !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+
+  .login-page:focus-within .login-card,
+  .auth-page:focus-within .auth-card,
+  .login-container:focus-within .login-card,
+  .auth-container:focus-within .auth-card,
+  .login-page:focus-within .login-panel,
+  .auth-page:focus-within .auth-panel,
+  .login-container:focus-within .login-panel,
+  .auth-container:focus-within .auth-panel {
+    margin-top: 0 !important;
+  }
+
+  .login-page:focus-within form,
+  .auth-page:focus-within form,
+  .login-container:focus-within form,
+  .auth-container:focus-within form,
+  .login-page:focus-within .login-form,
+  .auth-page:focus-within .auth-form,
+  .login-container:focus-within .login-form,
+  .auth-container:focus-within .auth-form,
+  .login-page:focus-within .login-right,
+  .auth-page:focus-within .auth-right,
+  .login-container:focus-within .login-right,
+  .auth-container:focus-within .auth-right {
+    padding: 14px 18px !important;
+  }
+
+  .login-page:focus-within h1,
+  .auth-page:focus-within h1,
+  .login-container:focus-within h1,
+  .auth-container:focus-within h1 {
+    font-size: 24px !important;
+    margin-bottom: 10px !important;
+  }
+}
+
