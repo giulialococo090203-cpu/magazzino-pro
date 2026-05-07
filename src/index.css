@@ -1638,3 +1638,77 @@ textarea.form-control {
     padding: 0 16px;
   }
 }
+/* Sidebar accordion pulita */
+.sidebar-section-accordion {
+  margin-bottom: 8px;
+}
+
+.sidebar-section-toggle {
+  width: calc(100% - 24px);
+  margin: 0 12px 8px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  transition: all 0.18s ease;
+}
+
+.sidebar-section-toggle:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+}
+
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+}
+
+.sidebar-section-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebar-section-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  line-height: 1;
+}
+
+.sidebar-section-chevron {
+  font-size: 16px;
+  opacity: 0.75;
+}
+
+.sidebar-nav-collapsible {
+  animation: sidebarAccordionIn 0.16s ease-out;
+  padding-bottom: 8px;
+}
+
+.sidebar-section-accordion.closed {
+  margin-bottom: 4px;
+}
+
+@keyframes sidebarAccordionIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

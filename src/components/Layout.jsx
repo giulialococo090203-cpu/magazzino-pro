@@ -22,30 +22,13 @@ function getRoleLabel(role) {
 const NAV_SECTIONS = [
   {
     title: 'Magazzino',
+    icon: '📦',
     items: [
       {
         path: '/inventario',
         label: 'Giacenza',
         icon: '📦',
         permission: 'canViewInventory',
-      },
-      {
-        path: '/riordino',
-        label: 'Riordino Automatico',
-        icon: '🛒',
-        permission: 'canManageReorderProposals',
-      },
-      {
-        path: '/proposte-ordine',
-        label: 'Proposte Ordine',
-        icon: '📑',
-        permission: 'canManageReorderProposals',
-      },
-      {
-        path: '/inventario-fisico',
-        label: 'Inventario Fisico',
-        icon: '🧮',
-        permission: 'canPhysicalInventory',
       },
       {
         path: '/movimento/entrata',
@@ -80,8 +63,21 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: 'Fatture e Configurazione',
+    title: 'Acquisti e Fatture',
+    icon: '🧾',
     items: [
+      {
+        path: '/riordino',
+        label: 'Riordino Automatico',
+        icon: '🛒',
+        permission: 'canManageReorderProposals',
+      },
+      {
+        path: '/proposte-ordine',
+        label: 'Proposte Ordine',
+        icon: '📑',
+        permission: 'canManageReorderProposals',
+      },
       {
         path: '/importa',
         label: 'Importa / Inserisci',
@@ -95,10 +91,22 @@ const NAV_SECTIONS = [
         permission: 'canImportInvoices',
       },
       {
-        path: '/gestione/categorie',
-        label: 'Categorie',
-        icon: '🏷️',
-        permission: 'canManageCategories',
+        path: '/gestione/fornitori',
+        label: 'Fornitori',
+        icon: '🏭',
+        permission: 'canManageMaterials',
+      },
+    ],
+  },
+  {
+    title: 'Controllo',
+    icon: '🧮',
+    items: [
+      {
+        path: '/inventario-fisico',
+        label: 'Inventario Fisico',
+        icon: '🧮',
+        permission: 'canPhysicalInventory',
       },
       {
         path: '/controllo/soglie',
@@ -106,23 +114,6 @@ const NAV_SECTIONS = [
         icon: '⚙️',
         permission: 'canManageThresholds',
       },
-      {
-        path: '/gestione/prezzi',
-        label: 'Impostazioni Prezzi',
-        icon: '💶',
-        permission: 'canManagePriceSettings',
-      },
-      {
-        path: '/gestione/storico-prezzi',
-        label: 'Storico Prezzi',
-        icon: '📈',
-        permission: 'canManagePriceSettings',
-      },
-    ],
-  },
-  {
-    title: 'Notifiche',
-    items: [
       {
         path: '/controllo/notifiche',
         label: 'Notifiche',
@@ -133,7 +124,8 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: 'Controllo Datore',
+    title: 'Analisi',
+    icon: '📊',
     items: [
       {
         path: '/',
@@ -142,22 +134,40 @@ const NAV_SECTIONS = [
         permission: 'canViewDashboard',
       },
       {
+        path: '/gestione/rendicontazione',
+        label: 'Rendicontazione',
+        icon: '🧾',
+        permission: 'canManageMaterials',
+      },
+      {
+        path: '/gestione/storico-prezzi',
+        label: 'Storico Prezzi',
+        icon: '📈',
+        permission: 'canManagePriceSettings',
+      },
+      {
+        path: '/gestione/prezzi',
+        label: 'Impostazioni Prezzi',
+        icon: '💶',
+        permission: 'canManagePriceSettings',
+      },
+    ],
+  },
+  {
+    title: 'Configurazione',
+    icon: '⚙️',
+    items: [
+      {
         path: '/gestione/materiali',
         label: 'Anagrafica Materiali',
         icon: '🛠️',
         permission: 'canManageMaterials',
       },
       {
-        path: '/gestione/fornitori',
-        label: 'Fornitori',
-        icon: '🏭',
-        permission: 'canManageMaterials',
-      },
-      {
-        path: '/gestione/rendicontazione',
-        label: 'Rendicontazione',
-        icon: '🧾',
-        permission: 'canManageMaterials',
+        path: '/gestione/categorie',
+        label: 'Categorie',
+        icon: '🏷️',
+        permission: 'canManageCategories',
       },
       {
         path: '/gestione/utenti',
@@ -249,6 +259,14 @@ function isActivePath(currentPath, itemPath) {
   return currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
 }
 
+function getActiveSectionTitle(pathname, sections) {
+  const activeSection = sections.find((navSection) =>
+    navSection.items.some((item) => isActivePath(pathname, item.path))
+  );
+
+  return activeSection?.title || sections[0]?.title || '';
+}
+
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -256,6 +274,7 @@ export default function Layout({ children }) {
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [globalSearch, setGlobalSearch] = useState('');
+  const [openSections, setOpenSections] = useState({});
 
   const canSeeNotifications = hasPermission(user, 'canViewNotifications');
 
@@ -317,6 +336,29 @@ export default function Layout({ children }) {
     return { ...navSection, items: visibleItems };
   }).filter((navSection) => navSection.items.length > 0);
 
+  const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
+
+  useEffect(() => {
+    if (!activeSectionTitle) return;
+
+    setOpenSections((prev) => {
+      const next = {};
+
+      visibleSections.forEach((navSection) => {
+        next[navSection.title] = navSection.title === activeSectionTitle;
+      });
+
+      return next;
+    });
+  }, [activeSectionTitle, location.pathname]);
+
+  const toggleSection = (title) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
   const handleGlobalSearchKeyDown = (e) => {
     if (e.key !== 'Enter') return;
 
@@ -341,29 +383,53 @@ export default function Layout({ children }) {
           </Link>
         </div>
 
-        {visibleSections.map((navSection) => (
-          <div className="sidebar-section" key={navSection.title}>
-            <div className="sidebar-section-title">{navSection.title}</div>
+        {visibleSections.map((navSection) => {
+          const isOpen = openSections[navSection.title];
+          const hasActiveItem = navSection.items.some((item) =>
+            isActivePath(location.pathname, item.path)
+          );
 
-            <nav className="sidebar-nav">
-              {navSection.items.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`sidebar-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
-                  title={item.label}
-                >
-                  <span className="sidebar-link-icon">{item.icon}</span>
-                  <span>{item.label}</span>
+          return (
+            <div
+              className={`sidebar-section sidebar-section-accordion ${isOpen ? 'open' : 'closed'} ${hasActiveItem ? 'has-active' : ''}`}
+              key={navSection.title}
+            >
+              <button
+                type="button"
+                className="sidebar-section-toggle"
+                onClick={() => toggleSection(navSection.title)}
+                aria-expanded={!!isOpen}
+              >
+                <span className="sidebar-section-toggle-left">
+                  <span className="sidebar-section-icon">{navSection.icon}</span>
+                  <span>{navSection.title}</span>
+                </span>
 
-                  {item.badge && unreadCount > 0 && (
-                    <span className="sidebar-badge">{unreadCount}</span>
-                  )}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        ))}
+                <span className="sidebar-section-chevron">{isOpen ? '⌃' : '⌄'}</span>
+              </button>
+
+              {isOpen && (
+                <nav className="sidebar-nav sidebar-nav-collapsible">
+                  {navSection.items.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`sidebar-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
+                      title={item.label}
+                    >
+                      <span className="sidebar-link-icon">{item.icon}</span>
+                      <span>{item.label}</span>
+
+                      {item.badge && unreadCount > 0 && (
+                        <span className="sidebar-badge">{unreadCount}</span>
+                      )}
+                    </Link>
+                  ))}
+                </nav>
+              )}
+            </div>
+          );
+        })}
 
         <div className="sidebar-user">
           <div className="sidebar-user-info">
