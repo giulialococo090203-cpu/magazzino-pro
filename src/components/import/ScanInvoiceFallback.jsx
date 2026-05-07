@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 
 function createEmptyRow() {
   return {
@@ -7,24 +7,23 @@ function createEmptyRow() {
     unit: 'PZ',
     quantity: 1,
     price: 0,
+    supplier: '',
   };
 }
 
 function formatCurrency(value = 0) {
-  const number = Number(value || 0);
-
-  return number.toLocaleString('it-IT', {
+  return Number(value || 0).toLocaleString('it-IT', {
     style: 'currency',
     currency: 'EUR',
   });
 }
 
-function calculateListPrice(netPrice = 0) {
-  return Number(netPrice || 0) * 1.22;
+function getListPrice(value = 0) {
+  return Number(value || 0) * 1.22;
 }
 
-function calculateInstallerPrice(netPrice = 0) {
-  return Number(netPrice || 0) * 0.9 * 1.22;
+function getInstallerPrice(value = 0) {
+  return Number(value || 0) * 0.9 * 1.22;
 }
 
 export default function ScanInvoiceFallback({
@@ -37,33 +36,23 @@ export default function ScanInvoiceFallback({
   onCancel,
   onContinue,
 }) {
-  const isValid = useMemo(() => {
-    if (!rows || rows.length === 0) return false;
+  const validRowsCount = (rows || []).filter((row) => {
+    const hasCode = String(row.code || '').trim().length > 0;
+    const hasDescription = String(row.description || '').trim().length > 0;
+    const hasSupplier = String(row.supplier || '').trim().length > 0;
+    const quantity = Number(row.quantity || 0);
 
-    return rows.some((row) => {
-      const hasCode = String(row.code || '').trim().length > 0;
-      const hasDescription = String(row.description || '').trim().length > 0;
-      const qty = Number(row.quantity || 0);
-      return hasCode && hasDescription && qty > 0;
-    });
-  }, [rows]);
+    return hasCode && hasDescription && hasSupplier && quantity > 0;
+  }).length;
 
-  const validRowsCount = useMemo(() => {
-    return (rows || []).filter((row) => {
-      const hasCode = String(row.code || '').trim().length > 0;
-      const hasDescription = String(row.description || '').trim().length > 0;
-      const qty = Number(row.quantity || 0);
-      return hasCode && hasDescription && qty > 0;
-    }).length;
-  }, [rows]);
+  const isValid = validRowsCount > 0;
 
   return (
     <div className="card animate-fadeIn">
       <div className="card-header" style={{ background: 'var(--warning-50)' }}>
         <h3 className="card-title">🖼️ Compilazione guidata da scansione</h3>
         <p className="text-sm mt-1">
-          Il file <strong>{fileName}</strong> è una scansione. Inserisci manualmente le righe prodotto
-          leggendo la fattura e poi continua con l’importazione.
+          Il file <strong>{fileName}</strong> è una scansione. Inserisci manualmente le righe prodotto leggendo la fattura e poi continua con l’importazione.
         </p>
       </div>
 
@@ -76,17 +65,19 @@ export default function ScanInvoiceFallback({
               <th style={{ width: 100 }}>UM</th>
               <th style={{ width: 120 }}>Quantità</th>
               <th style={{ width: 130 }}>Prezzo Netto</th>
+              <th style={{ width: 190 }}>Fornitore *</th>
               <th style={{ width: 130 }}>Listino +22%</th>
               {showInstallerPrice && <th style={{ width: 160 }}>Installatore -10% +22%</th>}
-              <th style={{ width: 110 }}>Totale Netto</th>
+              <th style={{ width: 130 }}>Totale Netto</th>
               <th style={{ width: 80 }}></th>
             </tr>
           </thead>
+
           <tbody>
             {(rows || []).map((row, index) => {
-              const qty = Number(row.quantity || 0);
+              const quantity = Number(row.quantity || 0);
               const price = Number(row.price || 0);
-              const total = qty * price;
+              const total = quantity * price;
 
               return (
                 <tr key={index}>
@@ -143,21 +134,31 @@ export default function ScanInvoiceFallback({
                   </td>
 
                   <td>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={row.supplier || ''}
+                      onChange={(e) => onChangeRow(index, 'supplier', e.target.value)}
+                      placeholder="Nome fornitore"
+                      style={{
+                        minWidth: 180,
+                        borderColor: String(row.supplier || '').trim()
+                          ? undefined
+                          : 'var(--warning-400)',
+                      }}
+                    />
+                  </td>
+
+                  <td>
                     <div style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>
-                      {formatCurrency(calculateListPrice(price))}
+                      {formatCurrency(getListPrice(price))}
                     </div>
                   </td>
 
                   {showInstallerPrice && (
                     <td>
-                      <div
-                        style={{
-                          fontWeight: 800,
-                          whiteSpace: 'nowrap',
-                          color: 'var(--primary-700)',
-                        }}
-                      >
-                        {formatCurrency(calculateInstallerPrice(price))}
+                      <div style={{ fontWeight: 800, whiteSpace: 'nowrap', color: 'var(--primary-700)' }}>
+                        {formatCurrency(getInstallerPrice(price))}
                       </div>
                     </td>
                   )}
@@ -201,7 +202,7 @@ export default function ScanInvoiceFallback({
         >
           <strong>Righe valide inserite:</strong> {validRowsCount}
           <div style={{ marginTop: 6 }}>
-            Compila almeno <strong>codice</strong>, <strong>descrizione</strong> e <strong>quantità</strong>.
+            Compila almeno <strong>codice</strong>, <strong>descrizione</strong>, <strong>quantità</strong> e <strong>fornitore</strong>.
           </div>
         </div>
       </div>
