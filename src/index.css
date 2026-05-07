@@ -8303,3 +8303,228 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+
+   LOGIN KEYBOARD FIX - mobile
+
+   Quando si apre la tastiera, la login diventa compatta e scrollabile.
+
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+
+  html,
+
+  body,
+
+  #root {
+
+    min-height: 100%;
+
+  }
+
+  .login-page,
+
+  .auth-page,
+
+  .login-container,
+
+  .auth-container {
+
+    min-height: 100dvh !important;
+
+    height: auto !important;
+
+    max-height: none !important;
+
+    overflow-y: auto !important;
+
+    overflow-x: hidden !important;
+
+    -webkit-overflow-scrolling: touch !important;
+
+    align-items: flex-start !important;
+
+    justify-content: flex-start !important;
+
+    padding: 12px 14px 40px !important;
+
+    box-sizing: border-box !important;
+
+  }
+
+  .login-card,
+
+  .auth-card {
+
+    width: 100% !important;
+
+    max-width: 390px !important;
+
+    margin: 0 auto !important;
+
+    padding: 18px !important;
+
+    box-sizing: border-box !important;
+
+  }
+
+  .login-page:focus-within,
+
+  .auth-page:focus-within,
+
+  .login-container:focus-within,
+
+  .auth-container:focus-within {
+
+    min-height: auto !important;
+
+    height: auto !important;
+
+    padding-top: 6px !important;
+
+    padding-bottom: 55vh !important;
+
+    overflow-y: auto !important;
+
+    justify-content: flex-start !important;
+
+    align-items: flex-start !important;
+
+  }
+
+  .login-page:focus-within .login-card,
+
+  .auth-page:focus-within .auth-card,
+
+  .login-container:focus-within .login-card,
+
+  .auth-container:focus-within .auth-card {
+
+    margin-top: 0 !important;
+
+    padding: 12px 16px !important;
+
+    transform: none !important;
+
+  }
+
+  .login-page:focus-within .login-logo,
+
+  .auth-page:focus-within .auth-logo,
+
+  .login-container:focus-within .login-logo,
+
+  .auth-container:focus-within .auth-logo {
+
+    width: 38px !important;
+
+    height: 38px !important;
+
+    min-width: 38px !important;
+
+    margin-bottom: 4px !important;
+
+  }
+
+  .login-page:focus-within .login-title,
+
+  .auth-page:focus-within .auth-title,
+
+  .login-container:focus-within .login-title,
+
+  .auth-container:focus-within .auth-title,
+
+  .login-page:focus-within h1,
+
+  .auth-page:focus-within h1,
+
+  .login-container:focus-within h1,
+
+  .auth-container:focus-within h1 {
+
+    font-size: 22px !important;
+
+    line-height: 1.05 !important;
+
+    margin-bottom: 8px !important;
+
+  }
+
+  .login-page:focus-within .login-subtitle,
+
+  .auth-page:focus-within .auth-subtitle,
+
+  .login-container:focus-within .login-subtitle,
+
+  .auth-container:focus-within .auth-subtitle {
+
+    display: none !important;
+
+  }
+
+  .login-page:focus-within .form-group,
+
+  .auth-page:focus-within .form-group,
+
+  .login-container:focus-within .form-group,
+
+  .auth-container:focus-within .form-group {
+
+    margin-bottom: 8px !important;
+
+  }
+
+  .login-page:focus-within label,
+
+  .auth-page:focus-within label,
+
+  .login-container:focus-within label,
+
+  .auth-container:focus-within label {
+
+    font-size: 13px !important;
+
+    margin-bottom: 4px !important;
+
+  }
+
+  .login-page:focus-within input,
+
+  .auth-page:focus-within input,
+
+  .login-container:focus-within input,
+
+  .auth-container:focus-within input {
+
+    height: 40px !important;
+
+    min-height: 40px !important;
+
+    font-size: 16px !important;
+
+    padding-top: 8px !important;
+
+    padding-bottom: 8px !important;
+
+  }
+
+  .login-page:focus-within button,
+
+  .auth-page:focus-within button,
+
+  .login-container:focus-within button,
+
+  .auth-container:focus-within button {
+
+    min-height: 40px !important;
+
+    padding: 9px 12px !important;
+
+    font-size: 14px !important;
+
+  }
+
+}
+
