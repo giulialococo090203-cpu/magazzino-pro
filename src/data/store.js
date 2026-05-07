@@ -1487,7 +1487,14 @@ export const invoiceImportStore = {
 
   async markCompleted(
     id,
-    { detectedItems = 0, createdItems = 0, updatedItems = 0, errors = [] } = {}
+    {
+      detectedItems = 0,
+      createdItems = 0,
+      updatedItems = 0,
+      errors = [],
+      supplier = '',
+      fornitore = '',
+    } = {}
   ) {
     return this.update(id, {
       status: errors.length > 0 ? 'completata_con_errori' : 'completata',
@@ -1495,6 +1502,7 @@ export const invoiceImportStore = {
       createdItems,
       updatedItems,
       errors: errors.length > 0 ? errors.join('\n') : null,
+      supplier: supplier || fornitore || '',
     });
   },
 
