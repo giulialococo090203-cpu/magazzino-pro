@@ -28,6 +28,7 @@ import ImpostazioniPrezzi from './pages/gestione/ImpostazioniPrezzi';
 import StoricoPrezzi from './pages/gestione/StoricoPrezzi';
 import Fornitori from './pages/gestione/Fornitori';
 import BackupSistema from './pages/gestione/BackupSistema';
+import RendicontazioneEconomica from './pages/gestione/RendicontazioneEconomica';
 
 // Pagine - Controllo
 import Soglie from './pages/controllo/Soglie';
@@ -223,6 +224,15 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canManageMaterials">
                     <Fornitori />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/gestione/rendicontazione"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
+                    <RendicontazioneEconomica />
                   </ProtectedRoute>
                 }
               />

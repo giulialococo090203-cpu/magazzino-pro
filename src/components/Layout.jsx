@@ -154,6 +154,12 @@ const NAV_SECTIONS = [
         permission: 'canManageMaterials',
       },
       {
+        path: '/gestione/rendicontazione',
+        label: 'Rendicontazione',
+        icon: '💶',
+        permission: 'canManageMaterials',
+      },
+      {
         path: '/gestione/utenti',
         label: 'Utenti',
         icon: '👤',
@@ -190,6 +196,7 @@ const PAGE_TITLES = {
   '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
   '/gestione/fornitori': 'Fornitori',
+  '/gestione/rendicontazione': 'Rendicontazione Economica',
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/prezzi': 'Impostazioni Prezzi',
   '/gestione/storico-prezzi': 'Storico Prezzi',
