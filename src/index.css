@@ -12426,3 +12426,77 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   DESKTOP LOGIN NO JUMP ON FOCUS
+   Evita lo scatto quando clicchi negli input su desktop.
+   Mobile resta invariato.
+   ============================================================ */
+
+@media screen and (min-width: 541px) and (pointer: fine) {
+  .login-desktop-view:focus-within,
+  .login-redesign-page:focus-within {
+    padding: clamp(18px, 4vw, 56px) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-card,
+  .login-redesign-page:focus-within .login-redesign-card {
+    width: min(1040px, 100%) !important;
+    min-height: 520px !important;
+    max-height: none !important;
+    transform: none !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-brand,
+  .login-redesign-page:focus-within .login-redesign-brand {
+    display: flex !important;
+    min-height: 520px !important;
+    max-height: none !important;
+    padding: 72px 56px !important;
+    transform: none !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-form-panel,
+  .login-redesign-page:focus-within .login-redesign-form-panel {
+    min-height: 520px !important;
+    max-height: none !important;
+    padding-top: 68px !important;
+    padding-bottom: 68px !important;
+    transform: none !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-brand p,
+  .login-desktop-view:focus-within .login-redesign-heading p,
+  .login-desktop-view:focus-within .login-redesign-helper,
+  .login-redesign-page:focus-within .login-redesign-brand p,
+  .login-redesign-page:focus-within .login-redesign-heading p,
+  .login-redesign-page:focus-within .login-redesign-helper {
+    display: block !important;
+  }
+}
+
+/* Mantiene proporzioni corrette anche a mezza finestra quando un input è attivo */
+@media screen and (min-width: 541px) and (max-width: 980px) and (pointer: fine) {
+  .login-desktop-view:focus-within .login-redesign-card,
+  .login-redesign-page:focus-within .login-redesign-card {
+    width: min(92vw, 820px) !important;
+    min-height: 390px !important;
+    max-height: calc(100dvh - 36px) !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-brand,
+  .login-redesign-page:focus-within .login-redesign-brand {
+    min-height: 390px !important;
+    padding: 34px !important;
+  }
+
+  .login-desktop-view:focus-within .login-redesign-form-panel,
+  .login-redesign-page:focus-within .login-redesign-form-panel {
+    min-height: 390px !important;
+    padding: 34px 38px !important;
+  }
+}
+
