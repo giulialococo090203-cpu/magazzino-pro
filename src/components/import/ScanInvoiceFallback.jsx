@@ -35,6 +35,7 @@ export default function ScanInvoiceFallback({
   onRemoveRow,
   onCancel,
   onContinue,
+  supplierSuggestions = [],
 }) {
   const validRowsCount = (rows || []).filter((row) => {
     const hasCode = String(row.code || '').trim().length > 0;
@@ -57,6 +58,11 @@ export default function ScanInvoiceFallback({
       </div>
 
       <div className="card-body" style={{ overflowX: 'auto' }}>
+        <datalist id="manual-supplier-suggestions">
+          {(supplierSuggestions || []).map((supplier) => (
+            <option key={supplier} value={supplier} />
+          ))}
+        </datalist>
         <table className="data-table">
           <thead>
             <tr>
@@ -140,6 +146,8 @@ export default function ScanInvoiceFallback({
                       value={row.supplier || ''}
                       onChange={(e) => onChangeRow(index, 'supplier', e.target.value)}
                       placeholder="Nome fornitore"
+                      list="manual-supplier-suggestions"
+                      autoComplete="off"
                       style={{
                         minWidth: 180,
                         borderColor: String(row.supplier || '').trim()

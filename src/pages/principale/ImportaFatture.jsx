@@ -214,6 +214,19 @@ export default function ImportaFatture() {
   const canUseImport = canImportInvoices(user?.role);
   const showInstallerPrice = canViewInstallerPrice(user?.role);
 
+  const supplierSuggestions = useMemo(() => {
+    return [
+      ...new Set(
+        (allMaterials || [])
+          .map((material) => String(material.supplier || '').trim())
+          .filter((supplier) =>
+            supplier &&
+            !['importato', 'senza fornitore', 'da assegnare'].includes(supplier.toLowerCase())
+          )
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+  }, [allMaterials]);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -967,18 +980,33 @@ export default function ImportaFatture() {
             continue;
           }
 
-          await materialStore.create({
+          const createdMaterial = await materialStore.create({
             code: item.code,
             description: item.description,
             brand: item.brand,
             category: item.category,
-            quantity: item.quantity,
+            quantity: 0,
             unit: item.unit,
             netPrice: item.price || 0,
             minThreshold: item.minThreshold,
             location: item.location,
             supplier: item.supplier,
             notes: item.notes,
+          });
+
+          await movementStore.create({
+            materialId: createdMaterial.id,
+            type: 'entrata',
+            quantity: item.quantity,
+            reason: fileName === 'Inserimento manuale' ? 'inserimento_manuale' : 'importazione_fattura',
+            notes:
+              fileName === 'Inserimento manuale'
+                ? `Inserimento manuale fornitore: ${item.supplier || ''}`
+                : `Importazione da fattura/documento: ${fileName}`,
+            userId: user?.id,
+            userName: user?.fullName || user?.username || '',
+            operatorName: user?.fullName || user?.username || '',
+            supplier: item.supplier || '',
           });
 
           created++;
@@ -1314,6 +1342,7 @@ export default function ImportaFatture() {
           onRemoveRow={removeScanRow}
           onCancel={resetImportState}
           onContinue={continueFromScanFallback}
+          supplierSuggestions={supplierSuggestions}
         />
       )}
 

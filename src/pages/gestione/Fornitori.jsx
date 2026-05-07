@@ -14,7 +14,13 @@ import { useAuth } from '../../App';
 
 function normalizeSupplier(value = '') {
   const text = String(value || '').trim();
-  return text || 'Senza fornitore';
+  if (!text) return 'Senza fornitore';
+
+  return text
+    .replace(/\bs\.p\.a\.?\b/gi, 'S.p.A.')
+    .replace(/\bspa\b/gi, 'SpA')
+    .replace(/\bs\.r\.l\.?\b/gi, 'S.r.l.')
+    .replace(/\bsrl\b/gi, 'Srl');
 }
 
 function formatCurrency(value = 0) {
