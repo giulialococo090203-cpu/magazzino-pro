@@ -3069,3 +3069,332 @@ textarea:focus {
 .sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon {
   color: #99f6e4 !important;
 }
+
+/* ============================================================
+   Tema tecnico elegante: slate + indigo professionale
+   ============================================================ */
+
+:root {
+  --tech-bg: #eef2f7;
+  --tech-surface: #ffffff;
+  --tech-surface-soft: #f8fafc;
+  --tech-border: #d8e1ec;
+  --tech-border-soft: #e7edf5;
+
+  --tech-text: #0f172a;
+  --tech-muted: #64748b;
+  --tech-muted-2: #94a3b8;
+
+  --tech-primary: #334155;
+  --tech-primary-hover: #1e293b;
+  --tech-accent: #2563eb;
+  --tech-accent-soft: rgba(37, 99, 235, 0.11);
+  --tech-accent-border: rgba(37, 99, 235, 0.24);
+
+  --tech-success: #047857;
+  --tech-warning: #b45309;
+  --tech-danger: #dc2626;
+
+  --tech-sidebar: #0f172a;
+  --tech-sidebar-2: #111827;
+  --tech-sidebar-text: #cbd5e1;
+  --tech-sidebar-muted: #94a3b8;
+}
+
+/* Base */
+body,
+.app-layout,
+.main-content {
+  background: var(--tech-bg) !important;
+  color: var(--tech-text) !important;
+}
+
+/* Sidebar tecnica scura */
+.sidebar {
+  background:
+    linear-gradient(180deg, var(--tech-sidebar) 0%, var(--tech-sidebar-2) 100%) !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.20) !important;
+  color: var(--tech-sidebar-text) !important;
+  box-shadow: none !important;
+}
+
+.sidebar:hover {
+  background:
+    linear-gradient(180deg, var(--tech-sidebar) 0%, var(--tech-sidebar-2) 100%) !important;
+}
+
+/* Logo e utente */
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.sidebar-logo-text h1,
+.sidebar-user-name {
+  color: #f8fafc !important;
+}
+
+.sidebar-logo-text span,
+.sidebar-user-role {
+  color: var(--tech-sidebar-muted) !important;
+}
+
+/* Sidebar sezioni */
+.sidebar-section-toggle,
+.sidebar-link {
+  color: rgba(203, 213, 225, 0.82) !important;
+  background: transparent !important;
+}
+
+.sidebar-section-toggle:hover,
+.sidebar-link:hover {
+  background: rgba(148, 163, 184, 0.10) !important;
+  color: #f8fafc !important;
+}
+
+.sidebar-section-toggle {
+  border-radius: 9px !important;
+  font-weight: 780 !important;
+  letter-spacing: 0.015em !important;
+}
+
+.sidebar-link {
+  border-radius: 8px !important;
+  font-weight: 650 !important;
+}
+
+/* Gruppo aperto neutro */
+.sidebar-section-accordion.open > .sidebar-section-toggle {
+  background: rgba(148, 163, 184, 0.07) !important;
+  color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(148, 163, 184, 0.07) !important;
+  color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+/* Solo voce attiva: blu tecnico, non neon */
+.sidebar-link.active {
+  background: rgba(37, 99, 235, 0.16) !important;
+  color: #bfdbfe !important;
+  box-shadow: inset 3px 0 0 #3b82f6 !important;
+}
+
+.sidebar-link.active .sidebar-link-icon {
+  color: #bfdbfe !important;
+}
+
+/* Icone */
+.sidebar-section-icon,
+.sidebar-link-icon {
+  background: transparent !important;
+  border: 0 !important;
+  color: currentColor !important;
+}
+
+.sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: #e2e8f0 !important;
+}
+
+.material-symbols-rounded {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 520,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Sidebar compressa */
+.sidebar:not(:hover) .sidebar-section-toggle {
+  background: transparent !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle:hover {
+  background: rgba(148, 163, 184, 0.10) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(37, 99, 235, 0.13) !important;
+  box-shadow: inset 3px 0 0 #3b82f6 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  color: rgba(203, 213, 225, 0.82) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: #bfdbfe !important;
+}
+
+/* Header */
+.header {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom: 1px solid var(--tech-border) !important;
+  backdrop-filter: blur(12px);
+}
+
+.header-breadcrumb {
+  color: var(--tech-muted) !important;
+}
+
+.header-breadcrumb span:last-child {
+  color: var(--tech-text) !important;
+  font-weight: 780;
+}
+
+/* Titoli */
+.page-title {
+  color: var(--tech-text) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.page-subtitle {
+  color: var(--tech-muted) !important;
+}
+
+/* Card */
+.card,
+.kpi-card,
+.table-container,
+.modal,
+.import-dropzone,
+.login-card {
+  background: var(--tech-surface) !important;
+  border: 1px solid var(--tech-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07) !important;
+}
+
+.card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--tech-border-soft) !important;
+}
+
+/* KPI */
+.kpi-card {
+  padding: 20px !important;
+}
+
+.kpi-icon {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.kpi-label {
+  color: #64748b !important;
+}
+
+.kpi-value {
+  color: var(--tech-text) !important;
+}
+
+.kpi-detail {
+  color: #94a3b8 !important;
+}
+
+/* Bottoni */
+.btn,
+button {
+  border-radius: 10px !important;
+  font-weight: 760 !important;
+}
+
+.btn-primary,
+.btn.btn-primary {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+}
+
+.btn-secondary,
+.btn.btn-secondary {
+  background: #ffffff !important;
+  border-color: var(--tech-border) !important;
+  color: var(--tech-text) !important;
+}
+
+.btn-secondary:hover,
+.btn.btn-secondary:hover {
+  background: var(--tech-surface-soft) !important;
+}
+
+/* Form */
+.form-control,
+select,
+input,
+textarea {
+  background: #ffffff !important;
+  border: 1px solid var(--tech-border) !important;
+  color: var(--tech-text) !important;
+  border-radius: 9px !important;
+}
+
+.form-control:focus,
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Tabelle */
+.data-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid var(--tech-border) !important;
+}
+
+.data-table td {
+  border-bottom: 1px solid var(--tech-border-soft) !important;
+  color: #1e293b !important;
+}
+
+.data-table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* Badge / stati */
+.status-badge {
+  border-radius: 7px !important;
+  font-weight: 760 !important;
+}
+
+.status-disponibile {
+  background: rgba(4, 120, 87, 0.10) !important;
+  color: var(--tech-success) !important;
+}
+
+.status-sotto_soglia {
+  background: rgba(180, 83, 9, 0.10) !important;
+  color: var(--tech-warning) !important;
+}
+
+.status-esaurito {
+  background: rgba(220, 38, 38, 0.10) !important;
+  color: var(--tech-danger) !important;
+}
+
+/* Rimuove residui lavanda/viola */
+.sidebar-section-toggle,
+.sidebar-link,
+.card,
+.kpi-card,
+.table-container {
+  outline-color: transparent !important;
+}
