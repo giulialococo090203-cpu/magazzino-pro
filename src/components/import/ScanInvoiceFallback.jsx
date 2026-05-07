@@ -1,10 +1,30 @@
 import React from 'react';
 
+const UNIT_OPTIONS = [
+  'PZ',
+  'NR',
+  'MT',
+  'M',
+  'KG',
+  'GR',
+  'LT',
+  'L',
+  'ML',
+  'CF',
+  'CONF',
+  'SC',
+  'SCAT',
+  'ROT',
+  'SAC',
+  'BOB',
+  'KIT',
+];
+
 function createEmptyRow() {
   return {
     code: '',
     description: '',
-    unit: '',
+    unit: 'PZ',
     quantity: '',
     price: '',
     supplier: '',
@@ -114,13 +134,17 @@ export default function ScanInvoiceFallback({
                   </td>
 
                   <td>
-                    <input
-                      type="text"
+                    <select
                       className="form-control"
-                      value={row.unit || ''}
-                      onChange={(e) => onChangeRow(index, 'unit', e.target.value.toUpperCase())}
-                      placeholder="PZ"
-                    />
+                      value={row.unit || 'PZ'}
+                      onChange={(e) => onChangeRow(index, 'unit', e.target.value)}
+                    >
+                      {UNIT_OPTIONS.map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
                   </td>
 
                   <td>
