@@ -6061,3 +6061,141 @@ button .ui-inline-icon {
   filter: saturate(0.82);
 }
 
+
+/* ============================================================
+   FIX DEFINITIVO MATERIAL SYMBOLS
+   Il font viene caricato da index.html.
+   Queste regole impediscono che i nomi icona appaiano come testo.
+   ============================================================ */
+
+.material-symbols-rounded,
+.ui-title-icon,
+.ui-section-icon,
+.ui-inline-icon,
+.kpi-icon .material-symbols-rounded,
+.kpi-icon .ui-inline-icon {
+  font-family: 'Material Symbols Rounded' !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+  font-feature-settings: 'liga' !important;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 520,
+    'GRAD' 0,
+    'opsz' 24 !important;
+}
+
+/* Titoli pagina */
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+.page-title .ui-title-icon,
+.page-title > .ui-inline-icon {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  margin-right: 14px !important;
+  border-radius: 11px !important;
+  background: rgba(249, 115, 22, 0.11) !important;
+  color: #f97316 !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+  font-size: 26px !important;
+}
+
+/* KPI */
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f4f6f8 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
+}
+
+.kpi-icon .ui-inline-icon,
+.kpi-icon .material-symbols-rounded {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #475467 !important;
+  font-size: 24px !important;
+}
+
+/* Card title e sezioni */
+.card-title .ui-inline-icon,
+.card-title .ui-section-icon,
+.ui-section-icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  margin-right: 9px !important;
+  border-radius: 8px !important;
+  background: #f4f6f8 !important;
+  color: #475467 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+  font-size: 20px !important;
+}
+
+/* Search, header e bottoni: nessun badge intorno */
+.search-bar-icon .ui-inline-icon,
+.global-search-icon .ui-inline-icon,
+.header-notification-btn .ui-inline-icon,
+.btn .ui-inline-icon,
+button .ui-inline-icon {
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 6px 0 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: currentColor !important;
+  font-size: 18px !important;
+}
+
+.search-bar-icon .ui-inline-icon,
+.global-search-icon .ui-inline-icon,
+.header-notification-btn .ui-inline-icon {
+  margin: 0 !important;
+  font-size: 20px !important;
+}
+
+/* Quick action più sobrie */
+.quick-action-card,
+.quick-action,
+.action-card {
+  border-radius: 10px !important;
+}
+
+.quick-action-card:focus,
+.quick-action:focus,
+.action-card:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14) !important;
+  border-color: rgba(249, 115, 22, 0.45) !important;
+}
+

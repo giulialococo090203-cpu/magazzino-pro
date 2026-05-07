@@ -321,32 +321,10 @@ export default function MovimentiForm() {
       <div className="animate-slideUp">
         <div className="page-header">
           <div>
-            <h1 className="page-title">Movimenti Magazzino</h1>
-            <p className="page-subtitle">Registrazione entrate e uscite materiale</p>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-body">
-            <div className="empty-state">
-              <div className="empty-state-icon">🔒</div>
-              <div className="empty-state-title">Accesso non consentito</div>
-              <div className="empty-state-text">
-                Il tuo ruolo può visualizzare la giacenza, ma non può registrare entrate o uscite di materiale.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="animate-slideUp">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 28 }}>{config.icon}</span>
+            <h1 className="page-title">
+            <span className="ui-title-icon material-symbols-rounded" aria-hidden="true">
+              {config.icon}
+            </span>
             {config.title}
           </h1>
           <p className="page-subtitle">{config.subtitle}</p>
