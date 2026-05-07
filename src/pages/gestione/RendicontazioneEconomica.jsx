@@ -29,23 +29,25 @@ function formatDate(value) {
 
 function getPeriodRange(period) {
   const now = new Date();
+
   const end = new Date(now);
   end.setHours(23, 59, 59, 999);
 
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
+  let start;
 
   if (period === 'mese') {
-    start.setMonth(start.getMonth() - 1);
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
   } else if (period === 'bimestre') {
-    start.setMonth(start.getMonth() - 2);
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   } else if (period === 'semestre') {
-    start.setMonth(start.getMonth() - 6);
+    start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
   } else if (period === 'anno') {
-    start.setFullYear(start.getFullYear() - 1);
+    start = new Date(now.getFullYear(), 0, 1);
   } else {
-    start.setMonth(start.getMonth() - 1);
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
   }
+
+  start.setHours(0, 0, 0, 0);
 
   return {
     start,
