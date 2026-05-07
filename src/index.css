@@ -7352,3 +7352,149 @@ header [title="Notifiche"] {
   font-size: 16px;
 }
 
+
+/* ============================================================
+   MOBILE DASHBOARD / CARDS ADAPTATION
+   Solo layout contenuti: non modifica sidebar/header.
+   ============================================================ */
+
+.app-layout.is-mobile .dashboard-grid,
+.app-layout.is-mobile .stats-grid,
+.app-layout.is-mobile .kpi-grid,
+.app-layout.is-mobile .quick-actions-grid,
+.app-layout.is-mobile .charts-grid,
+.app-layout.is-mobile .cards-grid,
+.app-layout.is-mobile .form-grid,
+.app-layout.is-mobile .filters-grid,
+.app-layout.is-mobile .page-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.app-layout.is-mobile .card,
+.app-layout.is-mobile .kpi-card,
+.app-layout.is-mobile .stat-card,
+.app-layout.is-mobile .quick-action-card,
+.app-layout.is-mobile .dashboard-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.app-layout.is-mobile .card-header,
+.app-layout.is-mobile .card-body,
+.app-layout.is-mobile .card-footer {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+.app-layout.is-mobile .kpi-card,
+.app-layout.is-mobile .stat-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 18px !important;
+}
+
+.app-layout.is-mobile .kpi-value,
+.app-layout.is-mobile .stat-value {
+  font-size: clamp(30px, 9vw, 42px) !important;
+  line-height: 1 !important;
+}
+
+.app-layout.is-mobile .kpi-label,
+.app-layout.is-mobile .stat-label {
+  font-size: 13px !important;
+  letter-spacing: 0.04em !important;
+}
+
+.app-layout.is-mobile .quick-action-card,
+.app-layout.is-mobile .quick-action {
+  min-height: 64px !important;
+  padding: 14px 18px !important;
+}
+
+.app-layout.is-mobile .chart-container,
+.app-layout.is-mobile .chart-card,
+.app-layout.is-mobile canvas {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.app-layout.is-mobile .chart-card {
+  overflow-x: auto !important;
+}
+
+.app-layout.is-mobile .filters,
+.app-layout.is-mobile .filter-card,
+.app-layout.is-mobile .filters-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.app-layout.is-mobile .filters-row,
+.app-layout.is-mobile .filter-row,
+.app-layout.is-mobile .form-row {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+.app-layout.is-mobile .filters-row > *,
+.app-layout.is-mobile .filter-row > *,
+.app-layout.is-mobile .form-row > *,
+.app-layout.is-mobile .form-group {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.app-layout.is-mobile .btn,
+.app-layout.is-mobile button {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.app-layout.is-mobile .page-actions,
+.app-layout.is-mobile .header-actions,
+.app-layout.is-mobile .card-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+.app-layout.is-mobile .page-actions .btn,
+.app-layout.is-mobile .header-actions .btn,
+.app-layout.is-mobile .card-actions .btn {
+  flex: 1 1 150px !important;
+  justify-content: center !important;
+}
+
+/* Dashboard principale: azioni rapide e sezioni inferiori */
+.app-layout.is-mobile .quick-actions,
+.app-layout.is-mobile .dashboard-section,
+.app-layout.is-mobile .dashboard-panels {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Tabelle: restano scrollabili, senza rompere le card */
+.app-layout.is-mobile .table-wrapper,
+.app-layout.is-mobile .table-container,
+.app-layout.is-mobile .table-responsive {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Evita elementi enormi che spingono la pagina fuori schermo */
+.app-layout.is-mobile [style*="grid-template-columns"] {
+  grid-template-columns: 1fr !important;
+}
+
