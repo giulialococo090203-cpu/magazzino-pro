@@ -522,7 +522,7 @@ export default function ImportaFatture() {
           brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
           minThreshold: existing?.minThreshold || 10,
           location: location || existing?.location || 'A1-01',
-          supplier: supplierFromRow || existing?.supplier || brand || 'Importato',
+          supplier: (typeof supplierFromRow !== 'undefined' ? supplierFromRow : String(row?.[8] || '').trim()) || existing?.supplier || brand || 'Importato',
           notes: `Import: ${currentFileName}`,
           existingMaterial: existing,
         };
@@ -649,7 +649,7 @@ export default function ImportaFatture() {
         brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
         minThreshold: existing?.minThreshold || 10,
         location: location || existing?.location || 'A1-01',
-        supplier: String(supplierValue || '').trim() || existing?.supplier || brand || 'Importato',
+        supplier: String((typeof supplierValue !== 'undefined' ? supplierValue : row?.[8]) || '').trim() || existing?.supplier || brand || 'Importato',
         notes: `Import: ${currentFileName}`,
         existingMaterial: existing,
       });
