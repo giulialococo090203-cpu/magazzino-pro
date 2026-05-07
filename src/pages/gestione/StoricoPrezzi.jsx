@@ -29,6 +29,41 @@ function getVariation(current = 0, previous = 0) {
 
   if (prev <= 0) return null;
 
+  const deleteSingleRow = async (row) => {
+    if (!row?.id) return;
+
+    const label = `${row.code || ''} ${row.description || ''}`.trim() || 'questa riga';
+
+    const firstConfirm = window.confirm(
+      `Vuoi eliminare questa riga dallo storico prezzi?\n\n${label}`
+    );
+
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(
+      'Conferma definitiva: questa riga verrà eliminata dallo storico prezzi e non potrà essere recuperata.'
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      setDeleting(true);
+
+      await priceHistoryStore.delete(row.id);
+
+      setRows((prev) => prev.filter((item) => item.id !== row.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== row.id));
+
+      alert('Riga storico prezzi eliminata.');
+    } catch (err) {
+      console.error('Errore eliminazione riga storico prezzi:', err);
+      alert(err?.message || 'Errore durante l’eliminazione della riga.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+
   return ((curr - prev) / prev) * 100;
 }
 
@@ -342,7 +377,8 @@ export default function StoricoPrezzi() {
                   title="Seleziona tutte le righe visibili"
                 />
               </th>
-              <th>Data</th>
+              <th style={{ width: 80, textAlign: 'center' }}>Azioni</th>
+              <th style={{ whiteSpace: 'nowrap' }}>Data</th>
               <th>Codice</th>
               <th>Descrizione</th>
               <th>Fornitore</th>
@@ -359,13 +395,13 @@ export default function StoricoPrezzi() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="11" style={{ padding: 30 }}>
+                <td colSpan="13" style={{ padding: 30 }}>
                   <div className="empty-state-text">Caricamento storico prezzi...</div>
                 </td>
               </tr>
             ) : filteredRows.length === 0 ? (
               <tr>
-                <td colSpan="11" style={{ padding: 34 }}>
+                <td colSpan="13" style={{ padding: 34 }}>
                   <div className="empty-state">
                     <div className="empty-state-icon">📈</div>
                     <div className="empty-state-title">Nessuno storico disponibile</div>
@@ -381,7 +417,25 @@ export default function StoricoPrezzi() {
 
                 return (
                   <tr key={row.id}>
-                    <td>{formatDate(row.date || row.createdAt)}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(row.id)}
+                        onChange={() => toggleRowSelection(row.id)}
+                      />
+                    </td>
+                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost text-danger"
+                        onClick={() => deleteSingleRow(row)}
+                        disabled={deleting}
+                        title="Elimina riga"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{formatDate(row.date || row.createdAt)}</td>
                     <td><strong>{row.code || '—'}</strong></td>
                     <td className="text-sm">{row.description || '—'}</td>
                     <td><strong>{row.supplier || '—'}</strong></td>
@@ -404,8 +458,30 @@ export default function StoricoPrezzi() {
                     </td>
                     <td>{row.quantity}</td>
                     <td>{row.origin || '—'}</td>
-                    <td className="text-sm">{row.document || '—'}</td>
-                    <td className="text-sm">{row.userName || '—'}</td>
+                    <td
+                      className="text-sm"
+                      style={{
+                        maxWidth: 220,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={row.document || ''}
+                    >
+                      {row.document || '—'}
+                    </td>
+                    <td
+                      className="text-sm"
+                      style={{
+                        maxWidth: 150,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={row.userName || ''}
+                    >
+                      {row.userName || '—'}
+                    </td>
                   </tr>
                 );
               })
