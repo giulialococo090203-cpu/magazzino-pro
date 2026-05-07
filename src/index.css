@@ -8528,3 +8528,161 @@ header [title="Notifiche"] {
 
 }
 
+/* ============================================================
+   LOGOUT OFF CENTER FIX
+   Centra perfettamente la scritta OFF nel bottone uscita.
+   ============================================================ */
+
+.sidebar-user button:last-child,
+.sidebar-user .logout-btn,
+.sidebar-user .sidebar-logout,
+.sidebar-footer button:last-child {
+  width: 48px !important;
+  height: 42px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.sidebar-user button:last-child::before,
+.sidebar-user .logout-btn::before,
+.sidebar-user .sidebar-logout::before,
+.sidebar-footer button:last-child::before {
+  content: "OFF" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+/* ============================================================
+   LOGIN MOBILE ONLY - telefono reale
+   Non si attiva su desktop/finestra rimpicciolita.
+   ============================================================ */
+
+@media screen and (max-width: 768px) and (pointer: coarse) {
+  .login-page,
+  .auth-page,
+  .login-container,
+  .auth-container {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 12px 14px 34px !important;
+    box-sizing: border-box !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+
+  .login-card,
+  .auth-card {
+    width: 100% !important;
+    max-width: 390px !important;
+    margin: 0 auto !important;
+    padding: 18px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  .login-logo,
+  .auth-logo {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .login-title,
+  .auth-title,
+  .login-card h1,
+  .auth-card h1 {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .login-subtitle,
+  .auth-subtitle,
+  .login-card p,
+  .auth-card p {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .login-card .form-group,
+  .auth-card .form-group {
+    margin-bottom: 10px !important;
+  }
+
+  .login-card input,
+  .auth-card input,
+  .login-card select,
+  .auth-card select {
+    height: 42px !important;
+    min-height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  .login-card button,
+  .auth-card button,
+  .login-card .btn,
+  .auth-card .btn {
+    min-height: 42px !important;
+    padding: 9px 12px !important;
+    font-size: 15px !important;
+  }
+
+  .login-page:focus-within,
+  .auth-page:focus-within,
+  .login-container:focus-within,
+  .auth-container:focus-within {
+    padding-bottom: 52vh !important;
+  }
+
+  .login-page:focus-within .login-card,
+  .auth-page:focus-within .auth-card,
+  .login-container:focus-within .login-card,
+  .auth-container:focus-within .auth-card {
+    padding: 14px 16px !important;
+  }
+
+  .login-page:focus-within .login-logo,
+  .auth-page:focus-within .auth-logo,
+  .login-container:focus-within .login-logo,
+  .auth-container:focus-within .auth-logo {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+
+  .login-page:focus-within .login-title,
+  .auth-page:focus-within .auth-title,
+  .login-container:focus-within .login-title,
+  .auth-container:focus-within .auth-title,
+  .login-page:focus-within h1,
+  .auth-page:focus-within h1,
+  .login-container:focus-within h1,
+  .auth-container:focus-within h1 {
+    font-size: 22px !important;
+  }
+}
+
