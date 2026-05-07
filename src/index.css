@@ -7027,3 +7027,395 @@ button .app-text-icon {
   display: none !important;
 }
 
+
+/* ============================================================
+   ICONE SVG LOCALI DEFINITIVE
+   ============================================================ */
+
+.app-svg-icon {
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  color: currentColor !important;
+}
+
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.page-title .app-svg-icon,
+.app-svg-icon.ui-title-icon {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 10px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  color: #f97316 !important;
+  background: rgba(249, 115, 22, 0.10) !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+}
+
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f6f8fb !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+  color: #475569 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kpi-icon .app-svg-icon,
+.kpi-icon .ui-inline-icon {
+  width: 23px !important;
+  height: 23px !important;
+  min-width: 23px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.card-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.card-title .app-svg-icon,
+.card-title .ui-inline-icon,
+.card-title .ui-section-icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  padding: 7px !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background: #f6f8fb !important;
+  color: #475569 !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+}
+
+.search-bar-icon .app-svg-icon,
+.global-search-icon .app-svg-icon,
+.header-notification-btn .app-svg-icon {
+  width: 17px !important;
+  height: 17px !important;
+  min-width: 17px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.btn .app-svg-icon,
+button .app-svg-icon {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  margin-right: 7px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sidebar-link .app-svg-icon,
+.sidebar-section-header .app-svg-icon,
+.sidebar-section-toggle .app-svg-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+}
+
+.empty-state-icon .app-svg-icon,
+.confirm-icon .app-svg-icon {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.app-text-icon {
+  display: none !important;
+}
+
+.material-symbols-rounded,
+.material-symbols-outlined,
+.fa-solid,
+.fa-regular {
+  display: none !important;
+}
+
+
+
+/* ============================================================
+
+   MODALITÀ ICONE RIDOTTA
+
+   Mostra icone solo in titoli pagina e bottoni operativi.
+
+   ============================================================ */
+
+/* Nasconde icone in sidebar, header, search, KPI, card, empty state */
+
+.sidebar .app-svg-icon,
+
+.sidebar .app-text-icon,
+
+.header .app-svg-icon,
+
+.header .app-text-icon,
+
+.global-search-icon,
+
+.search-bar-icon .app-svg-icon,
+
+.search-bar-icon .app-text-icon,
+
+.kpi-icon,
+
+.card-title .app-svg-icon,
+
+.card-title .app-text-icon,
+
+.empty-state-icon .app-svg-icon,
+
+.empty-state-icon .app-text-icon,
+
+.app-svg-icon.ui-section-icon,
+
+.app-text-icon.ui-section-icon {
+
+  display: none !important;
+
+}
+
+/* Mantiene puliti i contenitori KPI quando l'icona è rimossa */
+
+.kpi-card,
+
+.stat-card,
+
+.dashboard-stat,
+
+.summary-card {
+
+  gap: 18px !important;
+
+}
+
+/* Titoli pagina: icona visibile e stabile */
+
+.page-title .app-svg-icon,
+
+.page-title .app-text-icon,
+
+.app-svg-icon.ui-title-icon,
+
+.app-text-icon.ui-title-icon {
+
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  width: 42px !important;
+
+  height: 42px !important;
+
+  min-width: 42px !important;
+
+  padding: 10px !important;
+
+  margin: 0 !important;
+
+  border-radius: 10px !important;
+
+  color: #f97316 !important;
+
+  background: rgba(249, 115, 22, 0.10) !important;
+
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+
+}
+
+/* Bottoni: icone visibili ma piccole */
+
+.btn .app-svg-icon,
+
+button .app-svg-icon,
+
+.btn .app-text-icon,
+
+button .app-text-icon {
+
+  display: inline-flex !important;
+
+  width: 16px !important;
+
+  height: 16px !important;
+
+  min-width: 16px !important;
+
+  padding: 0 !important;
+
+  margin-right: 7px !important;
+
+  background: transparent !important;
+
+  box-shadow: none !important;
+
+  color: currentColor !important;
+
+}
+
+/* Modal/alert importanti */
+
+.confirm-icon .app-svg-icon,
+
+.confirm-icon .app-text-icon,
+
+.alert .app-svg-icon,
+
+.alert .app-text-icon {
+
+  display: inline-flex !important;
+
+}
+
+/* Se qualche vecchia icona-font rimane, la nascondiamo */
+
+.material-symbols-rounded,
+
+.material-symbols-outlined,
+
+.fa-solid,
+
+.fa-regular {
+
+  display: none !important;
+
+}
+
+
+
+/* Pulizia finale icone ridotte */
+.header-notification-btn:empty,
+.header-notification-btn .app-svg-icon:only-child {
+  display: none !important;
+}
+
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.page-title .ui-title-icon,
+.page-title .app-svg-icon {
+  display: inline-flex !important;
+}
+
+.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 7px;
+}
+
+.btn .app-svg-icon {
+  margin-right: 0 !important;
+}
+
+
+
+/* Safe SVG icons: nessun font esterno, nessun emoji */
+.safe-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.ui-title-icon {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 10px;
+  border-radius: 12px;
+  color: var(--accent-600, #f97316);
+  background: rgba(249, 115, 22, 0.09);
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  box-sizing: border-box;
+}
+
+.btn .safe-icon {
+  margin-right: 2px;
+}
+
+.header-notification-btn,
+.topbar-notification,
+.notification-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* === FIX DEFINITIVO CAMPANELLA HEADER === */
+.header-notification-btn {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  border: 1px solid var(--gray-200) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #475569 !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+}
+
+.header-notification-btn svg,
+.header-notification-btn .safe-icon,
+.header-notification-btn [class*="icon"] {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  display: block !important;
+  color: #475569 !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.header-notification-badge {
+  position: absolute !important;
+  top: -7px !important;
+  right: -7px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 999px !important;
+  background: #ef4444 !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
