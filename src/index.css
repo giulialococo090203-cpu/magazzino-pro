@@ -8028,3 +8028,78 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   LOGOUT BUTTON FINAL
+   Sistema solo il bottone uscita in basso nella sidebar.
+   ============================================================ */
+
+.sidebar-user .logout-btn,
+.sidebar-logout,
+.sidebar-user button[title="Esci"],
+.sidebar-user button[aria-label="Esci"] {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  margin-left: auto !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+.sidebar-user .logout-btn svg,
+.sidebar-user .logout-btn i,
+.sidebar-user .logout-btn .material-symbols-rounded,
+.sidebar-user .logout-btn .fa-icon,
+.sidebar-user .logout-btn .app-icon {
+  display: none !important;
+}
+
+.sidebar-user .logout-btn .logout-symbol,
+.sidebar-logout .logout-symbol,
+.sidebar-user button[title="Esci"] .logout-symbol,
+.sidebar-user button[aria-label="Esci"] .logout-symbol {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 1em !important;
+  height: 1em !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  transform: translateY(-1px) !important;
+}
+
+.sidebar-user .logout-btn:hover,
+.sidebar-logout:hover,
+.sidebar-user button[title="Esci"]:hover,
+.sidebar-user button[aria-label="Esci"]:hover {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border-color: rgba(239, 68, 68, 0.36) !important;
+  color: #ffffff !important;
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar-user .logout-btn,
+  .sidebar-logout,
+  .sidebar-user button[title="Esci"],
+  .sidebar-user button[aria-label="Esci"] {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: 14px !important;
+  }
+}
+

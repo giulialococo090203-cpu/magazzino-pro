@@ -462,9 +462,7 @@ return (
               <div className="sidebar-user-role">{getRoleLabel(user?.role)}</div>
             </div>
 
-            <button className="sidebar-logout" onClick={logout} title="Esci">
-              ⏻
-            </button>
+            <button className="sidebar-logout" onClick={logout} title="Esci"><span aria-hidden="true" className="logout-symbol">⏻</span></button>
           </div>
         </div>
       </aside>
