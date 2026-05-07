@@ -7941,3 +7941,212 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   MOBILE SIDEBAR DEFINITIVA
+   - chiusa: rail stretta
+   - click: drawer largo con testi
+   - click fuori o cambio pagina: si richiude
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app-layout {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sidebar {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    right: auto !important;
+
+    width: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+    height: 100vh !important;
+
+    padding: 12px 8px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 1200 !important;
+
+    background: linear-gradient(180deg, #1f252d 0%, #171d24 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 10px 0 24px rgba(15, 23, 42, 0.18) !important;
+    transition: width 0.2s ease, max-width 0.2s ease, min-width 0.2s ease !important;
+  }
+
+  .sidebar.mobile-open {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    box-shadow: 18px 0 36px rgba(15, 23, 42, 0.32) !important;
+  }
+
+  .mobile-sidebar-overlay {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1100 !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: rgba(15, 23, 42, 0.18) !important;
+  }
+
+  .main-content {
+    margin-left: 76px !important;
+    width: calc(100% - 76px) !important;
+    max-width: calc(100% - 76px) !important;
+    min-width: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Chiusa: solo icone */
+  .sidebar:not(.mobile-open) .sidebar-logo-text,
+  .sidebar:not(.mobile-open) .sidebar-section-title span:not(.sidebar-link-icon),
+  .sidebar:not(.mobile-open) .sidebar-link span:not(.sidebar-link-icon):not(.sidebar-badge),
+  .sidebar:not(.mobile-open) .sidebar-link-label,
+  .sidebar:not(.mobile-open) .sidebar-chevron,
+  .sidebar:not(.mobile-open) .sidebar-user .user-info,
+  .sidebar:not(.mobile-open) .sidebar-user .logout-btn {
+    display: none !important;
+  }
+
+  .sidebar:not(.mobile-open) .sidebar-header {
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 0 18px 0 !important;
+    width: 100% !important;
+  }
+
+  .sidebar:not(.mobile-open) .sidebar-nav,
+  .sidebar:not(.mobile-open) .sidebar-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sidebar:not(.mobile-open) .sidebar-link {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 14px !important;
+  }
+
+  .sidebar:not(.mobile-open) .sidebar-section-title {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .sidebar:not(.mobile-open) .sidebar-user {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    margin-top: auto !important;
+    width: 100% !important;
+  }
+
+  /* Aperta: come seconda foto */
+  .sidebar.mobile-open .sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    width: 100% !important;
+    padding: 22px 20px !important;
+    margin: 0 !important;
+  }
+
+  .sidebar.mobile-open .sidebar-logo-text,
+  .sidebar.mobile-open .sidebar-logo-title,
+  .sidebar.mobile-open .sidebar-logo-subtitle,
+  .sidebar.mobile-open .sidebar-brand-title,
+  .sidebar.mobile-open .sidebar-brand-subtitle {
+    display: block !important;
+  }
+
+  .sidebar.mobile-open .sidebar-nav,
+  .sidebar.mobile-open .sidebar-section {
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+
+  .sidebar.mobile-open .sidebar-section-title {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 14px 20px !important;
+    gap: 12px !important;
+  }
+
+  .sidebar.mobile-open .sidebar-link {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: 12px 18px !important;
+    margin: 4px 14px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+
+    border-radius: 12px !important;
+  }
+
+  .sidebar.mobile-open .sidebar-link span:not(.sidebar-link-icon):not(.sidebar-badge),
+  .sidebar.mobile-open .sidebar-link-label,
+  .sidebar.mobile-open .sidebar-chevron {
+    display: inline-flex !important;
+  }
+
+  .sidebar.mobile-open .sidebar-user {
+    width: 100% !important;
+    margin-top: auto !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .sidebar.mobile-open .sidebar-user .user-info,
+  .sidebar.mobile-open .sidebar-user .logout-btn {
+    display: block !important;
+  }
+
+  .page-content {
+    padding: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+

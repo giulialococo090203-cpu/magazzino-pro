@@ -283,6 +283,7 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 const [openSections, setOpenSections] = useState({});
 
   const canSeeNotifications = hasPermission(user, 'canViewNotifications');
@@ -377,7 +378,14 @@ const [openSections, setOpenSections] = useState({});
   };
 return (
     <div className="app-layout">
-      <aside className="sidebar">
+      <aside
+          className={`sidebar ${mobileSidebarOpen ? 'mobile-open' : ''}`}
+          onClick={() => {
+            if (window.innerWidth <= 640 && !mobileSidebarOpen) {
+              setMobileSidebarOpen(true);
+            }
+          }}
+        >
         <div className="sidebar-header">
           <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
             <div className="sidebar-logo-icon">M</div>
