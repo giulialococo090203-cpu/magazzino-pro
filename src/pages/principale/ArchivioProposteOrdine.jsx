@@ -49,6 +49,7 @@ export default function ArchivioProposteOrdine() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [selectedProposal, setSelectedProposal] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const loadData = async () => {
     try {
@@ -98,6 +99,77 @@ export default function ArchivioProposteOrdine() {
     );
   }, [filtered]);
 
+  const filteredIds = useMemo(() => filtered.map((proposal) => proposal.id), [filtered]);
+
+  const selectedVisibleIds = useMemo(
+    () => selectedIds.filter((id) => filteredIds.includes(id)),
+    [selectedIds, filteredIds]
+  );
+
+  const allVisibleSelected =
+    filteredIds.length > 0 && filteredIds.every((id) => selectedIds.includes(id));
+
+  const toggleProposalSelection = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !filteredIds.includes(id)));
+      return;
+    }
+
+    setSelectedIds((prev) => [...new Set([...prev, ...filteredIds])]);
+  };
+
+  const deleteSelectedProposals = async () => {
+    const idsToDelete = selectedVisibleIds;
+
+    if (idsToDelete.length === 0) {
+      alert('Seleziona almeno una proposta da eliminare.');
+      return;
+    }
+
+    const firstConfirm = window.confirm(
+      `Vuoi eliminare ${idsToDelete.length} proposte ordine selezionate?\n\n` +
+        'Verranno eliminate anche tutte le righe collegate.'
+    );
+
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(
+      `Conferma definitiva:\n\n` +
+        `stai per eliminare ${idsToDelete.length} proposte ordine.\n\n` +
+        'Questa operazione non può essere annullata.'
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      setSavingId('delete-selected');
+
+      for (const id of idsToDelete) {
+        await reorderProposalStore.delete(id);
+      }
+
+      setProposals((prev) => prev.filter((proposal) => !idsToDelete.includes(proposal.id)));
+      setSelectedIds((prev) => prev.filter((id) => !idsToDelete.includes(id)));
+
+      if (selectedProposal && idsToDelete.includes(selectedProposal.id)) {
+        setSelectedProposal(null);
+      }
+
+      alert(`Eliminate ${idsToDelete.length} proposte ordine.`);
+    } catch (err) {
+      console.error('Errore eliminazione proposte selezionate:', err);
+      alert(err?.message || 'Errore durante l’eliminazione delle proposte selezionate.');
+    } finally {
+      setSavingId('');
+    }
+  };
+
   const changeStatus = async (proposal, nextStatus) => {
     try {
       setSavingId(proposal.id);
@@ -131,6 +203,7 @@ export default function ArchivioProposteOrdine() {
       await reorderProposalStore.delete(proposal.id);
 
       setProposals((prev) => prev.filter((item) => item.id !== proposal.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== proposal.id));
 
       if (selectedProposal?.id === proposal.id) {
         setSelectedProposal(null);
@@ -231,10 +304,59 @@ export default function ArchivioProposteOrdine() {
         </div>
       </div>
 
+      {!loading && filtered.length > 0 && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 16,
+            border: '1px solid var(--gray-200)',
+            background: 'var(--gray-50)',
+          }}
+        >
+          <div
+            className="card-body"
+            style={{
+              padding: 14,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div className="text-sm" style={{ fontWeight: 900 }}>
+              {selectedVisibleIds.length} proposte selezionate su {filtered.length} visibili
+            </div>
+
+            <div className="btn-group">
+              <button className="btn btn-sm btn-secondary" onClick={toggleAllVisible}>
+                {allVisibleSelected ? 'Deseleziona tutte' : 'Seleziona tutte'}
+              </button>
+
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={deleteSelectedProposals}
+                disabled={selectedVisibleIds.length === 0 || savingId === 'delete-selected'}
+              >
+                {savingId === 'delete-selected' ? 'Eliminazione...' : '🗑️ Elimina selezionate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: 44, textAlign: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={toggleAllVisible}
+                  title="Seleziona tutte le proposte visibili"
+                />
+              </th>
               <th>Data</th>
               <th>Numero</th>
               <th>Fornitore</th>
@@ -249,13 +371,13 @@ export default function ArchivioProposteOrdine() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" style={{ padding: 32 }}>
+                <td colSpan="9" style={{ padding: 32 }}>
                   <div className="empty-state-text">Caricamento proposte ordine...</div>
                 </td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ padding: 40 }}>
+                <td colSpan="9" style={{ padding: 40 }}>
                   <div className="empty-state">
                     <div className="empty-state-icon">📑</div>
                     <div className="empty-state-title">Nessuna proposta trovata</div>
@@ -268,6 +390,13 @@ export default function ArchivioProposteOrdine() {
             ) : (
               filtered.map((proposal) => (
                 <tr key={proposal.id}>
+                  <td style={{ textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(proposal.id)}
+                      onChange={() => toggleProposalSelection(proposal.id)}
+                    />
+                  </td>
                   <td>{formatDate(proposal.createdAt)}</td>
                   <td><strong>{proposal.number}</strong></td>
                   <td><strong>{proposal.supplier || 'Senza fornitore'}</strong></td>
