@@ -1820,3 +1820,129 @@ textarea.form-control {
   width: 28px;
   min-width: 28px;
 }
+
+/* ============================================================
+   Sidebar polish: più professionale, meno schiacciata
+   ============================================================ */
+
+/* Font generale più pulito */
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family:
+    Inter,
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+/* Titoli meno “grossi” e più gestionali */
+.page-title,
+.sidebar-logo-text h1,
+.kpi-value {
+  letter-spacing: -0.035em;
+}
+
+.page-title {
+  font-weight: 850;
+}
+
+.page-subtitle,
+.header-breadcrumb,
+.text-muted {
+  font-weight: 500;
+}
+
+/* Sidebar compressa: icone più equilibrate */
+.sidebar:not(:hover) .sidebar-section-toggle {
+  width: 54px;
+  height: 54px;
+  min-height: 54px;
+  margin: 9px auto;
+  padding: 0;
+  border-radius: 18px;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  width: 54px;
+  min-width: 54px;
+  height: 54px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Tolgo effetto “doppio bollino”: aperta ma NON attiva resta neutra */
+.sidebar:not(:hover) .sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle {
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(226, 232, 240, 0.86);
+  box-shadow: none;
+}
+
+/* Solo la sezione della pagina attuale ha evidenza azzurra */
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(14, 165, 233, 0.18);
+  color: #7dd3fc;
+  box-shadow:
+    inset 3px 0 0 #38bdf8,
+    0 10px 24px rgba(14, 165, 233, 0.12);
+}
+
+/* Evita che una sezione solo aperta sembri selezionata nella sidebar larga */
+.sidebar:hover .sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle {
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.sidebar:hover .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(14, 165, 233, 0.16);
+  color: #7dd3fc;
+}
+
+/* Voci interne più leggere e meno enormi */
+.sidebar:hover .sidebar-link {
+  min-height: 48px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 15px;
+  font-weight: 760;
+  letter-spacing: -0.015em;
+}
+
+.sidebar:hover .sidebar-link-icon {
+  font-size: 21px;
+}
+
+/* Header gruppi più elegante */
+.sidebar-section-toggle {
+  letter-spacing: 0.065em;
+  font-size: 11.5px;
+  font-weight: 850;
+}
+
+/* Active item interno più discreto */
+.sidebar-link.active {
+  background: rgba(14, 165, 233, 0.16);
+  color: #7dd3fc;
+  box-shadow: inset 3px 0 0 #38bdf8;
+}
+
+/* Logo più compatto e professionale */
+.sidebar-logo-text h1 {
+  font-weight: 850;
+}
+
+.sidebar-logo-text span {
+  font-weight: 500;
+  opacity: 0.88;
+}
