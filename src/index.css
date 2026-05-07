@@ -2706,3 +2706,185 @@ textarea {
 .sidebar-logo-icon {
   border-radius: 8px !important;
 }
+
+/* ============================================================
+   Layout e palette gestionale enterprise
+   ============================================================ */
+
+:root {
+  --enterprise-bg: #f4f7fb;
+  --enterprise-surface: #ffffff;
+  --enterprise-border: #d7e0ea;
+  --enterprise-border-soft: #e6edf5;
+
+  --enterprise-text: #111827;
+  --enterprise-muted: #64748b;
+
+  --enterprise-primary: #2563eb;
+  --enterprise-primary-soft: rgba(37, 99, 235, 0.10);
+  --enterprise-primary-border: rgba(37, 99, 235, 0.28);
+
+  --sidebar-bg: #0b1220;
+  --sidebar-bg-2: #111827;
+  --sidebar-text: #cbd5e1;
+  --sidebar-muted: #94a3b8;
+}
+
+/* Evita sovrapposizione tra sidebar chiusa e contenuto */
+.sidebar {
+  width: 86px !important;
+  min-width: 86px !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-2) 100%) !important;
+  z-index: 50;
+}
+
+.sidebar:hover {
+  width: 310px !important;
+  min-width: 310px !important;
+}
+
+/* Il contenuto parte sempre dopo la sidebar chiusa */
+.main-content {
+  margin-left: 86px !important;
+  width: calc(100% - 86px) !important;
+  background: var(--enterprise-bg) !important;
+}
+
+/* Header più netto */
+.header {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-bottom: 1px solid var(--enterprise-border) !important;
+  backdrop-filter: blur(10px);
+}
+
+.page-content {
+  padding-left: 32px !important;
+  padding-right: 32px !important;
+}
+
+/* Palette generale più sobria */
+body,
+.app-layout {
+  background: var(--enterprise-bg) !important;
+  color: var(--enterprise-text);
+}
+
+.card,
+.kpi-card,
+.table-container,
+.modal,
+.import-dropzone {
+  background: var(--enterprise-surface) !important;
+  border: 1px solid var(--enterprise-border) !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.055) !important;
+}
+
+/* Sidebar colori meno neon */
+.sidebar-section-toggle,
+.sidebar-link {
+  color: rgba(203, 213, 225, 0.82) !important;
+}
+
+.sidebar-section-toggle:hover,
+.sidebar-link:hover {
+  background: rgba(148, 163, 184, 0.10) !important;
+  color: #f8fafc !important;
+}
+
+.sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar-link.active,
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar:hover .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(37, 99, 235, 0.16) !important;
+  color: #bfdbfe !important;
+  box-shadow: inset 3px 0 0 var(--enterprise-primary) !important;
+}
+
+.sidebar-section-accordion.has-active .sidebar-section-icon,
+.sidebar-link.active .sidebar-link-icon {
+  color: #bfdbfe !important;
+}
+
+/* Icone sidebar più coerenti */
+.sidebar-section-icon,
+.sidebar-link-icon {
+  color: currentColor !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* Logo più sobrio */
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: var(--enterprise-primary) !important;
+  box-shadow: none !important;
+}
+
+/* Form e filtri */
+.form-control,
+select,
+input,
+textarea {
+  border: 1px solid var(--enterprise-border) !important;
+  background: #ffffff !important;
+  color: var(--enterprise-text) !important;
+}
+
+.form-control:focus,
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--enterprise-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+/* Bottoni più aziendali */
+.btn-primary,
+.btn.btn-primary {
+  background: var(--enterprise-primary) !important;
+  border-color: var(--enterprise-primary) !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Tabelle più leggibili */
+.data-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid var(--enterprise-border) !important;
+}
+
+.data-table td {
+  border-bottom: 1px solid var(--enterprise-border-soft) !important;
+}
+
+.data-table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* KPI meno colorati, più gestionali */
+.kpi-icon {
+  background: #f1f5f9 !important;
+  color: var(--enterprise-primary) !important;
+}
+
+.kpi-card.warning,
+.kpi-card.danger {
+  border-left-width: 4px !important;
+}
+
+/* Riduce eventuale effetto contenuto sotto la sidebar */
+.page-header,
+.card,
+.table-container,
+.kpi-grid {
+  position: relative;
+  z-index: 1;
+}
