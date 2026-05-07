@@ -24,6 +24,7 @@ import GestioneMateriali from './pages/gestione/GestioneMateriali';
 import GestioneUtenti from './pages/gestione/GestioneUtenti';
 import LogModifiche from './pages/gestione/LogModifiche';
 import ImpostazioniPrezzi from './pages/gestione/ImpostazioniPrezzi';
+import Fornitori from './pages/gestione/Fornitori';
 import BackupSistema from './pages/gestione/BackupSistema';
 
 // Pagine - Controllo
@@ -202,6 +203,15 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canManageMaterials">
                     <GestioneMateriali />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/gestione/fornitori"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
+                    <Fornitori />
                   </ProtectedRoute>
                 }
               />

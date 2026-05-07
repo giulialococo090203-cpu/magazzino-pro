@@ -136,6 +136,12 @@ const NAV_SECTIONS = [
         permission: 'canManageMaterials',
       },
       {
+        path: '/gestione/fornitori',
+        label: 'Fornitori',
+        icon: '🏭',
+        permission: 'canManageMaterials',
+      },
+      {
         path: '/gestione/utenti',
         label: 'Utenti',
         icon: '👤',
@@ -170,6 +176,7 @@ const PAGE_TITLES = {
   '/importa': 'Importa / Inserisci',
   '/fatture': 'Archivio Fatture',
   '/gestione/materiali': 'Anagrafica Materiali',
+  '/gestione/fornitori': 'Fornitori',
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/prezzi': 'Impostazioni Prezzi',
   '/gestione/utenti': 'Gestione Utenti',
