@@ -7296,3 +7296,59 @@ header [title="Notifiche"] {
   overflow: hidden !important;
   pointer-events: none !important;
 }
+
+/* ============================================================
+   MOBILE DYNAMIC ADAPTATION - minimale
+   Si attiva solo quando Layout aggiunge .is-mobile
+   ============================================================ */
+
+.app-layout.is-mobile {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.app-layout.is-mobile .main-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.app-layout.is-mobile .page-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.app-layout.is-mobile .page-header {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app-layout.is-mobile .page-title {
+  font-size: clamp(22px, 7vw, 30px);
+  line-height: 1.1;
+}
+
+.app-layout.is-mobile .page-subtitle {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.app-layout.is-mobile .table-container,
+.app-layout.is-mobile .table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-layout.is-mobile table,
+.app-layout.is-mobile .data-table {
+  min-width: 720px;
+}
+
+.app-layout.is-mobile input,
+.app-layout.is-mobile select,
+.app-layout.is-mobile textarea,
+.app-layout.is-mobile .form-control {
+  font-size: 16px;
+}
+

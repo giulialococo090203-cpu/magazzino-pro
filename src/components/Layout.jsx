@@ -283,6 +283,7 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 const [openSections, setOpenSections] = useState({});
 
   const canSeeNotifications = hasPermission(user, 'canViewNotifications');
@@ -316,6 +317,20 @@ const [openSections, setOpenSections] = useState({});
       clearInterval(interval);
     };
   }, [canSeeNotifications]);
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+
+    return () => {
+      window.removeEventListener('resize', updateIsMobile);
+    };
+  }, []);
+
 
   const section = getSection(location.pathname);
   const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
@@ -376,7 +391,7 @@ const [openSections, setOpenSections] = useState({});
     });
   };
 return (
-    <div className="app-layout">
+    <div className={`app-layout ${isMobile ? "is-mobile" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
