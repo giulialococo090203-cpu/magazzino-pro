@@ -156,7 +156,7 @@ const NAV_SECTIONS = [
       {
         path: '/gestione/rendicontazione',
         label: 'Rendicontazione',
-        icon: '💶',
+        icon: '🧾',
         permission: 'canManageMaterials',
       },
       {

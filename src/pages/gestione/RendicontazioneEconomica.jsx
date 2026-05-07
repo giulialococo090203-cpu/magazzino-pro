@@ -316,7 +316,7 @@ export default function RendicontazioneEconomica() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">💶 Rendicontazione Economica</h1>
+          <h1 className="page-title">🧾 Rendicontazione Economica</h1>
           <p className="page-subtitle">
             Analisi economica per periodo: carichi, uscite, stock, fornitori e materiali.
           </p>
