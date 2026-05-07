@@ -2503,3 +2503,206 @@ textarea {
 .sidebar-link-icon svg {
   display: none !important;
 }
+
+/* ============================================================
+   Sidebar enterprise: nav rail pulita, icone visibili, meno "bollini"
+   ============================================================ */
+
+/* Fix: non nascondere l'icona Material Symbols dentro il contenitore */
+.sidebar:not(:hover) .sidebar-section-toggle-left > span:not(.sidebar-section-icon) {
+  display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon .material-symbols-rounded,
+.sidebar:hover .sidebar-section-icon .material-symbols-rounded,
+.sidebar:hover .sidebar-link-icon .material-symbols-rounded {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Se vecchie regole nascondevano SVG, non devono influenzare Material Symbols */
+.sidebar-section-icon .material-symbols-rounded,
+.sidebar-link-icon .material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+}
+
+/* Sidebar chiusa: stile nav rail professionale */
+.sidebar:not(:hover) {
+  width: 86px;
+}
+
+.sidebar:not(:hover) .sidebar-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar:not(:hover) .sidebar-logo {
+  justify-content: center;
+}
+
+.sidebar:not(:hover) .sidebar-logo-text {
+  display: none;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion {
+  margin: 6px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle {
+  width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  margin: 4px auto !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle:hover {
+  background: rgba(148, 163, 184, 0.10) !important;
+}
+
+/* Icone da chiusa: niente badge pieno, solo simbolo leggibile */
+.sidebar:not(:hover) .sidebar-section-icon {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: rgba(203, 213, 225, 0.82) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon .material-symbols-rounded {
+  font-size: 25px !important;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 520,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Sezione attiva: barra laterale sottile, non bollino enorme */
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(14, 165, 233, 0.10) !important;
+  color: #7dd3fc !important;
+  box-shadow: inset 3px 0 0 #38bdf8 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: #7dd3fc !important;
+}
+
+/* Sezione solo aperta ma non attiva: neutra */
+.sidebar:not(:hover) .sidebar-section-accordion.open:not(.has-active) > .sidebar-section-toggle {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-nav,
+.sidebar:not(:hover) .sidebar-nav-collapsible,
+.sidebar:not(:hover) .sidebar-section-chevron {
+  display: none !important;
+}
+
+/* Sidebar aperta: look più da gestionale */
+.sidebar:hover .sidebar-section-toggle {
+  width: calc(100% - 24px) !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  margin: 6px 12px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: rgba(203, 213, 225, 0.82) !important;
+  box-shadow: none !important;
+}
+
+.sidebar:hover .sidebar-section-toggle:hover {
+  background: rgba(148, 163, 184, 0.09) !important;
+  color: #f8fafc !important;
+}
+
+.sidebar:hover .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(14, 165, 233, 0.10) !important;
+  color: #7dd3fc !important;
+  box-shadow: inset 3px 0 0 #38bdf8 !important;
+}
+
+.sidebar:hover .sidebar-section-icon {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: currentColor !important;
+}
+
+.sidebar:hover .sidebar-section-icon .material-symbols-rounded {
+  font-size: 21px !important;
+}
+
+/* Voci interne: più sottili, no effetto gioco */
+.sidebar:hover .sidebar-nav-collapsible {
+  margin: 2px 12px 10px 27px !important;
+  padding-left: 12px !important;
+  border-left: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+.sidebar:hover .sidebar-link {
+  min-height: 40px !important;
+  padding: 8px 10px !important;
+  margin: 2px 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  color: rgba(226, 232, 240, 0.78) !important;
+}
+
+.sidebar:hover .sidebar-link:hover {
+  background: rgba(148, 163, 184, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+.sidebar:hover .sidebar-link.active {
+  background: rgba(14, 165, 233, 0.10) !important;
+  color: #7dd3fc !important;
+  box-shadow: inset 3px 0 0 #38bdf8 !important;
+}
+
+.sidebar:hover .sidebar-link-icon {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: currentColor !important;
+}
+
+.sidebar:hover .sidebar-link-icon .material-symbols-rounded {
+  font-size: 19px !important;
+}
+
+/* Utente in basso più sobrio quando compressa */
+.sidebar:not(:hover) .sidebar-user-details,
+.sidebar:not(:hover) .sidebar-logout {
+  display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-user-info {
+  justify-content: center;
+}
+
+.sidebar-avatar,
+.sidebar-logo-icon {
+  border-radius: 8px !important;
+}
