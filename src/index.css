@@ -5367,3 +5367,65 @@ body,
     display: none;
   }
 }
+
+/* ============================================================
+   Login scenic - palette grafite/arancio, niente blu
+   ============================================================ */
+
+.login-scenic-page {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(249, 115, 22, 0.24) 0, transparent 26%),
+    radial-gradient(circle at 86% 80%, rgba(120, 113, 108, 0.18) 0, transparent 34%),
+    linear-gradient(135deg, #111111 0%, #1f1f1f 46%, #3a332d 100%) !important;
+}
+
+.login-scenic-page::before {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px) !important;
+  opacity: 0.34 !important;
+}
+
+.login-scenic-page::after {
+  border-color: rgba(249, 115, 22, 0.075) !important;
+}
+
+/* pannello sinistro senza blu */
+.login-scenic-brand {
+  background:
+    linear-gradient(135deg, #fb923c 0%, #f97316 36%, #3f3f46 100%) !important;
+}
+
+.login-scenic-brand::before {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.18) 0 18%, transparent 18% 100%),
+    linear-gradient(45deg, transparent 0 37%, rgba(255,255,255,0.13) 37% 48%, transparent 48% 100%) !important;
+}
+
+.login-scenic-brand::after {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* pannello destro più neutro */
+.login-scenic-panel {
+  background:
+    radial-gradient(circle at 92% 12%, rgba(249, 115, 22, 0.055) 0, transparent 30%),
+    #ffffff !important;
+}
+
+/* focus coerente arancio, non blu */
+.login-form .form-control:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14) !important;
+}
+
+/* rimuove eventuali residui blu nel logo/forme */
+.login-form-icon,
+.login-brand-mark {
+  background: #f97316 !important;
+  border-color: rgba(255,255,255,0.32) !important;
+}
+
+.login-brand-lines span {
+  background: rgba(255,255,255,0.18) !important;
+}
