@@ -3,12 +3,13 @@ import { useParams } from 'react-router-dom';
 import { materialStore, categoryStore, movementStore } from '../../data/store';
 import { MOVEMENT_REASONS } from '../../data/initialData';
 import { useAuth } from '../../App';
+import FaIcon from '../../components/FaIcon';
 
 const TIPO_CONFIG = {
   entrata: {
     title: 'Carica Materiale',
     subtitle: 'Registra un nuovo ingresso di materiale in magazzino',
-    icon: 'move_to_inbox',
+    icon: 'entrata',
     color: 'var(--success-600)',
     btnLabel: 'Conferma Carico',
     btnClass: 'btn-success',
@@ -17,7 +18,7 @@ const TIPO_CONFIG = {
   uscita: {
     title: 'Scarica Materiale',
     subtitle: "Registra un'uscita di materiale dal magazzino",
-    icon: 'outbox',
+    icon: 'uscita',
     color: 'var(--danger-600)',
     btnLabel: 'Conferma Scarico',
     btnClass: 'btn-danger',
@@ -26,7 +27,7 @@ const TIPO_CONFIG = {
   reintegro: {
     title: 'Reintegra Materiale',
     subtitle: 'Rientra materiale precedentemente uscito e non utilizzato',
-    icon: 'sync',
+    icon: 'reintegro',
     color: 'var(--info-600)',
     btnLabel: 'Conferma Reintegro',
     btnClass: 'btn-primary',
@@ -35,7 +36,7 @@ const TIPO_CONFIG = {
   rettifica: {
     title: 'Rettifica Inventario',
     subtitle: 'Correggi la quantità a seguito di controllo inventariale',
-    icon: 'edit_square',
+    icon: 'rettifica',
     color: 'var(--warning-600)',
     btnLabel: 'Conferma Rettifica',
     btnClass: 'btn-warning',
@@ -328,8 +329,8 @@ export default function MovimentiForm() {
         <div className="page-header">
           <div>
             <h1 className="page-title">
-            <span className="ui-title-icon movement-title-icon" aria-hidden="true">
-              {MOVEMENT_ICON_LABELS[tipo] || '•'}
+            <span className="ui-title-icon fa-title-icon" aria-hidden="true">
+              <FaIcon name={config.icon} />
             </span>
             {config.title}
           </h1>
