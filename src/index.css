@@ -4458,3 +4458,154 @@ body:has(.login-card) {
   background: #111827 !important;
   color: #ffffff !important;
 }
+
+/* ============================================================
+   Tema bilanciato: sidebar grafite + contenuto chiaro
+   ============================================================ */
+
+:root {
+  --balanced-bg: #eef1f5;
+  --balanced-surface: #ffffff;
+  --balanced-border: #d9e0ea;
+  --balanced-text: #111827;
+  --balanced-muted: #64748b;
+
+  --balanced-sidebar: #20242b;
+  --balanced-sidebar-2: #252a32;
+  --balanced-sidebar-border: #343a45;
+  --balanced-sidebar-text: #e5e7eb;
+  --balanced-sidebar-muted: #a7b0bf;
+
+  --balanced-accent: #f97316;
+  --balanced-accent-soft: rgba(249, 115, 22, 0.13);
+}
+
+/* Sfondo meno bianco */
+body,
+.app-layout,
+.main-content {
+  background: var(--balanced-bg) !important;
+}
+
+/* Sidebar grafite, non nera e non bianca */
+.sidebar,
+.sidebar:hover {
+  background: linear-gradient(180deg, var(--balanced-sidebar) 0%, var(--balanced-sidebar-2) 100%) !important;
+  background-image: linear-gradient(180deg, var(--balanced-sidebar) 0%, var(--balanced-sidebar-2) 100%) !important;
+  border-right: 1px solid var(--balanced-sidebar-border) !important;
+  color: var(--balanced-sidebar-text) !important;
+}
+
+/* Header sidebar */
+.sidebar-header,
+.sidebar-user {
+  background: rgba(255, 255, 255, 0.025) !important;
+  border-color: var(--balanced-sidebar-border) !important;
+}
+
+.sidebar-logo-text h1,
+.sidebar-user-name {
+  color: #ffffff !important;
+}
+
+.sidebar-logo-text span,
+.sidebar-user-role {
+  color: var(--balanced-sidebar-muted) !important;
+}
+
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: var(--balanced-accent) !important;
+}
+
+/* Gruppi sidebar */
+.sidebar-section-toggle {
+  color: var(--balanced-sidebar-muted) !important;
+  background: transparent !important;
+}
+
+.sidebar-section-toggle:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-section-accordion.open > .sidebar-section-toggle,
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+
+.sidebar:hover .sidebar-link {
+  color: #cfd6e2 !important;
+}
+
+.sidebar:hover .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+
+.sidebar:hover .sidebar-link.active {
+  background: rgba(249, 115, 22, 0.16) !important;
+  color: #fed7aa !important;
+  box-shadow: inset 3px 0 0 var(--balanced-accent) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  color: #cfd6e2 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(249, 115, 22, 0.14) !important;
+  box-shadow: inset 3px 0 0 var(--balanced-accent) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: #fed7aa !important;
+}
+
+/* Header contenuto: bianco ma con confine visibile */
+.header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--balanced-border) !important;
+}
+
+/* Card distinguibili dal fondo */
+.card,
+.kpi-card,
+.table-container,
+.modal,
+.import-dropzone,
+.login-card {
+  background: var(--balanced-surface) !important;
+  border: 1px solid var(--balanced-border) !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.055) !important;
+}
+
+/* Blocchi interni leggermente grigi */
+.data-table th,
+.card-header {
+  background: #f8fafc !important;
+}
+
+/* Login: meno vuoto bianco */
+.login-page,
+.login-container,
+.login-wrapper {
+  background: #eef1f5 !important;
+}
+
+.login-card {
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.13) !important;
+}
+
+/* Header arancio del login meno invasivo */
+.login-logo,
+.login-logo-icon,
+.logo-icon {
+  background: var(--balanced-accent) !important;
+}
+
+.login-card [style*="orange"],
+.login-card [style*="#f97316"] {
+  background: var(--balanced-accent) !important;
+}
