@@ -3398,3 +3398,507 @@ textarea:focus {
 .table-container {
   outline-color: transparent !important;
 }
+
+/* ============================================================
+   FINAL UI THEME - Gestionale tecnico/admin dashboard
+   Ispirazione: finance/admin SaaS pulito, compatto, professionale
+   ============================================================ */
+
+:root {
+  --ui-bg: #f5f6f8;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #fafafa;
+  --ui-border: #e4e7ec;
+  --ui-border-strong: #d0d5dd;
+
+  --ui-text: #101828;
+  --ui-muted: #667085;
+  --ui-muted-2: #98a2b3;
+
+  --ui-sidebar: #111318;
+  --ui-sidebar-2: #171a21;
+  --ui-sidebar-border: rgba(255, 255, 255, 0.08);
+  --ui-sidebar-text: #d0d5dd;
+  --ui-sidebar-muted: #8b93a1;
+
+  --ui-accent: #f97316;
+  --ui-accent-hover: #ea580c;
+  --ui-accent-soft: rgba(249, 115, 22, 0.12);
+
+  --ui-teal: #0f766e;
+  --ui-green: #16a34a;
+  --ui-red: #dc2626;
+  --ui-yellow: #d97706;
+}
+
+/* Base */
+html,
+body,
+.app-layout,
+.main-content {
+  background: var(--ui-bg) !important;
+  color: var(--ui-text) !important;
+}
+
+/* Font più admin/finance, meno pesante */
+body,
+button,
+input,
+select,
+textarea {
+  font-family:
+    Inter,
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif !important;
+}
+
+.page-title {
+  font-size: 30px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+  color: var(--ui-text) !important;
+}
+
+.page-subtitle {
+  font-size: 15px !important;
+  font-weight: 450 !important;
+  color: var(--ui-muted) !important;
+}
+
+.card-title,
+.modal-title,
+.empty-state-title {
+  font-weight: 720 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Layout: sidebar vera, non overlay */
+.app-layout {
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+  flex: 0 0 82px !important;
+  width: 82px !important;
+  min-width: 82px !important;
+  background: linear-gradient(180deg, var(--ui-sidebar) 0%, var(--ui-sidebar-2) 100%) !important;
+  border-right: 1px solid var(--ui-sidebar-border) !important;
+  color: var(--ui-sidebar-text) !important;
+  z-index: 30 !important;
+  transition: width 0.16s ease, flex-basis 0.16s ease !important;
+  box-shadow: none !important;
+}
+
+.sidebar:hover {
+  flex-basis: 286px !important;
+  width: 286px !important;
+  min-width: 286px !important;
+}
+
+.main-content {
+  margin-left: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Header superiore compatto */
+.header {
+  height: 68px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.header-breadcrumb {
+  color: var(--ui-muted) !important;
+  font-size: 14px !important;
+  font-weight: 450 !important;
+}
+
+.header-breadcrumb span:last-child {
+  color: var(--ui-text) !important;
+  font-weight: 700 !important;
+}
+
+.page-content {
+  padding: 28px 32px !important;
+}
+
+/* Sidebar logo */
+.sidebar-header {
+  border-bottom: 1px solid var(--ui-sidebar-border) !important;
+}
+
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: var(--ui-accent) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.sidebar-logo-text h1 {
+  color: #ffffff !important;
+  font-size: 25px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.sidebar-logo-text span,
+.sidebar-user-role {
+  color: var(--ui-sidebar-muted) !important;
+  font-weight: 450 !important;
+}
+
+.sidebar-user {
+  border-top: 1px solid var(--ui-sidebar-border) !important;
+  background: rgba(255, 255, 255, 0.015) !important;
+}
+
+.sidebar-user-name {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.sidebar-logout {
+  color: var(--ui-sidebar-muted) !important;
+}
+
+.sidebar-logout:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sidebar sezioni */
+.sidebar-section-toggle {
+  height: 42px !important;
+  min-height: 42px !important;
+  border-radius: 8px !important;
+  color: var(--ui-sidebar-muted) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  letter-spacing: 0.045em !important;
+  text-transform: uppercase !important;
+}
+
+.sidebar-section-toggle:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.sidebar-section-accordion.open > .sidebar-section-toggle,
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.sidebar-section-icon,
+.sidebar-link-icon {
+  color: currentColor !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.sidebar-section-icon .material-symbols-rounded,
+.sidebar-link-icon .material-symbols-rounded {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 430,
+    'GRAD' 0,
+    'opsz' 22 !important;
+}
+
+/* Voci interne */
+.sidebar:hover .sidebar-nav-collapsible {
+  margin: 2px 14px 12px 32px !important;
+  padding-left: 12px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.sidebar:hover .sidebar-link {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  margin: 2px 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #b9c0cc !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 520 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.sidebar:hover .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+
+.sidebar:hover .sidebar-link.active {
+  background: rgba(249, 115, 22, 0.14) !important;
+  color: #fed7aa !important;
+  box-shadow: inset 3px 0 0 var(--ui-accent) !important;
+}
+
+.sidebar:hover .sidebar-link.active .sidebar-link-icon {
+  color: #fed7aa !important;
+}
+
+/* Sidebar compressa */
+.sidebar:not(:hover) .sidebar-logo-text,
+.sidebar:not(:hover) .sidebar-user-details,
+.sidebar:not(:hover) .sidebar-logout,
+.sidebar:not(:hover) .sidebar-section-toggle-left > span:not(.sidebar-section-icon),
+.sidebar:not(:hover) .sidebar-section-chevron,
+.sidebar:not(:hover) .sidebar-nav,
+.sidebar:not(:hover) .sidebar-nav-collapsible {
+  display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-logo {
+  justify-content: center !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 8px 0 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-toggle {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #aeb6c4 !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-icon .material-symbols-rounded {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-size: 23px !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: rgba(249, 115, 22, 0.13) !important;
+  box-shadow: inset 3px 0 0 var(--ui-accent) !important;
+}
+
+.sidebar:not(:hover) .sidebar-section-accordion.has-active .sidebar-section-icon {
+  color: #fed7aa !important;
+}
+
+/* Card / contenitori: meno tondi, più admin */
+.card,
+.kpi-card,
+.table-container,
+.modal,
+.import-dropzone,
+.login-card {
+  background: var(--ui-surface) !important;
+  border: 1px solid var(--ui-border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+}
+
+.card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.card-body {
+  background: transparent !important;
+}
+
+/* KPI compatti tipo admin dashboard */
+.kpi-grid {
+  gap: 16px !important;
+}
+
+.kpi-card {
+  padding: 18px !important;
+}
+
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
+  background: #f2f4f7 !important;
+  color: var(--ui-text) !important;
+  box-shadow: none !important;
+}
+
+.kpi-label {
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  letter-spacing: 0.045em !important;
+  color: var(--ui-muted) !important;
+}
+
+.kpi-value {
+  font-size: 34px !important;
+  font-weight: 760 !important;
+  color: var(--ui-text) !important;
+  letter-spacing: -0.035em !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+}
+
+.kpi-detail {
+  color: var(--ui-muted-2) !important;
+  font-weight: 450 !important;
+}
+
+/* Bottoni admin */
+.btn,
+button {
+  border-radius: 7px !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+}
+
+.btn-primary,
+.btn.btn-primary {
+  background: #111827 !important;
+  border-color: #111827 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: #000000 !important;
+  border-color: #000000 !important;
+}
+
+.btn-secondary,
+.btn.btn-secondary {
+  background: #ffffff !important;
+  border: 1px solid var(--ui-border-strong) !important;
+  color: var(--ui-text) !important;
+}
+
+.btn-secondary:hover,
+.btn.btn-secondary:hover {
+  background: #f9fafb !important;
+}
+
+/* Input / filtri */
+.form-control,
+select,
+input,
+textarea {
+  background: #ffffff !important;
+  border: 1px solid var(--ui-border-strong) !important;
+  color: var(--ui-text) !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus,
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--ui-accent) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13) !important;
+}
+
+.form-label,
+.filter-group label {
+  color: var(--ui-muted) !important;
+  font-weight: 650 !important;
+}
+
+/* Tabelle più simili ad admin panel */
+.data-table {
+  background: #ffffff !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.data-table th {
+  background: #f9fafb !important;
+  color: #667085 !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  letter-spacing: 0.04em !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+}
+
+.data-table td {
+  color: #344054 !important;
+  border-bottom: 1px solid var(--ui-border) !important;
+  font-weight: 450 !important;
+}
+
+.data-table td strong {
+  color: #1d2939 !important;
+  font-weight: 700 !important;
+}
+
+.data-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+/* Badge stati più sobri */
+.status-badge,
+.sidebar-badge,
+.header-notification-badge {
+  border-radius: 5px !important;
+  font-weight: 650 !important;
+}
+
+.status-disponibile {
+  background: rgba(22, 163, 74, 0.10) !important;
+  color: var(--ui-green) !important;
+}
+
+.status-sotto_soglia {
+  background: rgba(217, 119, 6, 0.10) !important;
+  color: var(--ui-yellow) !important;
+}
+
+.status-esaurito {
+  background: rgba(220, 38, 38, 0.10) !important;
+  color: var(--ui-red) !important;
+}
+
+/* Rimuove residui temi precedenti */
+.sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  color: #ffffff !important;
+}
+
+.sidebar-link.active {
+  color: #fed7aa !important;
+}
+
+.header-notification-btn {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
