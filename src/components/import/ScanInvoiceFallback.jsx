@@ -4,7 +4,7 @@ function createEmptyRow() {
   return {
     code: '',
     description: '',
-    unit: 'PZ',
+    unit: '',
     quantity: '',
     price: '',
     supplier: '',
@@ -57,7 +57,7 @@ export default function ScanInvoiceFallback({
       <div className="card-header" style={{ background: 'var(--warning-50)' }}>
         <h3 className="card-title">✍️ Inserimento manuale componenti</h3>
         <p className="text-sm mt-1">
-          Inserisci manualmente i componenti. Il campo fornitore è obbligatorio per collegare il carico alla sezione Fornitori.
+          Inserisci manualmente i componenti. Il fornitore è obbligatorio per collegare il carico alla sezione Fornitori.
         </p>
       </div>
 

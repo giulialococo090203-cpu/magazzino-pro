@@ -23,29 +23,13 @@ function formatDate(value) {
   });
 }
 
-function getPriceStats(rows = []) {
-  const prices = rows
-    .map((row) => Number(row.netPrice || 0))
-    .filter((price) => Number.isFinite(price) && price > 0);
+function getVariation(current = 0, previous = 0) {
+  const curr = Number(current || 0);
+  const prev = Number(previous || 0);
 
-  if (prices.length === 0) {
-    return {
-      last: 0,
-      min: 0,
-      max: 0,
-      avg: 0,
-      variation: 0,
-    };
-  }
+  if (prev <= 0) return null;
 
-  const last = prices[0] || 0;
-  const previous = prices[1] || 0;
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-  const variation = previous > 0 ? ((last - previous) / previous) * 100 : 0;
-
-  return { last, min, max, avg, variation };
+  return ((curr - prev) / prev) * 100;
 }
 
 export default function StoricoPrezzi() {
@@ -85,10 +69,35 @@ export default function StoricoPrezzi() {
     ].sort((a, b) => a.localeCompare(b));
   }, [rows]);
 
+  const rowsWithVariation = useMemo(() => {
+    const groups = {};
+
+    rows.forEach((row) => {
+      const key = String(row.code || row.materialId || '').trim() || 'senza-codice';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(row);
+    });
+
+    Object.values(groups).forEach((items) => {
+      items.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+
+      items.forEach((item, index) => {
+        const previous = items[index + 1];
+
+        item.previousPrice = previous?.netPrice || null;
+        item.variation = previous ? getVariation(item.netPrice, previous.netPrice) : null;
+      });
+    });
+
+    return Object.values(groups)
+      .flat()
+      .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+  }, [rows]);
+
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    return rows.filter((row) => {
+    return rowsWithVariation.filter((row) => {
       const matchQuery =
         !q ||
         String(row.code || '').toLowerCase().includes(q) ||
@@ -101,43 +110,20 @@ export default function StoricoPrezzi() {
 
       return matchQuery && matchSupplier && matchOrigin;
     });
-  }, [rows, query, supplier, origin]);
-
-  const groupedByCode = useMemo(() => {
-    const groups = {};
-
-    filteredRows.forEach((row) => {
-      const key = row.code || row.materialId || 'Senza codice';
-      if (!groups[key]) {
-        groups[key] = {
-          code: row.code,
-          description: row.description,
-          rows: [],
-        };
-      }
-
-      groups[key].rows.push(row);
-    });
-
-    return Object.values(groups).map((group) => {
-      const stats = getPriceStats(group.rows);
-
-      return {
-        ...group,
-        stats,
-        count: group.rows.length,
-        suppliers: [...new Set(group.rows.map((row) => row.supplier).filter(Boolean))],
-      };
-    });
-  }, [filteredRows]);
+  }, [rowsWithVariation, query, supplier, origin]);
 
   const totals = useMemo(() => {
+    const materialCodes = new Set(filteredRows.map((row) => row.code).filter(Boolean));
+    const supplierNames = new Set(filteredRows.map((row) => row.supplier).filter(Boolean));
+    const increases = filteredRows.filter((row) => Number(row.variation || 0) > 0).length;
+
     return {
-      records: filteredRows.length,
-      materials: groupedByCode.length,
-      suppliers: new Set(filteredRows.map((row) => row.supplier).filter(Boolean)).size,
+      rows: filteredRows.length,
+      materials: materialCodes.size,
+      suppliers: supplierNames.size,
+      increases,
     };
-  }, [filteredRows, groupedByCode]);
+  }, [filteredRows]);
 
   return (
     <div className="animate-slideUp">
@@ -145,7 +131,7 @@ export default function StoricoPrezzi() {
         <div>
           <h1 className="page-title">📈 Storico Prezzi</h1>
           <p className="page-subtitle">
-            Monitora prezzi netti, fornitori, variazioni e ultimi acquisti dei materiali.
+            Elenco compatto dei prezzi registrati da fatture e inserimenti manuali.
           </p>
         </div>
 
@@ -160,11 +146,20 @@ export default function StoricoPrezzi() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue">📦</div>
+          <div className="kpi-icon blue">📋</div>
+          <div className="kpi-content">
+            <div className="kpi-label">Righe</div>
+            <div className="kpi-value">{totals.rows}</div>
+            <div className="kpi-detail">prezzi filtrati</div>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <div className="kpi-icon green">📦</div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali</div>
             <div className="kpi-value">{totals.materials}</div>
-            <div className="kpi-detail">con storico prezzo</div>
+            <div className="kpi-detail">codici diversi</div>
           </div>
         </div>
 
@@ -173,23 +168,23 @@ export default function StoricoPrezzi() {
           <div className="kpi-content">
             <div className="kpi-label">Fornitori</div>
             <div className="kpi-value">{totals.suppliers}</div>
-            <div className="kpi-detail">presenti nello storico</div>
+            <div className="kpi-detail">fornitori filtrati</div>
           </div>
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">📈</div>
+          <div className="kpi-icon yellow">📈</div>
           <div className="kpi-content">
-            <div className="kpi-label">Righe prezzo</div>
-            <div className="kpi-value">{totals.records}</div>
-            <div className="kpi-detail">acquisti registrati</div>
+            <div className="kpi-label">Aumenti</div>
+            <div className="kpi-value">{totals.increases}</div>
+            <div className="kpi-detail">prezzi aumentati</div>
           </div>
         </div>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title">🔍 Filtri storico</h3>
+          <h3 className="card-title">🔍 Filtri</h3>
         </div>
 
         <div className="card-body">
@@ -226,113 +221,81 @@ export default function StoricoPrezzi() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="card">
-          <div className="card-body">
-            <div className="empty-state-text">Caricamento storico prezzi...</div>
-          </div>
-        </div>
-      ) : groupedByCode.length === 0 ? (
-        <div className="card">
-          <div className="card-body">
-            <div className="empty-state">
-              <div className="empty-state-icon">📈</div>
-              <div className="empty-state-title">Nessuno storico disponibile</div>
-              <div className="empty-state-text">
-                Importa una fattura o fai un inserimento manuale con prezzo netto.
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        groupedByCode.map((group) => (
-          <div className="card" key={group.code || group.description} style={{ marginBottom: 18 }}>
-            <div className="card-header">
-              <div>
-                <h3 className="card-title">
-                  {group.code || 'Senza codice'} · {group.description || 'Senza descrizione'}
-                </h3>
-                <p className="text-sm text-muted">
-                  {group.count} prezzi registrati · Fornitori: {group.suppliers.join(', ') || '—'}
-                </p>
-              </div>
-            </div>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Codice</th>
+              <th>Descrizione</th>
+              <th>Fornitore</th>
+              <th>Prezzo netto</th>
+              <th>Prec.</th>
+              <th>Var.</th>
+              <th>Qtà</th>
+              <th>Origine</th>
+              <th>Documento</th>
+              <th>Utente</th>
+            </tr>
+          </thead>
 
-            <div className="card-body">
-              <div className="kpi-grid" style={{ marginBottom: 16 }}>
-                <div className="kpi-card">
-                  <div className="kpi-content">
-                    <div className="kpi-label">Ultimo prezzo</div>
-                    <div className="kpi-value">{formatCurrency(group.stats.last)}</div>
-                  </div>
-                </div>
-
-                <div className="kpi-card">
-                  <div className="kpi-content">
-                    <div className="kpi-label">Prezzo minimo</div>
-                    <div className="kpi-value">{formatCurrency(group.stats.min)}</div>
-                  </div>
-                </div>
-
-                <div className="kpi-card">
-                  <div className="kpi-content">
-                    <div className="kpi-label">Prezzo massimo</div>
-                    <div className="kpi-value">{formatCurrency(group.stats.max)}</div>
-                  </div>
-                </div>
-
-                <div className="kpi-card">
-                  <div className="kpi-content">
-                    <div className="kpi-label">Variazione ultimo</div>
-                    <div
-                      className="kpi-value"
-                      style={{
-                        color:
-                          group.stats.variation > 0
-                            ? 'var(--danger-600)'
-                            : group.stats.variation < 0
-                              ? 'var(--success-600)'
-                              : 'var(--gray-800)',
-                      }}
-                    >
-                      {group.stats.variation.toFixed(1)}%
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="11" style={{ padding: 30 }}>
+                  <div className="empty-state-text">Caricamento storico prezzi...</div>
+                </td>
+              </tr>
+            ) : filteredRows.length === 0 ? (
+              <tr>
+                <td colSpan="11" style={{ padding: 34 }}>
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📈</div>
+                    <div className="empty-state-title">Nessuno storico disponibile</div>
+                    <div className="empty-state-text">
+                      Importa una fattura o fai un inserimento manuale con prezzo netto.
                     </div>
                   </div>
-                </div>
-              </div>
+                </td>
+              </tr>
+            ) : (
+              filteredRows.map((row) => {
+                const variation = row.variation;
 
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Fornitore</th>
-                      <th>Prezzo netto</th>
-                      <th>Quantità</th>
-                      <th>Origine</th>
-                      <th>Documento</th>
-                      <th>Utente</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.rows.map((row) => (
-                      <tr key={row.id}>
-                        <td>{formatDate(row.date || row.createdAt)}</td>
-                        <td><strong>{row.supplier || '—'}</strong></td>
-                        <td style={{ fontWeight: 900 }}>{formatCurrency(row.netPrice)}</td>
-                        <td>{row.quantity}</td>
-                        <td>{row.origin || '—'}</td>
-                        <td>{row.document || '—'}</td>
-                        <td>{row.userName || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        ))
-      )}
+                return (
+                  <tr key={row.id}>
+                    <td>{formatDate(row.date || row.createdAt)}</td>
+                    <td><strong>{row.code || '—'}</strong></td>
+                    <td className="text-sm">{row.description || '—'}</td>
+                    <td><strong>{row.supplier || '—'}</strong></td>
+                    <td style={{ fontWeight: 900 }}>{formatCurrency(row.netPrice)}</td>
+                    <td>{row.previousPrice ? formatCurrency(row.previousPrice) : '—'}</td>
+                    <td
+                      style={{
+                        fontWeight: 900,
+                        color:
+                          variation > 0
+                            ? 'var(--danger-600)'
+                            : variation < 0
+                              ? 'var(--success-600)'
+                              : 'var(--gray-500)',
+                      }}
+                    >
+                      {variation === null || variation === undefined
+                        ? '—'
+                        : `${variation > 0 ? '+' : ''}${variation.toFixed(1)}%`}
+                    </td>
+                    <td>{row.quantity}</td>
+                    <td>{row.origin || '—'}</td>
+                    <td className="text-sm">{row.document || '—'}</td>
+                    <td className="text-sm">{row.userName || '—'}</td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
