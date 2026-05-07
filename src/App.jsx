@@ -16,6 +16,7 @@ import StoricoMovimenti from './pages/principale/StoricoMovimenti';
 import ImportaFatture from './pages/principale/ImportaFatture';
 import ArchivioFatture from './pages/principale/ArchivioFatture';
 import RiordinoAutomatico from './pages/principale/RiordinoAutomatico';
+import ArchivioProposteOrdine from './pages/principale/ArchivioProposteOrdine';
 import InventarioFisico from './pages/principale/InventarioFisico';
 
 // Pagine - Gestione
@@ -145,6 +146,15 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
                     <RiordinoAutomatico />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/proposte-ordine"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
+                    <ArchivioProposteOrdine />
                   </ProtectedRoute>
                 }
               />

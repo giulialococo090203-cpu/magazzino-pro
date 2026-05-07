@@ -36,6 +36,12 @@ const NAV_SECTIONS = [
         permission: 'canManageReorderProposals',
       },
       {
+        path: '/proposte-ordine',
+        label: 'Proposte Ordine',
+        icon: '📑',
+        permission: 'canManageReorderProposals',
+      },
+      {
         path: '/inventario-fisico',
         label: 'Inventario Fisico',
         icon: '🧮',
@@ -173,6 +179,7 @@ const PAGE_TITLES = {
   '/': 'Dashboard',
   '/inventario': 'Giacenza',
   '/riordino': 'Riordino Automatico',
+  '/proposte-ordine': 'Proposte Ordine',
   '/inventario-fisico': 'Inventario Fisico',
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
@@ -199,6 +206,7 @@ const SECTION_NAMES = {
   '/controllo/soglie': 'Configurazione',
   '/inventario-fisico': 'Magazzino',
   '/riordino': 'Magazzino',
+  '/proposte-ordine': 'Magazzino',
   '/inventario': 'Magazzino',
   '/movimento': 'Magazzino',
   '/storico': 'Magazzino',

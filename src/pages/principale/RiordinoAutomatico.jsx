@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { materialStore, categoryStore, adminLogStore } from '../../data/store';
+import { materialStore, categoryStore, adminLogStore, reorderProposalStore } from '../../data/store';
 import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
@@ -384,6 +384,37 @@ export default function RiordinoAutomatico() {
     }
   };
 
+  const saveProposal = async () => {
+    if (rowsToExport.length === 0) {
+      alert('Non ci sono materiali da inserire in proposta.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Vuoi salvare ${rowsToExport.length} righe come proposta ordine?\n\n` +
+        'Le proposte verranno divise automaticamente per fornitore.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError('');
+
+      const created = await reorderProposalStore.createFromMaterials({
+        materials: rowsToExport,
+        user,
+        notes: `Proposta generata da Riordino Automatico - ${new Date().toLocaleString('it-IT')}`,
+        multiplier,
+      });
+
+      setSuccess(`Salvate ${created.length} proposte ordine.`);
+      setTimeout(() => setSuccess(''), 4000);
+    } catch (err) {
+      console.error('Errore salvataggio proposta ordine:', err);
+      setError(err?.message || 'Errore durante il salvataggio della proposta ordine.');
+    }
+  };
+
   const clearFilters = () => {
     setSearch('');
     setFilterSupplier('');
@@ -492,6 +523,9 @@ export default function RiordinoAutomatico() {
           </button>
           <button className="btn btn-secondary" onClick={exportCSV} disabled={rowsToExport.length === 0}>
             🧾 CSV
+          </button>
+          <button className="btn btn-secondary" onClick={saveProposal} disabled={rowsToExport.length === 0}>
+            💾 Salva proposta
           </button>
           <button className="btn btn-primary" onClick={exportPDF} disabled={rowsToExport.length === 0}>
             📄 PDF
