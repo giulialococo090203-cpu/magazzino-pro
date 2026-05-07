@@ -332,7 +332,28 @@ export default function ImportaFatture() {
 
   const updateScanRow = (index, field, value) => {
     setScanRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+      prev.map((row, rowIndex) => {
+        if (rowIndex !== index) return row;
+
+        if (field === 'unit') {
+          return {
+            ...row,
+            unit: String(value || 'PZ').trim().toUpperCase(),
+          };
+        }
+
+        if (field === 'quantity' || field === 'price') {
+          return {
+            ...row,
+            [field]: value,
+          };
+        }
+
+        return {
+          ...row,
+          [field]: value,
+        };
+      })
     );
   };
 
