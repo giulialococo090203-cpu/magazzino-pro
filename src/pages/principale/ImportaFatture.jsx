@@ -175,6 +175,7 @@ export default function ImportaFatture() {
     brand: -1,
     category: -1,
     location: -1,
+    supplier: -1,
   });
 
   const [loading, setLoading] = useState(false);
@@ -225,6 +226,7 @@ export default function ImportaFatture() {
       brand: -1,
       category: -1,
       location: -1,
+    supplier: -1,
     });
     setImportError(null);
     setAssistantAdvice(null);
@@ -520,7 +522,7 @@ export default function ImportaFatture() {
           brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
           minThreshold: existing?.minThreshold || 10,
           location: location || existing?.location || 'A1-01',
-          supplier: existing?.supplier || 'Importato',
+          supplier: supplierFromRow || existing?.supplier || brand || 'Importato',
           notes: `Import: ${currentFileName}`,
           existingMaterial: existing,
         };
@@ -647,7 +649,7 @@ export default function ImportaFatture() {
         brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
         minThreshold: existing?.minThreshold || 10,
         location: location || existing?.location || 'A1-01',
-        supplier: existing?.supplier || 'Importato',
+        supplier: String(supplierValue || '').trim() || existing?.supplier || brand || 'Importato',
         notes: `Import: ${currentFileName}`,
         existingMaterial: existing,
       });
