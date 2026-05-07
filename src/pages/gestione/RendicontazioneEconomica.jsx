@@ -27,27 +27,29 @@ function formatDate(value) {
   });
 }
 
-function getPeriodRange(period) {
-  const now = new Date();
-
-  const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
+function getPeriodRange(period, year, month) {
+  const safeYear = Number(year || new Date().getFullYear());
+  const safeMonth = Number(month || 0);
 
   let start;
+  let end;
 
   if (period === 'mese') {
-    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start = new Date(safeYear, safeMonth, 1, 0, 0, 0, 0);
+    end = new Date(safeYear, safeMonth + 1, 1, 0, 0, 0, 0);
   } else if (period === 'bimestre') {
-    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    start = new Date(safeYear, safeMonth, 1, 0, 0, 0, 0);
+    end = new Date(safeYear, safeMonth + 2, 1, 0, 0, 0, 0);
   } else if (period === 'semestre') {
-    start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    start = new Date(safeYear, safeMonth, 1, 0, 0, 0, 0);
+    end = new Date(safeYear, safeMonth + 6, 1, 0, 0, 0, 0);
   } else if (period === 'anno') {
-    start = new Date(now.getFullYear(), 0, 1);
+    start = new Date(safeYear, 0, 1, 0, 0, 0, 0);
+    end = new Date(safeYear + 1, 0, 1, 0, 0, 0, 0);
   } else {
-    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start = new Date(safeYear, safeMonth, 1, 0, 0, 0, 0);
+    end = new Date(safeYear, safeMonth + 1, 1, 0, 0, 0, 0);
   }
-
-  start.setHours(0, 0, 0, 0);
 
   return {
     start,
@@ -64,7 +66,7 @@ function getMovementDate(movement) {
 function isWithinRange(value, start, end) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return false;
-  return date >= start && date <= end;
+  return date >= start && date < end;
 }
 
 export default function RendicontazioneEconomica() {
@@ -74,6 +76,8 @@ export default function RendicontazioneEconomica() {
   const [movements, setMovements] = useState([]);
   const [prices, setPrices] = useState([]);
   const [period, setPeriod] = useState('mese');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(0);
   const [supplier, setSupplier] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -130,7 +134,7 @@ export default function RendicontazioneEconomica() {
   }, [materials, prices]);
 
   const report = useMemo(() => {
-    const { start, end } = getPeriodRange(period);
+    const { start, end } = getPeriodRange(period, selectedYear, selectedMonth);
 
     const periodPrices = prices.filter((price) =>
       isWithinRange(price.date || price.createdAt, start, end)
@@ -227,7 +231,24 @@ export default function RendicontazioneEconomica() {
       filteredMovements: [],
       filteredPrices,
     };
-  }, [period, supplier, prices, materials]);
+  }, [period, selectedYear, selectedMonth, supplier, prices, materials]);
+
+  const monthOptions = [
+    { value: 0, label: 'Gennaio' },
+    { value: 1, label: 'Febbraio' },
+    { value: 2, label: 'Marzo' },
+    { value: 3, label: 'Aprile' },
+    { value: 4, label: 'Maggio' },
+    { value: 5, label: 'Giugno' },
+    { value: 6, label: 'Luglio' },
+    { value: 7, label: 'Agosto' },
+    { value: 8, label: 'Settembre' },
+    { value: 9, label: 'Ottobre' },
+    { value: 10, label: 'Novembre' },
+    { value: 11, label: 'Dicembre' },
+  ];
+
+  const yearOptions = Array.from({ length: 6 }, (_, index) => new Date().getFullYear() - index);
 
   const exportExcel = async () => {
     const workbook = XLSX.utils.book_new();
@@ -347,6 +368,30 @@ export default function RendicontazioneEconomica() {
             </div>
 
             <div className="filter-group">
+              <label>Anno:</label>
+              <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}>
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {period !== 'anno' && (
+              <div className="filter-group">
+                <label>Da mese:</label>
+                <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))}>
+                  {monthOptions.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="filter-group">
               <label>Fornitore:</label>
               <select value={supplier} onChange={(e) => setSupplier(e.target.value)}>
                 <option value="">Tutti</option>
@@ -359,7 +404,7 @@ export default function RendicontazioneEconomica() {
             </div>
 
             <div className="text-sm text-muted" style={{ fontWeight: 700 }}>
-              Dal {formatDate(report.start)} al {formatDate(report.end)}
+              Periodo: {formatDate(report.start)} → {formatDate(report.end)}
               {' · '}
               Prezzi nel periodo: {report.filteredPrices.length}
               {' · '}
