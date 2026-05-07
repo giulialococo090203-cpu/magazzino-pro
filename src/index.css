@@ -7498,3 +7498,109 @@ header [title="Notifiche"] {
   grid-template-columns: 1fr !important;
 }
 
+
+/* ============================================================
+   MOBILE CONTENT RESPONSIVE FIX
+   Solo contenuto pagina, non sidebar.
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app-layout.is-mobile .main-content {
+    min-width: 0 !important;
+    width: calc(100vw - var(--sidebar-width, 88px)) !important;
+    max-width: calc(100vw - var(--sidebar-width, 88px)) !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-layout.is-mobile .page-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-layout.is-mobile .page-content > * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .app-layout.is-mobile .stats-grid,
+  .app-layout.is-mobile .kpi-grid,
+  .app-layout.is-mobile .dashboard-grid,
+  .app-layout.is-mobile .quick-actions-grid,
+  .app-layout.is-mobile .charts-grid,
+  .app-layout.is-mobile .cards-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .app-layout.is-mobile .card,
+  .app-layout.is-mobile .kpi-card,
+  .app-layout.is-mobile .stat-card,
+  .app-layout.is-mobile .quick-action-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .app-layout.is-mobile .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .app-layout.is-mobile .page-actions,
+  .app-layout.is-mobile .card-actions,
+  .app-layout.is-mobile .header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .app-layout.is-mobile .page-actions .btn,
+  .app-layout.is-mobile .card-actions .btn,
+  .app-layout.is-mobile .header-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .app-layout.is-mobile .form-row,
+  .app-layout.is-mobile .filters-row,
+  .app-layout.is-mobile .filter-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+
+  .app-layout.is-mobile input,
+  .app-layout.is-mobile select,
+  .app-layout.is-mobile textarea,
+  .app-layout.is-mobile .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+  }
+
+  .app-layout.is-mobile .table-container,
+  .app-layout.is-mobile .table-responsive,
+  .app-layout.is-mobile .table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .app-layout.is-mobile table,
+  .app-layout.is-mobile .data-table {
+    min-width: 680px !important;
+  }
+}
+
