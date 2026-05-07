@@ -6751,3 +6751,142 @@ svg.ui-title-icon {
   box-shadow: none !important;
 }
 
+
+/* ============================================================
+   DEFINITIVO ICONE APP - Lucide React
+   ============================================================ */
+
+.fa-icon {
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  stroke: currentColor !important;
+}
+
+/* Icona grande nei titoli pagina */
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.page-title .ui-title-icon,
+svg.ui-title-icon {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 10px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  color: #f97316 !important;
+  background: rgba(249, 115, 22, 0.10) !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+}
+
+/* Icone KPI */
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f6f8fb !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+  color: #475569 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.kpi-icon svg,
+.kpi-icon .fa-icon {
+  width: 23px !important;
+  height: 23px !important;
+  min-width: 23px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Icone card title */
+.card-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.card-title > svg,
+.card-title > .fa-icon,
+.card-title .ui-inline-icon,
+.card-title .ui-section-icon {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  padding: 7px !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  background: #f6f8fb !important;
+  color: #475569 !important;
+  box-shadow: inset 0 0 0 1px #e1e7ef !important;
+}
+
+/* Icone inline normali */
+.ui-inline-icon,
+.ui-section-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  margin-right: 7px !important;
+  vertical-align: middle !important;
+}
+
+/* Search e notifiche header */
+.global-search-icon svg,
+.search-bar-icon svg,
+.header-notification-btn svg {
+  width: 17px !important;
+  height: 17px !important;
+  min-width: 17px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Bottoni */
+.btn svg,
+button svg {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  margin-right: 7px !important;
+}
+
+/* Sidebar */
+.sidebar-link svg,
+.sidebar-section-header svg,
+.sidebar-section-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+}
+
+/* Empty state */
+.empty-state-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.empty-state-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Disattiva definitivamente vecchie librerie testuali */
+.material-symbols-rounded,
+.material-symbols-outlined,
+.fa-solid,
+.fa-regular {
+  font-family: inherit !important;
+}
+
