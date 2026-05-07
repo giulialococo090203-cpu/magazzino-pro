@@ -11197,3 +11197,170 @@ header [title="Notifiche"] {
   }
 }
 
+/* ============================================================
+   LOGIN TOUCH PHONE FINAL
+   Solo dispositivi touch: niente layout a 2 colonne.
+   Desktop e finestra Mac dimezzata restano invariati.
+   ============================================================ */
+
+@media screen and (pointer: coarse) and (max-width: 820px) {
+  .login-redesign-page {
+    min-height: 100dvh !important;
+    height: auto !important;
+    padding: 14px !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .login-redesign-card {
+    width: 100% !important;
+    max-width: 390px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+
+    display: block !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+
+    border-radius: 28px !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Sul telefono togliamo il banner: rimane solo il form pulito */
+  .login-redesign-brand {
+    display: none !important;
+  }
+
+  .login-redesign-form-panel {
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 24px 22px !important;
+
+    display: block !important;
+    overflow: visible !important;
+
+    border-radius: 28px !important;
+    background: #ffffff !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24) !important;
+    box-sizing: border-box !important;
+  }
+
+  .login-redesign-heading {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .login-redesign-small-mark {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: 14px !important;
+    font-size: 23px !important;
+  }
+
+  .login-redesign-heading h2 {
+    font-size: 27px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
+
+  .login-redesign-heading p {
+    display: block !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    margin: 4px 0 0 !important;
+  }
+
+  .login-redesign-form {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .login-redesign-form h3 {
+    font-size: 26px !important;
+    line-height: 1.08 !important;
+    margin: 0 !important;
+  }
+
+  .login-redesign-helper {
+    display: block !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    margin: 5px 0 0 !important;
+  }
+
+  .login-redesign-field {
+    gap: 5px !important;
+  }
+
+  .login-redesign-field span {
+    font-size: 13px !important;
+  }
+
+  .login-redesign-field input {
+    height: 43px !important;
+    min-height: 43px !important;
+    width: 100% !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .login-redesign-password-wrap input {
+    padding-right: 78px !important;
+  }
+
+  .login-redesign-password-toggle {
+    height: 30px !important;
+    right: 7px !important;
+    font-size: 10px !important;
+  }
+
+  .login-redesign-submit {
+    width: 100% !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    margin-top: 4px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+  }
+
+  .login-redesign-page:focus-within {
+    padding: 8px 14px 46vh !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-brand {
+    display: none !important;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-form-panel {
+    padding: 18px 20px !important;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-heading {
+    margin-bottom: 12px !important;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-heading p,
+  .login-redesign-page:focus-within .login-redesign-helper {
+    display: none !important;
+  }
+
+  .login-redesign-page:focus-within .login-redesign-form h3 {
+    font-size: 23px !important;
+  }
+}
+
