@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalizeRole } from '../../data/permissions';
-import Icon from '../../components/Icon';
 import FaIcon from '../../components/FaIcon';
 
 function isDatore(user) {
@@ -57,13 +56,17 @@ export default function LogModifiche() {
   const getEntityIcon = (entity) => {
     switch (entity) {
       case 'categoria':
-        return <Icon name="sell" className="ui-inline-icon" aria-hidden="true" />;
+        return <FaIcon name="sell" className="ui-inline-icon" />;
       case 'materiale':
-        return '🔧';
+        return <FaIcon name="construction" className="ui-inline-icon" />;
       case 'utente':
-        return <Icon name="manage_accounts" className="ui-inline-icon" aria-hidden="true" />;
+        return <FaIcon name="manage_accounts" className="ui-inline-icon" />;
       case 'fattura':
-        return <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />;
+        return <FaIcon name="upload_file" className="ui-inline-icon" />;
+      case 'notifica':
+        return <FaIcon name="notifications" className="ui-inline-icon" />;
+      case 'sistema':
+        return <FaIcon name="history_edu" className="ui-inline-icon" />;
       default:
         return <FaIcon name="history_edu" className="ui-inline-icon" />;
     }
@@ -153,7 +156,7 @@ export default function LogModifiche() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon"><FaIcon name="history_edu" className="ui-inline-icon" /></div>
+              <div className="empty-state-icon"><FaIcon name="history_edu" /></div>
               <div className="empty-state-title">Nessun log registrato</div>
               <div className="empty-state-text">Le modifiche amministrative verranno registrate qui</div>
             </div>

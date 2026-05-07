@@ -36,6 +36,9 @@ const ALIASES = {
   manage_accounts: 'userGear',
   history_edu: 'history',
   settings: 'gear',
+  manual: 'edit',
+  rows: 'clipboard',
+  box: 'box',
   bolt: 'bolt',
 
   'fa-box-open': 'boxOpen',
