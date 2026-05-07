@@ -12092,3 +12092,18 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   LOGIN DESKTOP BACKGROUND APP GRAY
+   Cambia solo lo sfondo desktop/tablet della login.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  .login-redesign-page {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 106, 20, 0.10), transparent 30%),
+      radial-gradient(circle at 88% 82%, rgba(100, 116, 139, 0.14), transparent 34%),
+      linear-gradient(180deg, #f3f6fa 0%, #e9eef5 100%) !important;
+  }
+}
+
