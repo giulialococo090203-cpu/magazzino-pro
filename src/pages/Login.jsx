@@ -51,75 +51,105 @@ export default function Login({ onLogin }) {
     }
   };
 
+  const formFields = (
+    <>
+      {error && <div className="login-error">{error}</div>}
+
+      <label className="login-redesign-field mobile-login-field">
+        <span>Email</span>
+        <input
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Inserisci la tua email"
+        />
+      </label>
+
+      <label className="login-redesign-field mobile-login-field">
+        <span>Password</span>
+        <div className="login-redesign-password-wrap mobile-login-password-wrap">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Inserisci la tua password"
+          />
+
+          <button
+            type="button"
+            className="login-redesign-password-toggle mobile-login-password-toggle"
+            onClick={() => setShowPassword((value) => !value)}
+            aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+          >
+            {showPassword ? 'Nascondi' : 'Mostra'}
+          </button>
+        </div>
+      </label>
+
+      <button type="submit" className="btn btn-primary login-redesign-submit mobile-login-submit" disabled={loading}>
+        {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
+      </button>
+    </>
+  );
+
   return (
-    <main className="login-page login-redesign-page">
-      <div className="login-redesign-card">
-        <section className="login-redesign-brand" aria-label="MagazzinoPro">
-          <div className="login-redesign-mark">M</div>
+    <>
+      {/* DESKTOP / TABLET: NON TOCCARE */}
+      <main className="login-page login-redesign-page login-desktop-view">
+        <div className="login-redesign-card">
+          <section className="login-redesign-brand" aria-label="MagazzinoPro">
+            <div className="login-redesign-mark">M</div>
 
-          <div className="login-redesign-brand-content">
-            <div className="login-redesign-kicker">Gestionale tecnico</div>
-            <h1>MagazzinoPro</h1>
-            <p>Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.</p>
-          </div>
-        </section>
-
-        <section className="login-redesign-form-panel">
-          <div className="login-redesign-heading">
-            <div className="login-redesign-small-mark">M</div>
-            <div>
-              <h2>Accedi</h2>
-              <p>Sistema di Gestione Magazzino</p>
+            <div className="login-redesign-brand-content">
+              <div className="login-redesign-kicker">Gestionale tecnico</div>
+              <h1>MagazzinoPro</h1>
+              <p>Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.</p>
             </div>
-          </div>
+          </section>
 
-          <form onSubmit={handleSubmit} className="login-redesign-form">
-            <div>
-              <h3>Accedi al sistema</h3>
-              <p className="login-redesign-helper">Inserisci le credenziali per continuare</p>
-            </div>
-
-            {error && <div className="login-error">{error}</div>}
-
-            <label className="login-redesign-field">
-              <span>Email</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Inserisci la tua email"
-              />
-            </label>
-
-            <label className="login-redesign-field">
-              <span>Password</span>
-              <div className="login-redesign-password-wrap">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Inserisci la tua password"
-                />
-
-                <button
-                  type="button"
-                  className="login-redesign-password-toggle"
-                  onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
-                >
-                  {showPassword ? 'Nascondi' : 'Mostra'}
-                </button>
+          <section className="login-redesign-form-panel">
+            <div className="login-redesign-heading">
+              <div className="login-redesign-small-mark">M</div>
+              <div>
+                <h2>Accedi</h2>
+                <p>Sistema di Gestione Magazzino</p>
               </div>
-            </label>
+            </div>
 
-            <button type="submit" className="btn btn-primary login-redesign-submit" disabled={loading}>
-              {loading ? 'Accesso in corso...' : 'Accedi al Sistema'}
-            </button>
+            <form onSubmit={handleSubmit} className="login-redesign-form">
+              <div>
+                <h3>Accedi al sistema</h3>
+                <p className="login-redesign-helper">Inserisci le credenziali per continuare</p>
+              </div>
+
+              {formFields}
+            </form>
+          </section>
+        </div>
+      </main>
+
+      {/* TELEFONO: SCHERMATA SEPARATA */}
+      <main className="mobile-login-view">
+        <section className="mobile-login-phone">
+          <div className="mobile-login-top">
+            <div className="mobile-login-logo">M</div>
+            <div className="mobile-login-title">MagazzinoPro</div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mobile-login-card">
+            <h1>Login</h1>
+            <p>Accedi al sistema di gestione magazzino</p>
+
+            {formFields}
           </form>
+
+          <div className="mobile-login-footer">
+            Gestionale tecnico
+          </div>
         </section>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
