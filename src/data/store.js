@@ -1669,6 +1669,130 @@ export const invoiceImportStore = {
   },
 };
 
+
+export const priceHistoryStore = {
+  async create(entry) {
+    if (!entry?.materialId && !entry?.code) return null;
+
+    const { data, error } = await supabase
+      .from('storico_prezzi')
+      .insert(
+        clean({
+          materiale_id: entry.materialId || null,
+          codice: entry.code || '',
+          descrizione: entry.description || '',
+          fornitore: entry.supplier || entry.fornitore || '',
+          prezzo_netto: Number(entry.netPrice || entry.price || 0),
+          quantita: Number(entry.quantity || 0),
+          origine: entry.origin || entry.origine || '',
+          documento: entry.document || entry.documento || '',
+          utente_nome: entry.userName || entry.utenteNome || '',
+          data_registrazione: entry.date || new Date().toISOString(),
+        })
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    notifySupabaseUsageChanged();
+
+    return {
+      id: data.id,
+      materialId: data.materiale_id,
+      code: data.codice,
+      description: data.descrizione,
+      supplier: data.fornitore,
+      netPrice: Number(data.prezzo_netto || 0),
+      quantity: Number(data.quantita || 0),
+      origin: data.origine,
+      document: data.documento,
+      userName: data.utente_nome,
+      date: data.data_registrazione,
+      createdAt: data.created_at,
+    };
+  },
+
+  async getAll() {
+    const { data, error } = await supabase
+      .from('storico_prezzi')
+      .select('*')
+      .order('data_registrazione', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      materialId: row.materiale_id,
+      code: row.codice,
+      description: row.descrizione,
+      supplier: row.fornitore,
+      netPrice: Number(row.prezzo_netto || 0),
+      quantity: Number(row.quantita || 0),
+      origin: row.origine,
+      document: row.documento,
+      userName: row.utente_nome,
+      date: row.data_registrazione,
+      createdAt: row.created_at,
+    }));
+  },
+
+  async getByMaterialId(materialId) {
+    if (!materialId) return [];
+
+    const { data, error } = await supabase
+      .from('storico_prezzi')
+      .select('*')
+      .eq('materiale_id', materialId)
+      .order('data_registrazione', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      materialId: row.materiale_id,
+      code: row.codice,
+      description: row.descrizione,
+      supplier: row.fornitore,
+      netPrice: Number(row.prezzo_netto || 0),
+      quantity: Number(row.quantita || 0),
+      origin: row.origine,
+      document: row.documento,
+      userName: row.utente_nome,
+      date: row.data_registrazione,
+      createdAt: row.created_at,
+    }));
+  },
+
+  async getByCode(code) {
+    if (!code) return [];
+
+    const { data, error } = await supabase
+      .from('storico_prezzi')
+      .select('*')
+      .ilike('codice', code)
+      .order('data_registrazione', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      materialId: row.materiale_id,
+      code: row.codice,
+      description: row.descrizione,
+      supplier: row.fornitore,
+      netPrice: Number(row.prezzo_netto || 0),
+      quantity: Number(row.quantita || 0),
+      origin: row.origine,
+      document: row.documento,
+      userName: row.utente_nome,
+      date: row.data_registrazione,
+      createdAt: row.created_at,
+    }));
+  },
+};
+
+
 export const reorderProposalStore = {
   getSuggestedQty(material, multiplier = 2) {
     const current = Number(material.quantity || 0);

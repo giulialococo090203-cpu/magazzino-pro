@@ -24,6 +24,7 @@ import GestioneMateriali from './pages/gestione/GestioneMateriali';
 import GestioneUtenti from './pages/gestione/GestioneUtenti';
 import LogModifiche from './pages/gestione/LogModifiche';
 import ImpostazioniPrezzi from './pages/gestione/ImpostazioniPrezzi';
+import StoricoPrezzi from './pages/gestione/StoricoPrezzi';
 import Fornitori from './pages/gestione/Fornitori';
 import BackupSistema from './pages/gestione/BackupSistema';
 
@@ -221,6 +222,15 @@ function App() {
                 element={
                   <ProtectedRoute user={currentUser} permission="canManagePriceSettings">
                     <ImpostazioniPrezzi />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/gestione/storico-prezzi"
+                element={
+                  <ProtectedRoute user={currentUser} permission="canManagePriceSettings">
+                    <StoricoPrezzi />
                   </ProtectedRoute>
                 }
               />

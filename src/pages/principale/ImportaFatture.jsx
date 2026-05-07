@@ -6,6 +6,7 @@ import {
   movementStore,
   adminLogStore,
   invoiceImportStore,
+  priceHistoryStore,
 } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
@@ -1009,6 +1010,20 @@ export default function ImportaFatture() {
             supplier: item.supplier || '',
           });
 
+          if ((item.price || 0) > 0) {
+            await priceHistoryStore.create({
+              materialId: createdMaterial.id,
+              code: item.code,
+              description: item.description,
+              supplier: item.supplier || '',
+              netPrice: item.price || 0,
+              quantity: item.quantity,
+              origin: fileName === 'Inserimento manuale' ? 'manuale' : 'fattura',
+              document: fileName,
+              userName: user?.fullName || user?.username || '',
+            });
+          }
+
           created++;
         } else if (item.existingMaterial) {
           if ((item.price || 0) > 0) {
@@ -1021,13 +1036,30 @@ export default function ImportaFatture() {
             materialId: item.existingMaterial.id,
             type: 'entrata',
             quantity: item.quantity,
-            reason: 'importazione_fattura',
-            notes: `Importazione da fattura/documento: ${fileName}`,
+            reason: fileName === 'Inserimento manuale' ? 'inserimento_manuale' : 'importazione_fattura',
+            notes:
+              fileName === 'Inserimento manuale'
+                ? `Inserimento manuale fornitore: ${item.supplier || ''}`
+                : `Importazione da fattura/documento: ${fileName}`,
             userId: user?.id,
             userName: user?.fullName || user?.username || '',
             operatorName: user?.fullName || user?.username || '',
             supplier: item.supplier || '',
           });
+
+          if ((item.price || 0) > 0) {
+            await priceHistoryStore.create({
+              materialId: item.existingMaterial.id,
+              code: item.code || item.existingMaterial.code,
+              description: item.description || item.existingMaterial.description,
+              supplier: item.supplier || item.existingMaterial.supplier || '',
+              netPrice: item.price || 0,
+              quantity: item.quantity,
+              origin: fileName === 'Inserimento manuale' ? 'manuale' : 'fattura',
+              document: fileName,
+              userName: user?.fullName || user?.username || '',
+            });
+          }
 
           loaded++;
         }

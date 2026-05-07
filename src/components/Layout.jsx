@@ -106,6 +106,12 @@ const NAV_SECTIONS = [
         icon: '💶',
         permission: 'canManagePriceSettings',
       },
+      {
+        path: '/gestione/storico-prezzi',
+        label: 'Storico Prezzi',
+        icon: '📈',
+        permission: 'canManagePriceSettings',
+      },
     ],
   },
   {
@@ -179,6 +185,7 @@ const PAGE_TITLES = {
   '/gestione/fornitori': 'Fornitori',
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/prezzi': 'Impostazioni Prezzi',
+  '/gestione/storico-prezzi': 'Storico Prezzi',
   '/gestione/utenti': 'Gestione Utenti',
   '/gestione/log': 'Registro modifiche',
   '/gestione/backup': 'Backup Sistema',
