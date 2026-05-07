@@ -11943,3 +11943,52 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   MOBILE LOGIN PASSWORD TOGGLE FIX
+   Sistema solo il bottone "Mostra" nel campo password mobile.
+   ============================================================ */
+
+@media screen and (max-width: 540px), screen and (pointer: coarse) and (max-width: 820px) {
+  .mobile-login-password-wrap {
+    position: relative !important;
+  }
+
+  .mobile-login-password-wrap input {
+    padding-right: 78px !important;
+  }
+
+  .mobile-login-password-toggle {
+    position: absolute !important;
+    top: 50% !important;
+    right: 9px !important;
+    transform: translateY(-50%) !important;
+
+    width: 62px !important;
+    height: 30px !important;
+    min-width: 62px !important;
+    max-width: 62px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #ff6a14 !important;
+
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.08) !important;
+  }
+
+  .mobile-login-password-toggle:active {
+    transform: translateY(-50%) scale(0.98) !important;
+  }
+}
+
