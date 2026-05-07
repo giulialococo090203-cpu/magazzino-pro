@@ -523,7 +523,7 @@ export default function RiordinoAutomatico() {
             <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Excel
           </button>
           <button className="btn btn-secondary" onClick={exportCSV} disabled={rowsToExport.length === 0}>
-            🧾 CSV
+             CSV
           </button>
           <button className="btn btn-secondary" onClick={saveProposal} disabled={rowsToExport.length === 0}>
             <Icon name="backup" className="ui-inline-icon" aria-hidden="true" /> Salva proposta

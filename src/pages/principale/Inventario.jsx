@@ -355,7 +355,7 @@ export default function Inventario() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Inventario Magazzino</h1>
+          <h1 className="page-title"><Icon name="inventory_2" className="ui-title-icon" aria-hidden="true" />Inventario Magazzino</h1>
           <p className="page-subtitle">
             {filtered.length} materiali trovati su {materials.length} totali
           </p>

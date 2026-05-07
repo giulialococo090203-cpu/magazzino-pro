@@ -6,6 +6,7 @@ import Icon from '../../components/Icon';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { supabase } from '../../supabaseClient';
+import SafeIcon from '../../components/SafeIcon';
 
 const TABLES = [
   'categorie',
@@ -228,7 +229,7 @@ export default function BackupSistema() {
             >
               {loading
                 ? `Creazione backup... ${progress.current}/${progress.total}`
-                : '⬇️ Scarica backup JSON completo'}
+                : '<SafeIcon name="download" size={16} /> Scarica backup JSON completo'}
             </button>
 
             <button

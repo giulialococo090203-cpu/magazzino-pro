@@ -662,7 +662,7 @@ export default function StoricoMovimenti() {
                 onClick={exportCSV}
                 disabled={movements.length === 0}
               >
-                🧾 CSV
+                 CSV
               </button>
 
               <button
@@ -678,7 +678,7 @@ export default function StoricoMovimenti() {
                 onClick={exportEmployeeCSV}
                 disabled={movements.length === 0}
               >
-                👥 Dipendenti CSV
+                 Dipendenti CSV
               </button>
 
               <button
@@ -686,7 +686,7 @@ export default function StoricoMovimenti() {
                 onClick={exportEmployeePDF}
                 disabled={movements.length === 0}
               >
-                👥 Dipendenti PDF
+                 Dipendenti PDF
               </button>
             </>
           )}

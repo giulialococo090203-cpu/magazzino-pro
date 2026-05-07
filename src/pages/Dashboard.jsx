@@ -26,6 +26,7 @@ import {
 import { Bar, Doughnut } from 'react-chartjs-2';
 import Icon from '../components/Icon';
 import FaIcon from '../components/FaIcon';
+import SafeIcon from '../components/SafeIcon';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -541,7 +542,7 @@ export default function Dashboard() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title"><SafeIcon name="dashboard" className="ui-title-icon" />Dashboard</h1>
           <p className="page-subtitle">
             Piattaforma operativa · Benvenuto, {user?.fullName || user?.username}
           </p>
@@ -1216,7 +1217,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="kpi-card">
-                  <div className="kpi-icon purple">📁</div>
+                  <div className="kpi-icon purple"></div>
                   <div className="kpi-content">
                     <div className="kpi-label">File Storage</div>
                     <div className="kpi-value">

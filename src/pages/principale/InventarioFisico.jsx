@@ -422,7 +422,7 @@ export default function InventarioFisico() {
             <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Excel
           </button>
           <button className="btn btn-secondary" onClick={exportCSV}>
-            🧾 CSV
+             CSV
           </button>
           <button className="btn btn-secondary" onClick={exportPDF}>
             <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> PDF
@@ -470,7 +470,7 @@ export default function InventarioFisico() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green">🧾</div>
+          <div className="kpi-icon green"></div>
           <div className="kpi-content">
             <div className="kpi-label">Righe contate</div>
             <div className="kpi-value">{countedRows.length}</div>

@@ -296,7 +296,7 @@ export default function GestioneMateriali() {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan="11"><div className="empty-state"><div className="empty-state-icon">🔧</div><div className="empty-state-title">Nessun materiale trovato</div></div></td></tr>
+              <tr><td colSpan="11"><div className="empty-state"><div className="empty-state-icon"></div><div className="empty-state-title">Nessun materiale trovato</div></div></td></tr>
             ) : filtered.map(m => (
               <tr key={m.id}>
                 <td style={{ textAlign: 'center' }}>

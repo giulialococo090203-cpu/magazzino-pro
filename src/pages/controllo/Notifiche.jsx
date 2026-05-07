@@ -200,7 +200,7 @@ export default function Notifiche() {
               onClick={() => setConfirmDeleteRead(true)}
               disabled={actionLoading === 'delete-read'}
             >
-              🧹 Elimina lette
+               Elimina lette
             </button>
           )}
 
@@ -344,7 +344,7 @@ export default function Notifiche() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">🧹</div>
+              <div className="confirm-icon danger"></div>
               <p className="confirm-message">
                 Vuoi eliminare definitivamente tutte le notifiche già lette?
                 <br />

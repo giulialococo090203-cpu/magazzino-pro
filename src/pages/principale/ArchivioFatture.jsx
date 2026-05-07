@@ -392,7 +392,7 @@ export default function ArchivioFatture() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple">📁</div>
+          <div className="kpi-icon purple"></div>
           <div className="kpi-content">
             <div className="kpi-label">Spazio Usato</div>
             <div className="kpi-value">{formatBytes(totals.bytes)}</div>

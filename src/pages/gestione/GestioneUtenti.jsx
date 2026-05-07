@@ -509,7 +509,7 @@ export default function GestioneUtenti() {
               <tr>
                 <td colSpan="8" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">👥</div>
+                    <div className="empty-state-icon"></div>
                     <div className="empty-state-title">Nessun utente trovato</div>
                     <div className="empty-state-text">Crea il primo utente del sistema</div>
                   </div>
