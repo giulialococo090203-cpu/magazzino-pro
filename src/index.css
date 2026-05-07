@@ -8686,3 +8686,264 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   LOGIN RESPONSIVE COMPACT FINAL
+   Riduce il riquadro login su telefono e finestre strette.
+   Non modifica la dashboard/sidebar.
+   ============================================================ */
+
+@media screen and (max-width: 900px) {
+  .login-page,
+  .auth-page,
+  .login-container,
+  .auth-container {
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .login-card,
+  .auth-card,
+  .login-panel,
+  .auth-panel {
+    width: 100% !important;
+    max-width: 520px !important;
+    margin: 0 auto !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+  }
+
+  /* Riquadro arancione superiore */
+  .login-hero,
+  .auth-hero,
+  .login-brand,
+  .auth-brand,
+  .login-left,
+  .auth-left {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 22px 24px !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+
+  .login-hero .logo,
+  .auth-hero .logo,
+  .login-brand .logo,
+  .auth-brand .logo,
+  .login-left .logo,
+  .auth-left .logo,
+  .login-logo,
+  .auth-logo {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .login-hero h1,
+  .auth-hero h1,
+  .login-brand h1,
+  .auth-brand h1,
+  .login-left h1,
+  .auth-left h1 {
+    font-size: 26px !important;
+    line-height: 1.1 !important;
+    margin: 10px 0 8px !important;
+  }
+
+  .login-hero p,
+  .auth-hero p,
+  .login-brand p,
+  .auth-brand p,
+  .login-left p,
+  .auth-left p {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .login-hero .badge,
+  .auth-hero .badge,
+  .login-brand .badge,
+  .auth-brand .badge,
+  .login-left .badge,
+  .auth-left .badge {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Parte form */
+  .login-form,
+  .auth-form,
+  .login-right,
+  .auth-right,
+  .login-card form,
+  .auth-card form {
+    padding: 22px 24px !important;
+  }
+
+  .login-form h1,
+  .auth-form h1,
+  .login-right h1,
+  .auth-right h1,
+  .login-card form h1,
+  .auth-card form h1 {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .login-form .form-group,
+  .auth-form .form-group,
+  .login-right .form-group,
+  .auth-right .form-group {
+    margin-bottom: 12px !important;
+  }
+
+  .login-form input,
+  .auth-form input,
+  .login-right input,
+  .auth-right input {
+    height: 46px !important;
+    min-height: 46px !important;
+    font-size: 16px !important;
+  }
+
+  .login-form button,
+  .auth-form button,
+  .login-right button,
+  .auth-right button,
+  .login-card button,
+  .auth-card button {
+    min-height: 46px !important;
+    height: auto !important;
+    font-size: 16px !important;
+    padding: 11px 14px !important;
+  }
+}
+
+/* Telefono molto stretto */
+@media screen and (max-width: 480px) {
+  .login-page,
+  .auth-page,
+  .login-container,
+  .auth-container {
+    padding: 8px !important;
+  }
+
+  .login-card,
+  .auth-card,
+  .login-panel,
+  .auth-panel {
+    max-width: 100% !important;
+    border-radius: 18px !important;
+  }
+
+  .login-hero,
+  .auth-hero,
+  .login-brand,
+  .auth-brand,
+  .login-left,
+  .auth-left {
+    padding: 18px 20px !important;
+  }
+
+  .login-hero .logo,
+  .auth-hero .logo,
+  .login-brand .logo,
+  .auth-brand .logo,
+  .login-left .logo,
+  .auth-left .logo,
+  .login-logo,
+  .auth-logo {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+  }
+
+  .login-hero h1,
+  .auth-hero h1,
+  .login-brand h1,
+  .auth-brand h1,
+  .login-left h1,
+  .auth-left h1 {
+    font-size: 23px !important;
+  }
+
+  .login-hero p,
+  .auth-hero p,
+  .login-brand p,
+  .auth-brand p,
+  .login-left p,
+  .auth-left p {
+    font-size: 14px !important;
+  }
+
+  .login-form,
+  .auth-form,
+  .login-right,
+  .auth-right,
+  .login-card form,
+  .auth-card form {
+    padding: 18px 20px !important;
+  }
+
+  .login-form h1,
+  .auth-form h1,
+  .login-right h1,
+  .auth-right h1,
+  .login-card form h1,
+  .auth-card form h1 {
+    font-size: 25px !important;
+  }
+}
+
+/* Quando la tastiera è aperta: ancora più compatto */
+@media screen and (max-width: 768px) and (pointer: coarse) {
+  .login-page:focus-within,
+  .auth-page:focus-within,
+  .login-container:focus-within,
+  .auth-container:focus-within {
+    padding-bottom: 48vh !important;
+  }
+
+  .login-page:focus-within .login-hero,
+  .auth-page:focus-within .auth-hero,
+  .login-container:focus-within .login-hero,
+  .auth-container:focus-within .auth-hero,
+  .login-page:focus-within .login-brand,
+  .auth-page:focus-within .auth-brand,
+  .login-container:focus-within .login-brand,
+  .auth-container:focus-within .auth-brand,
+  .login-page:focus-within .login-left,
+  .auth-page:focus-within .auth-left,
+  .login-container:focus-within .login-left,
+  .auth-container:focus-within .auth-left {
+    padding: 12px 18px !important;
+  }
+
+  .login-page:focus-within .login-hero p,
+  .auth-page:focus-within .auth-hero p,
+  .login-container:focus-within .login-hero p,
+  .auth-container:focus-within .auth-hero p,
+  .login-page:focus-within .login-brand p,
+  .auth-page:focus-within .auth-brand p,
+  .login-container:focus-within .login-brand p,
+  .auth-container:focus-within .auth-brand p,
+  .login-page:focus-within .login-left p,
+  .auth-page:focus-within .auth-left p,
+  .login-container:focus-within .login-left p,
+  .auth-container:focus-within .auth-left p {
+    display: none !important;
+  }
+}
+
