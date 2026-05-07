@@ -2888,3 +2888,110 @@ textarea:focus {
   position: relative;
   z-index: 1;
 }
+
+/* ============================================================
+   Fix definitivo sidebar: non sovrappone + palette petrolio
+   ============================================================ */
+
+:root {
+  --enterprise-primary: #0f766e;
+  --enterprise-primary-hover: #115e59;
+  --enterprise-primary-soft: rgba(15, 118, 110, 0.12);
+  --enterprise-primary-border: rgba(15, 118, 110, 0.28);
+
+  --sidebar-active-text: #99f6e4;
+  --sidebar-active-bg: rgba(15, 118, 110, 0.16);
+}
+
+/* La sidebar resta una colonna vera: quando si apre, spinge il contenuto */
+.app-layout {
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+  flex: 0 0 86px !important;
+  width: 86px !important;
+  min-width: 86px !important;
+  z-index: 20 !important;
+  transition: width 0.18s ease, flex-basis 0.18s ease !important;
+}
+
+.sidebar:hover {
+  flex-basis: 310px !important;
+  width: 310px !important;
+  min-width: 310px !important;
+}
+
+/* Il contenuto non deve più avere margini artificiali */
+.main-content {
+  margin-left: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+/* Header sempre sopra al contenuto, ma sotto la sidebar */
+.header {
+  z-index: 10 !important;
+}
+
+/* Palette petrolio al posto del blu */
+.sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar-link.active,
+.sidebar:not(:hover) .sidebar-section-accordion.has-active > .sidebar-section-toggle,
+.sidebar:hover .sidebar-section-accordion.has-active > .sidebar-section-toggle {
+  background: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+  box-shadow: inset 3px 0 0 var(--enterprise-primary) !important;
+}
+
+.sidebar-section-accordion.has-active .sidebar-section-icon,
+.sidebar-link.active .sidebar-link-icon {
+  color: var(--sidebar-active-text) !important;
+}
+
+.sidebar-logo-icon,
+.sidebar-avatar {
+  background: var(--enterprise-primary) !important;
+}
+
+/* Bottoni e focus con colore petrolio */
+.btn-primary,
+.btn.btn-primary {
+  background: var(--enterprise-primary) !important;
+  border-color: var(--enterprise-primary) !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: var(--enterprise-primary-hover) !important;
+  border-color: var(--enterprise-primary-hover) !important;
+}
+
+.form-control:focus,
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--enterprise-primary) !important;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14) !important;
+}
+
+/* KPI/icona card meno blu */
+.kpi-icon {
+  color: var(--enterprise-primary) !important;
+}
+
+/* Evita che sidebar aperta copra breadcrumb o card */
+.page-content,
+.header,
+.page-header,
+.card,
+.table-container,
+.kpi-grid {
+  position: relative;
+}
