@@ -149,7 +149,7 @@ const NAV_SECTIONS = [
       },
       {
         path: '/gestione/log',
-        label: 'Audit Log',
+        label: 'Registro modifiche',
         icon: '📜',
         permission: 'canViewAuditLog',
       },
@@ -173,7 +173,7 @@ const PAGE_TITLES = {
   '/gestione/categorie': 'Gestione Categorie',
   '/gestione/prezzi': 'Impostazioni Prezzi',
   '/gestione/utenti': 'Gestione Utenti',
-  '/gestione/log': 'Audit Log',
+  '/gestione/log': 'Registro modifiche',
   '/gestione/backup': 'Backup Sistema',
   '/controllo': 'Dashboard',
   '/controllo/soglie': 'Soglie Scorta',
