@@ -7419,3 +7419,10 @@ button .app-text-icon {
   align-items: center !important;
   justify-content: center !important;
 }
+
+.header-notification-btn {
+
+  display: none !important;
+
+}
+
