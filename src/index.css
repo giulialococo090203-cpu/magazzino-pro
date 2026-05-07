@@ -4609,3 +4609,62 @@ body,
 .login-card [style*="#f97316"] {
   background: var(--balanced-accent) !important;
 }
+
+/* ============================================================
+   Login background elegante/professionale
+   ============================================================ */
+
+.login-page,
+.login-container,
+.login-wrapper {
+  background:
+    radial-gradient(circle at 24% 18%, rgba(249, 115, 22, 0.16) 0, transparent 28%),
+    radial-gradient(circle at 82% 78%, rgba(15, 23, 42, 0.22) 0, transparent 34%),
+    linear-gradient(135deg, #111827 0%, #1f2937 46%, #374151 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Pattern tecnico molto discreto */
+.login-page::before,
+.login-container::before,
+.login-wrapper::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent 75%);
+  opacity: 0.55;
+}
+
+/* Card login più staccata dallo sfondo scuro */
+.login-card {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.34),
+    0 1px 0 rgba(255,255,255,0.70) inset !important;
+}
+
+/* Blocchetto arancio del logo più raffinato */
+.login-card > div:first-child,
+.login-logo,
+.login-logo-icon,
+.logo-icon {
+  background:
+    linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%) !important;
+}
+
+/* Titolo dentro il blocco arancio più leggibile */
+.login-card h1,
+.login-title {
+  color: #111827 !important;
+}
+
+.login-card p,
+.login-subtitle {
+  color: #667085 !important;
+}
