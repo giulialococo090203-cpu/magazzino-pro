@@ -50,6 +50,8 @@ export default function Fornitori() {
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [fixSupplierName, setFixSupplierName] = useState('');
+  const [fixingSupplier, setFixingSupplier] = useState(false);
 
   const loadData = async () => {
     try {
@@ -274,6 +276,64 @@ export default function Fornitori() {
     }
   };
 
+
+  const fixImportedSupplier = async () => {
+    const supplier = fixSupplierName.trim();
+
+    if (!supplier) {
+      alert('Inserisci il nome del fornitore da assegnare.');
+      return;
+    }
+
+    const targetMaterials = materials.filter((material) => {
+      const currentSupplier = String(material.supplier || '').trim().toLowerCase();
+
+      return ['', 'importato', 'senza fornitore', 'da assegnare'].includes(currentSupplier);
+    });
+
+    if (targetMaterials.length === 0) {
+      alert('Non ci sono materiali con fornitore Importato/vuoto da correggere.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Vuoi assegnare il fornitore "${supplier}" a ${targetMaterials.length} materiali attualmente senza fornitore reale?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setFixingSupplier(true);
+
+      for (const material of targetMaterials) {
+        await materialStore.update(material.id, {
+          supplier,
+        });
+      }
+
+      try {
+        await adminLogStore.create({
+          userId: user?.id,
+          entity: 'fornitori',
+          action: 'correzione_fornitore',
+          details: `Assegnato fornitore "${supplier}" a ${targetMaterials.length} materiali Importato/vuoti.`,
+        });
+      } catch (err) {
+        console.warn('Log correzione fornitore non salvato:', err);
+      }
+
+      setFixSupplierName('');
+      await loadData();
+
+      alert(`Fornitore aggiornato su ${targetMaterials.length} materiali.`);
+    } catch (err) {
+      console.error('Errore correzione fornitore:', err);
+      alert(err?.message || 'Errore durante la correzione del fornitore.');
+    } finally {
+      setFixingSupplier(false);
+    }
+  };
+
   return (
     <div className="animate-slideUp">
       <div className="page-header">
@@ -345,6 +405,36 @@ export default function Fornitori() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cerca fornitore, codice materiale, descrizione o marca..."
           />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 20, border: '1px solid var(--warning-200)', background: 'var(--warning-50)' }}>
+        <div className="card-header">
+          <h3 className="card-title">🛠️ Correggi fornitori Importato</h3>
+        </div>
+
+        <div className="card-body">
+          <p className="text-sm text-muted" style={{ marginBottom: 12 }}>
+            Usa questa funzione per assegnare un fornitore reale ai materiali che risultano ancora come “Importato”.
+          </p>
+
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <input
+              className="form-control"
+              style={{ maxWidth: 320 }}
+              value={fixSupplierName}
+              onChange={(e) => setFixSupplierName(e.target.value)}
+              placeholder="Es. Ariston SpA / Robert Bosch S.p.A."
+            />
+
+            <button
+              className="btn btn-warning"
+              onClick={fixImportedSupplier}
+              disabled={fixingSupplier || !fixSupplierName.trim()}
+            >
+              {fixingSupplier ? 'Correzione...' : 'Correggi materiali Importato'}
+            </button>
+          </div>
         </div>
       </div>
 
