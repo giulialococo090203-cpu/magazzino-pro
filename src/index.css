@@ -7962,3 +7962,69 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   SIDEBAR LOGOUT BUTTON - forma pulita e professionale
+   ============================================================ */
+
+.sidebar-logout,
+.sidebar-user .logout-btn,
+.sidebar-user button[title="Esci"],
+.sidebar-user button[aria-label="Esci"] {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.86) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin-left: auto !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
+}
+
+.sidebar-logout:hover,
+.sidebar-user .logout-btn:hover,
+.sidebar-user button[title="Esci"]:hover,
+.sidebar-user button[aria-label="Esci"]:hover {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-color: rgba(239, 68, 68, 0.34) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.sidebar-logout:active,
+.sidebar-user .logout-btn:active,
+.sidebar-user button[title="Esci"]:active,
+.sidebar-user button[aria-label="Esci"]:active {
+  transform: translateY(0) !important;
+}
+
+/* Da telefono resta compatto e allineato al profilo */
+@media screen and (max-width: 768px) {
+  .sidebar-user-info {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .sidebar-logout,
+  .sidebar-user .logout-btn,
+  .sidebar-user button[title="Esci"],
+  .sidebar-user button[aria-label="Esci"] {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 9px !important;
+    margin-left: auto !important;
+    font-size: 15px !important;
+  }
+}
+
