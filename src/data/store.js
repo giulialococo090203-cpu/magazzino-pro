@@ -718,36 +718,6 @@ export const materialStore = {
     return mapMaterial.toModel(data);
   },
 
-  async delete(id) {
-    if (!id) {
-      throw new Error('ID storico prezzo mancante.');
-    }
-
-    const { error } = await supabase.from('storico_prezzi').delete().eq('id', id);
-
-    if (error) throw error;
-
-    notifySupabaseUsageChanged();
-  },
-
-  async deleteMany(ids = []) {
-    const cleanIds = [...new Set((ids || []).filter(Boolean))];
-
-    if (cleanIds.length === 0) {
-      return { deleted: 0 };
-    }
-
-    for (const chunk of chunkArray(cleanIds, 100)) {
-      const { error } = await supabase.from('storico_prezzi').delete().in('id', chunk);
-
-      if (error) throw error;
-    }
-
-    notifySupabaseUsageChanged();
-
-    return { deleted: cleanIds.length };
-  },
-
   async getByCode(code) {
     const { data, error } = await supabase
       .from('materiali')
@@ -812,6 +782,24 @@ export const materialStore = {
     if (error) throw error;
 
     notifySupabaseUsageChanged();
+  },
+
+  async deleteMany(ids = []) {
+    const cleanIds = [...new Set((ids || []).filter(Boolean))];
+
+    if (cleanIds.length === 0) {
+      return { deleted: 0 };
+    }
+
+    for (const chunk of chunkArray(cleanIds, 100)) {
+      const { error } = await supabase.from('materiali').delete().in('id', chunk);
+
+      if (error) throw error;
+    }
+
+    notifySupabaseUsageChanged();
+
+    return { deleted: cleanIds.length };
   },
 
   async deleteAll() {

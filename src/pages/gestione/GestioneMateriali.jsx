@@ -19,6 +19,9 @@ export default function GestioneMateriali() {
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmEmpty, setConfirmEmpty] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
+  const [deletingSelected, setDeletingSelected] = useState(false);
   const [isNewCat, setIsNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
 
@@ -32,6 +35,7 @@ export default function GestioneMateriali() {
       setMaterials(mats);
       setCategories(cats);
       setUnits(unts);
+      setSelectedIds(prev => prev.filter(id => (mats || []).some(m => m.id === id)));
     } catch (err) {
       console.error('Errore refresh:', err);
     }
@@ -44,6 +48,23 @@ export default function GestioneMateriali() {
     const q = search.toLowerCase();
     return !q || m.code?.toLowerCase().includes(q) || m.description?.toLowerCase().includes(q) || m.brand?.toLowerCase().includes(q);
   });
+
+  const filteredIds = filtered.map(m => m.id);
+  const selectedVisibleIds = selectedIds.filter(id => filteredIds.includes(id));
+  const allVisibleSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+
+  const toggleSelected = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]);
+  };
+
+  const toggleAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
+      return;
+    }
+
+    setSelectedIds(prev => [...new Set([...prev, ...filteredIds])]);
+  };
 
   const openNew = () => {
     setEditItem(null);
@@ -138,6 +159,41 @@ export default function GestioneMateriali() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    const idsToDelete = selectedVisibleIds;
+
+    if (idsToDelete.length === 0) {
+      alert('Seleziona almeno un materiale da eliminare.');
+      return;
+    }
+
+    try {
+      setDeletingSelected(true);
+
+      const selectedMaterials = materials.filter(m => idsToDelete.includes(m.id));
+      await materialStore.deleteMany(idsToDelete);
+
+      await adminLogStore.create({
+        action: 'Eliminazione materiali selezionati',
+        entity: 'materiali',
+        details: `Eliminati ${idsToDelete.length} materiali: ${selectedMaterials.map(m => m.code).join(', ')}`,
+        userId: user.id,
+        userName: user.fullName,
+      });
+
+      setSelectedIds(prev => prev.filter(id => !idsToDelete.includes(id)));
+      setConfirmDeleteSelected(false);
+      await refresh();
+
+      alert(`Eliminati ${idsToDelete.length} materiali.`);
+    } catch (err) {
+      console.error('Errore eliminazione materiali selezionati:', err);
+      setError('Errore durante eliminazione materiali selezionati: ' + err.message);
+    } finally {
+      setDeletingSelected(false);
+    }
+  };
+
   const handleEmpty = async () => {
     try {
       await materialStore.deleteAll();
@@ -172,10 +228,59 @@ export default function GestioneMateriali() {
         </div>
       </div>
 
+      {filtered.length > 0 && (
+        <div
+          className="card"
+          style={{
+            marginBottom: 16,
+            border: '1px solid var(--gray-200)',
+            background: 'var(--gray-50)',
+          }}
+        >
+          <div
+            className="card-body"
+            style={{
+              padding: 14,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div className="text-sm" style={{ fontWeight: 900 }}>
+              {selectedVisibleIds.length} materiali selezionati su {filtered.length} visibili
+            </div>
+
+            <div className="btn-group">
+              <button className="btn btn-sm btn-secondary" onClick={toggleAllVisible}>
+                {allVisibleSelected ? 'Deseleziona tutte' : 'Seleziona tutte'}
+              </button>
+
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={() => setConfirmDeleteSelected(true)}
+                disabled={selectedVisibleIds.length === 0 || deletingSelected}
+              >
+                🗑️ Elimina selezionati
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: 44, textAlign: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={toggleAllVisible}
+                  title="Seleziona tutti i materiali visibili"
+                />
+              </th>
               <th>Codice</th>
               <th>Descrizione</th>
               <th>Marca</th>
@@ -190,9 +295,16 @@ export default function GestioneMateriali() {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan="10"><div className="empty-state"><div className="empty-state-icon">🔧</div><div className="empty-state-title">Nessun materiale trovato</div></div></td></tr>
+              <tr><td colSpan="11"><div className="empty-state"><div className="empty-state-icon">🔧</div><div className="empty-state-title">Nessun materiale trovato</div></div></td></tr>
             ) : filtered.map(m => (
               <tr key={m.id}>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(m.id)}
+                    onChange={() => toggleSelected(m.id)}
+                  />
+                </td>
                 <td><strong>{m.code}</strong></td>
                 <td>{m.description}</td>
                 <td className="text-sm">{m.brand}</td>
@@ -315,6 +427,34 @@ export default function GestioneMateriali() {
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>Annulla</button>
               <button className="btn btn-danger" onClick={() => handleDelete(confirmDelete)}>Elimina</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Selected */}
+      {confirmDeleteSelected && (
+        <div className="modal-overlay confirm-dialog" onClick={() => setConfirmDeleteSelected(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Eliminare materiali selezionati?</h3>
+              <button className="modal-close" onClick={() => setConfirmDeleteSelected(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ textAlign: 'center' }}>
+              <div className="confirm-icon danger">🗑️</div>
+              <p className="confirm-message">
+                Vuoi eliminare <strong>{selectedVisibleIds.length}</strong> materiali selezionati?<br />
+                <br />
+                <strong>CONFERMA DEFINITIVA:</strong><br />
+                stai eliminando materiali reali dall’anagrafica.<br />
+                Questa operazione può influire su movimenti, storico prezzi, riordini e inventari.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteSelected(false)}>Annulla</button>
+              <button className="btn btn-danger" onClick={handleDeleteSelected} disabled={deletingSelected}>
+                {deletingSelected ? 'Eliminazione...' : 'Elimina selezionati'}
+              </button>
             </div>
           </div>
         </div>
