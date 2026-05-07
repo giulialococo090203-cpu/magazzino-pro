@@ -4327,3 +4327,134 @@ textarea:focus {
 .sidebar-section-accordion.has-active > .sidebar-section-toggle {
   box-shadow: none !important;
 }
+
+/* ============================================================
+   Login page - stile gestionale tecnico coerente
+   ============================================================ */
+
+.login-page,
+.login-container,
+.login-wrapper {
+  background: #f3f4f6 !important;
+  background-image: none !important;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+/* Se il vecchio sfondo è applicato al body quando non loggato */
+body:has(.login-card) {
+  background: #f3f4f6 !important;
+}
+
+/* Card login più sobria */
+.login-card {
+  width: 100%;
+  max-width: 440px !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  box-shadow: 0 18px 45px rgba(17, 24, 39, 0.10) !important;
+  padding: 42px 44px !important;
+}
+
+/* Logo login */
+.login-logo,
+.login-logo-icon,
+.logo-icon {
+  background: #f97316 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+/* Titoli */
+.login-card h1,
+.login-title {
+  color: #111827 !important;
+  font-size: 30px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.035em !important;
+  margin-bottom: 8px !important;
+}
+
+.login-card p,
+.login-subtitle {
+  color: #6b7280 !important;
+  font-size: 15px !important;
+  font-weight: 450 !important;
+}
+
+/* Label e campi */
+.login-card label,
+.login-form label,
+.form-label {
+  color: #4b5563 !important;
+  font-weight: 650 !important;
+}
+
+.login-card input,
+.login-form input {
+  height: 48px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d1d5db !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  font-size: 15px !important;
+  box-shadow: none !important;
+}
+
+.login-card input::placeholder,
+.login-form input::placeholder {
+  color: #9ca3af !important;
+}
+
+.login-card input:focus,
+.login-form input:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13) !important;
+  outline: none !important;
+}
+
+/* Bottone login */
+.login-card .btn-primary,
+.login-form .btn-primary,
+.login-card button[type='submit'],
+.login-form button[type='submit'] {
+  height: 48px !important;
+  border-radius: 8px !important;
+  background: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 720 !important;
+  box-shadow: none !important;
+}
+
+.login-card .btn-primary:hover,
+.login-form .btn-primary:hover,
+.login-card button[type='submit']:hover,
+.login-form button[type='submit']:hover {
+  background: #ea580c !important;
+  border-color: #ea580c !important;
+}
+
+/* Errori login */
+.login-error {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border: 1px solid rgba(220, 38, 38, 0.20) !important;
+  color: #b91c1c !important;
+  border-radius: 8px !important;
+}
+
+/* Variante elegante: piccolo pannello laterale invisibile/discreto se esiste */
+.login-aside,
+.login-brand-panel {
+  background: #111827 !important;
+  color: #ffffff !important;
+}
