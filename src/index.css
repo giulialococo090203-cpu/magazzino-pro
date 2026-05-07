@@ -12107,3 +12107,60 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   LOGIN DESKTOP FINAL SPACING
+   Sfondo sidebar-like + spaziatura form + fix Mostra desktop.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  .login-redesign-page {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 106, 20, 0.10), transparent 30%),
+      linear-gradient(135deg, #151b24 0%, #1f2630 48%, #111827 100%) !important;
+  }
+
+  .login-redesign-form-panel {
+    padding-left: clamp(58px, 6vw, 92px) !important;
+    padding-right: clamp(58px, 6vw, 92px) !important;
+  }
+
+  .login-redesign-password-wrap input {
+    padding-right: 112px !important;
+  }
+
+  .login-redesign-password-toggle {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+    height: 34px !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+    background: #f2f4f7 !important;
+    color: #475467 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Finestra desktop dimezzata: un po' più compatto ma senza sovrapposizioni */
+@media screen and (min-width: 541px) and (max-width: 980px) {
+  .login-redesign-form-panel {
+    padding-left: 46px !important;
+    padding-right: 46px !important;
+  }
+
+  .login-redesign-password-wrap input {
+    padding-right: 104px !important;
+  }
+
+  .login-redesign-password-toggle {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    font-size: 12px !important;
+  }
+}
+
