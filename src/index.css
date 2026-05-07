@@ -12164,3 +12164,76 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   DESKTOP LOGIN PASSWORD TOGGLE HARD FIX
+   Vince sugli override mobile/generici del bottone Mostra.
+   ============================================================ */
+
+@media screen and (min-width: 541px) and (pointer: fine) {
+  .login-desktop-view .login-redesign-form-panel {
+    padding-left: clamp(72px, 7vw, 110px) !important;
+    padding-right: clamp(72px, 7vw, 110px) !important;
+  }
+
+  .login-desktop-view .login-redesign-password-wrap {
+    position: relative !important;
+    width: 100% !important;
+  }
+
+  .login-desktop-view .login-redesign-password-wrap input {
+    padding-right: 96px !important;
+  }
+
+  .login-desktop-view .login-redesign-password-toggle {
+    position: absolute !important;
+    top: 50% !important;
+    right: 10px !important;
+    transform: translateY(-50%) !important;
+
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: #f2f4f7 !important;
+    color: #475467 !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+  }
+}
+
+@media screen and (min-width: 541px) and (max-width: 980px) and (pointer: fine) {
+  .login-desktop-view .login-redesign-form-panel {
+    padding-left: 54px !important;
+    padding-right: 54px !important;
+  }
+
+  .login-desktop-view .login-redesign-password-wrap input {
+    padding-right: 88px !important;
+  }
+
+  .login-desktop-view .login-redesign-password-toggle {
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    right: 8px !important;
+    font-size: 11px !important;
+  }
+}
+
