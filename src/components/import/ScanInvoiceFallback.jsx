@@ -5,10 +5,14 @@ function createEmptyRow() {
     code: '',
     description: '',
     unit: 'PZ',
-    quantity: 1,
-    price: 0,
+    quantity: '',
+    price: '',
     supplier: '',
   };
+}
+
+function parseDecimal(value = 0) {
+  return Number(String(value || '0').replace(',', '.')) || 0;
 }
 
 function formatCurrency(value = 0) {
@@ -41,7 +45,7 @@ export default function ScanInvoiceFallback({
     const hasCode = String(row.code || '').trim().length > 0;
     const hasDescription = String(row.description || '').trim().length > 0;
     const hasSupplier = String(row.supplier || '').trim().length > 0;
-    const quantity = Number(row.quantity || 0);
+    const quantity = parseDecimal(row.quantity);
 
     return hasCode && hasDescription && hasSupplier && quantity > 0;
   }).length;
@@ -51,9 +55,9 @@ export default function ScanInvoiceFallback({
   return (
     <div className="card animate-fadeIn">
       <div className="card-header" style={{ background: 'var(--warning-50)' }}>
-        <h3 className="card-title">🖼️ Compilazione guidata da scansione</h3>
+        <h3 className="card-title">✍️ Inserimento manuale componenti</h3>
         <p className="text-sm mt-1">
-          Il file <strong>{fileName}</strong> è una scansione. Inserisci manualmente le righe prodotto leggendo la fattura e poi continua con l’importazione.
+          Inserisci manualmente i componenti. Il campo fornitore è obbligatorio per collegare il carico alla sezione Fornitori.
         </p>
       </div>
 
@@ -63,26 +67,27 @@ export default function ScanInvoiceFallback({
             <option key={supplier} value={supplier} />
           ))}
         </datalist>
+
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: 160 }}>Codice</th>
+              <th style={{ width: 150 }}>Codice</th>
               <th>Descrizione</th>
-              <th style={{ width: 100 }}>UM</th>
+              <th style={{ width: 110 }}>UM</th>
               <th style={{ width: 120 }}>Quantità</th>
-              <th style={{ width: 130 }}>Prezzo Netto</th>
+              <th style={{ width: 140 }}>Prezzo netto</th>
               <th style={{ width: 190 }}>Fornitore *</th>
               <th style={{ width: 130 }}>Listino +22%</th>
               {showInstallerPrice && <th style={{ width: 160 }}>Installatore -10% +22%</th>}
-              <th style={{ width: 130 }}>Totale Netto</th>
+              <th style={{ width: 130 }}>Totale netto</th>
               <th style={{ width: 80 }}></th>
             </tr>
           </thead>
 
           <tbody>
             {(rows || []).map((row, index) => {
-              const quantity = Number(row.quantity || 0);
-              const price = Number(row.price || 0);
+              const quantity = parseDecimal(row.quantity);
+              const price = parseDecimal(row.price);
               const total = quantity * price;
 
               return (
@@ -91,7 +96,7 @@ export default function ScanInvoiceFallback({
                     <input
                       type="text"
                       className="form-control"
-                      value={row.code}
+                      value={row.code || ''}
                       onChange={(e) => onChangeRow(index, 'code', e.target.value)}
                       placeholder="Codice"
                     />
@@ -101,9 +106,10 @@ export default function ScanInvoiceFallback({
                     <input
                       type="text"
                       className="form-control"
-                      value={row.description}
+                      value={row.description || ''}
                       onChange={(e) => onChangeRow(index, 'description', e.target.value)}
                       placeholder="Descrizione materiale"
+                      style={{ minWidth: 260 }}
                     />
                   </td>
 
@@ -111,7 +117,7 @@ export default function ScanInvoiceFallback({
                     <input
                       type="text"
                       className="form-control"
-                      value={row.unit}
+                      value={row.unit || ''}
                       onChange={(e) => onChangeRow(index, 'unit', e.target.value.toUpperCase())}
                       placeholder="PZ"
                     />
@@ -119,23 +125,23 @@ export default function ScanInvoiceFallback({
 
                   <td>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
                       className="form-control"
-                      value={row.quantity}
-                      onChange={(e) => onChangeRow(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      value={row.quantity ?? ''}
+                      onChange={(e) => onChangeRow(index, 'quantity', e.target.value)}
+                      placeholder="Es. 1"
                     />
                   </td>
 
                   <td>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
                       className="form-control"
-                      value={row.price}
-                      onChange={(e) => onChangeRow(index, 'price', parseFloat(e.target.value) || 0)}
+                      value={row.price ?? ''}
+                      onChange={(e) => onChangeRow(index, 'price', e.target.value)}
+                      placeholder="Es. 10,50"
                     />
                   </td>
 

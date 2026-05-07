@@ -62,6 +62,10 @@ function createImportRowId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function parseImportNumber(value = 0) {
+  return Number(String(value || '0').replace(',', '.')) || 0;
+}
+
 function formatCurrency(value = 0) {
   const number = Number(value || 0);
 
@@ -720,9 +724,9 @@ export default function ImportaFatture() {
       ...validRows.map((row) => [
         row.code || '',
         row.description || '',
-        row.quantity || 0,
+        parseImportNumber(row.quantity),
         row.unit || 'PZ',
-        row.price || 0,
+        parseImportNumber(row.price),
         row.brand || '',
         row.category || '',
         row.location || 'A1-01',
