@@ -358,7 +358,7 @@ export default function StoricoPrezzi() {
                 onClick={deleteSelectedRows}
                 disabled={selectedVisibleIds.length === 0 || deleting}
               >
-                {deleting ? 'Eliminazione...' : '<span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate'}
+                {deleting ? 'Eliminazione...' : (<><span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate</>)}
               </button>
             </div>
           </div>

@@ -609,7 +609,7 @@ export default function Dashboard() {
       </div>
 
       <h2 className="section-title">
-        <span className="icon">⚡</span> Azioni Rapide
+        <span className="ui-section-icon material-symbols-rounded">bolt</span>Azioni Rapide
       </h2>
 
       <div className="quick-actions">
@@ -1140,7 +1140,7 @@ export default function Dashboard() {
               onClick={loadSupabaseUsage}
               disabled={supabaseUsageLoading}
             >
-              {supabaseUsageLoading ? 'Aggiornamento...' : '<span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna spazio usato'}
+              {supabaseUsageLoading ? 'Aggiornamento...' : (<><span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna spazio usato</>)}
             </button>
           </div>
 

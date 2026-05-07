@@ -504,7 +504,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">📌 Materiali con maggiore impatto economico</h3>
+          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">push_pin</span>Materiali con maggiore impatto economico</h3>
         </div>
 
         <div className="table-container">
@@ -529,7 +529,7 @@ export default function RendicontazioneEconomica() {
                 <tr>
                   <td colSpan="7">
                     <div className="empty-state">
-                      <div className="empty-state-icon">📌</div>
+                      <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">push_pin</span></div>
                       <div className="empty-state-title">Nessun materiale nel periodo</div>
                     </div>
                   </td>

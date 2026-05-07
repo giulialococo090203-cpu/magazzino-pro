@@ -326,7 +326,7 @@ export default function Fornitori() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadData} disabled={loading}>
-            {loading ? 'Aggiorno...' : '<span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna'}
+            {loading ? 'Aggiorno...' : (<><span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna</>)}
           </button>
           <button className="btn btn-primary" onClick={exportExcel} disabled={loading}>
             <span className="ui-inline-icon material-symbols-rounded">analytics</span> Esporta Excel

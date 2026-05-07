@@ -45,13 +45,13 @@ export default function LogModifiche() {
   const getEntityIcon = (entity) => {
     switch (entity) {
       case 'categoria':
-        return '<span className="ui-inline-icon material-symbols-rounded">sell</span>';
+        return <span className="ui-inline-icon material-symbols-rounded">sell</span>;
       case 'materiale':
         return '🔧';
       case 'utente':
-        return '<span className="ui-inline-icon material-symbols-rounded">manage_accounts</span>';
+        return <span className="ui-inline-icon material-symbols-rounded">manage_accounts</span>;
       case 'fattura':
-        return '<span className="ui-inline-icon material-symbols-rounded">upload_file</span>';
+        return <span className="ui-inline-icon material-symbols-rounded">upload_file</span>;
       default:
         return '📝';
     }

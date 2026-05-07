@@ -828,7 +828,7 @@ export default function ImportaFatture() {
           : 'data non disponibile';
 
         const confirmed = window.confirm(
-          `<span className="ui-inline-icon material-symbols-rounded">warning</span> Questa fattura sembra già essere stata caricata.\n\n` +
+          `ATTENZIONE: Questa fattura sembra già essere stata caricata.\n\n` +
             `File: ${file.name}\n` +
             `Caricata il: ${duplicateDate}\n\n` +
             `Vuoi continuare comunque con l'importazione?`

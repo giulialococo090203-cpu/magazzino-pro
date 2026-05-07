@@ -8,7 +8,7 @@ const TIPO_CONFIG = {
   entrata: {
     title: 'Carica Materiale',
     subtitle: 'Registra un nuovo ingresso di materiale in magazzino',
-    icon: '<span className="ui-inline-icon material-symbols-rounded">move_to_inbox</span>',
+    icon: 'move_to_inbox',
     color: 'var(--success-600)',
     btnLabel: 'Conferma Carico',
     btnClass: 'btn-success',
@@ -17,7 +17,7 @@ const TIPO_CONFIG = {
   uscita: {
     title: 'Scarica Materiale',
     subtitle: "Registra un'uscita di materiale dal magazzino",
-    icon: '<span className="ui-inline-icon material-symbols-rounded">outbox</span>',
+    icon: 'outbox',
     color: 'var(--danger-600)',
     btnLabel: 'Conferma Scarico',
     btnClass: 'btn-danger',
@@ -26,7 +26,7 @@ const TIPO_CONFIG = {
   reintegro: {
     title: 'Reintegra Materiale',
     subtitle: 'Rientra materiale precedentemente uscito e non utilizzato',
-    icon: '<span className="ui-inline-icon material-symbols-rounded">sync</span>',
+    icon: 'sync',
     color: 'var(--info-600)',
     btnLabel: 'Conferma Reintegro',
     btnClass: 'btn-primary',
@@ -35,7 +35,7 @@ const TIPO_CONFIG = {
   rettifica: {
     title: 'Rettifica Inventario',
     subtitle: 'Correggi la quantità a seguito di controllo inventariale',
-    icon: '<span className="ui-inline-icon material-symbols-rounded">edit_square</span>',
+    icon: 'edit_square',
     color: 'var(--warning-600)',
     btnLabel: 'Conferma Rettifica',
     btnClass: 'btn-warning',

@@ -338,7 +338,7 @@ export default function ArchivioProposteOrdine() {
                 onClick={deleteSelectedProposals}
                 disabled={selectedVisibleIds.length === 0 || savingId === 'delete-selected'}
               >
-                {savingId === 'delete-selected' ? 'Eliminazione...' : '<span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate'}
+                {savingId === 'delete-selected' ? 'Eliminazione...' : (<><span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate</>)}
               </button>
             </div>
           </div>
