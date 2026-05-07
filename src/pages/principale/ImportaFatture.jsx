@@ -739,6 +739,42 @@ export default function ImportaFatture() {
     setInvoiceRecord(null);
     setStorageWarning('');
 
+    try {
+      const duplicateInvoice = await invoiceImportStore.findDuplicateFile(file);
+
+      if (duplicateInvoice) {
+        const duplicateDate = duplicateInvoice.createdAt
+          ? new Date(duplicateInvoice.createdAt).toLocaleString('it-IT')
+          : 'data non disponibile';
+
+        const confirmed = window.confirm(
+          `⚠️ Questa fattura sembra già essere stata caricata.\n\n` +
+            `File: ${file.name}\n` +
+            `Caricata il: ${duplicateDate}\n\n` +
+            `Vuoi continuare comunque con l'importazione?`
+        );
+
+        if (!confirmed) {
+          setImportError('Importazione annullata: fattura già presente in archivio.');
+          setAssistantAdvice({
+            title: 'Fattura già presente',
+            message:
+              `Il file "${file.name}" risulta già caricato nell’archivio fatture. ` +
+              'L’importazione è stata annullata per evitare un doppio caricamento.',
+            suggestions: [
+              'Controlla l’Archivio Fatture se vuoi verificare il documento già caricato.',
+              'Se devi davvero ricaricarla, seleziona di nuovo il file e conferma il popup.',
+            ],
+          });
+
+          if (e.target) e.target.value = '';
+          return;
+        }
+      }
+    } catch (duplicateError) {
+      console.warn('Controllo duplicato fattura non riuscito:', duplicateError);
+    }
+
     let uploadedInvoice = null;
 
     try {

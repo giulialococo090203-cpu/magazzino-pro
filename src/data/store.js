@@ -1363,6 +1363,23 @@ export const adminLogStore = {
 export const invoiceImportStore = {
   bucketName: 'fatture',
 
+  async findDuplicateFile(file) {
+    if (!file) return null;
+
+    const { data, error } = await supabase
+      .from('fatture_importate')
+      .select('*')
+      .eq('nome_file_originale', file.name)
+      .eq('dimensione_file', file.size || 0)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    return data ? mapImportedInvoice.toModel(data) : null;
+  },
+
   async uploadOriginalFile(file, user) {
     if (!file) {
       throw new Error('Nessun file da salvare.');
