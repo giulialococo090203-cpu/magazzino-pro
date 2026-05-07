@@ -283,8 +283,7 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
 
   const [unreadCount, setUnreadCount] = useState(0);
-  const [globalSearch, setGlobalSearch] = useState('');
-  const [openSections, setOpenSections] = useState({});
+const [openSections, setOpenSections] = useState({});
 
   const canSeeNotifications = hasPermission(user, 'canViewNotifications');
 
