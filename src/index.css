@@ -7512,3 +7512,117 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   FIX DEFINITIVO MOBILE - nasconde sidebar su telefono
+   Vale solo su schermi piccoli. Desktop invariato.
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .sidebar {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .app-layout {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .page-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+    overflow-x: hidden !important;
+  }
+
+  .page-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .page-title {
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+  }
+
+  .page-subtitle {
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+  }
+
+  .btn-group,
+  .page-header-actions,
+  .page-header .btn-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .btn-group .btn,
+  .page-header-actions .btn,
+  .page-header .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+
+  .card,
+  .kpi-card,
+  .stat-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-grid,
+  .kpi-grid,
+  .stats-grid,
+  .cards-grid,
+  .form-row,
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-container,
+  .table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .data-table {
+    min-width: 720px !important;
+  }
+
+  input,
+  select,
+  textarea,
+  .form-control {
+    font-size: 16px !important;
+    max-width: 100% !important;
+  }
+
+  .header {
+    padding: 12px 16px !important;
+  }
+
+  .header-date {
+    display: none !important;
+  }
+}
+
