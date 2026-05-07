@@ -4,6 +4,7 @@ import { useAuth } from '../../App';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Icon from '../../components/Icon';
 
 function formatDateTime() {
   return new Date().toLocaleString('it-IT', {
@@ -406,7 +407,7 @@ export default function InventarioFisico() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">fact_check</span>Inventario Fisico</h1>
+          <h1 className="page-title"><Icon name="fact_check" className="ui-title-icon" aria-hidden="true" />Inventario Fisico</h1>
           <p className="page-subtitle">
             Procedura guidata per conteggio, differenze e rettifiche automatiche
           </p>
@@ -417,13 +418,13 @@ export default function InventarioFisico() {
             ↻ Aggiorna
           </button>
           <button className="btn btn-secondary" onClick={exportExcel}>
-            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Excel
+            <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Excel
           </button>
           <button className="btn btn-secondary" onClick={exportCSV}>
             🧾 CSV
           </button>
           <button className="btn btn-secondary" onClick={exportPDF}>
-            <span className="ui-inline-icon material-symbols-rounded">upload_file</span> PDF
+            <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> PDF
           </button>
           <button
             className="btn btn-primary"
@@ -447,7 +448,7 @@ export default function InventarioFisico() {
             fontWeight: 800,
           }}
         >
-          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
+          <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /> {success}
         </div>
       )}
 
@@ -459,7 +460,7 @@ export default function InventarioFisico() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+          <div className="kpi-icon blue"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali totali</div>
             <div className="kpi-value">{materials.length}</div>
@@ -477,7 +478,7 @@ export default function InventarioFisico() {
         </div>
 
         <div className={`kpi-card ${differentRows.length > 0 ? 'warning' : ''}`}>
-          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
+          <div className="kpi-icon yellow"><Icon name="warning" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Differenze</div>
             <div className="kpi-value">{differentRows.length}</div>
@@ -488,7 +489,7 @@ export default function InventarioFisico() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">filter_alt</span>Filtri e strumenti conteggio</h3>
+          <h3 className="card-title"><Icon name="filter_alt" className="ui-section-icon" aria-hidden="true" />Filtri e strumenti conteggio</h3>
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
           </button>
@@ -497,7 +498,7 @@ export default function InventarioFisico() {
         <div className="card-body">
           <div className="filters-row">
             <div className="search-bar" style={{ flex: 1, minWidth: 260 }}>
-              <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
+              <span className="search-bar-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></span>
               <input
                 type="text"
                 className="form-control"
@@ -575,7 +576,7 @@ export default function InventarioFisico() {
               <tr>
                 <td colSpan="10" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+                    <div className="empty-state-icon"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun materiale trovato</div>
                     <div className="empty-state-text">
                       Prova a modificare i filtri.
@@ -667,7 +668,7 @@ export default function InventarioFisico() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon warning"><span className="ui-inline-icon material-symbols-rounded">fact_check</span></div>
+              <div className="confirm-icon warning"><Icon name="fact_check" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Verranno registrate <strong>{differentRows.length}</strong> rettifiche di magazzino.

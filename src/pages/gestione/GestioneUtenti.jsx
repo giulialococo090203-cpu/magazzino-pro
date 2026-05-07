@@ -8,6 +8,7 @@ import {
   getEffectivePermissions,
   normalizeRole,
 } from '../../data/permissions';
+import Icon from '../../components/Icon';
 
 const USER_ROLES = [
   {
@@ -466,7 +467,7 @@ export default function GestioneUtenti() {
                         onClick={() => openEdit(u)}
                         title="Modifica"
                       >
-                        <span className="ui-inline-icon material-symbols-rounded">edit_square</span>
+                        <Icon name="edit_square" className="ui-inline-icon" aria-hidden="true" />
                       </button>
 
                       {u.id !== currentUser.id ? (
@@ -494,7 +495,7 @@ export default function GestioneUtenti() {
                           onClick={() => setConfirmDelete(u)}
                           title="Elimina"
                         >
-                          <span className="ui-inline-icon material-symbols-rounded">delete</span>
+                          <Icon name="delete" className="ui-inline-icon" aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -795,7 +796,7 @@ export default function GestioneUtenti() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
               <p className="confirm-message">
                 Eliminare l'utente <strong>{confirmDelete.fullName}</strong> ({confirmDelete.username})?
                 <br />

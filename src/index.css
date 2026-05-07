@@ -6199,3 +6199,156 @@ button .ui-inline-icon {
   border-color: rgba(249, 115, 22, 0.45) !important;
 }
 
+
+/* ============================================================
+   DEFINITIVO: sistema icone SVG interno, niente font/ligature
+   ============================================================ */
+
+.app-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+/* Disattiva definitivamente le vecchie regole Material Symbols */
+.material-symbols-rounded {
+  font-family: inherit !important;
+}
+
+/* Titoli pagina */
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+.ui-title-icon {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  padding: 10px !important;
+  margin-right: 14px !important;
+  border-radius: 11px !important;
+  background: rgba(249, 115, 22, 0.11) !important;
+  color: #f97316 !important;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22) !important;
+}
+
+/* Sezioni/card */
+.ui-section-icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  padding: 7px !important;
+  margin-right: 9px !important;
+  border-radius: 8px !important;
+  background: #f4f6f8 !important;
+  color: #475467 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+}
+
+/* Inline generico */
+.ui-inline-icon {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  margin-right: 7px !important;
+  color: currentColor !important;
+}
+
+/* KPI */
+.kpi-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 10px !important;
+  background: #f4f6f8 !important;
+  box-shadow: inset 0 0 0 1px #e5e7eb !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
+}
+
+.kpi-icon .app-icon,
+.kpi-icon .ui-inline-icon {
+  width: 25px !important;
+  height: 25px !important;
+  min-width: 25px !important;
+  margin: 0 !important;
+  color: #475467 !important;
+}
+
+/* Search, header e bottoni */
+.search-bar-icon .app-icon,
+.global-search-icon .app-icon,
+.header-notification-btn .app-icon,
+.btn .app-icon,
+button .app-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  margin: 0 6px 0 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: currentColor !important;
+}
+
+.search-bar-icon .app-icon,
+.global-search-icon .app-icon,
+.header-notification-btn .app-icon {
+  margin: 0 !important;
+}
+
+/* Quick actions: colori meno pastello e più gestionali */
+.quick-action-card .ui-inline-icon,
+.quick-action .ui-inline-icon,
+.action-card .ui-inline-icon {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.quick-action-card,
+.quick-action,
+.action-card {
+  border-radius: 10px !important;
+}
+
+.quick-action-card:focus,
+.quick-action:focus,
+.action-card:focus {
+  outline: none !important;
+  border-color: rgba(249, 115, 22, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.13) !important;
+}
+
+/* ============================================================
+   MovimentiForm: icone stabili senza font esterni
+   ============================================================ */
+
+.movement-title-icon {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 27px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+}
+
+.movement-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.confirm-icon {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+

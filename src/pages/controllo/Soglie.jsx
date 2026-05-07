@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { materialStore, categoryStore, unitStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
+import Icon from '../../components/Icon';
 
 export default function Soglie() {
   const { user } = useAuth();
@@ -101,7 +102,7 @@ export default function Soglie() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">settings</span>Soglie e Unità di Misura</h1>
+          <h1 className="page-title"><Icon name="settings" className="ui-title-icon" aria-hidden="true" />Soglie e Unità di Misura</h1>
           <p className="page-subtitle">Gestisci le soglie minime per ogni materiale e le unità di misura</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowUnitModal(true)}>+ Nuova Unità di Misura</button>
@@ -109,14 +110,14 @@ export default function Soglie() {
 
       {success && (
         <div style={{ background: 'var(--success-50)', border: '1px solid var(--success-100)', color: 'var(--success-700)', padding: '12px 20px', borderRadius: 'var(--border-radius-md)', marginBottom: 16, fontWeight: 600 }}>
-          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
+          <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /> {success}
         </div>
       )}
 
       {/* Units section */}
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">straighten</span>Unità di Misura Configurate</h3>
+          <h3 className="card-title"><Icon name="straighten" className="ui-section-icon" aria-hidden="true" />Unità di Misura Configurate</h3>
         </div>
         <div className="card-body">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -138,12 +139,12 @@ export default function Soglie() {
       {/* Thresholds table */}
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">bar_chart</span>Soglie Minime per Materiale</h3>
+          <h3 className="card-title"><Icon name="bar_chart" className="ui-section-icon" aria-hidden="true" />Soglie Minime per Materiale</h3>
         </div>
         <div className="card-body" style={{ paddingBottom: 0 }}>
           <div className="filters-row">
             <div className="search-bar" style={{ flex: 1, maxWidth: 300 }}>
-              <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
+              <span className="search-bar-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></span>
               <input type="text" className="form-control" placeholder="Cerca materiale..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 40 }} />
             </div>
             <div className="filter-group">
@@ -205,7 +206,7 @@ export default function Soglie() {
                           <button className="btn btn-sm btn-ghost" onClick={() => setEditId(null)}>✕</button>
                         </div>
                       ) : (
-                        <button className="btn btn-sm btn-outline-primary" onClick={() => startEdit(m)}><span className="ui-inline-icon material-symbols-rounded">edit_square</span> Modifica</button>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => startEdit(m)}><Icon name="edit_square" className="ui-inline-icon" aria-hidden="true" /> Modifica</button>
                       )}
                     </td>
                   </tr>

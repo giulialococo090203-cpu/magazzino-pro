@@ -7,6 +7,7 @@ import {
   adminLogStore,
 } from '../../data/store';
 import { useAuth } from '../../App';
+import Icon from '../../components/Icon';
 
 function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('it-IT', {
@@ -327,7 +328,7 @@ export default function RendicontazioneEconomica() {
             ↻ Aggiorna
           </button>
           <button className="btn btn-primary" onClick={exportExcel} disabled={loading}>
-            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Esporta Excel
+            <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Esporta Excel
           </button>
         </div>
       </div>
@@ -346,7 +347,7 @@ export default function RendicontazioneEconomica() {
             fontWeight: 800,
           }}
         >
-          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {success}
+          <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /> {success}
         </div>
       )}
 
@@ -416,7 +417,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">move_to_inbox</span></div>
+          <div className="kpi-icon green"><Icon name="move_to_inbox" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore carichi</div>
             <div className="kpi-value">{formatCurrency(report.entriesValue)}</div>
@@ -425,7 +426,7 @@ export default function RendicontazioneEconomica() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon red"><span className="ui-inline-icon material-symbols-rounded">outbox</span></div>
+          <div className="kpi-icon red"><Icon name="outbox" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore uscite stimato</div>
             <div className="kpi-value">{formatCurrency(report.exitsValue)}</div>
@@ -434,7 +435,7 @@ export default function RendicontazioneEconomica() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+          <div className="kpi-icon blue"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore stock attuale</div>
             <div className="kpi-value">{formatCurrency(report.stockValue)}</div>
@@ -456,7 +457,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">factory</span> Spesa per fornitore</h3>
+          <h3 className="card-title"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /> Spesa per fornitore</h3>
         </div>
 
         <div className="table-container">
@@ -479,7 +480,7 @@ export default function RendicontazioneEconomica() {
                 <tr>
                   <td colSpan="5">
                     <div className="empty-state">
-                      <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">euro</span></div>
+                      <div className="empty-state-icon"><Icon name="euro" className="ui-inline-icon" aria-hidden="true" /></div>
                       <div className="empty-state-title">Nessun dato economico nel periodo</div>
                     </div>
                   </td>
@@ -504,7 +505,7 @@ export default function RendicontazioneEconomica() {
 
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">push_pin</span>Materiali con maggiore impatto economico</h3>
+          <h3 className="card-title"><Icon name="push_pin" className="ui-section-icon" aria-hidden="true" />Materiali con maggiore impatto economico</h3>
         </div>
 
         <div className="table-container">
@@ -529,7 +530,7 @@ export default function RendicontazioneEconomica() {
                 <tr>
                   <td colSpan="7">
                     <div className="empty-state">
-                      <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">push_pin</span></div>
+                      <div className="empty-state-icon"><Icon name="push_pin" className="ui-inline-icon" aria-hidden="true" /></div>
                       <div className="empty-state-title">Nessun materiale nel periodo</div>
                     </div>
                   </td>

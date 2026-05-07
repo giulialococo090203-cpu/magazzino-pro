@@ -43,6 +43,13 @@ const TIPO_CONFIG = {
   }
 };
 
+const MOVEMENT_ICON_LABELS = {
+  entrata: '↧',
+  uscita: '↥',
+  reintegro: '↻',
+  rettifica: '✎',
+};
+
 function normalizeRole(role) {
   return String(role || '').trim().toLowerCase();
 }
@@ -316,14 +323,13 @@ export default function MovimentiForm() {
     }
   };
 
-  if (!canUsePage) {
-    return (
+  return (
       <div className="animate-slideUp">
         <div className="page-header">
           <div>
             <h1 className="page-title">
-            <span className="ui-title-icon material-symbols-rounded" aria-hidden="true">
-              {config.icon}
+            <span className="ui-title-icon movement-title-icon" aria-hidden="true">
+              {MOVEMENT_ICON_LABELS[tipo] || '•'}
             </span>
             {config.title}
           </h1>
@@ -600,7 +606,7 @@ export default function MovimentiForm() {
             </div>
 
             <button className={`btn ${config.btnClass} btn-lg w-full`} onClick={handleSubmit} style={{ marginTop: 8 }}>
-              {config.icon} {config.btnLabel}
+              <span className="movement-btn-icon" aria-hidden="true">{MOVEMENT_ICON_LABELS[tipo] || '•'}</span> {config.btnLabel}
             </button>
           </div>
         </div>
@@ -699,7 +705,7 @@ export default function MovimentiForm() {
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
               <div className={`confirm-icon ${tipo === 'uscita' ? 'danger' : 'warning'}`}>
-                {config.icon}
+                {MOVEMENT_ICON_LABELS[tipo] || '•'}
               </div>
 
               <div

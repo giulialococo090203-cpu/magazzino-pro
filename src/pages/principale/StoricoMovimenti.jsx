@@ -13,6 +13,7 @@ import { hasPermission, normalizeRole } from '../../data/permissions';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Icon from '../../components/Icon';
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -641,7 +642,7 @@ export default function StoricoMovimenti() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">assignment</span> Storico Movimenti</h1>
+          <h1 className="page-title"><Icon name="assignment" className="ui-inline-icon" aria-hidden="true" /> Storico Movimenti</h1>
           <p className="page-subtitle">{movements.length} movimenti trovati</p>
         </div>
 
@@ -653,7 +654,7 @@ export default function StoricoMovimenti() {
                 onClick={exportExcel}
                 disabled={movements.length === 0}
               >
-                <span className="ui-inline-icon material-symbols-rounded">analytics</span> Excel
+                <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Excel
               </button>
 
               <button
@@ -669,7 +670,7 @@ export default function StoricoMovimenti() {
                 onClick={exportPDF}
                 disabled={movements.length === 0}
               >
-                <span className="ui-inline-icon material-symbols-rounded">upload_file</span> PDF
+                <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> PDF
               </button>
 
               <button
@@ -696,7 +697,7 @@ export default function StoricoMovimenti() {
               onClick={() => setConfirmEmptyHistory(true)}
               disabled={emptyingHistory}
             >
-              <span className="ui-inline-icon material-symbols-rounded">delete</span> Svuota storico
+              <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Svuota storico
             </button>
           )}
         </div>
@@ -719,7 +720,7 @@ export default function StoricoMovimenti() {
         >
           <div className="card-body" style={{ padding: 14 }}>
             <div className="text-sm" style={{ color: 'var(--success-700)', fontWeight: 800 }}>
-              <span className="ui-inline-icon material-symbols-rounded">check_circle</span> Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}.
+              <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /> Storico svuotato. Fatture eliminate: {emptyHistoryResult.invoicesDeleted}.
               File eliminati: {emptyHistoryResult.filesDeleted}.
             </div>
 
@@ -735,7 +736,7 @@ export default function StoricoMovimenti() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri di Ricerca</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Filtri di Ricerca</h3>
 
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
@@ -897,7 +898,7 @@ export default function StoricoMovimenti() {
               <tr>
                 <td colSpan="12" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">assignment</span></div>
+                    <div className="empty-state-icon"><Icon name="assignment" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun movimento trovato</div>
                     <div className="empty-state-text">Prova a modificare i filtri di ricerca</div>
                   </div>
@@ -1024,7 +1025,7 @@ export default function StoricoMovimenti() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Questa operazione eliminerà <strong>tutti i movimenti</strong>, i record delle

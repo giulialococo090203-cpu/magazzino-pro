@@ -13,6 +13,7 @@ import {
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Icon from '../../components/Icon';
 
 function formatStatus(status) {
   const labels = {
@@ -387,7 +388,7 @@ export default function Inventario() {
           style={{ flex: 1, maxWidth: 450, position: 'relative' }}
           ref={searchWrapRef}
         >
-          <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
+          <span className="search-bar-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></span>
           <input
             type="text"
             className="form-control"
@@ -499,7 +500,7 @@ export default function Inventario() {
                   style={{ padding: 40 }}
                 >
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+                    <div className="empty-state-icon"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun materiale trovato</div>
                     <div className="empty-state-text">Prova a modificare i filtri di ricerca</div>
                   </div>
@@ -662,7 +663,7 @@ export default function Inventario() {
               )}
 
               <h4 className="section-title" style={{ marginTop: 16 }}>
-                <span className="ui-section-icon material-symbols-rounded">assignment</span>Ultimi Movimenti
+                <Icon name="assignment" className="ui-section-icon" aria-hidden="true" />Ultimi Movimenti
               </h4>
 
               {materialMovements.length === 0 ? (

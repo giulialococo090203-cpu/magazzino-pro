@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { priceHistoryStore } from '../../data/store';
+import Icon from '../../components/Icon';
 
 function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('it-IT', {
@@ -232,7 +233,7 @@ export default function StoricoPrezzi() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">trending_up</span>Storico Prezzi</h1>
+          <h1 className="page-title"><Icon name="trending_up" className="ui-title-icon" aria-hidden="true" />Storico Prezzi</h1>
           <p className="page-subtitle">
             Elenco compatto dei prezzi registrati da fatture e inserimenti manuali.
           </p>
@@ -249,7 +250,7 @@ export default function StoricoPrezzi() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">assignment</span></div>
+          <div className="kpi-icon blue"><Icon name="assignment" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Righe</div>
             <div className="kpi-value">{totals.rows}</div>
@@ -258,7 +259,7 @@ export default function StoricoPrezzi() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+          <div className="kpi-icon green"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali</div>
             <div className="kpi-value">{totals.materials}</div>
@@ -267,7 +268,7 @@ export default function StoricoPrezzi() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple"><span className="ui-inline-icon material-symbols-rounded">factory</span></div>
+          <div className="kpi-icon purple"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Fornitori</div>
             <div className="kpi-value">{totals.suppliers}</div>
@@ -276,7 +277,7 @@ export default function StoricoPrezzi() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">trending_up</span></div>
+          <div className="kpi-icon yellow"><Icon name="trending_up" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Aumenti</div>
             <div className="kpi-value">{totals.increases}</div>
@@ -287,7 +288,7 @@ export default function StoricoPrezzi() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Filtri</h3>
         </div>
 
         <div className="card-body">
@@ -358,7 +359,7 @@ export default function StoricoPrezzi() {
                 onClick={deleteSelectedRows}
                 disabled={selectedVisibleIds.length === 0 || deleting}
               >
-                {deleting ? 'Eliminazione...' : (<><span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate</>)}
+                {deleting ? 'Eliminazione...' : (<><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Elimina selezionate</>)}
               </button>
             </div>
           </div>
@@ -403,7 +404,7 @@ export default function StoricoPrezzi() {
               <tr>
                 <td colSpan="13" style={{ padding: 34 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">trending_up</span></div>
+                    <div className="empty-state-icon"><Icon name="trending_up" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessuno storico disponibile</div>
                     <div className="empty-state-text">
                       Importa una fattura o fai un inserimento manuale con prezzo netto.
@@ -432,7 +433,7 @@ export default function StoricoPrezzi() {
                         disabled={deleting}
                         title="Elimina riga"
                       >
-                        <span className="ui-inline-icon material-symbols-rounded">delete</span>
+                        <Icon name="delete" className="ui-inline-icon" aria-hidden="true" />
                       </button>
                     </td>
                     <td style={{ whiteSpace: 'nowrap' }}>{formatDate(row.date || row.createdAt)}</td>

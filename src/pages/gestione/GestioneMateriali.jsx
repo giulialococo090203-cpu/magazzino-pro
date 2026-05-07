@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { materialStore, categoryStore, unitStore, adminLogStore, movementStore } from '../../data/store';
 import { useAuth } from '../../App';
+import Icon from '../../components/Icon';
 
 const EMPTY_FORM = {
   code: '', description: '', brand: '', category: '', quantity: '',
@@ -212,18 +213,18 @@ export default function GestioneMateriali() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">construction</span>Gestione Materiali</h1>
+          <h1 className="page-title"><Icon name="construction" className="ui-title-icon" aria-hidden="true" />Gestione Materiali</h1>
           <p className="page-subtitle">Anagrafica completa dei materiali — {materials.length} registrati</p>
         </div>
         <div className="btn-group">
-          <button className="btn btn-secondary text-danger" onClick={() => setConfirmEmpty(true)}><span className="ui-inline-icon material-symbols-rounded">delete</span> Svuota Anagrafica</button>
+          <button className="btn btn-secondary text-danger" onClick={() => setConfirmEmpty(true)}><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Svuota Anagrafica</button>
           <button className="btn btn-primary" onClick={openNew}>+ Nuovo Materiale</button>
         </div>
       </div>
 
       <div className="filters-row" style={{ marginBottom: 16 }}>
         <div className="search-bar" style={{ flex: 1, maxWidth: 400 }}>
-          <span className="search-bar-icon"><span className="ui-inline-icon material-symbols-rounded">search</span></span>
+          <span className="search-bar-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></span>
           <input type="text" className="form-control" placeholder="Cerca per codice, descrizione, marca..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 40 }} />
         </div>
       </div>
@@ -262,7 +263,7 @@ export default function GestioneMateriali() {
                 onClick={() => setConfirmDeleteSelected(true)}
                 disabled={selectedVisibleIds.length === 0 || deletingSelected}
               >
-                <span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionati
+                <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Elimina selezionati
               </button>
             </div>
           </div>
@@ -320,8 +321,8 @@ export default function GestioneMateriali() {
                 </td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-sm btn-ghost" onClick={() => openEdit(m)}><span className="ui-inline-icon material-symbols-rounded">edit_square</span></button>
-                    <button className="btn btn-sm btn-ghost text-danger" onClick={() => setConfirmDelete(m)}><span className="ui-inline-icon material-symbols-rounded">delete</span></button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => openEdit(m)}><Icon name="edit_square" className="ui-inline-icon" aria-hidden="true" /></button>
+                    <button className="btn btn-sm btn-ghost text-danger" onClick={() => setConfirmDelete(m)}><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></button>
                   </div>
                 </td>
               </tr>
@@ -421,7 +422,7 @@ export default function GestioneMateriali() {
               <button className="modal-close" onClick={() => setConfirmDelete(null)}>✕</button>
             </div>
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
               <p className="confirm-message">Eliminare il materiale <strong>{confirmDelete.code} — {confirmDelete.description}</strong>?<br />Questa azione non può essere annullata.</p>
             </div>
             <div className="modal-footer">
@@ -441,7 +442,7 @@ export default function GestioneMateriali() {
               <button className="modal-close" onClick={() => setConfirmDeleteSelected(false)}>✕</button>
             </div>
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
               <p className="confirm-message">
                 Vuoi eliminare <strong>{selectedVisibleIds.length}</strong> materiali selezionati?<br />
                 <br />

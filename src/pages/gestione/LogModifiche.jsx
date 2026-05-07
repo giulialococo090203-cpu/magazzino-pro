@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalizeRole } from '../../data/permissions';
+import Icon from '../../components/Icon';
 
 function isDatore(user) {
   return normalizeRole(user?.role) === 'datore';
@@ -45,13 +46,13 @@ export default function LogModifiche() {
   const getEntityIcon = (entity) => {
     switch (entity) {
       case 'categoria':
-        return <span className="ui-inline-icon material-symbols-rounded">sell</span>;
+        return <Icon name="sell" className="ui-inline-icon" aria-hidden="true" />;
       case 'materiale':
         return '🔧';
       case 'utente':
-        return <span className="ui-inline-icon material-symbols-rounded">manage_accounts</span>;
+        return <Icon name="manage_accounts" className="ui-inline-icon" aria-hidden="true" />;
       case 'fattura':
-        return <span className="ui-inline-icon material-symbols-rounded">upload_file</span>;
+        return <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />;
       default:
         return '📝';
     }
@@ -92,7 +93,7 @@ export default function LogModifiche() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadLogs} disabled={loading || deletingAll}>
-            <span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna
+            <Icon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna
           </button>
 
           {canDeleteAll && logs.length > 0 && (
@@ -101,7 +102,7 @@ export default function LogModifiche() {
               onClick={() => setShowConfirmDeleteAll(true)}
               disabled={loading || deletingAll}
             >
-              <span className="ui-inline-icon material-symbols-rounded">delete</span> Svuota storico
+              <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Svuota storico
             </button>
           )}
         </div>
@@ -216,7 +217,7 @@ export default function LogModifiche() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Vuoi eliminare definitivamente tutti i log amministrativi?

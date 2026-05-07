@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { reorderProposalStore } from '../../data/store';
+import Icon from '../../components/Icon';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -220,7 +221,7 @@ export default function ArchivioProposteOrdine() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">request_quote</span>Proposte Ordine</h1>
+          <h1 className="page-title"><Icon name="request_quote" className="ui-title-icon" aria-hidden="true" />Proposte Ordine</h1>
           <p className="page-subtitle">
             Archivio delle proposte generate dal riordino automatico, divise per fornitore.
           </p>
@@ -237,7 +238,7 @@ export default function ArchivioProposteOrdine() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">request_quote</span></div>
+          <div className="kpi-icon blue"><Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Proposte</div>
             <div className="kpi-value">{totals.proposals}</div>
@@ -255,7 +256,7 @@ export default function ArchivioProposteOrdine() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+          <div className="kpi-icon green"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Righe</div>
             <div className="kpi-value">{totals.rows}</div>
@@ -275,7 +276,7 @@ export default function ArchivioProposteOrdine() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Filtri</h3>
         </div>
 
         <div className="card-body">
@@ -338,7 +339,7 @@ export default function ArchivioProposteOrdine() {
                 onClick={deleteSelectedProposals}
                 disabled={selectedVisibleIds.length === 0 || savingId === 'delete-selected'}
               >
-                {savingId === 'delete-selected' ? 'Eliminazione...' : (<><span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate</>)}
+                {savingId === 'delete-selected' ? 'Eliminazione...' : (<><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Elimina selezionate</>)}
               </button>
             </div>
           </div>
@@ -379,7 +380,7 @@ export default function ArchivioProposteOrdine() {
               <tr>
                 <td colSpan="9" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">request_quote</span></div>
+                    <div className="empty-state-icon"><Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessuna proposta trovata</div>
                     <div className="empty-state-text">
                       Vai nel Riordino Automatico e usa “Salva proposta”.
@@ -443,7 +444,7 @@ export default function ArchivioProposteOrdine() {
                         onClick={() => deleteProposal(proposal)}
                         disabled={savingId === proposal.id}
                       >
-                        <span className="ui-inline-icon material-symbols-rounded">delete</span>
+                        <Icon name="delete" className="ui-inline-icon" aria-hidden="true" />
                       </button>
                     </div>
                   </td>

@@ -14,6 +14,7 @@ import {
   Filler
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import Icon from '../../components/Icon';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -317,14 +318,14 @@ export default function DashboardControllo() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">trending_up</span> Dashboard Controllo</h1>
+          <h1 className="page-title"><Icon name="trending_up" className="ui-inline-icon" aria-hidden="true" /> Dashboard Controllo</h1>
           <p className="page-subtitle">Monitoraggio avanzato e analisi del magazzino</p>
         </div>
       </div>
 
       <div className="kpi-grid">
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">inventory_2</span></div>
+          <div className="kpi-icon blue"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Totale Materiali</div>
             <div className="kpi-value">{materials.length}</div>
@@ -332,7 +333,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon yellow"><span className="ui-inline-icon material-symbols-rounded">warning</span></div>
+          <div className="kpi-icon yellow"><Icon name="warning" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Sotto Soglia</div>
             <div className="kpi-value">{belowThreshold.length}</div>
@@ -340,7 +341,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon red"><span className="ui-inline-icon material-symbols-rounded">block</span></div>
+          <div className="kpi-icon red"><Icon name="block" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Esauriti</div>
             <div className="kpi-value">{exhausted.length}</div>
@@ -348,7 +349,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple"><span className="ui-inline-icon material-symbols-rounded">notifications</span></div>
+          <div className="kpi-icon purple"><Icon name="notifications" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Notifiche Attive</div>
             <div className="kpi-value">{notifications.length}</div>
@@ -600,7 +601,7 @@ export default function DashboardControllo() {
 
       <div className="charts-grid">
         <div className="card">
-          <div className="card-header"><h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">analytics</span> Entrate vs Uscite (30 giorni)</h3></div>
+          <div className="card-header"><h3 className="card-title"><Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Entrate vs Uscite (30 giorni)</h3></div>
           <div className="chart-container">
             {entriesVsExits.length > 0 ? (
               <Bar data={evChartData} options={barOptions} />
@@ -611,7 +612,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="card">
-          <div className="card-header"><h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">sell</span> Distribuzione per Categoria</h3></div>
+          <div className="card-header"><h3 className="card-title"><Icon name="sell" className="ui-inline-icon" aria-hidden="true" /> Distribuzione per Categoria</h3></div>
           <div className="chart-container">
             {categoryChartData.labels.length > 0 ? (
               <Doughnut data={categoryChartData} options={doughnutOptions} />
@@ -622,7 +623,7 @@ export default function DashboardControllo() {
         </div>
 
         <div className="card">
-          <div className="card-header"><h3 className="card-title"><span className="ui-section-icon material-symbols-rounded">local_fire_department</span>Materiali Più Movimentati</h3></div>
+          <div className="card-header"><h3 className="card-title"><Icon name="local_fire_department" className="ui-section-icon" aria-hidden="true" />Materiali Più Movimentati</h3></div>
           <div className="chart-container">
             {mostMoved.length > 0 ? (
               <Bar data={mostMovedData} options={{ ...barOptions, indexAxis: 'y' }} />
@@ -633,13 +634,13 @@ export default function DashboardControllo() {
         </div>
 
         <div className="card">
-          <div className="card-header"><h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">warning</span> Materiali Sotto Soglia</h3></div>
+          <div className="card-header"><h3 className="card-title"><Icon name="warning" className="ui-inline-icon" aria-hidden="true" /> Materiali Sotto Soglia</h3></div>
           <div className="chart-container">
             {belowThreshold.length > 0 ? (
               <Bar data={belowData} options={barOptions} />
             ) : (
               <div className="empty-state" style={{ padding: 40 }}>
-                <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
+                <div className="empty-state-icon"><Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /></div>
                 <div className="empty-state-title">Tutto in ordine</div>
               </div>
             )}

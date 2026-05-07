@@ -1,3 +1,4 @@
+import Icon from '../../components/Icon';
 // ============================================================
 // FORNITORI.JSX - Monitoraggio fornitori da fatture e inserimenti
 // ============================================================
@@ -318,7 +319,7 @@ export default function Fornitori() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">factory</span>Fornitori</h1>
+          <h1 className="page-title"><Icon name="factory" className="ui-title-icon" aria-hidden="true" />Fornitori</h1>
           <p className="page-subtitle">
             Fatture, inserimenti manuali, movimenti e materiali raggruppati per fornitore.
           </p>
@@ -326,10 +327,10 @@ export default function Fornitori() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadData} disabled={loading}>
-            {loading ? 'Aggiorno...' : (<><span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna</>)}
+            {loading ? 'Aggiorno...' : (<><Icon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna</>)}
           </button>
           <button className="btn btn-primary" onClick={exportExcel} disabled={loading}>
-            <span className="ui-inline-icon material-symbols-rounded">analytics</span> Esporta Excel
+            <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Esporta Excel
           </button>
         </div>
       </div>
@@ -338,7 +339,7 @@ export default function Fornitori() {
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">factory</span></div>
+          <div className="kpi-icon blue"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Fornitori</div>
             <div className="kpi-value">{totals.suppliers}</div>
@@ -347,7 +348,7 @@ export default function Fornitori() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple"><span className="ui-inline-icon material-symbols-rounded">upload_file</span></div>
+          <div className="kpi-icon purple"><Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Fatture</div>
             <div className="kpi-value">{totals.invoices}</div>
@@ -365,7 +366,7 @@ export default function Fornitori() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">euro</span></div>
+          <div className="kpi-icon green"><Icon name="euro" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Valore stimato</div>
             <div className="kpi-value">{formatCurrency(totals.value)}</div>
@@ -376,7 +377,7 @@ export default function Fornitori() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Cerca fornitore, fattura o materiale</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Cerca fornitore, fattura o materiale</h3>
         </div>
         <div className="card-body">
           <input
@@ -414,7 +415,7 @@ export default function Fornitori() {
               <tr>
                 <td colSpan="8" style={{ padding: 36 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">factory</span></div>
+                    <div className="empty-state-icon"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun fornitore trovato</div>
                     <div className="empty-state-text">
                       Importa fatture o registra carichi manuali con fornitore.
@@ -481,7 +482,7 @@ export default function Fornitori() {
                 </div>
               </div>
 
-              <h4 style={{ marginBottom: 10 }}><span className="ui-inline-icon material-symbols-rounded">upload_file</span> Fatture collegate</h4>
+              <h4 style={{ marginBottom: 10 }}><Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> Fatture collegate</h4>
               <div className="table-container" style={{ marginBottom: 24 }}>
                 <table className="data-table">
                   <thead>
@@ -515,7 +516,7 @@ export default function Fornitori() {
                 </table>
               </div>
 
-              <h4 style={{ marginBottom: 10 }}><span className="ui-inline-icon material-symbols-rounded">inventory_2</span> Movimenti / inserimenti</h4>
+              <h4 style={{ marginBottom: 10 }}><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /> Movimenti / inserimenti</h4>
               <div className="table-container">
                 <table className="data-table">
                   <thead>

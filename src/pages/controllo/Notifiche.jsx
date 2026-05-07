@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { notificationStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { hasPermission } from '../../data/permissions';
+import Icon from '../../components/Icon';
 
 function timeAgo(iso) {
   if (!iso) return '';
@@ -172,7 +173,7 @@ export default function Notifiche() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">notifications</span> Centro Notifiche</h1>
+          <h1 className="page-title"><Icon name="notifications" className="ui-inline-icon" aria-hidden="true" /> Centro Notifiche</h1>
           <p className="page-subtitle">
             {unreadCount} notifiche non lette su {notifications.length} totali
           </p>
@@ -180,7 +181,7 @@ export default function Notifiche() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={refresh} disabled={loading}>
-            <span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna
+            <Icon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna
           </button>
 
           {unreadCount > 0 && (
@@ -209,7 +210,7 @@ export default function Notifiche() {
               onClick={() => setConfirmDeleteAll(true)}
               disabled={actionLoading === 'delete-all'}
             >
-              <span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina tutte
+              <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Elimina tutte
             </button>
           )}
         </div>
@@ -252,7 +253,7 @@ export default function Notifiche() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon"><span className="ui-inline-icon material-symbols-rounded">notifications</span></div>
+              <div className="empty-state-icon"><Icon name="notifications" className="ui-inline-icon" aria-hidden="true" /></div>
               <div className="empty-state-title">Nessuna notifica</div>
               <div className="empty-state-text">
                 {filter === 'unread'
@@ -375,7 +376,7 @@ export default function Notifiche() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
               <p className="confirm-message">
                 Vuoi eliminare definitivamente tutte le notifiche?
                 <br />

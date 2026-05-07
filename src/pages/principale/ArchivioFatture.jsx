@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { invoiceImportStore, adminLogStore } from '../../data/store';
 import { useAuth } from '../../App';
 import { hasPermission, normalizeRole } from '../../data/permissions';
+import Icon from '../../components/Icon';
 
 function formatDateTime(iso) {
   if (!iso) return '—';
@@ -342,7 +343,7 @@ export default function ArchivioFatture() {
       <div className="animate-slideUp">
         <div className="page-header">
           <div>
-            <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">folder_open</span>Archivio Fatture</h1>
+            <h1 className="page-title"><Icon name="folder_open" className="ui-title-icon" aria-hidden="true" />Archivio Fatture</h1>
             <p className="page-subtitle">Documenti importati e salvati su Supabase Storage</p>
           </div>
         </div>
@@ -366,7 +367,7 @@ export default function ArchivioFatture() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-title-icon material-symbols-rounded">folder_open</span>Archivio Fatture</h1>
+          <h1 className="page-title"><Icon name="folder_open" className="ui-title-icon" aria-hidden="true" />Archivio Fatture</h1>
           <p className="page-subtitle">
             {filteredInvoices.length} documenti visualizzati su {invoices.length} caricati
           </p>
@@ -374,14 +375,14 @@ export default function ArchivioFatture() {
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadInvoices} disabled={loading}>
-            <span className="ui-inline-icon material-symbols-rounded">sync</span> Aggiorna
+            <Icon name="sync" className="ui-inline-icon" aria-hidden="true" /> Aggiorna
           </button>
         </div>
       </div>
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <div className="kpi-card">
-          <div className="kpi-icon blue"><span className="ui-inline-icon material-symbols-rounded">upload_file</span></div>
+          <div className="kpi-icon blue"><Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Documenti</div>
             <div className="kpi-value">{totals.files}</div>
@@ -399,7 +400,7 @@ export default function ArchivioFatture() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green"><span className="ui-inline-icon material-symbols-rounded">check_circle</span></div>
+          <div className="kpi-icon green"><Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali Creati</div>
             <div className="kpi-value">{totals.created}</div>
@@ -408,7 +409,7 @@ export default function ArchivioFatture() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon teal"><span className="ui-inline-icon material-symbols-rounded">sync</span></div>
+          <div className="kpi-icon teal"><Icon name="sync" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Materiali Aggiornati</div>
             <div className="kpi-value">{totals.updated}</div>
@@ -419,7 +420,7 @@ export default function ArchivioFatture() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><span className="ui-inline-icon material-symbols-rounded">search</span> Filtri archivio</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Filtri archivio</h3>
 
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
@@ -517,7 +518,7 @@ export default function ArchivioFatture() {
                 onClick={() => setConfirmDeleteSelected(true)}
                 disabled={selectedVisibleIds.length === 0 || actionLoading === 'delete-selected'}
               >
-                <span className="ui-inline-icon material-symbols-rounded">delete</span> Elimina selezionate
+                <Icon name="delete" className="ui-inline-icon" aria-hidden="true" /> Elimina selezionate
               </button>
             </div>
           </div>
@@ -722,7 +723,7 @@ export default function ArchivioFatture() {
                               disabled={actionLoading === `delete-${invoice.id}`}
                               title="Elimina file archiviato"
                             >
-                              <span className="ui-inline-icon material-symbols-rounded">delete</span>
+                              <Icon name="delete" className="ui-inline-icon" aria-hidden="true" />
                             </button>
                           )}
                         </div>
@@ -882,7 +883,7 @@ export default function ArchivioFatture() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Vuoi eliminare dall’archivio il file{' '}
@@ -923,7 +924,7 @@ export default function ArchivioFatture() {
             </div>
 
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger"><span className="ui-inline-icon material-symbols-rounded">delete</span></div>
+              <div className="confirm-icon danger"><Icon name="delete" className="ui-inline-icon" aria-hidden="true" /></div>
 
               <p className="confirm-message">
                 Vuoi eliminare definitivamente <strong>{selectedVisibleIds.length}</strong> documenti selezionati?

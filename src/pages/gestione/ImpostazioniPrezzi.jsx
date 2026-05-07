@@ -9,6 +9,7 @@ import {
   normalizePriceSettings,
   savePriceSettings,
 } from '../../utils/priceSettings';
+import Icon from '../../components/Icon';
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('it-IT', {
@@ -157,7 +158,7 @@ export default function ImpostazioniPrezzi() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><span className="ui-inline-icon material-symbols-rounded">euro</span> Impostazioni Prezzi</h1>
+          <h1 className="page-title"><Icon name="euro" className="ui-inline-icon" aria-hidden="true" /> Impostazioni Prezzi</h1>
           <p className="page-subtitle">
             Modifica formule, IVA e nome del prezzo riservato a installatori/ruoli autorizzati
           </p>
@@ -182,7 +183,7 @@ export default function ImpostazioniPrezzi() {
             fontWeight: 700,
           }}
         >
-          <span className="ui-inline-icon material-symbols-rounded">check_circle</span> {savedMessage}
+          <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" /> {savedMessage}
         </div>
       )}
 
