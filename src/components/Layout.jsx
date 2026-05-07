@@ -8,52 +8,11 @@ import {
 } from '../data/permissions';
 import { useState, useEffect } from 'react';
 
-const ICON_PATHS = {
-  package: 'M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z M3.3 7 12 12l8.7-5 M12 22V12',
-  shoppingCart: 'M6 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H8.2a2 2 0 0 1-2-1.6L4 3H2 M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2 M18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2',
-  fileText: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z M14 2v6h6 M8 13h8 M8 17h8 M8 9h2',
-  clipboardCheck: 'M9 5h6 M9 3h6a2 2 0 0 1 2 2v1h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1V5a2 2 0 0 1 2-2Z M8 14l2.5 2.5L16 11',
-  arrowDown: 'M12 3v12 M7 10l5 5 5-5 M5 21h14',
-  arrowUp: 'M12 21V9 M7 14l5-5 5 5 M5 3h14',
-  refresh: 'M21 12a9 9 0 0 1-15.5 6.2L3 16 M3 21v-5h5 M3 12A9 9 0 0 1 18.5 5.8L21 8 M21 3v5h-5',
-  pencil: 'M12 20h9 M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z',
-  calendar: 'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
-  archive: 'M3 7h18 M5 7v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7 M3 3h18v4H3Z M10 12h4',
-  tags: 'M20 10l-8 8-8-8V4h6Z M7 7h.01 M14 4l6 6',
-  sliders: 'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M2 14h4 M10 8h4 M18 16h4',
-  bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8 M10 20a2 2 0 0 0 4 0',
-  chart: 'M3 3v18h18 M7 16v-5 M12 16V7 M17 16v-9',
-  receipt: 'M6 2h12v20l-3-2-3 2-3-2-3 2Z M9 7h6 M9 11h6 M9 15h4',
-  trending: 'M3 17l6-6 4 4 7-8 M14 7h6v6',
-  euro: 'M17 5.5A7 7 0 1 0 17 18 M4 10h10 M4 14h9',
-  wrench: 'M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-3 3-3-3Z',
-  users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
-  backup: 'M4 4h14l2 2v14H4Z M8 4v6h8V4 M8 20v-6h8v6',
-  log: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z M8 7h8 M8 11h8 M8 15h5',
-  factory: 'M3 21h18V9l-6 4V9l-6 4V5H3Z M7 21v-4 M12 21v-4 M17 21v-4',
-  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6 M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3.5-.2-.1a1.7 1.7 0 0 0-1.9.3l-.2.1-4 0-.2-.1a1.7 1.7 0 0 0-1.9-.3l-.2.1-2-3.5.1-.1a1.7 1.7 0 0 0 .3-1.9l-.1-.2-2-3.5.1-.2a1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3.5.2.1a1.7 1.7 0 0 0 1.9-.3l.2-.1h4l.2.1a1.7 1.7 0 0 0 1.9.3l.2-.1 2 3.5-.1.1a1.7 1.7 0 0 0-.3 1.9l.1.2 2 3.5Z',
-  boxes: 'M7 8l5-3 5 3-5 3Z M7 8v6l5 3 5-3V8 M2 14l5-3 5 3-5 3Z M2 14v5l5 3 5-3v-5 M12 14l5-3 5 3-5 3Z M12 14v5l5 3 5-3v-5',
-};
-
 function SidebarIcon({ name, className = '' }) {
-  const path = ICON_PATHS[name] || ICON_PATHS.fileText;
-
   return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.05"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d={path} />
-    </svg>
+    <span className={`material-symbols-rounded ${className}`} aria-hidden="true">
+      {name || 'radio_button_unchecked'}
+    </span>
   );
 }
 
@@ -71,72 +30,72 @@ function getRoleLabel(role) {
 const NAV_SECTIONS = [
   {
     title: 'Magazzino',
-    icon: 'package',
+    icon: 'inventory_2',
     items: [
       {
         path: '/inventario',
         label: 'Giacenza',
-        icon: 'package',
+        icon: 'inventory_2',
         permission: 'canViewInventory',
       },
       {
         path: '/movimento/entrata',
         label: 'Carico Materiale',
-        icon: 'arrowDown',
+        icon: 'move_to_inbox',
         permission: 'canMoveIn',
       },
       {
         path: '/movimento/uscita',
         label: 'Scarica Materiale',
-        icon: 'arrowUp',
+        icon: 'outbox',
         permission: 'canMoveOut',
       },
       {
         path: '/movimento/reintegro',
         label: 'Reintegra Materiale',
-        icon: 'refresh',
+        icon: 'sync',
         permission: 'canReintegrate',
       },
       {
         path: '/movimento/rettifica',
         label: 'Rettifica Magazzino',
-        icon: 'pencil',
+        icon: 'edit_square',
         permission: 'canRectify',
       },
       {
         path: '/storico',
         label: 'Storico Movimenti',
-        icon: 'calendar',
+        icon: 'calendar_month',
         permission: 'canViewHistory',
       },
     ],
   },
   {
     title: 'Acquisti e Fatture',
-    icon: 'receipt',
+    icon: 'receipt_long',
     items: [
       {
         path: '/riordino',
         label: 'Riordino Automatico',
-        icon: 'shoppingCart',
+        icon: 'shopping_cart',
         permission: 'canManageReorderProposals',
       },
       {
         path: '/proposte-ordine',
         label: 'Proposte Ordine',
-        icon: 'clipboardCheck',
+        icon: 'request_quote',
         permission: 'canManageReorderProposals',
       },
       {
         path: '/importa',
         label: 'Importa / Inserisci',
-        icon: 'fileText',
+        icon: 'upload_file',
         permission: 'canImportInvoices',
       },
       {
         path: '/fatture',
         label: 'Archivio Fatture',
-        icon: 'archive',
+        icon: 'folder_open',
         permission: 'canImportInvoices',
       },
       {
@@ -149,12 +108,12 @@ const NAV_SECTIONS = [
   },
   {
     title: 'Controllo',
-    icon: 'boxes',
+    icon: 'fact_check',
     items: [
       {
         path: '/inventario-fisico',
         label: 'Inventario Fisico',
-        icon: 'boxes',
+        icon: 'fact_check',
         permission: 'canPhysicalInventory',
       },
       {
@@ -166,7 +125,7 @@ const NAV_SECTIONS = [
       {
         path: '/controllo/notifiche',
         label: 'Notifiche',
-        icon: 'bell',
+        icon: 'notifications',
         permission: 'canViewNotifications',
         badge: true,
       },
@@ -174,24 +133,24 @@ const NAV_SECTIONS = [
   },
   {
     title: 'Analisi',
-    icon: 'chart',
+    icon: 'analytics',
     items: [
       {
         path: '/',
         label: 'Dashboard',
-        icon: 'chart',
+        icon: 'analytics',
         permission: 'canViewDashboard',
       },
       {
         path: '/gestione/rendicontazione',
         label: 'Rendicontazione',
-        icon: 'receipt',
+        icon: 'receipt_long',
         permission: 'canManageMaterials',
       },
       {
         path: '/gestione/storico-prezzi',
         label: 'Storico Prezzi',
-        icon: 'trending',
+        icon: 'trending_up',
         permission: 'canManagePriceSettings',
       },
       {
@@ -209,19 +168,19 @@ const NAV_SECTIONS = [
       {
         path: '/gestione/materiali',
         label: 'Anagrafica Materiali',
-        icon: 'wrench',
+        icon: 'construction',
         permission: 'canManageMaterials',
       },
       {
         path: '/gestione/categorie',
         label: 'Categorie',
-        icon: 'tags',
+        icon: 'sell',
         permission: 'canManageCategories',
       },
       {
         path: '/gestione/utenti',
         label: 'Utenti',
-        icon: 'users',
+        icon: 'manage_accounts',
         permission: 'canManageUsers',
       },
       {
@@ -233,7 +192,7 @@ const NAV_SECTIONS = [
       {
         path: '/gestione/log',
         label: 'Registro modifiche',
-        icon: 'log',
+        icon: 'history_edu',
         permission: 'canViewAuditLog',
       },
     ],
