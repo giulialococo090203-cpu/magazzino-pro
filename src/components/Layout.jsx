@@ -353,10 +353,18 @@ export default function Layout({ children }) {
   }, [activeSectionTitle, location.pathname]);
 
   const toggleSection = (title) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
+    setOpenSections((prev) => {
+      const isCurrentlyOpen = !!prev[title];
+      const next = {};
+
+      visibleSections.forEach((navSection) => {
+        next[navSection.title] = false;
+      });
+
+      next[title] = !isCurrentlyOpen;
+
+      return next;
+    });
   };
 
   const handleGlobalSearchKeyDown = (e) => {
