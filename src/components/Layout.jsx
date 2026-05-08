@@ -285,6 +285,7 @@ export default function Layout({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 const [openSections, setOpenSections] = useState({});
+  const [mobileOpenSection, setMobileOpenSection] = useState(null);
 
   const canSeeNotifications = hasPermission(user, 'canViewNotifications');
 
@@ -363,6 +364,8 @@ const [openSections, setOpenSections] = useState({});
   const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
 
   useEffect(() => {
+    setMobileOpenSection(null);
+
     if (!activeSectionTitle) return;
 
     setOpenSections((prev) => {
@@ -467,39 +470,73 @@ return (
           </div>
         </div>
       </aside>
-
       {isMobile && (
-        <nav className="mobile-bottom-nav" aria-label="Navigazione mobile">
-          {visibleSections.map((navSection) => {
-            const sectionActive = navSection.items.some((item) =>
-              isActivePath(location.pathname, item.path)
-            );
+        <>
+          {mobileOpenSection && (
+            <div className="mobile-section-drawer">
+              <div className="mobile-section-drawer-header">
+                <span>{mobileOpenSection.title}</span>
+                <button type="button" onClick={() => setMobileOpenSection(null)} aria-label="Chiudi menu">
+                  ×
+                </button>
+              </div>
 
-            return (
-              <Link
-                key={navSection.title}
-                to={navSection.items[0]?.path || getDefaultRouteForUser(user)}
-                className={`mobile-bottom-nav-item ${sectionActive ? 'active' : ''}`}
-                title={navSection.title}
-                aria-label={navSection.title}
-              >
-                <span className="mobile-bottom-nav-icon">
-                  <SidebarIcon name={navSection.icon} />
-                </span>
-              </Link>
-            );
-          })}
+              <div className="mobile-section-drawer-items">
+                {mobileOpenSection.items.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`mobile-section-drawer-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
+                  >
+                    <span className="mobile-section-drawer-icon">
+                      <SidebarIcon name={item.icon} />
+                    </span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <button
-            type="button"
-            className="mobile-bottom-nav-item mobile-bottom-nav-logout"
-            onClick={logout}
-            title="Esci"
-            aria-label="Esci"
-          >
-            <span aria-hidden="true" className="logout-symbol">⏻</span>
-          </button>
-        </nav>
+          <nav className="mobile-bottom-nav" aria-label="Navigazione mobile">
+            {visibleSections.map((navSection) => {
+              const sectionActive = navSection.items.some((item) =>
+                isActivePath(location.pathname, item.path)
+              );
+
+              const isOpen = mobileOpenSection?.title === navSection.title;
+
+              return (
+                <button
+                  key={navSection.title}
+                  type="button"
+                  className={`mobile-bottom-nav-item ${sectionActive ? 'active' : ''} ${isOpen ? 'open' : ''}`}
+                  title={navSection.title}
+                  aria-label={navSection.title}
+                  onClick={() =>
+                    setMobileOpenSection((current) =>
+                      current?.title === navSection.title ? null : navSection
+                    )
+                  }
+                >
+                  <span className="mobile-bottom-nav-icon">
+                    <SidebarIcon name={navSection.icon} />
+                  </span>
+                </button>
+              );
+            })}
+
+            <button
+              type="button"
+              className="mobile-bottom-nav-item mobile-bottom-nav-logout"
+              onClick={logout}
+              title="Esci"
+              aria-label="Esci"
+            >
+              <span aria-hidden="true" className="logout-symbol">⏻</span>
+            </button>
+          </nav>
+        </>
       )}
 
       <div className="main-content">
