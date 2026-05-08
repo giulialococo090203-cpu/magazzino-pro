@@ -17510,3 +17510,134 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGIN - GLASS WOW BACKGROUND
+   Effetto vetro premium sullo sfondo desktop.
+   Mobile non toccato.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view,
+  body .login-desktop-view:focus-within {
+    position: relative !important;
+    isolation: isolate !important;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 106, 24, 0.24), transparent 28%),
+      radial-gradient(circle at 82% 76%, rgba(255, 106, 24, 0.13), transparent 34%),
+      radial-gradient(circle at 48% 112%, rgba(255,255,255,0.10), transparent 36%),
+      linear-gradient(135deg, #10151d 0%, #171d26 42%, #eee9e2 42%, #ddd5cc 100%) !important;
+  }
+
+  body .login-desktop-view::before,
+  body .login-desktop-view:focus-within::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: -3 !important;
+    background:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(255,106,24,0.045) 0 1px, transparent 1px 100%) !important;
+    background-size: 42px 42px, 42px 42px, 86px 86px !important;
+    opacity: 0.72 !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view::after,
+  body .login-desktop-view:focus-within::after {
+    content: '' !important;
+    position: absolute !important;
+    z-index: -2 !important;
+    inset: 0 !important;
+    background:
+      radial-gradient(circle at 18% 34%, rgba(255,255,255,0.18), transparent 17%),
+      radial-gradient(circle at 72% 64%, rgba(255,255,255,0.32), transparent 20%),
+      radial-gradient(circle at 92% 18%, rgba(255,106,24,0.10), transparent 22%),
+      linear-gradient(118deg, transparent 0 19%, rgba(255,255,255,0.10) 19% 30%, transparent 30% 100%),
+      linear-gradient(145deg, transparent 0 66%, rgba(255,106,24,0.08) 66% 74%, transparent 74%) !important;
+    filter: blur(0.2px) !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    position: relative !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255,255,255,0.78) !important;
+    box-shadow:
+      0 48px 120px rgba(15, 23, 42, 0.34),
+      0 24px 56px rgba(255, 106, 24, 0.13),
+      0 0 0 1px rgba(255,255,255,0.34) inset,
+      inset 0 1px 0 rgba(255,255,255,0.88) !important;
+  }
+
+  body .login-desktop-view .login-redesign-card::before,
+  body .login-desktop-view:focus-within .login-redesign-card::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 1px !important;
+    border-radius: 37px !important;
+    pointer-events: none !important;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.34), transparent 24%, transparent 74%, rgba(255,255,255,0.22)),
+      radial-gradient(circle at 76% 18%, rgba(255,255,255,0.22), transparent 18%) !important;
+    opacity: 0.62 !important;
+    z-index: 4 !important;
+    mix-blend-mode: screen !important;
+  }
+
+  body .login-desktop-view .login-redesign-card::after,
+  body .login-desktop-view:focus-within .login-redesign-card::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 560px !important;
+    height: 560px !important;
+    right: -250px !important;
+    bottom: -300px !important;
+    border-radius: 50% !important;
+    border: 72px solid rgba(255,106,24,0.075) !important;
+    box-shadow:
+      0 0 60px rgba(255,106,24,0.06),
+      inset 0 0 54px rgba(255,106,24,0.08) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand,
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    background:
+      radial-gradient(circle at 96% 10%, rgba(255,106,24,0.09), transparent 31%),
+      radial-gradient(circle at 100% 102%, rgba(255,106,24,0.065), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,250,246,0.84)) !important;
+    backdrop-filter: blur(18px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.12) !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::before,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::before {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.06)) !important;
+    border: 1px solid rgba(255,106,24,0.10) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.74),
+      0 18px 46px rgba(15,23,42,0.035) !important;
+  }
+
+  body .login-desktop-view .login-redesign-field input,
+  body .login-desktop-view:focus-within .login-redesign-field input {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,248,242,0.72)) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+}
+
