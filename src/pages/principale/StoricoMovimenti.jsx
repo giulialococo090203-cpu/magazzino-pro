@@ -13,6 +13,21 @@ import { hasPermission, normalizeRole } from '../../data/permissions';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+const PDF_COLORS = {
+  graphite: [17, 23, 34],
+  graphite2: [31, 41, 55],
+  orange: [255, 106, 24],
+  orangeDark: [217, 67, 8],
+  cream: [255, 249, 243],
+  cream2: [245, 238, 231],
+  border: [214, 220, 229],
+  text: [17, 24, 39],
+  muted: [102, 112, 133],
+  white: [255, 255, 255],
+};
+
+
 import Icon from '../../components/Icon';
 
 function formatDate(iso) {
@@ -498,8 +513,10 @@ export default function StoricoMovimenti() {
         overflow: 'linebreak',
       },
       headStyles: {
-        fillColor: [37, 99, 235],
-        textColor: 255,
+        fillColor: PDF_COLORS.graphite,
+        textColor: PDF_COLORS.white,
+        lineColor: PDF_COLORS.orange,
+        textColor: PDF_COLORS.white,
         fontStyle: 'bold',
       },
       alternateRowStyles: {
@@ -649,8 +666,10 @@ export default function StoricoMovimenti() {
           overflow: 'linebreak',
         },
         headStyles: {
-          fillColor: [37, 99, 235],
-          textColor: 255,
+          fillColor: PDF_COLORS.graphite,
+          textColor: PDF_COLORS.white,
+          lineColor: PDF_COLORS.orange,
+          textColor: PDF_COLORS.white,
           fontStyle: 'bold',
         },
         alternateRowStyles: {
