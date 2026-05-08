@@ -131,7 +131,7 @@ export default function Login({ onLogin }) {
       </main>
 
       {/* TELEFONO: SCHERMATA SEPARATA */}
-      <main className="mobile-login-view">
+      <main className="mobile-login-view mobile-login-stable-final">
         <section className="mobile-login-phone">
           <div className="mobile-login-top">
             <div className="workspace-logo-shell workspace-logo-shell-mobile"><img className="workspace-logo-img workspace-logo-img-mobile" src="/workspace-logo.png" alt="WorkSpace" /></div>
