@@ -15970,3 +15970,347 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGIN FINAL STABILITY + BACKGROUND
+   Blocca gli scatti su focus e rifinisce sfondo/card/form.
+   Solo desktop/tablet.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view,
+  body .login-desktop-view:focus,
+  body .login-desktop-view:focus-within,
+  body .login-redesign-page,
+  body .login-redesign-page:focus-within {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+    padding: clamp(18px, 3vw, 42px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+
+    background:
+      radial-gradient(circle at 18% 22%, rgba(255, 106, 24, 0.20), transparent 30%),
+      radial-gradient(circle at 78% 78%, rgba(255, 106, 24, 0.12), transparent 36%),
+      radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.06), transparent 38%),
+      linear-gradient(135deg, #10151d 0%, #171d26 46%, #272b32 100%) !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  body .login-desktop-view::before,
+  body .login-redesign-page::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(255,106,24,0.045) 0 1px, transparent 1px 100%) !important;
+    background-size: 44px 44px, 44px 44px, 92px 92px !important;
+    opacity: 0.74 !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    width: min(92vw, 1040px) !important;
+    max-width: 1040px !important;
+    min-height: 462px !important;
+    height: 462px !important;
+    max-height: calc(100dvh - 56px) !important;
+
+    display: grid !important;
+    grid-template-columns: 1fr 0.92fr !important;
+    grid-template-rows: 1fr !important;
+
+    border-radius: 30px !important;
+    overflow: hidden !important;
+    background: rgba(255,255,255,0.96) !important;
+    border: 1px solid rgba(255,255,255,0.72) !important;
+
+    box-shadow:
+      0 34px 90px rgba(0, 0, 0, 0.40),
+      0 0 0 1px rgba(255,106,24,0.08),
+      0 0 54px rgba(255,106,24,0.10) !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    height: 462px !important;
+    min-height: 462px !important;
+    max-height: 462px !important;
+    padding: 54px 58px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.16), transparent 23%),
+      radial-gradient(circle at 0% 100%, rgba(255,255,255,0.13), transparent 36%),
+      linear-gradient(135deg, #ff8629 0%, #ff6818 45%, #bd5730 72%, #2b3038 100%) !important;
+
+    overflow: hidden !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand-content,
+  body .login-desktop-view:focus-within .login-redesign-brand-content {
+    width: 100% !important;
+    max-width: 420px !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .workspace-logo-shell-big {
+    width: 86px !important;
+    height: 86px !important;
+    min-width: 86px !important;
+    min-height: 86px !important;
+    max-width: 86px !important;
+    max-height: 86px !important;
+    flex: 0 0 86px !important;
+
+    margin: 0 0 22px !important;
+    border-radius: 999px !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .workspace-logo-img-big,
+  body .login-desktop-view:focus-within .workspace-logo-img-big {
+    width: 86px !important;
+    height: 86px !important;
+    min-width: 86px !important;
+    min-height: 86px !important;
+    max-width: 86px !important;
+    max-height: 86px !important;
+    border-radius: 999px !important;
+    object-fit: cover !important;
+    transform: scale(1.34) !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-kicker,
+  body .login-desktop-view:focus-within .login-redesign-kicker {
+    display: inline-flex !important;
+    margin: 0 0 16px !important;
+    padding: 8px 16px !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.11em !important;
+    white-space: nowrap !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand h1,
+  body .login-desktop-view:focus-within .login-redesign-brand h1 {
+    display: block !important;
+    margin: 0 0 14px !important;
+    padding: 0 !important;
+
+    font-size: clamp(2.25rem, 4vw, 3rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.055em !important;
+    color: #ffffff !important;
+    white-space: nowrap !important;
+
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand p,
+  body .login-desktop-view:focus-within .login-redesign-brand p {
+    display: block !important;
+    width: 100% !important;
+    max-width: 390px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: rgba(255,255,255,0.92) !important;
+    font-size: 17px !important;
+    line-height: 1.38 !important;
+    font-weight: 800 !important;
+
+    min-height: 70px !important;
+    max-height: 70px !important;
+    overflow: hidden !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    height: 462px !important;
+    min-height: 462px !important;
+    max-height: 462px !important;
+    padding: 52px 56px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+
+    background:
+      radial-gradient(circle at 92% 12%, rgba(255,106,24,0.10), transparent 30%),
+      radial-gradient(circle at 100% 100%, rgba(255,106,24,0.06), transparent 36%),
+      linear-gradient(180deg, rgba(255,255,255,0.99), rgba(255,250,246,0.97)) !important;
+
+    overflow: visible !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-form,
+  body .login-desktop-view:focus-within .login-redesign-form {
+    gap: 16px !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading,
+  body .login-desktop-view:focus-within .login-redesign-heading {
+    margin-bottom: 20px !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-form h3,
+  body .login-desktop-view:focus-within .login-redesign-form h3 {
+    margin: 0 !important;
+    font-size: 31px !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.045em !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-helper,
+  body .login-desktop-view:focus-within .login-redesign-helper {
+    margin-top: 6px !important;
+    min-height: 18px !important;
+    font-size: 14px !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-field input,
+  body .login-desktop-view:focus-within .login-redesign-field input {
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    font-size: 16px !important;
+    transform: none !important;
+    transition: border-color 120ms ease, box-shadow 120ms ease !important;
+  }
+
+  body .login-desktop-view .login-redesign-password-toggle,
+  body .login-desktop-view:focus-within .login-redesign-password-toggle {
+    width: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    right: 8px !important;
+    font-size: 11px !important;
+    transform: translateY(-50%) !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-submit,
+  body .login-desktop-view:focus-within .login-redesign-submit {
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    margin-top: 8px !important;
+    transform: none !important;
+    transition: box-shadow 120ms ease, filter 120ms ease !important;
+  }
+
+  body .login-desktop-view .login-redesign-submit:hover {
+    transform: none !important;
+    filter: brightness(1.03) !important;
+  }
+}
+
+/* Desktop stretto: stesse dimensioni anche al focus, ma più compatte */
+@media screen and (min-width: 541px) and (max-width: 980px) and (pointer: fine) {
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    width: min(94vw, 860px) !important;
+    height: 420px !important;
+    min-height: 420px !important;
+    max-height: calc(100dvh - 36px) !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand,
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    height: 420px !important;
+    min-height: 420px !important;
+    max-height: 420px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    padding: 34px 38px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    padding: 34px 42px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand p,
+  body .login-desktop-view:focus-within .login-redesign-brand p {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form h3,
+  body .login-desktop-view:focus-within .login-redesign-form h3 {
+    font-size: 25px !important;
+  }
+}
+
