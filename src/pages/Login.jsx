@@ -100,7 +100,7 @@ export default function Login({ onLogin }) {
       <main className="login-page login-redesign-page login-desktop-view">
         <div className="login-redesign-card">
           <section className="login-redesign-brand" aria-label="WorkSpace">
-            <div className="login-redesign-mark">M</div>
+            <img className="workspace-logo-img workspace-logo-img-big" src="/workspace-logo.png" alt="WorkSpace" />
 
             <div className="login-redesign-brand-content">
               <div className="login-redesign-kicker">Gestionale tecnico</div>
@@ -111,7 +111,7 @@ export default function Login({ onLogin }) {
 
           <section className="login-redesign-form-panel">
             <div className="login-redesign-heading">
-              <div className="login-redesign-small-mark">M</div>
+              <img className="workspace-logo-img workspace-logo-img-small" src="/workspace-logo.png" alt="WorkSpace" />
               <div>
                 <h2>Accedi</h2>
                 <p>Sistema di Gestione Magazzino</p>

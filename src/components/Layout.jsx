@@ -395,7 +395,7 @@ return (
       <aside className="sidebar">
         <div className="sidebar-header">
           <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
-            <div className="sidebar-logo-icon">M</div>
+            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/workspace-logo.png" alt="WorkSpace" />
             <div className="sidebar-logo-text">
               <h1>WorkSpace</h1>
               <span>Gestione Magazzino</span>
