@@ -13874,3 +13874,54 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE MOBILE NAV - FIX MATERIAL ICON FONT
+   Evita che appaiano testi tipo inventory_2 / upload_file.
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  body .mobile-bottom-nav .material-symbols-rounded,
+  body .mobile-section-drawer .material-symbols-rounded,
+  body .mobile-bottom-nav-icon .material-symbols-rounded,
+  body .mobile-section-drawer-icon .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size: 25px !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-feature-settings: 'liga' !important;
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24 !important;
+    overflow: hidden !important;
+    max-width: 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+    color: currentColor !important;
+  }
+
+  body .mobile-bottom-nav-item {
+    overflow: hidden !important;
+  }
+
+  body .mobile-bottom-nav-icon {
+    width: 28px !important;
+    height: 28px !important;
+    overflow: hidden !important;
+  }
+
+  body .mobile-bottom-nav-icon span:not(.material-symbols-rounded),
+  body .mobile-section-drawer-icon span:not(.material-symbols-rounded) {
+    display: none !important;
+  }
+}
+
