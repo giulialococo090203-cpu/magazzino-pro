@@ -391,13 +391,6 @@ const [openSections, setOpenSections] = useState({});
     });
   };
 
-  const mobileNavItems = visibleSections.flatMap((navSection) =>
-    navSection.items.map((item) => ({
-      ...item,
-      sectionTitle: navSection.title,
-    }))
-  );
-
 return (
     <div className={`app-layout ${isMobile ? "is-mobile" : ""}`}>
       <aside className="sidebar">
@@ -474,32 +467,6 @@ return (
           </div>
         </div>
       </aside>
-
-      {isMobile && (
-        <nav className="mobile-bottom-nav" aria-label="Navigazione mobile">
-          <Link to={getDefaultRouteForUser(user)} className="mobile-bottom-logo" aria-label="Dashboard WorkSpace">
-            <img src="/workspace-logo.png" alt="WorkSpace" />
-          </Link>
-
-          <div className="mobile-bottom-items">
-            {mobileNavItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`mobile-bottom-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
-                aria-label={item.label}
-                title={item.label}
-              >
-                <span className="mobile-bottom-icon"><SidebarIcon name={item.icon} /></span>
-              </Link>
-            ))}
-          </div>
-
-          <button className="mobile-bottom-logout" onClick={logout} title="Esci" aria-label="Esci">
-            <span aria-hidden="true" className="logout-symbol">⏻</span>
-          </button>
-        </nav>
-      )}
 
       <div className="main-content">
         <header className="header">
