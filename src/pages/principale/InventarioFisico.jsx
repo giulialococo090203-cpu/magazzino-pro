@@ -336,15 +336,13 @@ export default function InventarioFisico() {
         overflow: 'linebreak',
       },
       headStyles: {
-        fillColor: PDF_COLORS.graphite,
-        textColor: PDF_COLORS.white,
-        lineColor: PDF_COLORS.orange,
-        textColor: PDF_COLORS.white,
-        fontStyle: 'bold',
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252],
-      },
+      fillColor: PDF_COLORS.graphite,
+      textColor: PDF_COLORS.white,
+      lineColor: PDF_COLORS.orange,
+      lineWidth: 0.2,
+      fontStyle: 'bold',
+    },
+      alternateRowStyles: { fillColor: PDF_COLORS.cream },
       columnStyles: {
         0: { cellWidth: 22 },
         1: { cellWidth: 46 },
