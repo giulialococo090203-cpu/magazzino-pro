@@ -14262,3 +14262,60 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE IMPORT - MANUAL INSERT BUTTON FIX
+   Migliora leggibilità bottone "Inserisci componente manualmente".
+   ============================================================ */
+
+body .app-layout .card button.btn-primary,
+body .app-layout .card a.btn-primary {
+  color: #ffffff !important;
+  text-shadow: 0 1px 1px rgba(80, 24, 0, 0.24) !important;
+}
+
+body .app-layout .card button.btn-primary *,
+body .app-layout .card a.btn-primary * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Caso specifico: riquadro inserimento manuale componenti */
+body .app-layout .card [style*="Inserisci componente"],
+body .app-layout button.btn-primary {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body .app-layout button.btn-primary:not(:disabled),
+body .app-layout a.btn-primary:not(.disabled) {
+  color: #ffffff !important;
+  background:
+    linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #d94308 100%) !important;
+  border: 1px solid rgba(217,67,8,0.72) !important;
+  box-shadow:
+    0 14px 30px rgba(255,106,24,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.24) !important;
+}
+
+body .app-layout button.btn-primary:not(:disabled) *,
+body .app-layout a.btn-primary:not(.disabled) * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body .app-layout button.btn-primary:disabled,
+body .app-layout a.btn-primary.disabled {
+  color: rgba(255,255,255,0.82) !important;
+  background:
+    linear-gradient(135deg, rgba(255,129,38,0.55), rgba(217,67,8,0.55)) !important;
+  border-color: rgba(217,67,8,0.26) !important;
+  box-shadow: none !important;
+}
+
+body .app-layout button.btn-primary:disabled *,
+body .app-layout a.btn-primary.disabled * {
+  color: rgba(255,255,255,0.82) !important;
+  opacity: 1 !important;
+}
+
