@@ -11209,3 +11209,171 @@ body .app-layout .page-header {
     linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,249,243,0.90)) !important;
 }
 
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - TECH REFINEMENT + TABLE SCROLL FIX
+   Ripristina scorrimento elenchi/tabelle e rende il look meno "tutto tondo".
+   Non tocca login.
+   ============================================================ */
+
+body .app-layout {
+  --ws-radius-xl: 18px;
+  --ws-radius-lg: 16px;
+  --ws-radius-md: 12px;
+  --ws-border-tech: rgba(17, 24, 39, 0.12);
+  --ws-line: rgba(17, 24, 39, 0.075);
+}
+
+/* Look più tecnico: meno pill / meno tondo */
+body .app-layout .page-header {
+  border-radius: var(--ws-radius-xl) !important;
+  border: 1px solid rgba(17,24,39,0.08) !important;
+  box-shadow:
+    0 16px 38px rgba(15,23,42,0.075),
+    inset 0 1px 0 rgba(255,255,255,0.82) !important;
+}
+
+body .app-layout .card,
+body .app-layout .kpi-card,
+body .app-layout .table-container {
+  border-radius: var(--ws-radius-xl) !important;
+  border: 1px solid rgba(17,24,39,0.085) !important;
+  box-shadow:
+    0 14px 34px rgba(15,23,42,0.07),
+    inset 0 1px 0 rgba(255,255,255,0.74) !important;
+}
+
+/* Importante: le card possono tagliare solo il bordo esterno,
+   ma i contenuti tabellari devono poter scorrere */
+body .app-layout .card {
+  overflow: visible !important;
+}
+
+body .app-layout .card:has(.data-table),
+body .app-layout .card:has(table) {
+  overflow: hidden !important;
+}
+
+/* Tutti i contenitori tabellari tornano scrollabili */
+body .app-layout .card-body:has(.data-table),
+body .app-layout .card-body:has(table),
+body .app-layout .table-container,
+body .app-layout div[style*="overflowX"],
+body .app-layout div[style*="overflow-x"] {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Se una tabella è larga, non deve comprimersi/tagliarsi */
+body .app-layout .data-table {
+  min-width: max-content !important;
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* Celle più tecniche e leggibili */
+body .app-layout .data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--ws-line) !important;
+  background:
+    linear-gradient(180deg, #fffaf6 0%, #f1e8df 100%) !important;
+  letter-spacing: 0.015em !important;
+  text-transform: none !important;
+}
+
+body .app-layout .data-table th,
+body .app-layout .data-table td {
+  white-space: nowrap !important;
+}
+
+body .app-layout .data-table td {
+  background-clip: padding-box !important;
+}
+
+/* Scrollbar più pulita e coerente */
+body .app-layout .card-body::-webkit-scrollbar,
+body .app-layout .table-container::-webkit-scrollbar,
+body .app-layout div[style*="overflowX"]::-webkit-scrollbar,
+body .app-layout div[style*="overflow-x"]::-webkit-scrollbar {
+  height: 10px !important;
+}
+
+body .app-layout .card-body::-webkit-scrollbar-track,
+body .app-layout .table-container::-webkit-scrollbar-track,
+body .app-layout div[style*="overflowX"]::-webkit-scrollbar-track,
+body .app-layout div[style*="overflow-x"]::-webkit-scrollbar-track {
+  background: rgba(17,24,39,0.045) !important;
+  border-radius: 999px !important;
+}
+
+body .app-layout .card-body::-webkit-scrollbar-thumb,
+body .app-layout .table-container::-webkit-scrollbar-thumb,
+body .app-layout div[style*="overflowX"]::-webkit-scrollbar-thumb,
+body .app-layout div[style*="overflow-x"]::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #ff8126, #ff6414) !important;
+  border-radius: 999px !important;
+}
+
+/* Bottoni più tech, meno arrotondati */
+body .app-layout .btn {
+  border-radius: var(--ws-radius-md) !important;
+}
+
+body .app-layout .btn-sm {
+  border-radius: 10px !important;
+}
+
+/* Input più squadrati/premium */
+body .app-layout input,
+body .app-layout select,
+body .app-layout textarea,
+body .app-layout .form-control {
+  border-radius: var(--ws-radius-md) !important;
+}
+
+/* KPI meno "bubble", più dashboard */
+body .app-layout .kpi-card {
+  position: relative !important;
+}
+
+body .app-layout .kpi-card::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 18px !important;
+  bottom: 18px !important;
+  width: 3px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #ff8126, #ff6414) !important;
+  opacity: 0.85 !important;
+}
+
+/* Sidebar: più command center, meno soft */
+body .app-layout .sidebar {
+  border-right: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+body .app-layout .sidebar-link,
+body .app-layout .sidebar-section-toggle {
+  border-radius: 12px !important;
+}
+
+body .app-layout .sidebar-link.active {
+  border-radius: 12px !important;
+  border-left: 3px solid #ff8126 !important;
+}
+
+/* Modali e dialog coerenti */
+body .app-layout .modal {
+  border-radius: 20px !important;
+}
+
+body .app-layout .modal-header,
+body .app-layout .modal-footer {
+  border-color: rgba(17,24,39,0.08) !important;
+}
+
