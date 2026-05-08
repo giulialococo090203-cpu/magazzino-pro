@@ -12426,3 +12426,51 @@ header [title="Notifiche"] {
   }
 }
 
+
+/* ============================================================
+   RENDICONTAZIONE ECONOMICA KPI RESPONSIVE FIX
+   Evita che i numeri escano dalle card quando la sidebar è aperta.
+   ============================================================ */
+
+.kpi-card .kpi-value {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.05;
+}
+
+/* Pagina rendicontazione: numeri più fluidi nelle card KPI */
+body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
+  font-size: clamp(1.65rem, 3.2vw, 3.1rem);
+  white-space: normal;
+}
+
+/* Finestra stretta o sidebar aperta: evita overflow dei valori economici */
+@media screen and (max-width: 1280px) {
+  .kpi-grid .kpi-card .kpi-value {
+    font-size: clamp(1.55rem, 2.8vw, 2.55rem) !important;
+    letter-spacing: -0.04em;
+  }
+
+  .kpi-grid .kpi-card {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .kpi-grid .kpi-content {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Quando lo spazio è ancora più stretto, le KPI si impilano meglio */
+@media screen and (max-width: 980px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kpi-grid .kpi-card .kpi-value {
+    font-size: clamp(1.7rem, 7vw, 2.6rem) !important;
+  }
+}
+
