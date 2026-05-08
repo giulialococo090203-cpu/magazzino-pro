@@ -13925,3 +13925,156 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE MOBILE APP - BUTTONS FIX
+   Bottoni mobile leggibili, coerenti e non “bruciati”.
+   Non tocca login.
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  body .app-layout.is-mobile .btn,
+  body .app-layout.is-mobile button.btn,
+  body .app-layout.is-mobile a.btn {
+    min-height: 46px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.015em !important;
+    white-space: nowrap !important;
+
+    opacity: 1 !important;
+    filter: none !important;
+    text-decoration: none !important;
+  }
+
+  body .app-layout.is-mobile .btn-primary,
+  body .app-layout.is-mobile button.btn-primary,
+  body .app-layout.is-mobile a.btn-primary {
+    color: #ffffff !important;
+    background:
+      linear-gradient(135deg, #ff8126 0%, #ff6414 46%, #e8480a 100%) !important;
+    border: 1px solid rgba(217,67,8,0.68) !important;
+    box-shadow:
+      0 12px 26px rgba(255,106,24,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.22) !important;
+    text-shadow: 0 1px 1px rgba(90,30,0,0.25) !important;
+  }
+
+  body .app-layout.is-mobile .btn-primary *,
+  body .app-layout.is-mobile button.btn-primary *,
+  body .app-layout.is-mobile a.btn-primary * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    fill: currentColor !important;
+    stroke: currentColor !important;
+  }
+
+  body .app-layout.is-mobile .btn-secondary,
+  body .app-layout.is-mobile button.btn-secondary,
+  body .app-layout.is-mobile a.btn-secondary,
+  body .app-layout.is-mobile .btn-outline-primary,
+  body .app-layout.is-mobile button.btn-outline-primary,
+  body .app-layout.is-mobile a.btn-outline-primary {
+    color: #263142 !important;
+    background:
+      linear-gradient(180deg, #ffffff 0%, #fff8f0 100%) !important;
+    border: 1px solid rgba(17,24,39,0.14) !important;
+    box-shadow:
+      0 8px 18px rgba(15,23,42,0.055),
+      inset 0 1px 0 rgba(255,255,255,0.86) !important;
+  }
+
+  body .app-layout.is-mobile .btn-secondary *,
+  body .app-layout.is-mobile .btn-outline-primary * {
+    color: inherit !important;
+    opacity: 1 !important;
+  }
+
+  body .app-layout.is-mobile .btn:disabled,
+  body .app-layout.is-mobile button:disabled,
+  body .app-layout.is-mobile .btn.disabled {
+    opacity: 0.52 !important;
+    filter: grayscale(0.08) !important;
+    cursor: not-allowed !important;
+  }
+
+  body .app-layout.is-mobile .btn-primary:disabled,
+  body .app-layout.is-mobile button.btn-primary:disabled {
+    color: rgba(255,255,255,0.92) !important;
+    background:
+      linear-gradient(135deg, rgba(255,129,38,0.72), rgba(232,72,10,0.72)) !important;
+    border-color: rgba(217,67,8,0.34) !important;
+    box-shadow: none !important;
+  }
+
+  body .app-layout.is-mobile .btn-primary:disabled *,
+  body .app-layout.is-mobile button.btn-primary:disabled * {
+    color: rgba(255,255,255,0.92) !important;
+    opacity: 1 !important;
+  }
+
+  /* Header pagina: bottoni ordinati e non enormi */
+  body .app-layout.is-mobile .page-header {
+    overflow: hidden !important;
+  }
+
+  body .app-layout.is-mobile .page-header > div,
+  body .app-layout.is-mobile .page-header .page-actions,
+  body .app-layout.is-mobile .page-header [style*="display: flex"] {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .page-header .btn,
+  body .app-layout.is-mobile .page-header button.btn,
+  body .app-layout.is-mobile .page-header a.btn {
+    width: auto !important;
+    max-width: 100% !important;
+    flex: 0 1 auto !important;
+  }
+
+  /* Quando i bottoni sono tanti, li rende una griglia pulita */
+  body .app-layout.is-mobile .page-header .btn + .btn,
+  body .app-layout.is-mobile .page-header button.btn + button.btn {
+    margin-left: 0 !important;
+  }
+
+  /* Icone dentro bottoni */
+  body .app-layout.is-mobile .btn .material-symbols-rounded,
+  body .app-layout.is-mobile .btn .material-symbols-outlined,
+  body .app-layout.is-mobile .btn svg,
+  body .app-layout.is-mobile button .material-symbols-rounded,
+  body .app-layout.is-mobile button .material-symbols-outlined,
+  body .app-layout.is-mobile button svg {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    color: currentColor !important;
+    opacity: 1 !important;
+  }
+}
+
+@media screen and (max-width: 430px) {
+  body .app-layout.is-mobile .page-header .btn,
+  body .app-layout.is-mobile .page-header button.btn,
+  body .app-layout.is-mobile .page-header a.btn {
+    min-width: 0 !important;
+  }
+
+  body .app-layout.is-mobile .page-header .btn-primary,
+  body .app-layout.is-mobile .page-header button.btn-primary,
+  body .app-layout.is-mobile .page-header a.btn-primary {
+    width: 100% !important;
+  }
+}
+
