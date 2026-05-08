@@ -12503,3 +12503,14 @@ body .app-layout .action-card:hover {
     inset 0 1px 0 rgba(255,255,255,0.88) !important;
 }
 
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - REMOVE HEADER CORNER RECTANGLE
+   Elimina il rettangolino decorativo a destra negli header dashboard.
+   ============================================================ */
+
+body .app-layout .page-header::after {
+  display: none !important;
+  content: none !important;
+}
+
