@@ -468,6 +468,40 @@ return (
         </div>
       </aside>
 
+      {isMobile && (
+        <nav className="mobile-bottom-nav" aria-label="Navigazione mobile">
+          {visibleSections.map((navSection) => {
+            const sectionActive = navSection.items.some((item) =>
+              isActivePath(location.pathname, item.path)
+            );
+
+            return (
+              <Link
+                key={navSection.title}
+                to={navSection.items[0]?.path || getDefaultRouteForUser(user)}
+                className={`mobile-bottom-nav-item ${sectionActive ? 'active' : ''}`}
+                title={navSection.title}
+                aria-label={navSection.title}
+              >
+                <span className="mobile-bottom-nav-icon">
+                  <SidebarIcon name={navSection.icon} />
+                </span>
+              </Link>
+            );
+          })}
+
+          <button
+            type="button"
+            className="mobile-bottom-nav-item mobile-bottom-nav-logout"
+            onClick={logout}
+            title="Esci"
+            aria-label="Esci"
+          >
+            <span aria-hidden="true" className="logout-symbol">⏻</span>
+          </button>
+        </nav>
+      )}
+
       <div className="main-content">
         <header className="header">
           <div className="header-left">
