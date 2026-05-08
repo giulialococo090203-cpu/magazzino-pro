@@ -12599,30 +12599,7 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   border-color: rgba(255,106,24,0.34) !important;
 }
 
-
-/* ============================================================
-   WORKSPACE INTERNAL APP - MOBILE LAYOUT FIX
-   Sistema tutta l'app interna da telefono.
-   Non tocca la dashboard/login.
-   ============================================================ */
-
-@media screen and (max-width: 768px) {
-  body:has(.app-layout) {
-    overflow-x: hidden !important;
-    background: #f3ece4 !important;
-  }
-
-  body .app-layout.is-mobile {
-    width: 100vw !important;
-    min-height: 100dvh !important;
-    display: block !important;
-    overflow-x: hidden !important;
-    background:
-      radial-gradient(circle at 96% 4%, rgba(255,106,24,0.055), transparent 26%),
-      linear-gradient(135deg, #f4ece4 0%, #eee2d8 48%, #faf7f2 100%) !important;
-  }
-
-  /* Sidebar mobile: command rail compatta */
+/* Sidebar mobile: command rail compatta */
   body .app-layout.is-mobile .sidebar {
     position: fixed !important;
     left: 0 !important;
@@ -12969,7 +12946,6 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   body .app-layout.is-mobile h3 {
     overflow-wrap: anywhere !important;
   }
-}
 
 /* iPhone stretti */
 @media screen and (max-width: 430px) {
@@ -13010,6 +12986,272 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
 
   body .app-layout.is-mobile .card-body {
     padding: 14px !important;
+  }
+}
+
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - MOBILE RESPONSIVE FIX V2
+   Responsive pulito per app interna. Non tocca login.
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body .app-layout.is-mobile {
+    display: flex !important;
+    width: 100vw !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    background:
+      linear-gradient(135deg, #f5eee7 0%, #eee4da 45%, #faf7f2 100%) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 74px !important;
+    min-width: 74px !important;
+    max-width: 74px !important;
+    padding: 12px 8px !important;
+    z-index: 1000 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background:
+      linear-gradient(180deg, #080d14 0%, #0e151f 48%, #080d14 100%) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    padding: 5px !important;
+    margin: 0 auto 12px !important;
+  }
+
+  body .app-layout.is-mobile .workspace-logo-img-sidebar {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo-text,
+  body .app-layout.is-mobile .sidebar-section-title,
+  body .app-layout.is-mobile .sidebar-link span:not(.sidebar-link-icon),
+  body .app-layout.is-mobile .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  body .app-layout.is-mobile .sidebar-section-chevron,
+  body .app-layout.is-mobile .sidebar-user-details,
+  body .app-layout.is-mobile .sidebar-badge {
+    display: none !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-nav,
+  body .app-layout.is-mobile .sidebar-nav-collapsible {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section-toggle,
+  body .app-layout.is-mobile .sidebar-link {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 13px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-link-icon,
+  body .app-layout.is-mobile .sidebar-section-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-user {
+    margin-top: 14px !important;
+    padding-top: 12px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    margin: 0 auto !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logout {
+    width: 44px !important;
+    height: 44px !important;
+    margin: 10px auto 0 !important;
+  }
+
+  body .app-layout.is-mobile .main-content {
+    margin-left: 74px !important;
+    width: calc(100vw - 74px) !important;
+    max-width: calc(100vw - 74px) !important;
+    min-width: 0 !important;
+    padding: 14px 12px 96px !important;
+    overflow-x: hidden !important;
+    background:
+      linear-gradient(135deg, #f5eee7 0%, #eee4da 45%, #faf7f2 100%) !important;
+  }
+
+  body .app-layout.is-mobile .main-content > * {
+    max-width: 100% !important;
+  }
+
+  body .app-layout.is-mobile .page-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 16px !important;
+    padding: 18px 16px !important;
+    display: block !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .page-title {
+    font-size: 24px !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.05em !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  body .app-layout.is-mobile .page-header p,
+  body .app-layout.is-mobile .page-subtitle {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+
+  body .app-layout.is-mobile .card,
+  body .app-layout.is-mobile .kpi-card,
+  body .app-layout.is-mobile .table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .card-body {
+    padding: 14px !important;
+  }
+
+  body .app-layout.is-mobile .card-header,
+  body .app-layout.is-mobile .card-footer {
+    padding: 14px !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .kpi-grid,
+  body .app-layout.is-mobile .stats-grid,
+  body .app-layout.is-mobile .dashboard-grid,
+  body .app-layout.is-mobile .quick-actions-grid,
+  body .app-layout.is-mobile .quick-actions,
+  body .app-layout.is-mobile .actions-grid,
+  body .app-layout.is-mobile .filters-grid,
+  body .app-layout.is-mobile .form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  body .app-layout.is-mobile input,
+  body .app-layout.is-mobile select,
+  body .app-layout.is-mobile textarea,
+  body .app-layout.is-mobile .form-control {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    font-size: 16px !important;
+  }
+
+  body .app-layout.is-mobile .btn {
+    min-height: 42px !important;
+    white-space: normal !important;
+  }
+
+  body .app-layout.is-mobile .card:has(.data-table),
+  body .app-layout.is-mobile .card:has(table) {
+    overflow: hidden !important;
+  }
+
+  body .app-layout.is-mobile .card-body:has(.data-table),
+  body .app-layout.is-mobile .card-body:has(table),
+  body .app-layout.is-mobile .table-container,
+  body .app-layout.is-mobile div[style*="overflowX"],
+  body .app-layout.is-mobile div[style*="overflow-x"] {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body .app-layout.is-mobile .data-table {
+    min-width: 680px !important;
+    width: max-content !important;
+  }
+
+  body .app-layout.is-mobile .data-table th,
+  body .app-layout.is-mobile .data-table td {
+    white-space: nowrap !important;
+    padding: 11px 12px !important;
+  }
+}
+
+@media screen and (max-width: 430px) {
+  body .app-layout.is-mobile .sidebar {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    padding: 10px 7px !important;
+  }
+
+  body .app-layout.is-mobile .main-content {
+    margin-left: 68px !important;
+    width: calc(100vw - 68px) !important;
+    max-width: calc(100vw - 68px) !important;
+    padding: 12px 10px 96px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section-toggle,
+  body .app-layout.is-mobile .sidebar-link {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+  }
+
+  body .app-layout.is-mobile .page-title {
+    font-size: 22px !important;
   }
 }
 
