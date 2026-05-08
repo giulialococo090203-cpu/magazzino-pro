@@ -12037,3 +12037,290 @@ body .app-layout *::-webkit-scrollbar-thumb {
   border: 2px solid rgba(255,255,255,0.55);
 }
 
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - ULTRA TECH CONTROL CENTER
+   Più carattere tech, meno vanilla. Non tocca login.
+   ============================================================ */
+
+body .app-layout {
+  --ws-cyber-dark: #0b1017;
+  --ws-cyber-panel: #111827;
+  --ws-cyber-orange: #ff6a18;
+  --ws-cyber-amber: #ff9a3d;
+  --ws-cyber-line: rgba(17,24,39,0.16);
+  --ws-cyber-line-soft: rgba(17,24,39,0.075);
+  --ws-cyber-glow: rgba(255,106,24,0.16);
+}
+
+/* Sfondo interno: più “sistema operativo”, ma ancora chiaro */
+body .app-layout .main-content {
+  background:
+    radial-gradient(circle at 92% 4%, rgba(255,106,24,0.06), transparent 23%),
+    radial-gradient(circle at 4% 94%, rgba(15,23,42,0.055), transparent 28%),
+    linear-gradient(135deg, #f3ece4 0%, #ebe1d6 42%, #faf7f2 100%) !important;
+  position: relative !important;
+}
+
+/* Header pagina: effetto modulo command-center */
+body .app-layout .page-header {
+  border-radius: 12px !important;
+  border: 1px solid rgba(17,24,39,0.16) !important;
+  background:
+    linear-gradient(90deg, rgba(15,23,42,0.035), transparent 26%),
+    radial-gradient(circle at 100% 0%, rgba(255,106,24,0.08), transparent 30%),
+    linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,248,240,0.92)) !important;
+  box-shadow:
+    0 16px 36px rgba(15,23,42,0.09),
+    inset 0 1px 0 rgba(255,255,255,0.84),
+    inset 0 -1px 0 rgba(17,24,39,0.035) !important;
+}
+
+body .app-layout .page-header::before {
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 4px !important;
+  border-radius: 0 !important;
+}
+
+body .app-layout .page-header::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 22px !important;
+  top: 18px !important;
+  width: 86px !important;
+  height: 18px !important;
+  border-top: 2px solid rgba(255,106,24,0.28) !important;
+  border-right: 2px solid rgba(255,106,24,0.28) !important;
+  border-radius: 0 10px 0 0 !important;
+  background: transparent !important;
+}
+
+body .app-layout .page-title {
+  font-family: inherit !important;
+  letter-spacing: -0.06em !important;
+}
+
+body .app-layout .page-title::after {
+  width: 72px !important;
+  height: 2px !important;
+  background:
+    linear-gradient(90deg, #ff8126 0%, rgba(255,106,24,0.42) 56%, transparent 100%) !important;
+}
+
+/* Card come moduli, meno “vanilla” */
+body .app-layout .card,
+body .app-layout .kpi-card,
+body .app-layout .table-container {
+  border-radius: 12px !important;
+  border: 1px solid rgba(17,24,39,0.145) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.99), rgba(255,250,245,0.95)) !important;
+  box-shadow:
+    0 14px 34px rgba(15,23,42,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.84),
+    inset 0 -1px 0 rgba(17,24,39,0.035) !important;
+}
+
+body .app-layout .card {
+  position: relative !important;
+}
+
+body .app-layout .card::before,
+body .app-layout .kpi-card::before {
+  box-shadow: 0 0 18px rgba(255,106,24,0.18) !important;
+}
+
+body .app-layout .card::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 14px !important;
+  top: 12px !important;
+  width: 28px !important;
+  height: 8px !important;
+  border-top: 1px solid rgba(255,106,24,0.22) !important;
+  border-right: 1px solid rgba(255,106,24,0.22) !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+body .app-layout .card-header {
+  min-height: 50px !important;
+  background:
+    linear-gradient(90deg, rgba(15,23,42,0.035), transparent 32%),
+    linear-gradient(180deg, rgba(255,250,246,0.96), rgba(238,228,217,0.80)) !important;
+}
+
+body .app-layout .card-title {
+  text-transform: none !important;
+  letter-spacing: -0.035em !important;
+}
+
+/* KPI più dashboard, meno card generica */
+body .app-layout .kpi-card {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,247,239,0.94)) !important;
+}
+
+body .app-layout .kpi-card::before {
+  width: 3px !important;
+  background: linear-gradient(180deg, #ff9a3d 0%, #ff6414 54%, #111827 100%) !important;
+}
+
+body .app-layout .kpi-card::after {
+  right: -34px !important;
+  top: -42px !important;
+  width: 108px !important;
+  height: 108px !important;
+  border-width: 14px !important;
+  border-color: rgba(255,106,24,0.06) !important;
+}
+
+body .app-layout .kpi-label {
+  color: #5b6472 !important;
+  letter-spacing: 0.075em !important;
+}
+
+body .app-layout .kpi-value {
+  color: #0b1220 !important;
+}
+
+/* Sidebar più console */
+body .app-layout .sidebar {
+  background:
+    linear-gradient(180deg, #080d14 0%, #0e151f 44%, #080d14 100%) !important;
+  box-shadow:
+    24px 0 70px rgba(15,23,42,0.34),
+    inset -1px 0 0 rgba(255,255,255,0.052) !important;
+}
+
+body .app-layout .sidebar::after {
+  background:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.014) 1px, transparent 1px),
+    radial-gradient(circle at 50% 18%, rgba(255,106,24,0.065), transparent 30%) !important;
+  background-size: 30px 30px, 30px 30px, auto !important;
+  opacity: 0.55 !important;
+}
+
+body .app-layout .sidebar-section-toggle,
+body .app-layout .sidebar-link {
+  border-radius: 8px !important;
+  min-height: 40px !important;
+  letter-spacing: -0.005em !important;
+}
+
+body .app-layout .sidebar-link:hover,
+body .app-layout .sidebar-section-toggle:hover {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025)) !important;
+}
+
+body .app-layout .sidebar-link.active {
+  background:
+    linear-gradient(90deg, rgba(255,106,24,0.20), rgba(255,106,24,0.06) 64%, transparent 100%) !important;
+  border-color: rgba(255,129,38,0.30) !important;
+  box-shadow:
+    0 10px 26px rgba(255,106,24,0.13),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+body .app-layout .sidebar-link.active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -1px !important;
+  top: 8px !important;
+  bottom: 8px !important;
+  width: 3px !important;
+  border-radius: 999px !important;
+  background: #ff8126 !important;
+  box-shadow: 0 0 14px rgba(255,106,24,0.72) !important;
+}
+
+body .app-layout .sidebar-link.active::after {
+  right: 10px !important;
+  width: 4px !important;
+  height: 4px !important;
+}
+
+/* Tabelle: più “data system” */
+body .app-layout .data-table {
+  font-size: 13px !important;
+}
+
+body .app-layout .data-table thead th {
+  background:
+    linear-gradient(180deg, #1a2029 0%, #111720 100%) !important;
+  color: rgba(255,255,255,0.88) !important;
+  border-bottom: 1px solid rgba(255,106,24,0.34) !important;
+  border-right: 1px solid rgba(255,255,255,0.055) !important;
+}
+
+body .app-layout .data-table tbody tr:nth-child(even) {
+  background: rgba(255,248,240,0.46) !important;
+}
+
+body .app-layout .data-table tbody tr:hover td {
+  background: rgba(255,106,24,0.085) !important;
+}
+
+body .app-layout .data-table td {
+  border-right: 1px solid rgba(17,24,39,0.04) !important;
+}
+
+/* Form controls più industrial */
+body .app-layout input,
+body .app-layout select,
+body .app-layout textarea,
+body .app-layout .form-control {
+  border-radius: 8px !important;
+  border-color: #cbd4df !important;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fbf8f4 100%) !important;
+}
+
+body .app-layout label,
+body .app-layout .form-label {
+  color: #2f3b4d !important;
+  font-weight: 850 !important;
+}
+
+/* Bottoni più “action module” */
+body .app-layout .btn {
+  border-radius: 8px !important;
+  text-transform: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+body .app-layout .btn-primary::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.22) 38%, transparent 56%) !important;
+  transform: translateX(-130%) !important;
+  transition: transform 320ms ease !important;
+}
+
+body .app-layout .btn-primary:hover::after {
+  transform: translateX(130%) !important;
+}
+
+/* Badge/status più tech */
+body .app-layout .badge,
+body .app-layout .status-badge,
+body .app-layout .chip {
+  border-radius: 7px !important;
+  border: 1px solid rgba(17,24,39,0.08) !important;
+}
+
+/* Riduce aria “Bootstrap standard” */
+body .app-layout .card-body {
+  background: transparent !important;
+}
+
+body .app-layout hr {
+  border-color: rgba(17,24,39,0.10) !important;
+}
+
