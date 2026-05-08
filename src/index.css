@@ -17641,3 +17641,48 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGIN - RIGHT CORNER FIX
+   Uniforma gli spigoli della parte destra.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    border-radius: 34px !important;
+    overflow: hidden !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    border-radius: 34px 0 0 34px !important;
+    overflow: hidden !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    border-radius: 0 34px 34px 0 !important;
+    overflow: hidden !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::before,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::before {
+    border-radius: 24px !important;
+    inset: 26px !important;
+    overflow: hidden !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::after,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::after {
+    display: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-card::before,
+  body .login-desktop-view:focus-within .login-redesign-card::before,
+  body .login-desktop-view .login-redesign-card::after,
+  body .login-desktop-view:focus-within .login-redesign-card::after {
+    pointer-events: none !important;
+  }
+}
+
