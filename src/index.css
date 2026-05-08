@@ -16660,3 +16660,77 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE MOBILE LOGIN - REMOVE FOCUS FRAME
+   Evita cornici/outline quando si inseriscono Email o Password.
+   ============================================================ */
+
+@media screen and (max-width: 540px) {
+  body .mobile-login-stable-final input,
+  body .mobile-login-stable-final input:focus,
+  body .mobile-login-stable-final input:focus-visible,
+  body .mobile-login-stable-final input:active,
+  body .mobile-login-stable-final .mobile-login-field input,
+  body .mobile-login-stable-final .mobile-login-field input:focus,
+  body .mobile-login-stable-final .mobile-login-field input:focus-visible,
+  body .mobile-login-stable-final .mobile-login-field input:active {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+
+    border: 1.5px solid #d8dee8 !important;
+    border-radius: 15px !important;
+    background: #ffffff !important;
+
+    box-shadow:
+      0 8px 22px rgba(15,23,42,0.035),
+      inset 0 1px 0 rgba(255,255,255,0.88) !important;
+
+    color: #111827 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-wrap,
+  body .mobile-login-stable-final .mobile-login-password-wrap:focus,
+  body .mobile-login-stable-final .mobile-login-password-wrap:focus-within,
+  body .mobile-login-stable-final .mobile-login-password-wrap:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card,
+  body .mobile-login-stable-final .mobile-login-card:focus,
+  body .mobile-login-stable-final .mobile-login-card:focus-within,
+  body .mobile-login-stable-final .mobile-login-card:active {
+    outline: none !important;
+    border-color: rgba(255,255,255,0.88) !important;
+    box-shadow:
+      0 34px 82px rgba(15,23,42,0.24),
+      0 18px 42px rgba(255,106,24,0.10),
+      inset 0 1px 0 rgba(255,255,255,0.88) !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-toggle,
+  body .mobile-login-stable-final .mobile-login-password-toggle:focus,
+  body .mobile-login-stable-final .mobile-login-password-toggle:focus-visible,
+  body .mobile-login-stable-final .mobile-login-password-toggle:active {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+
+    border: 1px solid #e5e7eb !important;
+    background: #f8fafc !important;
+    color: #344054 !important;
+
+    box-shadow: none !important;
+    transform: translateY(-50%) !important;
+    transition: none !important;
+  }
+}
+
