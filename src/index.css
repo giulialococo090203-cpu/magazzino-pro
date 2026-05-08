@@ -12395,3 +12395,111 @@ body .app-layout [class*="action"] [style*="background"] {
     linear-gradient(135deg, #151b24 0%, #0d121a 100%) !important;
 }
 
+
+/* ============================================================
+   WORKSPACE DASHBOARD - REFINED QUICK ACTION ICONS
+   Corregge icone troppo pesanti: tech elegante, non pastello.
+   ============================================================ */
+
+body .app-layout .quick-action-card [class*="icon"],
+body .app-layout .quick-action [class*="icon"],
+body .app-layout .dashboard-action [class*="icon"],
+body .app-layout .action-card [class*="icon"] {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,106,24,0.12), transparent 44%),
+    linear-gradient(135deg, #fffaf6 0%, #f5eee7 100%) !important;
+
+  color: #ff6414 !important;
+  border: 1.5px solid rgba(255,106,24,0.26) !important;
+  border-radius: 14px !important;
+
+  box-shadow:
+    0 10px 22px rgba(15,23,42,0.07),
+    0 8px 18px rgba(255,106,24,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.86) !important;
+}
+
+/* Evita che le regole precedenti forzino il nero sugli inline style */
+body .app-layout [class*="quick"] [style*="background"],
+body .app-layout [class*="action"] [style*="background"] {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,106,24,0.12), transparent 44%),
+    linear-gradient(135deg, #fffaf6 0%, #f5eee7 100%) !important;
+}
+
+/* Icona interna più pulita */
+body .app-layout .quick-action-card svg,
+body .app-layout .quick-action svg,
+body .app-layout .dashboard-action svg,
+body .app-layout .action-card svg,
+body .app-layout .quick-action-card .material-symbols-outlined,
+body .app-layout .quick-action .material-symbols-outlined,
+body .app-layout .dashboard-action .material-symbols-outlined,
+body .app-layout .action-card .material-symbols-outlined,
+body .app-layout .quick-action-card i,
+body .app-layout .quick-action i,
+body .app-layout .dashboard-action i,
+body .app-layout .action-card i {
+  color: #ff6414 !important;
+  stroke: currentColor !important;
+  filter: drop-shadow(0 4px 8px rgba(255,106,24,0.16)) !important;
+}
+
+/* Card azioni rapide: più tech, meno vuote */
+body .app-layout .quick-action-card,
+body .app-layout .quick-action,
+body .app-layout .dashboard-action,
+body .app-layout .action-card {
+  position: relative !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(17,24,39,0.13) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.99), rgba(255,250,246,0.94)) !important;
+  box-shadow:
+    0 12px 28px rgba(15,23,42,0.07),
+    inset 0 1px 0 rgba(255,255,255,0.84) !important;
+  overflow: hidden !important;
+}
+
+body .app-layout .quick-action-card::before,
+body .app-layout .quick-action::before,
+body .app-layout .dashboard-action::before,
+body .app-layout .action-card::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 18px !important;
+  bottom: 18px !important;
+  width: 3px !important;
+  background: linear-gradient(180deg, #ff8126, #ff6414) !important;
+  border-radius: 0 999px 999px 0 !important;
+  opacity: 0.9 !important;
+}
+
+body .app-layout .quick-action-card::after,
+body .app-layout .quick-action::after,
+body .app-layout .dashboard-action::after,
+body .app-layout .action-card::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 14px !important;
+  top: 12px !important;
+  width: 26px !important;
+  height: 8px !important;
+  border-top: 1px solid rgba(255,106,24,0.20) !important;
+  border-right: 1px solid rgba(255,106,24,0.20) !important;
+  pointer-events: none !important;
+}
+
+body .app-layout .quick-action-card:hover,
+body .app-layout .quick-action:hover,
+body .app-layout .dashboard-action:hover,
+body .app-layout .action-card:hover {
+  border-color: rgba(255,106,24,0.30) !important;
+  transform: translateY(-1px) !important;
+  box-shadow:
+    0 16px 34px rgba(15,23,42,0.09),
+    0 8px 22px rgba(255,106,24,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.88) !important;
+}
+
