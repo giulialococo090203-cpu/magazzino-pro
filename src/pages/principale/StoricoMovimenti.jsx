@@ -209,20 +209,38 @@ export default function StoricoMovimenti() {
 
   const loadFiltered = async () => {
     try {
+      const userFilterValue = String(filterUser || '');
+      const isOperatorFilter = userFilterValue.startsWith('operator:');
+      const isUserFilter = userFilterValue.startsWith('user:');
+
+      const selectedUserId = isUserFilter
+        ? userFilterValue.replace(/^user:/, '')
+        : isOperatorFilter
+          ? ''
+          : userFilterValue;
+
+      const selectedOperator = isOperatorFilter
+        ? userFilterValue.replace(/^operator:/, '')
+        : '';
+
       const filtered = await movementStore.getFiltered({
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
-        userId: filterUser || undefined,
+        userId: selectedUserId || undefined,
         categoryId: filterCategory || undefined,
         materialId: filterMaterial || undefined,
         type: filterType || undefined,
       });
 
+      const operatorFiltered = selectedOperator
+        ? filtered.filter((m) => getOperatorName(m) === selectedOperator)
+        : filtered;
+
       const clientFiltered = filterClient
-        ? filtered.filter((m) =>
+        ? operatorFiltered.filter((m) =>
             String(m.clientName || '').toLowerCase().includes(filterClient.toLowerCase())
           )
-        : filtered;
+        : operatorFiltered;
 
       setMovements(Array.isArray(clientFiltered) ? clientFiltered : []);
       setPage(1);
@@ -261,6 +279,12 @@ export default function StoricoMovimenti() {
 
     return allClients.filter((c) => c.toLowerCase().includes(q)).slice(0, 8);
   }, [movements, filterClient]);
+
+  const operatorOptions = useMemo(() => {
+    return [...new Set(movements.map((m) => getOperatorName(m)).filter(Boolean))]
+      .filter((name) => name !== 'Senza operatore')
+      .sort((a, b) => a.localeCompare(b, 'it'));
+  }, [movements]);
 
   const totalPages = Math.ceil(movements.length / perPage);
   const paginated = movements.slice((page - 1) * perPage, page * perPage);
@@ -413,11 +437,20 @@ export default function StoricoMovimenti() {
     if (filterType) filterDescriptions.push(`Tipo: ${formatMovType(filterType)}`);
     if (filterClient) filterDescriptions.push(`Cliente: ${filterClient}`);
 
-    const userLabel = users.find((u) => String(u.id) === String(filterUser))?.fullName;
+    const isOperatorFilter = String(filterUser || '').startsWith('operator:');
+    const selectedOperatorLabel = isOperatorFilter
+      ? String(filterUser).replace(/^operator:/, '')
+      : '';
+    const selectedUserId = String(filterUser || '').startsWith('user:')
+      ? String(filterUser).replace(/^user:/, '')
+      : filterUser;
+    const userLabel = users.find((u) => String(u.id) === String(selectedUserId))?.fullName;
     const categoryLabel = categories.find((c) => String(c.id) === String(filterCategory))?.name;
     const materialLabel = materials.find((m) => String(m.id) === String(filterMaterial));
 
     if (userLabel) filterDescriptions.push(`Utente: ${userLabel}`);
+    if (selectedOperatorLabel) filterDescriptions.push(`Operatore: ${selectedOperatorLabel}`);
+    if (selectedOperatorLabel) filterDescriptions.push(`Operatore: ${selectedOperatorLabel}`);
     if (categoryLabel) filterDescriptions.push(`Categoria: ${categoryLabel}`);
     if (materialLabel) {
       filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
@@ -541,7 +574,14 @@ export default function StoricoMovimenti() {
     if (filterType) filterDescriptions.push(`Tipo: ${formatMovType(filterType)}`);
     if (filterClient) filterDescriptions.push(`Cliente: ${filterClient}`);
 
-    const userLabel = users.find((u) => String(u.id) === String(filterUser))?.fullName;
+    const isOperatorFilter = String(filterUser || '').startsWith('operator:');
+    const selectedOperatorLabel = isOperatorFilter
+      ? String(filterUser).replace(/^operator:/, '')
+      : '';
+    const selectedUserId = String(filterUser || '').startsWith('user:')
+      ? String(filterUser).replace(/^user:/, '')
+      : filterUser;
+    const userLabel = users.find((u) => String(u.id) === String(selectedUserId))?.fullName;
     const categoryLabel = categories.find((c) => String(c.id) === String(filterCategory))?.name;
     const materialLabel = materials.find((m) => String(m.id) === String(filterMaterial));
 
@@ -806,14 +846,29 @@ export default function StoricoMovimenti() {
             </div>
 
             <div className="filter-group">
-              <label>Utente:</label>
+              <label>Utente / Operatore:</label>
               <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)}>
                 <option value="">Tutti</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.fullName}
-                  </option>
-                ))}
+
+                {users.length > 0 && (
+                  <optgroup label="Utenti app">
+                    {users.map((u) => (
+                      <option key={u.id} value={`user:${u.id}`}>
+                        {u.fullName}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+
+                {operatorOptions.length > 0 && (
+                  <optgroup label="Operatori movimenti">
+                    {operatorOptions.map((name) => (
+                      <option key={name} value={`operator:${name}`}>
+                        {name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 
