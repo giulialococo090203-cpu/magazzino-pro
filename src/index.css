@@ -13698,7 +13698,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   .mobile-login-final-error {
     margin: 16px 22px 0 !important;
   }
-}
 
 /* iPhone piccoli: tutto più compatto, ma stabile */
 @media screen and (max-width: 390px) {
@@ -14011,7 +14010,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
     min-height: 54px !important;
     background: linear-gradient(135deg, #ff7a1a 0%, #ff6414 48%, #f04c0b 100%) !important;
   }
-}
 
 @media screen and (max-width: 390px) {
   body .mobile-login-view .mobile-login-top,
