@@ -239,37 +239,39 @@ export default function ArchivioFatture() {
   };
 
   const openFile = async (invoice) => {
-    const popup = window.open('', '_blank', 'noopener,noreferrer');
+    let popup = null;
 
     try {
       setActionLoading(`open-${invoice.id}`);
 
-      if (!popup) {
-        throw new Error('Il browser ha bloccato l’apertura del file. Consenti i popup per questo sito.');
-      }
+      // Safari può restituire null se si usano noopener/noreferrer.
+      // Apriamo subito una scheda vuota per non farla bloccare dal popup blocker.
+      popup = window.open('', '_blank');
 
-      popup.document.write(`
-        <!doctype html>
-        <html>
-          <head>
-            <title>Apertura fattura...</title>
-            <style>
-              body {
-                margin: 0;
-                min-height: 100vh;
-                display: grid;
-                place-items: center;
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                background: #111827;
-                color: white;
-              }
-            </style>
-          </head>
-          <body>
-            <div>Apertura file in corso...</div>
-          </body>
-        </html>
-      `);
+      if (popup) {
+        popup.document.write(`
+          <!doctype html>
+          <html>
+            <head>
+              <title>Apertura fattura...</title>
+              <style>
+                body {
+                  margin: 0;
+                  min-height: 100vh;
+                  display: grid;
+                  place-items: center;
+                  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                  background: #111827;
+                  color: white;
+                }
+              </style>
+            </head>
+            <body>
+              <div>Apertura file in corso...</div>
+            </body>
+          </html>
+        `);
+      }
 
       const url = await invoiceImportStore.getSignedUrl(invoice.filePath);
 
@@ -277,7 +279,12 @@ export default function ArchivioFatture() {
         throw new Error('URL del file non disponibile.');
       }
 
-      popup.location.href = url;
+      if (popup && !popup.closed) {
+        popup.location.href = url;
+      } else {
+        // Fallback sicuro: se il browser blocca la nuova scheda, apro nella stessa scheda.
+        window.location.href = url;
+      }
     } catch (err) {
       console.error('Errore apertura file:', err);
 
@@ -306,16 +313,24 @@ export default function ArchivioFatture() {
         throw new Error('URL del file non disponibile.');
       }
 
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error('File non disponibile o non scaricabile.');
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
 
-      link.href = url;
-      link.download = invoice.originalFileName || invoice.fileName || 'fattura';
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
+      link.href = objectUrl;
+      link.download = invoice.originalFileName || invoice.fileName || 'fattura.pdf';
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
     } catch (err) {
       console.error('Errore download file:', err);
       alert(err.message || 'Non riesco a scaricare il file.');
