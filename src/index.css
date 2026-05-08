@@ -17259,3 +17259,99 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGO NO CROP FIX
+   Mostra il logo intero su desktop, senza tagli.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-shell-big {
+    width: 128px !important;
+    height: 128px !important;
+    min-width: 128px !important;
+    min-height: 128px !important;
+    max-width: 128px !important;
+    max-height: 128px !important;
+    flex: 0 0 128px !important;
+
+    border-radius: 34px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand .workspace-logo-img-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-img-big {
+    width: 128px !important;
+    height: 128px !important;
+    min-width: 128px !important;
+    min-height: 128px !important;
+    max-width: 128px !important;
+    max-height: 128px !important;
+
+    object-fit: contain !important;
+    border-radius: 34px !important;
+    transform: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-shell-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-shell-small {
+    width: 64px !important;
+    height: 64px !important;
+    min-width: 64px !important;
+    min-height: 64px !important;
+    max-width: 64px !important;
+    max-height: 64px !important;
+
+    border-radius: 20px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-img-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-img-small {
+    width: 64px !important;
+    height: 64px !important;
+    min-width: 64px !important;
+    min-height: 64px !important;
+    max-width: 64px !important;
+    max-height: 64px !important;
+
+    object-fit: contain !important;
+    border-radius: 20px !important;
+    transform: none !important;
+  }
+}
+
+/* Desktop stretto: logo intero ma compatto */
+@media screen and (min-width: 541px) and (max-width: 980px) and (pointer: fine) {
+  body .login-desktop-view .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view .login-redesign-brand .workspace-logo-img-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-img-big {
+    width: 92px !important;
+    height: 92px !important;
+    min-width: 92px !important;
+    min-height: 92px !important;
+    max-width: 92px !important;
+    max-height: 92px !important;
+    object-fit: contain !important;
+    transform: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-shell-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-shell-small,
+  body .login-desktop-view .login-redesign-heading .workspace-logo-img-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-img-small {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    max-width: 52px !important;
+    max-height: 52px !important;
+    object-fit: contain !important;
+    transform: none !important;
+  }
+}
+
