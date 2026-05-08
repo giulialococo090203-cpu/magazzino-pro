@@ -16511,3 +16511,343 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
 }
 
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGIN - ILLUSTRATED PREMIUM INSPO
+   Ispirato alle reference: pannello visuale + form pulito.
+   Solo desktop/tablet. Mobile non toccato.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view,
+  body .login-desktop-view:focus-within {
+    background:
+      radial-gradient(circle at 18% 16%, rgba(255, 106, 24, 0.20), transparent 28%),
+      radial-gradient(circle at 82% 82%, rgba(255, 106, 24, 0.10), transparent 36%),
+      linear-gradient(135deg, #f4efe9 0%, #e8e1da 42%, #171d26 42%, #10151d 100%) !important;
+  }
+
+  body .login-desktop-view::before,
+  body .login-desktop-view:focus-within::before {
+    opacity: 0.38 !important;
+  }
+
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    width: min(92vw, 1080px) !important;
+    max-width: 1080px !important;
+    height: 520px !important;
+    min-height: 520px !important;
+    max-height: calc(100dvh - 58px) !important;
+
+    grid-template-columns: 1.08fr 0.92fr !important;
+    border-radius: 34px !important;
+
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.82) !important;
+
+    box-shadow:
+      0 40px 100px rgba(15, 23, 42, 0.28),
+      0 18px 46px rgba(255, 106, 24, 0.12) !important;
+
+    overflow: hidden !important;
+  }
+
+  /* Pannello sinistro: più illustrato e integrato */
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    height: 520px !important;
+    min-height: 520px !important;
+    max-height: 520px !important;
+    padding: 58px 64px !important;
+
+    background:
+      radial-gradient(circle at 24% 28%, rgba(255,255,255,0.22), transparent 20%),
+      radial-gradient(circle at 14% 84%, rgba(255,255,255,0.18), transparent 28%),
+      linear-gradient(135deg, #ff8a2a 0%, #ff6a18 48%, #d45f31 72%, #252a32 100%) !important;
+  }
+
+  /* grande cerchio decorativo tipo reference */
+  body .login-desktop-view .login-redesign-brand::before,
+  body .login-desktop-view:focus-within .login-redesign-brand::before {
+    content: '' !important;
+    position: absolute !important;
+    width: 430px !important;
+    height: 430px !important;
+    left: -135px !important;
+    bottom: -165px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    background:
+      radial-gradient(circle at center,
+        rgba(255,255,255,0.20) 0%,
+        rgba(255,255,255,0.14) 36%,
+        rgba(255,255,255,0.06) 37%,
+        rgba(255,255,255,0.06) 58%,
+        transparent 59%
+      ) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+  }
+
+  /* forme geometriche / tech dietro al testo */
+  body .login-desktop-view .login-redesign-brand::after,
+  body .login-desktop-view:focus-within .login-redesign-brand::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background:
+      linear-gradient(118deg, transparent 0 52%, rgba(17,24,39,0.18) 52% 61%, transparent 61%),
+      linear-gradient(135deg, transparent 0 33%, rgba(255,255,255,0.10) 33% 40%, transparent 40%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 18px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 24px) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand > *,
+  body .login-desktop-view:focus-within .login-redesign-brand > * {
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  /* Logo come sigillo dentro la composizione */
+  body .login-desktop-view .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-shell-big {
+    width: 102px !important;
+    height: 102px !important;
+    min-width: 102px !important;
+    min-height: 102px !important;
+    max-width: 102px !important;
+    max-height: 102px !important;
+    flex: 0 0 102px !important;
+
+    margin: 0 0 26px !important;
+    border-radius: 32px !important;
+
+    background:
+      linear-gradient(145deg, rgba(255,255,255,0.42), rgba(255,255,255,0.10)),
+      rgba(17, 24, 39, 0.10) !important;
+
+    border: 1px solid rgba(255,255,255,0.38) !important;
+
+    box-shadow:
+      0 24px 50px rgba(15, 23, 42, 0.24),
+      0 0 0 10px rgba(255,255,255,0.07),
+      0 20px 44px rgba(255,106,24,0.24),
+      inset 0 1px 0 rgba(255,255,255,0.24) !important;
+
+    overflow: hidden !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand .workspace-logo-img-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-img-big {
+    width: 102px !important;
+    height: 102px !important;
+    min-width: 102px !important;
+    min-height: 102px !important;
+    border-radius: 32px !important;
+    object-fit: cover !important;
+    transform: scale(1.14) !important;
+  }
+
+  body .login-desktop-view .login-redesign-kicker,
+  body .login-desktop-view:focus-within .login-redesign-kicker {
+    margin-bottom: 18px !important;
+    padding: 8px 17px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,0.16) !important;
+    border: 1px solid rgba(255,255,255,0.34) !important;
+    color: rgba(255,255,255,0.95) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand h1,
+  body .login-desktop-view:focus-within .login-redesign-brand h1 {
+    font-size: 44px !important;
+    line-height: 0.98 !important;
+    margin-bottom: 18px !important;
+    letter-spacing: -0.06em !important;
+    text-shadow: 0 16px 32px rgba(15,23,42,0.20) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand p,
+  body .login-desktop-view:focus-within .login-redesign-brand p {
+    max-width: 420px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    font-size: 18px !important;
+    line-height: 1.34 !important;
+    font-weight: 850 !important;
+    color: rgba(255,255,255,0.94) !important;
+  }
+
+  /* Pannello destro: clean corporate */
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    height: 520px !important;
+    min-height: 520px !important;
+    max-height: 520px !important;
+    padding: 60px 62px !important;
+
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255,106,24,0.08), transparent 34%),
+      radial-gradient(circle at 100% 100%, rgba(255,106,24,0.06), transparent 36%),
+      linear-gradient(180deg, #ffffff 0%, #fffaf6 100%) !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::before,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::before {
+    inset: 26px !important;
+    border-radius: 26px !important;
+    border: 1px solid rgba(255,106,24,0.08) !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading,
+  body .login-desktop-view:focus-within .login-redesign-heading {
+    gap: 14px !important;
+    margin-bottom: 26px !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-shell-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-shell-small {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    min-height: 54px !important;
+    border-radius: 18px !important;
+    background: rgba(255, 248, 242, 0.96) !important;
+    border: 1px solid rgba(255,106,24,0.15) !important;
+    box-shadow:
+      0 12px 28px rgba(255,106,24,0.10),
+      0 8px 18px rgba(15,23,42,0.08) !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-img-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-img-small {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 18px !important;
+    object-fit: cover !important;
+    transform: scale(1.14) !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading h2,
+  body .login-desktop-view:focus-within .login-redesign-heading h2 {
+    font-size: 25px !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading p,
+  body .login-desktop-view:focus-within .login-redesign-heading p {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: #667085 !important;
+  }
+
+  body .login-desktop-view .login-redesign-form h3,
+  body .login-desktop-view:focus-within .login-redesign-form h3 {
+    font-size: 32px !important;
+    margin-bottom: 2px !important;
+  }
+
+  body .login-desktop-view .login-redesign-helper,
+  body .login-desktop-view:focus-within .login-redesign-helper {
+    color: #667085 !important;
+    font-size: 14px !important;
+    font-weight: 750 !important;
+  }
+
+  body .login-desktop-view .login-redesign-field span,
+  body .login-desktop-view:focus-within .login-redesign-field span {
+    color: #344054 !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+  }
+
+  body .login-desktop-view .login-redesign-field input,
+  body .login-desktop-view:focus-within .login-redesign-field input {
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 13px !important;
+    background: #fffaf6 !important;
+    border: 1.5px solid #d7dce4 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75) !important;
+  }
+
+  body .login-desktop-view .login-redesign-password-toggle,
+  body .login-desktop-view:focus-within .login-redesign-password-toggle {
+    height: 30px !important;
+    width: 60px !important;
+    right: 9px !important;
+    border-radius: 10px !important;
+  }
+
+  body .login-desktop-view .login-redesign-submit,
+  body .login-desktop-view:focus-within .login-redesign-submit {
+    height: 48px !important;
+    border-radius: 13px !important;
+    background: linear-gradient(135deg, #ff7a1a 0%, #ff6414 48%, #f04c0b 100%) !important;
+    box-shadow:
+      0 16px 34px rgba(255,95,15,0.26),
+      inset 0 1px 0 rgba(255,255,255,0.24) !important;
+  }
+}
+
+/* Desktop mezza finestra: mantiene lo stesso stile, più compatto */
+@media screen and (min-width: 541px) and (max-width: 980px) and (pointer: fine) {
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    height: 430px !important;
+    min-height: 430px !important;
+    max-height: calc(100dvh - 36px) !important;
+    width: min(94vw, 860px) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand,
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    height: 430px !important;
+    min-height: 430px !important;
+    max-height: 430px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    padding: 36px 40px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    padding: 36px 42px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view .login-redesign-brand .workspace-logo-img-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-img-big {
+    width: 78px !important;
+    height: 78px !important;
+    min-width: 78px !important;
+    min-height: 78px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand h1,
+  body .login-desktop-view:focus-within .login-redesign-brand h1 {
+    font-size: 34px !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand p,
+  body .login-desktop-view:focus-within .login-redesign-brand p {
+    font-size: 14px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form h3,
+  body .login-desktop-view:focus-within .login-redesign-form h3 {
+    font-size: 25px !important;
+  }
+}
+
