@@ -14030,3 +14030,223 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   MOBILE LOGIN FIXED CARD - NO JUMP
+   Blocca direttamente il riquadro login sul telefono.
+   ============================================================ */
+
+@media screen and (max-width: 540px) {
+  .login-page,
+  .login-redesign-page,
+  .login-scenic-page,
+  .login-page:focus-within,
+  .login-redesign-page:focus-within,
+  .login-scenic-page:focus-within {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+
+    padding: 38px 16px 0 !important;
+    margin: 0 !important;
+
+    display: block !important;
+    overflow: hidden !important;
+    background: #e6ebf2 !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-card,
+  .login-scenic-shell,
+  .login-page:focus-within .login-redesign-card,
+  .login-page:focus-within .login-scenic-shell,
+  .login-redesign-page:focus-within .login-redesign-card,
+  .login-scenic-page:focus-within .login-scenic-shell {
+    position: absolute !important;
+    top: 38px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+
+    width: calc(100vw - 32px) !important;
+    max-width: 430px !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: calc(100svh - 60px) !important;
+
+    margin: 0 !important;
+    overflow: hidden !important;
+
+    border-radius: 34px !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-brand,
+  .login-scenic-brand,
+  .login-page:focus-within .login-redesign-brand,
+  .login-page:focus-within .login-scenic-brand,
+  .login-redesign-page:focus-within .login-redesign-brand,
+  .login-scenic-page:focus-within .login-scenic-brand {
+    height: 250px !important;
+    min-height: 250px !important;
+    max-height: 250px !important;
+
+    padding: 30px 22px 24px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+
+    overflow: hidden !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-form-panel,
+  .login-scenic-panel,
+  .login-page:focus-within .login-redesign-form-panel,
+  .login-page:focus-within .login-scenic-panel,
+  .login-redesign-page:focus-within .login-redesign-form-panel,
+  .login-scenic-page:focus-within .login-scenic-panel {
+    height: auto !important;
+    min-height: auto !important;
+
+    padding: 32px 22px 30px !important;
+    margin: 0 !important;
+
+    border-radius: 30px 30px 0 0 !important;
+    overflow: visible !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-brand .workspace-logo-shell-big,
+  .login-scenic-brand .workspace-logo-shell-big,
+  .workspace-logo-shell-mobile,
+  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
+  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
+  .login-page:focus-within .workspace-logo-shell-mobile,
+  .login-redesign-page:focus-within .workspace-logo-shell-big,
+  .login-scenic-page:focus-within .workspace-logo-shell-big {
+    width: 94px !important;
+    height: 94px !important;
+    min-width: 94px !important;
+    min-height: 94px !important;
+
+    margin: 0 0 12px !important;
+    border-radius: 28px !important;
+
+    display: inline-grid !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-brand h1,
+  .login-scenic-brand h1,
+  .login-brand-copy h1,
+  .login-page:focus-within .login-redesign-brand h1,
+  .login-page:focus-within .login-scenic-brand h1,
+  .login-page:focus-within .login-brand-copy h1,
+  .login-redesign-page:focus-within .login-redesign-brand h1,
+  .login-scenic-page:focus-within .login-scenic-brand h1 {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    font-size: 33px !important;
+    line-height: 1 !important;
+    color: #fff !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-form,
+  .login-scenic-panel form,
+  .login-page:focus-within .login-redesign-form,
+  .login-page:focus-within .login-scenic-panel form {
+    gap: 16px !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .login-redesign-field input,
+  .login-scenic-panel input {
+    font-size: 16px !important;
+  }
+}
+
+/* iPhone stretti */
+@media screen and (max-width: 390px) {
+  .login-redesign-card,
+  .login-scenic-shell,
+  .login-page:focus-within .login-redesign-card,
+  .login-page:focus-within .login-scenic-shell {
+    top: 30px !important;
+    width: calc(100vw - 28px) !important;
+    max-height: calc(100svh - 48px) !important;
+  }
+
+  .login-redesign-brand,
+  .login-scenic-brand,
+  .login-page:focus-within .login-redesign-brand,
+  .login-page:focus-within .login-scenic-brand {
+    height: 226px !important;
+    min-height: 226px !important;
+    max-height: 226px !important;
+    padding: 24px 18px 20px !important;
+  }
+
+  .login-redesign-brand .workspace-logo-shell-big,
+  .login-scenic-brand .workspace-logo-shell-big,
+  .workspace-logo-shell-mobile,
+  .login-page:focus-within .workspace-logo-shell-mobile {
+    width: 82px !important;
+    height: 82px !important;
+    min-width: 82px !important;
+    min-height: 82px !important;
+    border-radius: 24px !important;
+  }
+
+  .login-redesign-brand h1,
+  .login-scenic-brand h1,
+  .login-brand-copy h1,
+  .login-page:focus-within .login-redesign-brand h1,
+  .login-page:focus-within .login-scenic-brand h1,
+  .login-page:focus-within .login-brand-copy h1 {
+    font-size: 29px !important;
+  }
+
+  .login-redesign-form-panel,
+  .login-scenic-panel,
+  .login-page:focus-within .login-redesign-form-panel,
+  .login-page:focus-within .login-scenic-panel {
+    padding: 28px 20px 26px !important;
+  }
+}
+
