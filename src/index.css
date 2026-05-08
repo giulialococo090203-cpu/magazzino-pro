@@ -14078,3 +14078,187 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE MOBILE APP - LANDSCAPE ORIENTATION FIX
+   Ottimizza l'app interna quando il telefono è ruotato.
+   Non tocca login.
+   ============================================================ */
+
+@media screen and (max-width: 932px) and (orientation: landscape) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body .app-layout.is-mobile {
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+  }
+
+  body .app-layout.is-mobile .main-content {
+    margin-left: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    padding: 10px 12px 82px !important;
+    overflow-x: hidden !important;
+  }
+
+  body .app-layout.is-mobile .header {
+    min-height: 52px !important;
+    margin-bottom: 10px !important;
+    padding: 10px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .header-breadcrumb {
+    font-size: 13px !important;
+  }
+
+  body .app-layout.is-mobile .header-date {
+    max-width: 180px !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+
+  body .app-layout.is-mobile .page-header {
+    margin-bottom: 10px !important;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .page-title {
+    font-size: 22px !important;
+    line-height: 1.05 !important;
+  }
+
+  body .app-layout.is-mobile .page-header p,
+  body .app-layout.is-mobile .page-subtitle {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  body .app-layout.is-mobile .card,
+  body .app-layout.is-mobile .kpi-card {
+    border-radius: 13px !important;
+  }
+
+  body .app-layout.is-mobile .card-body {
+    padding: 12px !important;
+  }
+
+  body .app-layout.is-mobile .card-header,
+  body .app-layout.is-mobile .card-footer {
+    padding: 12px !important;
+  }
+
+  body .app-layout.is-mobile .kpi-grid,
+  body .app-layout.is-mobile .stats-grid,
+  body .app-layout.is-mobile .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .quick-actions-grid,
+  body .app-layout.is-mobile .quick-actions,
+  body .app-layout.is-mobile .actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .filters-grid,
+  body .app-layout.is-mobile .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .btn,
+  body .app-layout.is-mobile button.btn,
+  body .app-layout.is-mobile a.btn {
+    min-height: 40px !important;
+    padding: 0 13px !important;
+    font-size: 14px !important;
+    border-radius: 11px !important;
+  }
+
+  body .mobile-bottom-nav {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    height: 58px !important;
+    padding: 6px 8px !important;
+    border-radius: 20px !important;
+  }
+
+  body .mobile-bottom-nav-item {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    border-radius: 14px !important;
+  }
+
+  body .mobile-bottom-nav-icon,
+  body .mobile-bottom-nav-icon .material-symbols-rounded {
+    width: 23px !important;
+    height: 23px !important;
+    min-width: 23px !important;
+    min-height: 23px !important;
+    font-size: 23px !important;
+  }
+
+  body .mobile-section-drawer {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    max-height: 56vh !important;
+    padding: 10px !important;
+    border-radius: 20px !important;
+  }
+
+  body .mobile-section-drawer-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  body .mobile-section-drawer-link {
+    min-height: 42px !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+
+  body .app-layout.is-mobile .data-table {
+    min-width: 720px !important;
+  }
+}
+
+/* iPhone piccoli in landscape */
+@media screen and (max-height: 430px) and (orientation: landscape) {
+  body .app-layout.is-mobile .main-content {
+    padding-bottom: 74px !important;
+  }
+
+  body .mobile-bottom-nav {
+    height: 54px !important;
+    padding: 5px 7px !important;
+    border-radius: 18px !important;
+  }
+
+  body .mobile-bottom-nav-item {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    border-radius: 13px !important;
+  }
+
+  body .mobile-section-drawer {
+    bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+    max-height: 58vh !important;
+  }
+}
+
