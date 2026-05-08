@@ -105,7 +105,7 @@ export default function Login({ onLogin }) {
             <div className="login-redesign-brand-content">
               <div className="login-redesign-kicker">Gestionale tecnico</div>
               <h1>WorkSpace</h1>
-              <p>Il tuo spazio operativo per controllare materiali, movimenti, fatture e report.</p>
+              <p>Controlla operazioni, materiali, fatture e performance aziendali da un unico ambiente.</p>
             </div>
           </section>
 
@@ -114,14 +114,14 @@ export default function Login({ onLogin }) {
               <div className="workspace-logo-shell workspace-logo-shell-small"><img className="workspace-logo-img workspace-logo-img-small" src="/workspace-logo.png" alt="WorkSpace" /></div>
               <div>
                 <h2>Accedi</h2>
-                <p>Piattaforma di gestione operativa</p>
+                <p>Centro operativo aziendale</p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="login-redesign-form">
               <div>
-                <h3>Accedi al sistema</h3>
-                <p className="login-redesign-helper">Entra nel tuo ambiente operativo</p>
+                <h3>Accedi alla piattaforma</h3>
+                <p className="login-redesign-helper">Gestisci il lavoro con controllo, ordine e continuità.</p>
               </div>
 
               {formFields}
@@ -140,7 +140,7 @@ export default function Login({ onLogin }) {
 
           <form onSubmit={handleSubmit} className="mobile-login-card">
             <h1>Login</h1>
-            <p>Accedi al sistema di gestione magazzino</p>
+            <p>Accedi alla piattaforma di gestione magazzino</p>
 
             {formFields}
           </form>
