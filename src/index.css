@@ -13271,3 +13271,123 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE LOGO INTEGRATION FINAL
+   Logo più integrato su desktop, sidebar e mobile login.
+   ============================================================ */
+
+.workspace-logo-shell {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04)),
+    rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.22),
+    0 12px 32px rgba(255, 106, 24, 0.16),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  overflow: hidden;
+}
+
+.workspace-logo-shell-big {
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  margin-bottom: 22px;
+}
+
+.workspace-logo-shell-small {
+  width: 56px;
+  height: 56px;
+  border-radius: 17px;
+}
+
+.workspace-logo-shell-mobile {
+  width: 96px;
+  height: 96px;
+  border-radius: 28px;
+  margin: 0 auto 18px;
+  box-shadow:
+    0 22px 44px rgba(255, 106, 24, 0.24),
+    0 14px 30px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.workspace-logo-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.08);
+}
+
+.workspace-logo-img-big,
+.workspace-logo-img-small,
+.workspace-logo-img-mobile,
+.workspace-logo-img-sidebar {
+  border-radius: inherit;
+}
+
+/* Sidebar/header: logo più pulito e meno “foto” */
+.workspace-logo-img-sidebar {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 17px;
+  box-shadow:
+    0 12px 26px rgba(255, 106, 24, 0.20),
+    0 8px 18px rgba(0, 0, 0, 0.20);
+}
+
+.sidebar.collapsed .workspace-logo-img-sidebar,
+.sidebar-collapsed .workspace-logo-img-sidebar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+/* Evita doppie ombre se il logo sta già dentro lo shell */
+.workspace-logo-shell .workspace-logo-img {
+  box-shadow: none !important;
+}
+
+/* Login desktop: il logo resta coerente con il pannello */
+@media screen and (min-width: 541px) {
+  .login-redesign-brand .workspace-logo-shell-big,
+  .login-scenic-brand .workspace-logo-shell-big {
+    align-self: flex-start;
+  }
+
+  .login-redesign-heading .workspace-logo-shell-small,
+  .login-form-header .workspace-logo-shell-small {
+    margin: 0;
+  }
+}
+
+/* Login mobile: logo centrato e integrato nella card arancione */
+@media screen and (max-width: 540px) {
+  .workspace-logo-shell-mobile,
+  .login-redesign-brand .workspace-logo-shell-big,
+  .login-scenic-brand .workspace-logo-shell-big {
+    width: 92px !important;
+    height: 92px !important;
+    border-radius: 28px !important;
+    margin: 0 auto 18px !important;
+  }
+
+  .login-redesign-small-logo,
+  .login-form-logo,
+  .workspace-logo-shell-small {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 17px !important;
+  }
+
+  .workspace-logo-img {
+    transform: scale(1.08);
+  }
+}
+
