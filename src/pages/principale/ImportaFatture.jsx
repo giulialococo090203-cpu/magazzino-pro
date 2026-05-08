@@ -506,6 +506,11 @@ export default function ImportaFatture() {
     invoice = invoiceRecord
   ) => {
     const trainingData = await materialStore.getAll();
+    const materialByCode = new Map(
+      trainingData
+        .filter((material) => material?.code)
+        .map((material) => [String(material.code).trim().toLowerCase(), material])
+    );
 
     const processed = rows
       .map((row) => {
@@ -522,21 +527,21 @@ export default function ImportaFatture() {
 
         if (!code || !desc || qty <= 0) return null;
 
-        const recognition = aggressiveMatch(
-          { code, description: desc },
-          { materials: trainingData, categories }
-        );
+        let existing = code ? materialByCode.get(code.toLowerCase()) : null;
 
-        let existing =
-          recognition.bestMatch?.type === 'material'
-            ? recognition.bestMatch.original
-            : null;
+        const recognition = existing
+          ? {
+              confidence: 'certi',
+              bestMatch: { type: 'material', original: existing },
+              allCandidates: [],
+            }
+          : aggressiveMatch(
+              { code, description: desc },
+              { materials: trainingData, categories }
+            );
 
-        if ((!existing || recognition.confidence !== 'certi') && code) {
-          const strictMatch = trainingData.find(
-            (m) => String(m.code || '').toLowerCase() === code.toLowerCase()
-          );
-          if (strictMatch) existing = strictMatch;
+        if (!existing && recognition.bestMatch?.type === 'material') {
+          existing = recognition.bestMatch.original;
         }
 
         let catId =
@@ -610,6 +615,11 @@ export default function ImportaFatture() {
   ) => {
     const processed = [];
     const trainingData = await materialStore.getAll();
+    const materialByCode = new Map(
+      trainingData
+        .filter((material) => material?.code)
+        .map((material) => [String(material.code).trim().toLowerCase(), material])
+    );
 
     for (const row of rows) {
       if (!row || row.length === 0) continue;
@@ -649,23 +659,21 @@ export default function ImportaFatture() {
       if (!code || code.length < 2) continue;
       if (qty <= 0) continue;
 
-      const recognition = aggressiveMatch(
-        { code, description: desc },
-        { materials: trainingData, categories: categories }
-      );
+      let existing = code ? materialByCode.get(code.toLowerCase()) : null;
 
-      let existing =
-        recognition.bestMatch?.type === 'material'
-          ? recognition.bestMatch.original
-          : null;
+      const recognition = existing
+        ? {
+            confidence: 'certi',
+            bestMatch: { type: 'material', original: existing },
+            allCandidates: [],
+          }
+        : aggressiveMatch(
+            { code, description: desc },
+            { materials: trainingData, categories: categories }
+          );
 
-      if ((!existing || recognition.confidence !== 'certi') && code) {
-        const strictMatch = trainingData.find(
-          (m) => String(m.code || '').toLowerCase() === code.toLowerCase()
-        );
-        if (strictMatch) {
-          existing = strictMatch;
-        }
+      if (!existing && recognition.bestMatch?.type === 'material') {
+        existing = recognition.bestMatch.original;
       }
 
       let catId =
@@ -798,6 +806,50 @@ export default function ImportaFatture() {
     }
   };
 
+  const getCachedParsedFile = async (file) => {
+    const cacheKey = `invoice_parse_cache_v1_${file.name}_${file.size}_${file.lastModified}`;
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+
+        if (parsedCache?.parsed) {
+          console.info(`Parser fattura: uso cache per ${file.name}`);
+          return parsedCache.parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('Cache parsing fattura non leggibile:', err);
+    }
+
+    const startedAt = performance.now();
+    const parsed = await parseFile(file);
+    const elapsedMs = Math.round(performance.now() - startedAt);
+
+    console.info(`Parser fattura completato in ${elapsedMs}ms: ${file.name}`);
+
+    try {
+      const payload = JSON.stringify({
+        fileName: file.name,
+        fileSize: file.size,
+        lastModified: file.lastModified,
+        createdAt: new Date().toISOString(),
+        parsed,
+      });
+
+      // Evita di saturare localStorage con file enormi.
+      if (payload.length < 2_500_000) {
+        localStorage.setItem(cacheKey, payload);
+      }
+    } catch (err) {
+      console.warn('Cache parsing fattura non salvata:', err);
+    }
+
+    return parsed;
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -865,7 +917,7 @@ export default function ImportaFatture() {
 
       setStep(2);
 
-      const parsed = await parseFile(file);
+      const parsed = await getCachedParsedFile(file);
 
       if (parsed?.scanDetected) {
         setScanDetected(true);
@@ -935,7 +987,7 @@ export default function ImportaFatture() {
 
       setStep(2);
 
-      const parsed = await parseFile(lastFile);
+      const parsed = await getCachedParsedFile(lastFile);
 
       if (parsed?.scanDetected) {
         setScanDetected(true);
