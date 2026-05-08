@@ -18904,3 +18904,458 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE MOBILE LOGIN - FIXED CAPTIONS / NO FOCUS CHANGE
+   Congela testi, caption, logo, top e form anche quando iOS apre la tastiera.
+   ============================================================ */
+
+@media screen and (max-width: 540px) {
+  body .mobile-login-stable-final,
+  body .mobile-login-stable-final:focus,
+  body .mobile-login-stable-final:focus-within,
+  body .mobile-login-stable-final:active {
+    position: fixed !important;
+    inset: 0 !important;
+    overflow: hidden !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-phone,
+  body .mobile-login-stable-final:focus .mobile-login-phone,
+  body .mobile-login-stable-final:focus-within .mobile-login-phone,
+  body .mobile-login-stable-final:active .mobile-login-phone {
+    position: fixed !important;
+    top: 22px !important;
+    left: 50% !important;
+    width: calc(100vw - 36px) !important;
+    max-width: 430px !important;
+    height: 650px !important;
+    min-height: 650px !important;
+    max-height: 650px !important;
+    transform: translateX(-50%) !important;
+    overflow: visible !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-top,
+  body .mobile-login-stable-final:focus .mobile-login-top,
+  body .mobile-login-stable-final:focus-within .mobile-login-top,
+  body .mobile-login-stable-final:active .mobile-login-top {
+    position: relative !important;
+    width: 100% !important;
+    height: 210px !important;
+    min-height: 210px !important;
+    max-height: 210px !important;
+    flex: none !important;
+    display: block !important;
+    padding: 0 !important;
+    border-radius: 32px 32px 0 0 !important;
+    overflow: hidden !important;
+  }
+
+  body .mobile-login-stable-final .workspace-logo-shell-mobile,
+  body .mobile-login-stable-final:focus .workspace-logo-shell-mobile,
+  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile,
+  body .mobile-login-stable-final:active .workspace-logo-shell-mobile {
+    position: absolute !important;
+    top: 36px !important;
+    left: 50% !important;
+    width: 84px !important;
+    height: 84px !important;
+    min-width: 84px !important;
+    min-height: 84px !important;
+    max-width: 84px !important;
+    max-height: 84px !important;
+    margin: 0 !important;
+    padding: 7px !important;
+    transform: translateX(-50%) !important;
+    border-radius: 26px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  body .mobile-login-stable-final .workspace-logo-img-mobile,
+  body .mobile-login-stable-final:focus .workspace-logo-img-mobile,
+  body .mobile-login-stable-final:focus-within .workspace-logo-img-mobile,
+  body .mobile-login-stable-final:active .workspace-logo-img-mobile {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    transform: none !important;
+    border-radius: 19px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-title,
+  body .mobile-login-stable-final:focus .mobile-login-title,
+  body .mobile-login-stable-final:focus-within .mobile-login-title,
+  body .mobile-login-stable-final:active .mobile-login-title {
+    position: absolute !important;
+    top: 135px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    color: #ffffff !important;
+    font-size: 32px !important;
+    line-height: 38px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.055em !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card,
+  body .mobile-login-stable-final:focus .mobile-login-card,
+  body .mobile-login-stable-final:focus-within .mobile-login-card,
+  body .mobile-login-stable-final:active .mobile-login-card {
+    position: relative !important;
+    width: 100% !important;
+    height: 412px !important;
+    min-height: 412px !important;
+    max-height: 412px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 0 32px 32px !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card h1,
+  body .mobile-login-stable-final:focus .mobile-login-card h1,
+  body .mobile-login-stable-final:focus-within .mobile-login-card h1,
+  body .mobile-login-stable-final:active .mobile-login-card h1 {
+    position: absolute !important;
+    top: 34px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #111827 !important;
+    font-size: 30px !important;
+    line-height: 36px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.05em !important;
+    text-align: center !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card p,
+  body .mobile-login-stable-final:focus .mobile-login-card p,
+  body .mobile-login-stable-final:focus-within .mobile-login-card p,
+  body .mobile-login-stable-final:active .mobile-login-card p {
+    position: absolute !important;
+    top: 88px !important;
+    left: 22px !important;
+    right: 22px !important;
+    width: auto !important;
+    height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #667085 !important;
+    font-size: 13px !important;
+    line-height: 18px !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field:nth-of-type(1),
+  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(1) {
+    position: absolute !important;
+    top: 128px !important;
+    left: 22px !important;
+    right: 22px !important;
+    width: auto !important;
+    height: 78px !important;
+    margin: 0 !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field:nth-of-type(2),
+  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(2) {
+    position: absolute !important;
+    top: 222px !important;
+    left: 22px !important;
+    right: 22px !important;
+    width: auto !important;
+    height: 78px !important;
+    margin: 0 !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field span,
+  body .mobile-login-stable-final:focus .mobile-login-field span,
+  body .mobile-login-stable-final:focus-within .mobile-login-field span,
+  body .mobile-login-stable-final:active .mobile-login-field span {
+    display: block !important;
+    height: 18px !important;
+    margin: 0 0 8px !important;
+    color: #2f3b4d !important;
+    font-size: 13px !important;
+    line-height: 18px !important;
+    font-weight: 950 !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field input,
+  body .mobile-login-stable-final:focus .mobile-login-field input,
+  body .mobile-login-stable-final:focus-within .mobile-login-field input,
+  body .mobile-login-stable-final:active .mobile-login-field input,
+  body .mobile-login-stable-final .mobile-login-field input:focus {
+    display: block !important;
+    width: 100% !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    margin: 0 !important;
+    padding: 0 17px !important;
+    box-sizing: border-box !important;
+
+    border-radius: 15px !important;
+    border: 1.5px solid #d8dee8 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+
+    font-size: 16px !important;
+    line-height: 50px !important;
+    font-weight: 800 !important;
+
+    box-shadow:
+      0 8px 22px rgba(15,23,42,0.035),
+      inset 0 1px 0 rgba(255,255,255,0.88) !important;
+
+    outline: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-wrap,
+  body .mobile-login-stable-final:focus .mobile-login-password-wrap,
+  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap,
+  body .mobile-login-stable-final:active .mobile-login-password-wrap {
+    position: relative !important;
+    width: 100% !important;
+    height: 50px !important;
+    margin: 0 !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-wrap input,
+  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap input,
+  body .mobile-login-stable-final .mobile-login-password-wrap input:focus {
+    padding-right: 84px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-toggle,
+  body .mobile-login-stable-final:focus .mobile-login-password-toggle,
+  body .mobile-login-stable-final:focus-within .mobile-login-password-toggle,
+  body .mobile-login-stable-final:active .mobile-login-password-toggle {
+    position: absolute !important;
+    top: 25px !important;
+    right: 9px !important;
+
+    width: 66px !important;
+    min-width: 66px !important;
+    max-width: 66px !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+
+    border-radius: 11px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #f8fafc !important;
+    color: #344054 !important;
+
+    font-size: 12px !important;
+    line-height: 1 !important;
+    font-weight: 950 !important;
+
+    transform: translateY(-50%) !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-submit,
+  body .mobile-login-stable-final:focus .mobile-login-submit,
+  body .mobile-login-stable-final:focus-within .mobile-login-submit,
+  body .mobile-login-stable-final:active .mobile-login-submit {
+    position: absolute !important;
+    top: 324px !important;
+    left: 22px !important;
+    right: 22px !important;
+    width: auto !important;
+
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    margin: 0 !important;
+
+    border-radius: 15px !important;
+    background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #f04c0b 100%) !important;
+    color: #ffffff !important;
+
+    font-size: 16px !important;
+    line-height: 52px !important;
+    font-weight: 950 !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-footer,
+  body .mobile-login-stable-final:focus .mobile-login-footer,
+  body .mobile-login-stable-final:focus-within .mobile-login-footer,
+  body .mobile-login-stable-final:active .mobile-login-footer {
+    position: absolute !important;
+    top: 648px !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 18px !important;
+    margin: 0 !important;
+
+    color: rgba(17,24,39,0.44) !important;
+    font-size: 12px !important;
+    line-height: 18px !important;
+    letter-spacing: 0.14em !important;
+    font-weight: 950 !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media screen and (max-width: 390px) {
+  body .mobile-login-stable-final .mobile-login-phone,
+  body .mobile-login-stable-final:focus-within .mobile-login-phone {
+    top: 16px !important;
+    width: calc(100vw - 28px) !important;
+    height: 612px !important;
+    min-height: 612px !important;
+    max-height: 612px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-top,
+  body .mobile-login-stable-final:focus-within .mobile-login-top {
+    height: 184px !important;
+    min-height: 184px !important;
+    max-height: 184px !important;
+    border-radius: 30px 30px 0 0 !important;
+  }
+
+  body .mobile-login-stable-final .workspace-logo-shell-mobile,
+  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile {
+    top: 30px !important;
+    width: 74px !important;
+    height: 74px !important;
+    min-width: 74px !important;
+    min-height: 74px !important;
+    max-width: 74px !important;
+    max-height: 74px !important;
+    padding: 6px !important;
+    border-radius: 23px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-title,
+  body .mobile-login-stable-final:focus-within .mobile-login-title {
+    top: 122px !important;
+    font-size: 29px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card,
+  body .mobile-login-stable-final:focus-within .mobile-login-card {
+    height: 392px !important;
+    min-height: 392px !important;
+    max-height: 392px !important;
+    border-radius: 0 0 30px 30px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card h1,
+  body .mobile-login-stable-final:focus-within .mobile-login-card h1 {
+    top: 30px !important;
+    font-size: 27px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-card p,
+  body .mobile-login-stable-final:focus-within .mobile-login-card p {
+    top: 82px !important;
+    font-size: 12px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field:nth-of-type(1),
+  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(1) {
+    top: 118px !important;
+    left: 20px !important;
+    right: 20px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field:nth-of-type(2),
+  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(2) {
+    top: 208px !important;
+    left: 20px !important;
+    right: 20px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-field input,
+  body .mobile-login-stable-final:focus-within .mobile-login-field input,
+  body .mobile-login-stable-final .mobile-login-field input:focus {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    line-height: 48px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-wrap,
+  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap {
+    height: 48px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-password-toggle,
+  body .mobile-login-stable-final:focus-within .mobile-login-password-toggle {
+    top: 24px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-submit,
+  body .mobile-login-stable-final:focus-within .mobile-login-submit {
+    top: 304px !important;
+    left: 20px !important;
+    right: 20px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    line-height: 50px !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-footer,
+  body .mobile-login-stable-final:focus-within .mobile-login-footer {
+    top: 610px !important;
+  }
+}
+
