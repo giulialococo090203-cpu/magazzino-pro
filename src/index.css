@@ -12514,3 +12514,88 @@ body .app-layout .page-header::after {
   content: none !important;
 }
 
+
+/* ============================================================
+   WORKSPACE IMPORT FLOW - REMOVE BLUE STATES
+   Elimina residui blu da stepper, upload box e riquadri import.
+   ============================================================ */
+
+body .app-layout .step,
+body .app-layout .import-step,
+body .app-layout [class*="step"] {
+  border-color: rgba(17,24,39,0.12) !important;
+}
+
+body .app-layout [style*="var(--primary-50)"],
+body .app-layout [style*="var(--primary-25)"],
+body .app-layout [style*="var(--primary-100)"] {
+  background:
+    linear-gradient(135deg, #fff9f3 0%, #f5eee7 100%) !important;
+}
+
+body .app-layout [style*="var(--primary-700)"],
+body .app-layout [style*="var(--primary-600)"],
+body .app-layout [style*="var(--primary-500)"] {
+  color: #ff6414 !important;
+}
+
+body .app-layout [style*="var(--primary-300)"],
+body .app-layout [style*="var(--primary-400)"] {
+  border-color: rgba(255,106,24,0.34) !important;
+}
+
+/* Stepper importazione */
+body .app-layout .card [style*="var(--primary-50)"],
+body .app-layout .card [style*="var(--primary-25)"] {
+  background:
+    linear-gradient(135deg, rgba(255,106,24,0.10), rgba(255,249,243,0.92)) !important;
+  color: #ff6414 !important;
+}
+
+body .app-layout .card [style*="var(--primary-700)"] {
+  color: #ff6414 !important;
+}
+
+/* Bordi tratteggiati ancora blu */
+body .app-layout [style*="dashed var(--primary-300)"],
+body .app-layout [style*="dashed"],
+body .app-layout [style*="border: 1px dashed"] {
+  border-color: rgba(255,106,24,0.36) !important;
+}
+
+/* Upload/manual insert panels */
+body .app-layout [style*="background: 'var(--primary-50)'"],
+body .app-layout [style*="background: var(--primary-50)"] {
+  background:
+    linear-gradient(135deg, rgba(255,249,243,0.96), rgba(255,106,24,0.055)) !important;
+}
+
+/* Override Bootstrap/text primary residui */
+body .app-layout .text-primary,
+body .app-layout .btn-outline-primary,
+body .app-layout .text-blue,
+body .app-layout [class*="primary"] {
+  color: #ff6414 !important;
+}
+
+body .app-layout .btn-outline-primary {
+  border-color: rgba(255,106,24,0.34) !important;
+  background: #fffaf6 !important;
+}
+
+body .app-layout .btn-outline-primary:hover {
+  background: rgba(255,106,24,0.10) !important;
+  color: #d94308 !important;
+}
+
+/* Progress/step number active */
+body .app-layout [style*="#2563eb"],
+body .app-layout [style*="#3b82f6"],
+body .app-layout [style*="#dbeafe"],
+body .app-layout [style*="rgb(37, 99, 235)"],
+body .app-layout [style*="rgb(219, 234, 254)"] {
+  color: #ff6414 !important;
+  background: #fff3e8 !important;
+  border-color: rgba(255,106,24,0.34) !important;
+}
+
