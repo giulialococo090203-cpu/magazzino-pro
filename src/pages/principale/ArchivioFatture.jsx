@@ -239,8 +239,37 @@ export default function ArchivioFatture() {
   };
 
   const openFile = async (invoice) => {
+    const popup = window.open('', '_blank', 'noopener,noreferrer');
+
     try {
       setActionLoading(`open-${invoice.id}`);
+
+      if (!popup) {
+        throw new Error('Il browser ha bloccato l’apertura del file. Consenti i popup per questo sito.');
+      }
+
+      popup.document.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>Apertura fattura...</title>
+            <style>
+              body {
+                margin: 0;
+                min-height: 100vh;
+                display: grid;
+                place-items: center;
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                background: #111827;
+                color: white;
+              }
+            </style>
+          </head>
+          <body>
+            <div>Apertura file in corso...</div>
+          </body>
+        </html>
+      `);
 
       const url = await invoiceImportStore.getSignedUrl(invoice.filePath);
 
@@ -248,9 +277,19 @@ export default function ArchivioFatture() {
         throw new Error('URL del file non disponibile.');
       }
 
-      window.open(url, '_blank', 'noopener,noreferrer');
+      popup.location.href = url;
     } catch (err) {
       console.error('Errore apertura file:', err);
+
+      if (popup && !popup.closed) {
+        popup.document.body.innerHTML = `
+          <div style="font-family: system-ui; padding: 24px; color: #991b1b;">
+            <h2>File non disponibile</h2>
+            <p>${err.message || 'Non riesco ad aprire il file.'}</p>
+          </div>
+        `;
+      }
+
       alert(err.message || 'Non riesco ad aprire il file.');
     } finally {
       setActionLoading('');
