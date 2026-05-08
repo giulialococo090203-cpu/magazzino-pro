@@ -105,7 +105,7 @@ export default function Login({ onLogin }) {
             <div className="login-redesign-brand-content">
               <div className="login-redesign-kicker">Gestionale tecnico</div>
               <h1>WorkSpace</h1>
-              <p>Gestisci materiali, fatture, movimenti e report in un unico spazio operativo.</p>
+              <p>Il tuo spazio operativo per controllare materiali, movimenti, fatture e report.</p>
             </div>
           </section>
 
@@ -121,7 +121,7 @@ export default function Login({ onLogin }) {
             <form onSubmit={handleSubmit} className="login-redesign-form">
               <div>
                 <h3>Accedi al sistema</h3>
-                <p className="login-redesign-helper">Accedi al tuo spazio di lavoro</p>
+                <p className="login-redesign-helper">Entra nel tuo ambiente operativo</p>
               </div>
 
               {formFields}
