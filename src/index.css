@@ -11628,3 +11628,141 @@ body .app-layout .modal {
   box-shadow: 0 32px 90px rgba(15,23,42,0.24) !important;
 }
 
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - SIDEBAR TECH CLEANUP
+   Toglie sfumatura calda lungo le icone e rende la sidebar più tech.
+   ============================================================ */
+
+body .app-layout .sidebar {
+  background:
+    linear-gradient(180deg, #10151d 0%, #121821 46%, #0c1118 100%) !important;
+  border-right: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow:
+    18px 0 54px rgba(15,23,42,0.24),
+    inset -1px 0 0 rgba(255,255,255,0.035) !important;
+}
+
+body .app-layout .sidebar::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 150px !important;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(255,106,24,0.18), transparent 48%) !important;
+  pointer-events: none !important;
+  opacity: 0.95 !important;
+}
+
+body .app-layout .sidebar::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px) !important;
+  background-size: 34px 34px !important;
+  opacity: 0.35 !important;
+  pointer-events: none !important;
+}
+
+body .app-layout .sidebar > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body .app-layout .sidebar-header {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008)) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.075) !important;
+}
+
+body .app-layout .sidebar-logo {
+  background: rgba(255,255,255,0.045) !important;
+  border: 1px solid rgba(255,255,255,0.085) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 16px 34px rgba(0,0,0,0.20) !important;
+}
+
+body .app-layout .workspace-logo-img-sidebar {
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.26),
+    0 0 0 5px rgba(255,255,255,0.045),
+    0 0 34px rgba(255,106,24,0.18) !important;
+}
+
+/* Icone sidebar più tecniche e pulite */
+body .app-layout .sidebar-link,
+body .app-layout .sidebar-section-toggle {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: rgba(226,232,240,0.68) !important;
+  box-shadow: none !important;
+}
+
+body .app-layout .sidebar-link:hover,
+body .app-layout .sidebar-section-toggle:hover {
+  background: rgba(255,255,255,0.055) !important;
+  border-color: rgba(255,255,255,0.075) !important;
+  color: #ffffff !important;
+}
+
+body .app-layout .sidebar-link-icon,
+body .app-layout .sidebar-section-icon {
+  color: rgba(226,232,240,0.72) !important;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.035)) !important;
+}
+
+body .app-layout .sidebar-link:hover .sidebar-link-icon,
+body .app-layout .sidebar-section-toggle:hover .sidebar-section-icon {
+  color: #ffffff !important;
+}
+
+body .app-layout .sidebar-link.active {
+  background:
+    linear-gradient(135deg, rgba(255,129,38,0.18), rgba(255,106,24,0.08)) !important;
+  border: 1px solid rgba(255,129,38,0.28) !important;
+  border-left: 3px solid #ff8126 !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 12px 28px rgba(255,106,24,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+body .app-layout .sidebar-link.active .sidebar-link-icon {
+  color: #ffb079 !important;
+  filter:
+    drop-shadow(0 0 8px rgba(255,106,24,0.38))
+    drop-shadow(0 0 16px rgba(255,106,24,0.12)) !important;
+}
+
+/* Se la sidebar è collassata, evita bagliori larghi dietro alle icone */
+body .app-layout .sidebar:not(:hover):not(:focus-within) .sidebar-link.active {
+  background:
+    linear-gradient(135deg, rgba(255,129,38,0.16), rgba(255,106,24,0.06)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    0 8px 20px rgba(255,106,24,0.08) !important;
+}
+
+/* Area contenuto più tech ma senza alone laterale sporco */
+body .app-layout .main-content {
+  background:
+    radial-gradient(circle at 96% 4%, rgba(255,106,24,0.045), transparent 24%),
+    linear-gradient(135deg, #f6f0e9 0%, #efe6dd 42%, #faf8f5 100%) !important;
+}
+
+/* Dettaglio tech sui pannelli, più netto */
+body .app-layout .page-header,
+body .app-layout .card,
+body .app-layout .kpi-card,
+body .app-layout .table-container {
+  border-color: rgba(17,24,39,0.115) !important;
+  box-shadow:
+    0 14px 34px rgba(15,23,42,0.075),
+    inset 0 1px 0 rgba(255,255,255,0.80) !important;
+}
+
