@@ -397,7 +397,7 @@ return (
           <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
             <div className="sidebar-logo-icon">M</div>
             <div className="sidebar-logo-text">
-              <h1>MagazzinoPro</h1>
+              <h1>OperixLogistic</h1>
               <span>Gestione Magazzino</span>
             </div>
           </Link>

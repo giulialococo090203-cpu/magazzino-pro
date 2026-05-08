@@ -99,12 +99,12 @@ export default function Login({ onLogin }) {
       {/* DESKTOP / TABLET: NON TOCCARE */}
       <main className="login-page login-redesign-page login-desktop-view">
         <div className="login-redesign-card">
-          <section className="login-redesign-brand" aria-label="MagazzinoPro">
+          <section className="login-redesign-brand" aria-label="OperixLogistic">
             <div className="login-redesign-mark">M</div>
 
             <div className="login-redesign-brand-content">
               <div className="login-redesign-kicker">Gestionale tecnico</div>
-              <h1>MagazzinoPro</h1>
+              <h1>OperixLogistic</h1>
               <p>Controlla materiali, fatture, riordini e rendicontazione da un unico sistema.</p>
             </div>
           </section>
@@ -135,7 +135,7 @@ export default function Login({ onLogin }) {
         <section className="mobile-login-phone">
           <div className="mobile-login-top">
             <div className="mobile-login-logo">M</div>
-            <div className="mobile-login-title">MagazzinoPro</div>
+            <div className="mobile-login-title">OperixLogistic</div>
           </div>
 
           <form onSubmit={handleSubmit} className="mobile-login-card">

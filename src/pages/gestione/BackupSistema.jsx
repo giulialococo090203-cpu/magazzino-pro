@@ -124,7 +124,7 @@ export default function BackupSistema() {
     const startedAt = new Date();
 
     const backup = {
-      app: 'MagazzinoPro',
+      app: 'OperixLogistic',
       type: 'browser-manual-backup',
       version: 1,
       createdAt: startedAt.toISOString(),
