@@ -11707,17 +11707,6 @@ header [title="Notifiche"] {
   }
 }
 
-
-/* ============================================================
-   SEPARATE MOBILE LOGIN SCREEN
-   Desktop resta su .login-desktop-view.
-   Telefono usa .mobile-login-view.
-   ============================================================ */
-
-.mobile-login-view {
-  display: none;
-}
-
 /* Desktop/tablet normale: mostra solo login desktop */
 .login-desktop-view {
   display: flex;
@@ -11942,156 +11931,6 @@ header [title="Notifiche"] {
     display: none;
   }
 }
-
-
-/* ============================================================
-   MOBILE LOGIN PASSWORD TOGGLE FIX
-   Sistema solo il bottone "Mostra" nel campo password mobile.
-   ============================================================ */
-
-@media screen and (max-width: 540px), screen and (pointer: coarse) and (max-width: 820px) {
-  .mobile-login-password-wrap {
-    position: relative !important;
-  }
-
-  .mobile-login-password-wrap input {
-    padding-right: 78px !important;
-  }
-
-  .mobile-login-password-toggle {
-    position: absolute !important;
-    top: 50% !important;
-    right: 9px !important;
-    transform: translateY(-50%) !important;
-
-    width: 62px !important;
-    height: 30px !important;
-    min-width: 62px !important;
-    max-width: 62px !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: #ffffff !important;
-    color: #ff6a14 !important;
-
-    font-size: 13px !important;
-    font-weight: 900 !important;
-    line-height: 1 !important;
-    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.08) !important;
-  }
-
-  .mobile-login-password-toggle:active {
-    transform: translateY(-50%) scale(0.98) !important;
-  }
-}
-
-
-/* ============================================================
-   MOBILE LOGIN FINAL POLISH
-   Bottone Mostra più piccolo + sfondo basso grigio app.
-   ============================================================ */
-
-@media screen and (max-width: 540px), screen and (pointer: coarse) and (max-width: 820px) {
-  .mobile-login-view {
-    background: #eef2f7 !important;
-  }
-
-  .mobile-login-phone {
-    background: #eef2f7 !important;
-  }
-
-  .mobile-login-card {
-    background: #ffffff !important;
-  }
-
-  .mobile-login-password-wrap {
-    position: relative !important;
-  }
-
-  .mobile-login-password-wrap input {
-    padding-right: 68px !important;
-  }
-
-  .mobile-login-password-toggle {
-    position: absolute !important;
-    top: 50% !important;
-    right: 13px !important;
-    transform: translateY(-50%) !important;
-
-    width: 50px !important;
-    height: 24px !important;
-    min-width: 50px !important;
-    max-width: 50px !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: transparent !important;
-    color: #ff6a14 !important;
-
-    font-size: 11px !important;
-    font-weight: 900 !important;
-    line-height: 1 !important;
-    box-shadow: none !important;
-  }
-
-  .mobile-login-password-toggle:active {
-    transform: translateY(-50%) scale(0.96) !important;
-  }
-}
-
-
-/* ============================================================
-   MOBILE LOGIN FINAL MICRO FIX
-   Alza "Mostra" e aumenta il contrasto del fondo basso grigio.
-   ============================================================ */
-
-@media screen and (max-width: 540px), screen and (pointer: coarse) and (max-width: 820px) {
-  .mobile-login-view {
-    background: #e8edf4 !important;
-  }
-
-  .mobile-login-phone {
-    background: linear-gradient(
-      180deg,
-      #ffffff 0%,
-      #ffffff 58%,
-      #e1e7ef 58%,
-      #dbe2ec 100%
-    ) !important;
-  }
-
-  .mobile-login-footer {
-    color: #8c98aa !important;
-  }
-
-  .mobile-login-password-toggle {
-    top: 47% !important;
-    right: 14px !important;
-    transform: translateY(-50%) !important;
-    height: 22px !important;
-    font-size: 11px !important;
-    line-height: 1 !important;
-  }
-
-  .mobile-login-password-toggle:active {
-    transform: translateY(-50%) scale(0.96) !important;
-  }
-}
-
 
 /* ============================================================
    LOGIN DESKTOP BACKGROUND APP GRAY
@@ -13532,87 +13371,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   MOBILE LOGIN: KEEP WORKSPACE TITLE VISIBLE ON INPUT FOCUS
-   Quando si apre la tastiera, non nasconde/taglia logo e titolo.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand {
-    min-height: 250px !important;
-    height: 250px !important;
-    max-height: 250px !important;
-    padding: 28px 22px 22px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-
-    overflow: visible !important;
-    transform: none !important;
-  }
-
-  .login-redesign-page:focus-within .workspace-logo-shell-big,
-  .login-scenic-page:focus-within .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-big,
-  .login-redesign-page:focus-within .workspace-logo-shell-mobile,
-  .login-scenic-page:focus-within .workspace-logo-shell-mobile,
-  .login-page:focus-within .workspace-logo-shell-mobile {
-    width: 84px !important;
-    height: 84px !important;
-    min-width: 84px !important;
-    min-height: 84px !important;
-    border-radius: 24px !important;
-    margin: 0 0 8px !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: inline-grid !important;
-    transform: none !important;
-  }
-
-  .login-redesign-page:focus-within .login-redesign-brand h1,
-  .login-scenic-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-redesign-page:focus-within .login-brand-copy h1,
-  .login-scenic-page:focus-within .login-brand-copy h1,
-  .login-page:focus-within .login-brand-copy h1 {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    color: #ffffff !important;
-    font-size: 30px !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    max-height: none !important;
-    height: auto !important;
-    overflow: visible !important;
-
-    white-space: nowrap !important;
-    text-align: center !important;
-    transform: none !important;
-  }
-
-  .login-redesign-page:focus-within .login-redesign-form-panel,
-  .login-scenic-page:focus-within .login-scenic-panel,
-  .login-page:focus-within .login-redesign-form-panel,
-  .login-page:focus-within .login-scenic-panel {
-    margin-top: 0 !important;
-    padding-top: 28px !important;
-    transform: none !important;
-  }
-}
-
 /* iPhone piccoli / tastiera aperta: compatta ma non nasconde il nome */
 @media screen and (max-width: 390px) {
   .login-redesign-page:focus-within .login-redesign-brand,
@@ -13647,557 +13405,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   .login-scenic-page:focus-within .login-brand-copy h1,
   .login-page:focus-within .login-brand-copy h1 {
     font-size: 28px !important;
-  }
-}
-
-
-/* ============================================================
-   MOBILE LOGIN HARD STOP FOCUS JUMP
-   Disattiva qualsiasi cambio layout quando email/password hanno focus.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  html,
-  body,
-  #root {
-    min-height: 100%;
-    height: auto !important;
-    overflow-x: hidden !important;
-  }
-
-  .login-page,
-  .login-redesign-page,
-  .login-scenic-page,
-  .login-page:focus-within,
-  .login-redesign-page:focus-within,
-  .login-scenic-page:focus-within {
-    min-height: 100svh !important;
-    height: auto !important;
-    padding: 38px 16px 90px !important;
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-    scroll-behavior: auto !important;
-  }
-
-  .login-redesign-card,
-  .login-scenic-shell,
-  .login-page:focus-within .login-redesign-card,
-  .login-page:focus-within .login-scenic-shell,
-  .login-redesign-page:focus-within .login-redesign-card,
-  .login-scenic-page:focus-within .login-scenic-shell {
-    width: 100% !important;
-    max-width: 430px !important;
-    min-height: auto !important;
-    height: auto !important;
-    margin: 0 auto !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-    overflow: hidden !important;
-  }
-
-  .login-redesign-brand,
-  .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand,
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand {
-    min-height: 260px !important;
-    height: 260px !important;
-    max-height: 260px !important;
-    padding: 34px 22px 26px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 12px !important;
-    overflow: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand .workspace-logo-shell-big,
-  .login-scenic-brand .workspace-logo-shell-big,
-  .workspace-logo-shell-mobile,
-  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
-  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-mobile,
-  .login-redesign-page:focus-within .workspace-logo-shell-big,
-  .login-scenic-page:focus-within .workspace-logo-shell-big,
-  .login-redesign-page:focus-within .workspace-logo-shell-mobile,
-  .login-scenic-page:focus-within .workspace-logo-shell-mobile {
-    width: 96px !important;
-    height: 96px !important;
-    min-width: 96px !important;
-    min-height: 96px !important;
-    border-radius: 28px !important;
-    margin: 0 0 12px !important;
-    display: inline-grid !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand h1,
-  .login-scenic-brand h1,
-  .login-brand-copy h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-brand-copy h1,
-  .login-redesign-page:focus-within .login-redesign-brand h1,
-  .login-scenic-page:focus-within .login-scenic-brand h1,
-  .login-redesign-page:focus-within .login-brand-copy h1,
-  .login-scenic-page:focus-within .login-brand-copy h1 {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    height: auto !important;
-    max-height: none !important;
-    margin: 4px 0 0 !important;
-    padding: 0 !important;
-    color: #ffffff !important;
-    font-size: 34px !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form-panel,
-  .login-scenic-panel,
-  .login-page:focus-within .login-redesign-form-panel,
-  .login-page:focus-within .login-scenic-panel,
-  .login-redesign-page:focus-within .login-redesign-form-panel,
-  .login-scenic-page:focus-within .login-scenic-panel {
-    margin-top: 0 !important;
-    padding: 34px 22px 30px !important;
-    border-radius: 30px 30px 0 0 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form,
-  .login-scenic-panel form,
-  .login-page:focus-within .login-redesign-form,
-  .login-page:focus-within .login-scenic-panel form {
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-field input,
-  .login-scenic-panel input,
-  .login-page:focus-within .login-redesign-field input,
-  .login-page:focus-within .login-scenic-panel input {
-    transform: none !important;
-    transition: border-color 120ms ease, box-shadow 120ms ease !important;
-  }
-}
-
-@media screen and (max-width: 390px) {
-  .login-redesign-brand,
-  .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand,
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand {
-    min-height: 246px !important;
-    height: 246px !important;
-    max-height: 246px !important;
-  }
-
-  .login-redesign-brand .workspace-logo-shell-big,
-  .login-scenic-brand .workspace-logo-shell-big,
-  .workspace-logo-shell-mobile,
-  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
-  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-mobile {
-    width: 86px !important;
-    height: 86px !important;
-    min-width: 86px !important;
-    min-height: 86px !important;
-  }
-
-  .login-redesign-brand h1,
-  .login-scenic-brand h1,
-  .login-brand-copy h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-brand-copy h1 {
-    font-size: 30px !important;
-  }
-}
-
-
-/* ============================================================
-   MOBILE LOGIN HARD STOP FOCUS JUMP
-   Disattiva qualsiasi cambio layout quando email/password hanno focus.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  html,
-  body,
-  #root {
-    min-height: 100%;
-    height: auto !important;
-    overflow-x: hidden !important;
-  }
-
-  .login-page,
-  .login-redesign-page,
-  .login-scenic-page,
-  .login-page:focus-within,
-  .login-redesign-page:focus-within,
-  .login-scenic-page:focus-within {
-    min-height: 100svh !important;
-    height: auto !important;
-    padding: 38px 16px 90px !important;
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-    scroll-behavior: auto !important;
-  }
-
-  .login-redesign-card,
-  .login-scenic-shell,
-  .login-page:focus-within .login-redesign-card,
-  .login-page:focus-within .login-scenic-shell,
-  .login-redesign-page:focus-within .login-redesign-card,
-  .login-scenic-page:focus-within .login-scenic-shell {
-    width: 100% !important;
-    max-width: 430px !important;
-    min-height: auto !important;
-    height: auto !important;
-    margin: 0 auto !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-    overflow: hidden !important;
-  }
-
-  .login-redesign-brand,
-  .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand,
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand {
-    min-height: 260px !important;
-    height: 260px !important;
-    max-height: 260px !important;
-    padding: 34px 22px 26px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 12px !important;
-    overflow: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand .workspace-logo-shell-big,
-  .login-scenic-brand .workspace-logo-shell-big,
-  .workspace-logo-shell-mobile,
-  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
-  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-mobile,
-  .login-redesign-page:focus-within .workspace-logo-shell-big,
-  .login-scenic-page:focus-within .workspace-logo-shell-big,
-  .login-redesign-page:focus-within .workspace-logo-shell-mobile,
-  .login-scenic-page:focus-within .workspace-logo-shell-mobile {
-    width: 96px !important;
-    height: 96px !important;
-    min-width: 96px !important;
-    min-height: 96px !important;
-    border-radius: 28px !important;
-    margin: 0 0 12px !important;
-    display: inline-grid !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand h1,
-  .login-scenic-brand h1,
-  .login-brand-copy h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-brand-copy h1,
-  .login-redesign-page:focus-within .login-redesign-brand h1,
-  .login-scenic-page:focus-within .login-scenic-brand h1,
-  .login-redesign-page:focus-within .login-brand-copy h1,
-  .login-scenic-page:focus-within .login-brand-copy h1 {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    height: auto !important;
-    max-height: none !important;
-    margin: 4px 0 0 !important;
-    padding: 0 !important;
-    color: #ffffff !important;
-    font-size: 34px !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form-panel,
-  .login-scenic-panel,
-  .login-page:focus-within .login-redesign-form-panel,
-  .login-page:focus-within .login-scenic-panel,
-  .login-redesign-page:focus-within .login-redesign-form-panel,
-  .login-scenic-page:focus-within .login-scenic-panel {
-    margin-top: 0 !important;
-    padding: 34px 22px 30px !important;
-    border-radius: 30px 30px 0 0 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form,
-  .login-scenic-panel form,
-  .login-page:focus-within .login-redesign-form,
-  .login-page:focus-within .login-scenic-panel form {
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-field input,
-  .login-scenic-panel input,
-  .login-page:focus-within .login-redesign-field input,
-  .login-page:focus-within .login-scenic-panel input {
-    transform: none !important;
-    transition: border-color 120ms ease, box-shadow 120ms ease !important;
-  }
-}
-
-@media screen and (max-width: 390px) {
-  .login-redesign-brand,
-  .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand,
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand {
-    min-height: 246px !important;
-    height: 246px !important;
-    max-height: 246px !important;
-  }
-
-  .login-redesign-brand .workspace-logo-shell-big,
-  .login-scenic-brand .workspace-logo-shell-big,
-  .workspace-logo-shell-mobile,
-  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
-  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-mobile {
-    width: 86px !important;
-    height: 86px !important;
-    min-width: 86px !important;
-    min-height: 86px !important;
-  }
-
-  .login-redesign-brand h1,
-  .login-scenic-brand h1,
-  .login-brand-copy h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-brand-copy h1 {
-    font-size: 30px !important;
-  }
-}
-
-
-/* ============================================================
-   MOBILE LOGIN FIXED CARD - NO JUMP
-   Blocca direttamente il riquadro login sul telefono.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  .login-page,
-  .login-redesign-page,
-  .login-scenic-page,
-  .login-page:focus-within,
-  .login-redesign-page:focus-within,
-  .login-scenic-page:focus-within {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100svh !important;
-    min-height: 100svh !important;
-
-    padding: 38px 16px 0 !important;
-    margin: 0 !important;
-
-    display: block !important;
-    overflow: hidden !important;
-    background: #e6ebf2 !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-card,
-  .login-scenic-shell,
-  .login-page:focus-within .login-redesign-card,
-  .login-page:focus-within .login-scenic-shell,
-  .login-redesign-page:focus-within .login-redesign-card,
-  .login-scenic-page:focus-within .login-scenic-shell {
-    position: absolute !important;
-    top: 38px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-
-    width: calc(100vw - 32px) !important;
-    max-width: 430px !important;
-    height: auto !important;
-    min-height: auto !important;
-    max-height: calc(100svh - 60px) !important;
-
-    margin: 0 !important;
-    overflow: hidden !important;
-
-    border-radius: 34px !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand,
-  .login-scenic-brand,
-  .login-page:focus-within .login-redesign-brand,
-  .login-page:focus-within .login-scenic-brand,
-  .login-redesign-page:focus-within .login-redesign-brand,
-  .login-scenic-page:focus-within .login-scenic-brand {
-    height: 250px !important;
-    min-height: 250px !important;
-    max-height: 250px !important;
-
-    padding: 30px 22px 24px !important;
-    margin: 0 !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 12px !important;
-
-    overflow: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form-panel,
-  .login-scenic-panel,
-  .login-page:focus-within .login-redesign-form-panel,
-  .login-page:focus-within .login-scenic-panel,
-  .login-redesign-page:focus-within .login-redesign-form-panel,
-  .login-scenic-page:focus-within .login-scenic-panel {
-    height: auto !important;
-    min-height: auto !important;
-
-    padding: 32px 22px 30px !important;
-    margin: 0 !important;
-
-    border-radius: 30px 30px 0 0 !important;
-    overflow: visible !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand .workspace-logo-shell-big,
-  .login-scenic-brand .workspace-logo-shell-big,
-  .workspace-logo-shell-mobile,
-  .login-page:focus-within .login-redesign-brand .workspace-logo-shell-big,
-  .login-page:focus-within .login-scenic-brand .workspace-logo-shell-big,
-  .login-page:focus-within .workspace-logo-shell-mobile,
-  .login-redesign-page:focus-within .workspace-logo-shell-big,
-  .login-scenic-page:focus-within .workspace-logo-shell-big {
-    width: 94px !important;
-    height: 94px !important;
-    min-width: 94px !important;
-    min-height: 94px !important;
-
-    margin: 0 0 12px !important;
-    border-radius: 28px !important;
-
-    display: inline-grid !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-brand h1,
-  .login-scenic-brand h1,
-  .login-brand-copy h1,
-  .login-page:focus-within .login-redesign-brand h1,
-  .login-page:focus-within .login-scenic-brand h1,
-  .login-page:focus-within .login-brand-copy h1,
-  .login-redesign-page:focus-within .login-redesign-brand h1,
-  .login-scenic-page:focus-within .login-scenic-brand h1 {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    font-size: 33px !important;
-    line-height: 1 !important;
-    color: #fff !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    white-space: nowrap !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-form,
-  .login-scenic-panel form,
-  .login-page:focus-within .login-redesign-form,
-  .login-page:focus-within .login-scenic-panel form {
-    gap: 16px !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .login-redesign-field input,
-  .login-scenic-panel input {
-    font-size: 16px !important;
   }
 }
 
@@ -14250,18 +13457,7 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   WORKSPACE FINAL MOBILE LOGIN
-   Interfaccia mobile separata, stabile, senza jump al focus.
-   ============================================================ */
-
-.mobile-login-final {
-  display: none;
-}
-
-@media screen and (max-width: 540px) {
-  /* Nasconde completamente la vecchia login mobile */
+/* Nasconde completamente la vecchia login mobile */
   .login-scenic-shell,
   .login-redesign-card {
     display: none !important;
@@ -14559,297 +13755,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   WORKSPACE REAL MOBILE LOGIN - FINAL STABLE LAYOUT
-   Usa le classi reali: mobile-login-view / phone / top / card.
-   Blocca il jump quando si clicca negli input.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  .login-desktop-view {
-    display: none !important;
-  }
-
-  .mobile-login-view,
-  .mobile-login-view:focus-within {
-    display: block !important;
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background:
-      radial-gradient(circle at 20% 8%, rgba(255, 106, 24, 0.20), transparent 28%),
-      linear-gradient(180deg, #eef2f7 0%, #dce3ec 100%) !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-phone,
-  .mobile-login-view:focus-within .mobile-login-phone {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    padding: 18px 16px 0 !important;
-    margin: 0 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-top,
-  .mobile-login-view:focus-within .mobile-login-top {
-    width: min(100%, 430px) !important;
-    height: 188px !important;
-    min-height: 188px !important;
-    max-height: 188px !important;
-    flex: 0 0 188px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-
-    margin: 0 !important;
-    padding: 20px !important;
-    border-radius: 34px 34px 0 0 !important;
-
-    background:
-      radial-gradient(circle at 16% 90%, rgba(255,255,255,0.20), transparent 34%),
-      linear-gradient(135deg, #ff8126 0%, #ff6718 48%, #f04c0b 100%) !important;
-    color: #ffffff !important;
-    overflow: hidden !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-top .workspace-logo-shell-mobile,
-  .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell-mobile {
-    width: 82px !important;
-    height: 82px !important;
-    min-width: 82px !important;
-    min-height: 82px !important;
-    flex: 0 0 82px !important;
-
-    margin: 0 !important;
-    border-radius: 24px !important;
-    display: grid !important;
-    place-items: center !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    overflow: hidden !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-top .workspace-logo-img-mobile,
-  .mobile-login-view:focus-within .mobile-login-top .workspace-logo-img-mobile {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-    transform: scale(1.12) !important;
-  }
-
-  .mobile-login-title,
-  .mobile-login-view:focus-within .mobile-login-title {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    color: #ffffff !important;
-    font-size: 32px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.045em !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-card,
-  .mobile-login-view:focus-within .mobile-login-card {
-    width: min(100%, 430px) !important;
-    flex: 0 0 auto !important;
-
-    margin: 0 !important;
-    padding: 26px 22px 24px !important;
-    border-radius: 0 0 34px 34px !important;
-
-    background: #ffffff !important;
-    box-shadow:
-      0 28px 70px rgba(15, 23, 42, 0.16),
-      0 12px 34px rgba(255, 106, 24, 0.10) !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 14px !important;
-
-    overflow: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-card h1,
-  .mobile-login-view:focus-within .mobile-login-card h1 {
-    margin: 0 !important;
-    color: #111827 !important;
-    font-size: 28px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.035em !important;
-  }
-
-  .mobile-login-card p,
-  .mobile-login-view:focus-within .mobile-login-card p {
-    margin: -4px 0 4px !important;
-    color: #667085 !important;
-    font-size: 13px !important;
-    line-height: 1.25 !important;
-    font-weight: 800 !important;
-  }
-
-  .mobile-login-field,
-  .mobile-login-view:focus-within .mobile-login-field {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 7px !important;
-    margin: 0 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-field span {
-    color: #344054 !important;
-    font-size: 14px !important;
-    font-weight: 950 !important;
-  }
-
-  .mobile-login-field input,
-  .mobile-login-view:focus-within .mobile-login-field input {
-    width: 100% !important;
-    height: 52px !important;
-    min-height: 52px !important;
-    border-radius: 999px !important;
-    border: 1.5px solid rgba(255, 106, 24, 0.28) !important;
-    background: #fff8f3 !important;
-    color: #111827 !important;
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    padding: 0 18px !important;
-    outline: none !important;
-    transform: none !important;
-    transition: border-color 120ms ease, box-shadow 120ms ease !important;
-  }
-
-  .mobile-login-field input:focus {
-    border-color: #ff6a18 !important;
-    box-shadow: 0 0 0 5px rgba(255, 106, 24, 0.11) !important;
-  }
-
-  .mobile-login-password-wrap,
-  .mobile-login-view:focus-within .mobile-login-password-wrap {
-    position: relative !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-password-wrap input {
-    padding-right: 96px !important;
-  }
-
-  .mobile-login-password-toggle,
-  .mobile-login-view:focus-within .mobile-login-password-toggle {
-    position: absolute !important;
-    right: 8px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-
-    width: 80px !important;
-    min-width: 80px !important;
-    height: 38px !important;
-    min-height: 38px !important;
-
-    border-radius: 999px !important;
-    border: none !important;
-    background: #ffffff !important;
-    color: #ff5f0f !important;
-    font-size: 13px !important;
-    font-weight: 950 !important;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08) !important;
-
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-submit,
-  .mobile-login-view:focus-within .mobile-login-submit {
-    margin-top: 6px !important;
-    width: 100% !important;
-    height: 54px !important;
-    min-height: 54px !important;
-    border: none !important;
-    border-radius: 999px !important;
-    background: linear-gradient(135deg, #ff7a1a, #ff5f0f) !important;
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 950 !important;
-    box-shadow:
-      0 16px 34px rgba(255, 95, 15, 0.28),
-      inset 0 1px 0 rgba(255,255,255,0.20) !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .mobile-login-footer,
-  .mobile-login-view:focus-within .mobile-login-footer {
-    width: min(100%, 430px) !important;
-    margin: 14px auto 0 !important;
-    text-align: center !important;
-    color: #98a2b3 !important;
-    font-size: 12px !important;
-    letter-spacing: 0.14em !important;
-    font-weight: 950 !important;
-    text-transform: uppercase !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
 /* iPhone piccoli: più compatto ma identico tra normale e focus */
 @media screen and (max-width: 390px) {
   .mobile-login-phone,
@@ -14907,200 +13812,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   WORKSPACE MOBILE LOGIN VISUAL POLISH
-   Logo integrato + tasto Mostra corretto.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  .mobile-login-view,
-  .mobile-login-view:focus-within {
-    background:
-      radial-gradient(circle at 50% -12%, rgba(255, 106, 24, 0.16), transparent 34%),
-      radial-gradient(circle at 14% 18%, rgba(255, 122, 36, 0.12), transparent 30%),
-      linear-gradient(180deg, #eef2f7 0%, #d9e1ec 100%) !important;
-  }
-
-  .mobile-login-phone,
-  .mobile-login-view:focus-within .mobile-login-phone {
-    padding-top: 20px !important;
-  }
-
-  .mobile-login-top,
-  .mobile-login-view:focus-within .mobile-login-top {
-    position: relative !important;
-    height: 206px !important;
-    min-height: 206px !important;
-    max-height: 206px !important;
-    flex-basis: 206px !important;
-
-    background:
-      radial-gradient(circle at 16% 92%, rgba(255,255,255,0.20), transparent 34%),
-      radial-gradient(circle at 82% 8%, rgba(255,255,255,0.16), transparent 24%),
-      linear-gradient(135deg, #ff8a2a 0%, #ff6818 44%, #f04c0b 100%) !important;
-
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.18),
-      0 22px 46px rgba(255, 95, 15, 0.16) !important;
-  }
-
-  .mobile-login-top::before {
-    content: '' !important;
-    position: absolute !important;
-    width: 280px !important;
-    height: 280px !important;
-    left: -118px !important;
-    bottom: -152px !important;
-    border-radius: 50% !important;
-    border: 42px solid rgba(255,255,255,0.12) !important;
-    pointer-events: none !important;
-  }
-
-  .mobile-login-top::after {
-    content: '' !important;
-    position: absolute !important;
-    inset: 0 !important;
-    background:
-      linear-gradient(135deg, transparent 0 54%, rgba(17, 24, 39, 0.06) 54% 62%, transparent 62%),
-      repeating-linear-gradient(
-        90deg,
-        rgba(255,255,255,0.035) 0 1px,
-        transparent 1px 22px
-      ) !important;
-    opacity: 0.8 !important;
-    pointer-events: none !important;
-  }
-
-  .mobile-login-top .workspace-logo-shell-mobile,
-  .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell-mobile {
-    position: relative !important;
-    z-index: 1 !important;
-
-    width: 86px !important;
-    height: 86px !important;
-    min-width: 86px !important;
-    min-height: 86px !important;
-    flex-basis: 86px !important;
-
-    border-radius: 28px !important;
-    margin-bottom: 12px !important;
-
-    background:
-      linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0.08)),
-      rgba(17, 24, 39, 0.08) !important;
-    border: 1px solid rgba(255,255,255,0.36) !important;
-
-    box-shadow:
-      0 18px 38px rgba(15, 23, 42, 0.24),
-      0 0 0 8px rgba(255,255,255,0.08),
-      0 16px 34px rgba(255, 106, 24, 0.24),
-      inset 0 1px 0 rgba(255,255,255,0.22) !important;
-  }
-
-  .mobile-login-title,
-  .mobile-login-view:focus-within .mobile-login-title {
-    position: relative !important;
-    z-index: 1 !important;
-    font-size: 34px !important;
-    text-shadow: 0 12px 26px rgba(15, 23, 42, 0.18) !important;
-  }
-
-  .mobile-login-card,
-  .mobile-login-view:focus-within .mobile-login-card {
-    position: relative !important;
-    z-index: 2 !important;
-
-    margin-top: -1px !important;
-    padding: 30px 22px 26px !important;
-    border-radius: 0 0 34px 34px !important;
-
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255, 106, 24, 0.055), transparent 34%),
-      #ffffff !important;
-
-    box-shadow:
-      0 28px 70px rgba(15, 23, 42, 0.16),
-      0 12px 34px rgba(255, 106, 24, 0.10) !important;
-  }
-
-  .mobile-login-card h1,
-  .mobile-login-view:focus-within .mobile-login-card h1 {
-    font-size: 30px !important;
-    text-align: center !important;
-  }
-
-  .mobile-login-card p,
-  .mobile-login-view:focus-within .mobile-login-card p {
-    text-align: center !important;
-    max-width: 320px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  .mobile-login-field input,
-  .mobile-login-view:focus-within .mobile-login-field input {
-    height: 52px !important;
-    min-height: 52px !important;
-    background: #fff8f3 !important;
-    border-color: rgba(255, 106, 24, 0.26) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75) !important;
-  }
-
-  .mobile-login-password-wrap input,
-  .mobile-login-view:focus-within .mobile-login-password-wrap input {
-    padding-right: 86px !important;
-  }
-
-  .mobile-login-password-toggle,
-  .mobile-login-view:focus-within .mobile-login-password-toggle {
-    right: 9px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-
-    width: 68px !important;
-    min-width: 68px !important;
-    max-width: 68px !important;
-
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
-
-    padding: 0 !important;
-    border-radius: 999px !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    background: #ffffff !important;
-    color: #ff5f0f !important;
-
-    font-size: 12px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-
-    box-shadow:
-      0 8px 18px rgba(15, 23, 42, 0.08),
-      inset 0 1px 0 rgba(255,255,255,0.9) !important;
-  }
-
-  .mobile-login-submit,
-  .mobile-login-view:focus-within .mobile-login-submit {
-    height: 54px !important;
-    min-height: 54px !important;
-    margin-top: 8px !important;
-    background:
-      linear-gradient(135deg, #ff7a1a 0%, #ff6414 48%, #f04c0b 100%) !important;
-  }
-
-  .mobile-login-footer,
-  .mobile-login-view:focus-within .mobile-login-footer {
-    margin-top: 20px !important;
-    color: #98a2b3 !important;
-  }
-}
-
 /* iPhone stretti */
 @media screen and (max-width: 390px) {
   .mobile-login-top,
@@ -15147,14 +13858,7 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   HARD OVERRIDE MOBILE LOGIN - EXACT REAL CLASSES
-   Sistemazione reale tasto Mostra + integrazione logo.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  /* Testata più integrata col logo */
+/* Testata più integrata col logo */
   body .mobile-login-view .mobile-login-top,
   body .mobile-login-view:focus-within .mobile-login-top {
     height: 214px !important;
@@ -15605,189 +14309,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
     transform: scale(1.34) !important;
   }
 }
-
-
-/* ============================================================
-   WORKSPACE MOBILE LOGIN FINAL BALANCE
-   Logo identico anche al focus + sfondo coerente col logo.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  body .mobile-login-view,
-  body .mobile-login-view:focus-within {
-    background:
-      radial-gradient(circle at 50% -10%, rgba(255, 106, 24, 0.18), transparent 34%),
-      radial-gradient(circle at 12% 20%, rgba(255, 122, 36, 0.10), transparent 28%),
-      radial-gradient(circle at 86% 82%, rgba(17, 24, 39, 0.08), transparent 32%),
-      linear-gradient(180deg, #f3f0ec 0%, #e5e0da 48%, #d8d4cf 100%) !important;
-  }
-
-  body .mobile-login-phone,
-  body .mobile-login-view:focus-within .mobile-login-phone {
-    background: transparent !important;
-  }
-
-  body .mobile-login-top,
-  body .mobile-login-view:focus-within .mobile-login-top {
-    height: 220px !important;
-    min-height: 220px !important;
-    max-height: 220px !important;
-    flex: 0 0 220px !important;
-    flex-basis: 220px !important;
-
-    padding: 24px 20px 20px !important;
-    gap: 10px !important;
-
-    background:
-      radial-gradient(circle at 50% 30%, rgba(255,255,255,0.18), transparent 30%),
-      radial-gradient(circle at 14% 95%, rgba(255,255,255,0.20), transparent 36%),
-      linear-gradient(135deg, #ff8a2a 0%, #ff6718 46%, #e94a0a 100%) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top::before,
-  body .mobile-login-view:focus-within .mobile-login-top::before {
-    width: 270px !important;
-    height: 270px !important;
-    top: -22px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    opacity: 1 !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile {
-    width: 92px !important;
-    height: 92px !important;
-    min-width: 92px !important;
-    min-height: 92px !important;
-    max-width: 92px !important;
-    max-height: 92px !important;
-    flex: 0 0 92px !important;
-    flex-basis: 92px !important;
-
-    margin: 0 0 12px !important;
-    border-radius: 999px !important;
-
-    background:
-      radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(255,255,255,0.04) 58%, transparent 70%),
-      linear-gradient(145deg, rgba(17,24,39,0.26), rgba(255,106,24,0.10)) !important;
-
-    border: 1px solid rgba(255,255,255,0.22) !important;
-
-    box-shadow:
-      0 18px 38px rgba(15, 23, 42, 0.23),
-      0 0 0 10px rgba(255,255,255,0.045),
-      0 0 0 22px rgba(255,106,24,0.045),
-      inset 0 1px 0 rgba(255,255,255,0.20),
-      inset 0 -14px 22px rgba(15,23,42,0.16) !important;
-
-    overflow: visible !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile::before,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile::before {
-    inset: -7px !important;
-    border-radius: 999px !important;
-    opacity: 0.72 !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile::after,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile::after {
-    inset: 3px !important;
-    border-radius: 999px !important;
-  }
-
-  body .mobile-login-top .workspace-logo-img-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-img-mobile {
-    width: 92px !important;
-    height: 92px !important;
-    min-width: 92px !important;
-    min-height: 92px !important;
-    max-width: 92px !important;
-    max-height: 92px !important;
-
-    border-radius: 999px !important;
-    object-fit: cover !important;
-    display: block !important;
-
-    transform: scale(1.34) !important;
-    transform-origin: center center !important;
-
-    filter: contrast(1.06) saturate(1.08) !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-title,
-  body .mobile-login-view:focus-within .mobile-login-title {
-    font-size: 34px !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-    color: #ffffff !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-card,
-  body .mobile-login-view:focus-within .mobile-login-card {
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255,106,24,0.06), transparent 34%),
-      linear-gradient(180deg, #ffffff 0%, #fffaf6 100%) !important;
-  }
-}
-
-@media screen and (max-width: 390px) {
-  body .mobile-login-top,
-  body .mobile-login-view:focus-within .mobile-login-top {
-    height: 190px !important;
-    min-height: 190px !important;
-    max-height: 190px !important;
-    flex: 0 0 190px !important;
-    flex-basis: 190px !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile {
-    width: 78px !important;
-    height: 78px !important;
-    min-width: 78px !important;
-    min-height: 78px !important;
-    max-width: 78px !important;
-    max-height: 78px !important;
-    flex: 0 0 78px !important;
-    flex-basis: 78px !important;
-  }
-
-  body .mobile-login-top .workspace-logo-img-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-img-mobile {
-    width: 78px !important;
-    height: 78px !important;
-    min-width: 78px !important;
-    min-height: 78px !important;
-    max-width: 78px !important;
-    max-height: 78px !important;
-    transform: scale(1.34) !important;
-  }
-
-  body .mobile-login-title,
-  body .mobile-login-view:focus-within .mobile-login-title {
-    font-size: 30px !important;
-  }
-}
-
 
 /* ============================================================
    WORKSPACE DESKTOP LOGIN LOGO INTEGRATION
@@ -17686,398 +16207,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
-
-/* ============================================================
-   WORKSPACE MOBILE LOGIN - COHERENT WITH FINAL DESKTOP
-   Allinea la login telefono allo stile desktop finale.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  body .mobile-login-view,
-  body .mobile-login-view:focus-within {
-    display: block !important;
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    overflow: hidden !important;
-
-    background:
-      radial-gradient(circle at 18% 18%, rgba(255, 106, 24, 0.16), transparent 30%),
-      radial-gradient(circle at 80% 84%, rgba(255, 106, 24, 0.08), transparent 34%),
-      linear-gradient(135deg, #111720 0%, #1c222c 38%, #f2ede7 38%, #e4dcd3 100%) !important;
-  }
-
-  body .mobile-login-view::before,
-  body .mobile-login-view:focus-within::before {
-    content: '' !important;
-    position: absolute !important;
-    inset: 0 !important;
-    background:
-      linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px),
-      linear-gradient(135deg, rgba(255,106,24,0.040) 0 1px, transparent 1px 100%) !important;
-    background-size: 38px 38px, 38px 38px, 82px 82px !important;
-    opacity: 0.68 !important;
-    pointer-events: none !important;
-  }
-
-  body .mobile-login-view::after,
-  body .mobile-login-view:focus-within::after {
-    content: '' !important;
-    position: absolute !important;
-    width: 420px !important;
-    height: 420px !important;
-    left: -185px !important;
-    top: 36px !important;
-    border-radius: 50% !important;
-    border: 54px solid rgba(255,106,24,0.11) !important;
-    box-shadow:
-      0 0 70px rgba(255,106,24,0.08),
-      inset 0 0 60px rgba(255,106,24,0.07) !important;
-    pointer-events: none !important;
-  }
-
-  body .mobile-login-phone,
-  body .mobile-login-view:focus-within .mobile-login-phone {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-
-    padding: 22px 18px 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top,
-  body .mobile-login-view:focus-within .mobile-login-top {
-    position: relative !important;
-    z-index: 1 !important;
-
-    width: min(100%, 430px) !important;
-    height: 210px !important;
-    min-height: 210px !important;
-    max-height: 210px !important;
-    flex: 0 0 210px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-
-    margin: 0 !important;
-    padding: 22px 20px 20px !important;
-    border-radius: 32px 32px 0 0 !important;
-    overflow: hidden !important;
-
-    background:
-      radial-gradient(circle at 28% 26%, rgba(255,255,255,0.20), transparent 22%),
-      radial-gradient(circle at 4% 100%, rgba(255,255,255,0.14), transparent 34%),
-      linear-gradient(135deg, #ff8a2a 0%, #ff6818 48%, #d7602f 74%, #30363f 100%) !important;
-
-    border: 1px solid rgba(255,255,255,0.34) !important;
-    border-bottom: none !important;
-    box-shadow:
-      0 24px 60px rgba(15,23,42,0.18),
-      inset 0 1px 0 rgba(255,255,255,0.20) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top::before,
-  body .mobile-login-view:focus-within .mobile-login-top::before {
-    content: '' !important;
-    position: absolute !important;
-    width: 310px !important;
-    height: 310px !important;
-    left: -116px !important;
-    bottom: -168px !important;
-    border-radius: 50% !important;
-    background:
-      radial-gradient(circle at center,
-        rgba(255,255,255,0.20) 0%,
-        rgba(255,255,255,0.13) 35%,
-        rgba(255,255,255,0.055) 36%,
-        rgba(255,255,255,0.055) 58%,
-        transparent 59%
-      ) !important;
-    pointer-events: none !important;
-  }
-
-  body .mobile-login-top::after,
-  body .mobile-login-view:focus-within .mobile-login-top::after {
-    content: '' !important;
-    position: absolute !important;
-    inset: 0 !important;
-    background:
-      linear-gradient(118deg, transparent 0 52%, rgba(17,24,39,0.14) 52% 61%, transparent 61%),
-      repeating-linear-gradient(45deg, rgba(255,255,255,0.026) 0 1px, transparent 1px 18px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 28px) !important;
-    opacity: 0.86 !important;
-    pointer-events: none !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile {
-    position: relative !important;
-    z-index: 2 !important;
-
-    width: 84px !important;
-    height: 84px !important;
-    min-width: 84px !important;
-    min-height: 84px !important;
-    max-width: 84px !important;
-    max-height: 84px !important;
-    flex: 0 0 84px !important;
-
-    margin: 0 0 10px !important;
-    padding: 7px !important;
-    box-sizing: border-box !important;
-
-    border-radius: 26px !important;
-    overflow: visible !important;
-
-    background:
-      linear-gradient(145deg, rgba(255,255,255,0.46), rgba(255,255,255,0.12)),
-      rgba(17, 24, 39, 0.10) !important;
-
-    border: 1px solid rgba(255,255,255,0.34) !important;
-
-    box-shadow:
-      0 20px 44px rgba(15, 23, 42, 0.23),
-      0 0 0 9px rgba(255,255,255,0.065),
-      0 18px 40px rgba(255,106,24,0.22),
-      inset 0 1px 0 rgba(255,255,255,0.26) !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top .workspace-logo-img-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-img-mobile {
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-
-    object-fit: contain !important;
-    object-position: center center !important;
-
-    border-radius: 19px !important;
-    display: block !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-title,
-  body .mobile-login-view:focus-within .mobile-login-title {
-    position: relative !important;
-    z-index: 2 !important;
-
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    color: #ffffff !important;
-    font-size: 32px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.055em !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-
-    text-shadow:
-      0 14px 28px rgba(15,23,42,0.22),
-      0 0 20px rgba(255,255,255,0.08) !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-card,
-  body .mobile-login-view:focus-within .mobile-login-card {
-    position: relative !important;
-    z-index: 1 !important;
-
-    width: min(100%, 430px) !important;
-    flex: 0 0 auto !important;
-
-    margin: 0 !important;
-    padding: 28px 22px 24px !important;
-    border-radius: 0 0 32px 32px !important;
-
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255,106,24,0.052), transparent 30%),
-      linear-gradient(180deg, #ffffff 0%, #fff9f3 100%) !important;
-
-    border: 1px solid rgba(255,255,255,0.88) !important;
-    border-top: none !important;
-
-    box-shadow:
-      0 34px 82px rgba(15,23,42,0.24),
-      0 18px 42px rgba(255,106,24,0.10),
-      inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 14px !important;
-
-    overflow: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-card h1,
-  body .mobile-login-view:focus-within .mobile-login-card h1 {
-    margin: 0 !important;
-    padding: 0 !important;
-
-    color: #111827 !important;
-    font-size: 30px !important;
-    line-height: 1.04 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.05em !important;
-    text-align: center !important;
-  }
-
-  body .mobile-login-card p,
-  body .mobile-login-view:focus-within .mobile-login-card p {
-    max-width: 310px !important;
-    margin: -2px auto 4px !important;
-
-    color: #667085 !important;
-    font-size: 13px !important;
-    line-height: 1.28 !important;
-    font-weight: 800 !important;
-    text-align: center !important;
-  }
-
-  body .mobile-login-field,
-  body .mobile-login-view:focus-within .mobile-login-field {
-    gap: 7px !important;
-    margin: 0 !important;
-  }
-
-  body .mobile-login-field span,
-  body .mobile-login-view:focus-within .mobile-login-field span {
-    color: #2f3b4d !important;
-    font-size: 13px !important;
-    font-weight: 950 !important;
-  }
-
-  body .mobile-login-field input,
-  body .mobile-login-view:focus-within .mobile-login-field input {
-    height: 50px !important;
-    min-height: 50px !important;
-
-    border-radius: 15px !important;
-    border: 1.5px solid #d8dee8 !important;
-    background: #ffffff !important;
-
-    color: #111827 !important;
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    padding: 0 17px !important;
-
-    box-shadow:
-      0 8px 22px rgba(15,23,42,0.035),
-      inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    transform: none !important;
-    transition: border-color 120ms ease, box-shadow 120ms ease !important;
-  }
-
-  body .mobile-login-field input:focus {
-    border-color: #ff6a18 !important;
-    box-shadow:
-      0 0 0 4px rgba(255,106,24,0.12),
-      0 14px 34px rgba(255,106,24,0.10) !important;
-  }
-
-  body .mobile-login-password-wrap input,
-  body .mobile-login-view:focus-within .mobile-login-password-wrap input {
-    padding-right: 84px !important;
-  }
-
-  body .mobile-login-password-toggle,
-  body .mobile-login-view:focus-within .mobile-login-password-toggle {
-    right: 9px !important;
-    width: 66px !important;
-    min-width: 66px !important;
-    max-width: 66px !important;
-
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-
-    border-radius: 11px !important;
-    background: #f8fafc !important;
-    color: #344054 !important;
-    border: 1px solid #e5e7eb !important;
-
-    font-size: 12px !important;
-    font-weight: 950 !important;
-  }
-
-  body .mobile-login-submit,
-  body .mobile-login-view:focus-within .mobile-login-submit {
-    height: 52px !important;
-    min-height: 52px !important;
-    margin-top: 8px !important;
-
-    border-radius: 15px !important;
-    background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #f04c0b 100%) !important;
-    color: #ffffff !important;
-
-    font-size: 16px !important;
-    font-weight: 950 !important;
-
-    box-shadow:
-      0 18px 36px rgba(255,95,15,0.25),
-      inset 0 1px 0 rgba(255,255,255,0.25) !important;
-  }
-
-  body .mobile-login-footer,
-  body .mobile-login-view:focus-within .mobile-login-footer {
-    width: min(100%, 430px) !important;
-    margin: 18px auto 0 !important;
-
-    color: rgba(17,24,39,0.44) !important;
-    font-size: 12px !important;
-    letter-spacing: 0.14em !important;
-    font-weight: 950 !important;
-    text-align: center !important;
-    text-transform: uppercase !important;
-  }
-}
-
 /* iPhone piccoli */
 @media screen and (max-width: 390px) {
   body .mobile-login-phone,
@@ -18144,260 +16273,6 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   body .mobile-login-view:focus-within .mobile-login-submit {
     height: 50px !important;
     min-height: 50px !important;
-  }
-}
-
-
-/* ============================================================
-   WORKSPACE MOBILE LOGIN - LOCK NORMAL AND FOCUS STATES
-   La schermata telefono resta identica quando si cliccano Email/Password.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  body .mobile-login-view,
-  body .mobile-login-view:focus-within {
-    background:
-      radial-gradient(circle at 18% 18%, rgba(255, 106, 24, 0.16), transparent 30%),
-      radial-gradient(circle at 80% 84%, rgba(255, 106, 24, 0.08), transparent 34%),
-      linear-gradient(135deg, #111720 0%, #1c222c 38%, #f2ede7 38%, #e4dcd3 100%) !important;
-  }
-
-  body .mobile-login-phone,
-  body .mobile-login-view:focus-within .mobile-login-phone {
-    padding: 22px 18px 0 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top,
-  body .mobile-login-view:focus-within .mobile-login-top {
-    width: min(100%, 430px) !important;
-    height: 210px !important;
-    min-height: 210px !important;
-    max-height: 210px !important;
-    flex: 0 0 210px !important;
-
-    padding: 22px 20px 20px !important;
-    border-radius: 32px 32px 0 0 !important;
-
-    background:
-      radial-gradient(circle at 28% 26%, rgba(255,255,255,0.20), transparent 22%),
-      radial-gradient(circle at 4% 100%, rgba(255,255,255,0.14), transparent 34%),
-      linear-gradient(135deg, #ff8a2a 0%, #ff6818 48%, #d7602f 74%, #30363f 100%) !important;
-
-    border: 1px solid rgba(255,255,255,0.34) !important;
-    border-bottom: none !important;
-    overflow: hidden !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-shell.workspace-logo-shell-mobile {
-    width: 84px !important;
-    height: 84px !important;
-    min-width: 84px !important;
-    min-height: 84px !important;
-    max-width: 84px !important;
-    max-height: 84px !important;
-    flex: 0 0 84px !important;
-
-    margin: 0 0 10px !important;
-    padding: 7px !important;
-    border-radius: 26px !important;
-
-    background:
-      linear-gradient(145deg, rgba(255,255,255,0.46), rgba(255,255,255,0.12)),
-      rgba(17, 24, 39, 0.10) !important;
-
-    border: 1px solid rgba(255,255,255,0.34) !important;
-    box-shadow:
-      0 20px 44px rgba(15, 23, 42, 0.23),
-      0 0 0 9px rgba(255,255,255,0.065),
-      0 18px 40px rgba(255,106,24,0.22),
-      inset 0 1px 0 rgba(255,255,255,0.26) !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-top .workspace-logo-img-mobile,
-  body .mobile-login-view:focus-within .mobile-login-top .workspace-logo-img-mobile {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-    object-position: center center !important;
-    border-radius: 19px !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-title,
-  body .mobile-login-view:focus-within .mobile-login-title {
-    color: #ffffff !important;
-    font-size: 32px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.055em !important;
-    text-align: center !important;
-    margin: 0 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-card,
-  body .mobile-login-view:focus-within .mobile-login-card {
-    width: min(100%, 430px) !important;
-    margin: 0 !important;
-    padding: 28px 22px 24px !important;
-    border-radius: 0 0 32px 32px !important;
-
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255,106,24,0.052), transparent 30%),
-      linear-gradient(180deg, #ffffff 0%, #fff9f3 100%) !important;
-
-    border: 1px solid rgba(255,255,255,0.88) !important;
-    border-top: none !important;
-
-    box-shadow:
-      0 34px 82px rgba(15,23,42,0.24),
-      0 18px 42px rgba(255,106,24,0.10),
-      inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 14px !important;
-    overflow: hidden !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-card h1,
-  body .mobile-login-view:focus-within .mobile-login-card h1 {
-    color: #111827 !important;
-    font-size: 30px !important;
-    line-height: 1.04 !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.05em !important;
-    text-align: center !important;
-    margin: 0 !important;
-    transform: none !important;
-    transition: none !important;
-  }
-
-  body .mobile-login-card p,
-  body .mobile-login-view:focus-within .mobile-login-card p {
-    max-width: 310px !important;
-    margin: -2px auto 4px !important;
-    color: #667085 !important;
-    font-size: 13px !important;
-    line-height: 1.28 !important;
-    font-weight: 800 !important;
-    text-align: center !important;
-    transform: none !important;
-    transition: none !important;
-  }
-
-  body .mobile-login-field input,
-  body .mobile-login-view:focus-within .mobile-login-field input,
-  body .mobile-login-field input:focus,
-  body .mobile-login-view:focus-within .mobile-login-field input:focus {
-    height: 50px !important;
-    min-height: 50px !important;
-
-    border-radius: 15px !important;
-    border: 1.5px solid #d8dee8 !important;
-    background: #ffffff !important;
-
-    color: #111827 !important;
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    padding: 0 17px !important;
-
-    box-shadow:
-      0 8px 22px rgba(15,23,42,0.035),
-      inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-password-wrap input,
-  body .mobile-login-view:focus-within .mobile-login-password-wrap input,
-  body .mobile-login-password-wrap input:focus,
-  body .mobile-login-view:focus-within .mobile-login-password-wrap input:focus {
-    padding-right: 84px !important;
-  }
-
-  body .mobile-login-password-toggle,
-  body .mobile-login-view:focus-within .mobile-login-password-toggle {
-    right: 9px !important;
-    width: 66px !important;
-    min-width: 66px !important;
-    max-width: 66px !important;
-
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-
-    border-radius: 11px !important;
-    background: #f8fafc !important;
-    color: #344054 !important;
-    border: 1px solid #e5e7eb !important;
-
-    font-size: 12px !important;
-    font-weight: 950 !important;
-
-    transform: translateY(-50%) !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-submit,
-  body .mobile-login-view:focus-within .mobile-login-submit {
-    height: 52px !important;
-    min-height: 52px !important;
-    margin-top: 8px !important;
-
-    border-radius: 15px !important;
-    background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #f04c0b 100%) !important;
-
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 950 !important;
-
-    box-shadow:
-      0 18px 36px rgba(255,95,15,0.25),
-      inset 0 1px 0 rgba(255,255,255,0.25) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-footer,
-  body .mobile-login-view:focus-within .mobile-login-footer {
-    margin: 18px auto 0 !important;
-    color: rgba(17,24,39,0.44) !important;
-    font-size: 12px !important;
-    letter-spacing: 0.14em !important;
-    font-weight: 950 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 }
 
@@ -18469,73 +16344,62 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
 
 
 /* ============================================================
-   WORKSPACE MOBILE LOGIN - ISOLATED FINAL VERSION
-   Classe nuova: mobile-login-stable-final.
-   Non cambia colori/forme quando Email o Password hanno focus.
+   WORKSPACE MOBILE LOGIN - SINGLE CLEAN FINAL
+   Unico blocco mobile login attivo. Coerente con desktop.
    ============================================================ */
 
 @media screen and (max-width: 540px) {
-  body .mobile-login-stable-final,
-  body .mobile-login-stable-final:focus,
-  body .mobile-login-stable-final:focus-within {
+  body .login-desktop-view {
+    display: none !important;
+  }
+
+  body .mobile-login-view.mobile-login-stable-final {
+    display: block !important;
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    max-height: 100vh !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
     overflow: hidden !important;
-    padding: 0 !important;
-    margin: 0 !important;
-
     background:
       radial-gradient(circle at 18% 18%, rgba(255, 106, 24, 0.16), transparent 30%),
       radial-gradient(circle at 80% 84%, rgba(255, 106, 24, 0.08), transparent 34%),
       linear-gradient(135deg, #111720 0%, #1c222c 38%, #f2ede7 38%, #e4dcd3 100%) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-phone,
-  body .mobile-login-stable-final:focus-within .mobile-login-phone {
+  body .mobile-login-view.mobile-login-stable-final::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background:
+      linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size: 38px 38px !important;
+    opacity: 0.52 !important;
+    pointer-events: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-phone {
     position: absolute !important;
     top: 22px !important;
     left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translateX(-50%) !important;
-
     width: calc(100vw - 36px) !important;
     max-width: 430px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-
-    display: block !important;
-    overflow: visible !important;
-    padding: 0 !important;
+    transform: translateX(-50%) !important;
     margin: 0 !important;
-
-    transition: none !important;
-    animation: none !important;
+    padding: 0 !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-top,
-  body .mobile-login-stable-final:focus-within .mobile-login-top {
+  body .mobile-login-stable-final .mobile-login-top {
     width: 100% !important;
     height: 210px !important;
     min-height: 210px !important;
-    max-height: 210px !important;
-
-    margin: 0 !important;
     padding: 22px 20px 20px !important;
     box-sizing: border-box !important;
-
     border-radius: 32px 32px 0 0 !important;
     border: 1px solid rgba(255,255,255,0.34) !important;
     border-bottom: none !important;
+    overflow: hidden !important;
 
     display: flex !important;
     flex-direction: column !important;
@@ -18547,67 +16411,63 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
       radial-gradient(circle at 28% 26%, rgba(255,255,255,0.20), transparent 22%),
       radial-gradient(circle at 4% 100%, rgba(255,255,255,0.14), transparent 34%),
       linear-gradient(135deg, #ff8a2a 0%, #ff6818 48%, #d7602f 74%, #30363f 100%) !important;
-
-    overflow: hidden !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile {
+  body .mobile-login-stable-final .mobile-login-top::before {
+    content: '' !important;
+    position: absolute !important;
+    width: 300px !important;
+    height: 300px !important;
+    left: -120px !important;
+    bottom: -170px !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,0.13) !important;
+    pointer-events: none !important;
+  }
+
+  body .mobile-login-stable-final .mobile-login-top::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background:
+      linear-gradient(118deg, transparent 0 52%, rgba(17,24,39,0.14) 52% 61%, transparent 61%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.024) 0 1px, transparent 1px 18px) !important;
+    pointer-events: none !important;
+  }
+
+  body .mobile-login-stable-final .workspace-logo-shell-mobile {
+    position: relative !important;
+    z-index: 2 !important;
     width: 84px !important;
     height: 84px !important;
     min-width: 84px !important;
     min-height: 84px !important;
-    max-width: 84px !important;
-    max-height: 84px !important;
-
-    margin: 0 0 10px !important;
     padding: 7px !important;
     box-sizing: border-box !important;
-
     border-radius: 26px !important;
     border: 1px solid rgba(255,255,255,0.34) !important;
-
     background:
       linear-gradient(145deg, rgba(255,255,255,0.46), rgba(255,255,255,0.12)),
       rgba(17, 24, 39, 0.10) !important;
-
     box-shadow:
       0 20px 44px rgba(15, 23, 42, 0.23),
       0 0 0 9px rgba(255,255,255,0.065),
       0 18px 40px rgba(255,106,24,0.22),
       inset 0 1px 0 rgba(255,255,255,0.26) !important;
-
-    overflow: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .workspace-logo-img-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-img-mobile {
+  body .mobile-login-stable-final .workspace-logo-img-mobile {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain !important;
-    object-position: center center !important;
     border-radius: 19px !important;
     display: block !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-title,
-  body .mobile-login-stable-final:focus-within .mobile-login-title {
+  body .mobile-login-stable-final .mobile-login-title {
+    position: relative !important;
+    z-index: 2 !important;
     margin: 0 !important;
-    padding: 0 !important;
-
     color: #ffffff !important;
     font-size: 32px !important;
     line-height: 1 !important;
@@ -18615,747 +16475,190 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
     letter-spacing: -0.055em !important;
     text-align: center !important;
     white-space: nowrap !important;
-
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card,
-  body .mobile-login-stable-final:focus-within .mobile-login-card {
+  body .mobile-login-stable-final .mobile-login-card {
     width: 100% !important;
     margin: 0 !important;
     padding: 28px 22px 24px !important;
     box-sizing: border-box !important;
-
     border-radius: 0 0 32px 32px !important;
     border: 1px solid rgba(255,255,255,0.88) !important;
     border-top: none !important;
-
     background:
       radial-gradient(circle at 100% 0%, rgba(255,106,24,0.052), transparent 30%),
       linear-gradient(180deg, #ffffff 0%, #fff9f3 100%) !important;
-
     box-shadow:
       0 34px 82px rgba(15,23,42,0.24),
       0 18px 42px rgba(255,106,24,0.10),
       inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
     display: flex !important;
     flex-direction: column !important;
     gap: 14px !important;
-
-    overflow: hidden !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card h1,
-  body .mobile-login-stable-final:focus-within .mobile-login-card h1 {
+  body .mobile-login-stable-final .mobile-login-card h1 {
     margin: 0 !important;
-    padding: 0 !important;
-
     color: #111827 !important;
     font-size: 30px !important;
     line-height: 1.04 !important;
     font-weight: 950 !important;
     letter-spacing: -0.05em !important;
     text-align: center !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card p,
-  body .mobile-login-stable-final:focus-within .mobile-login-card p {
+  body .mobile-login-stable-final .mobile-login-card p {
     max-width: 310px !important;
     margin: -2px auto 4px !important;
-
     color: #667085 !important;
     font-size: 13px !important;
     line-height: 1.28 !important;
     font-weight: 800 !important;
     text-align: center !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-field,
-  body .mobile-login-stable-final:focus-within .mobile-login-field {
+  body .mobile-login-stable-final .mobile-login-field {
     margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 7px !important;
-    transform: none !important;
-    transition: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-field span,
-  body .mobile-login-stable-final:focus-within .mobile-login-field span {
+  body .mobile-login-stable-final .mobile-login-field span {
     color: #2f3b4d !important;
     font-size: 13px !important;
+    line-height: 18px !important;
     font-weight: 950 !important;
   }
 
   body .mobile-login-stable-final .mobile-login-field input,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input,
-  body .mobile-login-stable-final .mobile-login-field input:focus,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input:focus {
-    appearance: none !important;
+  body .mobile-login-stable-final .mobile-login-field input:focus {
     -webkit-appearance: none !important;
-
+    appearance: none !important;
     width: 100% !important;
     height: 50px !important;
     min-height: 50px !important;
-    max-height: 50px !important;
-
     border-radius: 15px !important;
     border: 1.5px solid #d8dee8 !important;
     background: #ffffff !important;
-
     color: #111827 !important;
     font-size: 16px !important;
     font-weight: 800 !important;
-    line-height: 50px !important;
-
     padding: 0 17px !important;
     box-sizing: border-box !important;
-
+    outline: none !important;
     box-shadow:
       0 8px 22px rgba(15,23,42,0.035),
       inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    outline: none !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-password-wrap,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap {
+  body .mobile-login-stable-final .mobile-login-password-wrap {
     position: relative !important;
-    transform: none !important;
-    transition: none !important;
+    width: 100% !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-password-wrap input,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap input,
-  body .mobile-login-stable-final .mobile-login-password-wrap input:focus,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap input:focus {
+  body .mobile-login-stable-final .mobile-login-password-wrap input {
     padding-right: 84px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-password-toggle,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-toggle {
+  body .mobile-login-stable-final .mobile-login-password-toggle {
     position: absolute !important;
     top: 50% !important;
     right: 9px !important;
-    left: auto !important;
-    bottom: auto !important;
-
     width: 66px !important;
-    min-width: 66px !important;
-    max-width: 66px !important;
-
     height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-
     border-radius: 11px !important;
     border: 1px solid #e5e7eb !important;
     background: #f8fafc !important;
     color: #344054 !important;
-
     font-size: 12px !important;
     font-weight: 950 !important;
-    line-height: 1 !important;
-
+    transform: translateY(-50%) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-
-    transform: translateY(-50%) !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-submit,
-  body .mobile-login-stable-final:focus-within .mobile-login-submit {
+  body .mobile-login-stable-final .mobile-login-submit {
     width: 100% !important;
     height: 52px !important;
     min-height: 52px !important;
-    max-height: 52px !important;
-
     margin-top: 8px !important;
-
     border-radius: 15px !important;
     border: none !important;
-
     background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #f04c0b 100%) !important;
-
     color: #ffffff !important;
     font-size: 16px !important;
     font-weight: 950 !important;
-
     box-shadow:
       0 18px 36px rgba(255,95,15,0.25),
       inset 0 1px 0 rgba(255,255,255,0.25) !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-footer,
-  body .mobile-login-stable-final:focus-within .mobile-login-footer {
+  body .mobile-login-stable-final .mobile-login-footer {
     width: 100% !important;
     margin: 18px auto 0 !important;
-
     color: rgba(17,24,39,0.44) !important;
     font-size: 12px !important;
     letter-spacing: 0.14em !important;
     font-weight: 950 !important;
     text-align: center !important;
     text-transform: uppercase !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
 }
 
 @media screen and (max-width: 390px) {
-  body .mobile-login-stable-final .mobile-login-phone,
-  body .mobile-login-stable-final:focus-within .mobile-login-phone {
+  body .mobile-login-stable-final .mobile-login-phone {
     top: 16px !important;
     width: calc(100vw - 28px) !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-top,
-  body .mobile-login-stable-final:focus-within .mobile-login-top {
+  body .mobile-login-stable-final .mobile-login-top {
     height: 184px !important;
     min-height: 184px !important;
-    max-height: 184px !important;
     border-radius: 30px 30px 0 0 !important;
   }
 
-  body .mobile-login-stable-final .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile {
+  body .mobile-login-stable-final .workspace-logo-shell-mobile {
     width: 74px !important;
     height: 74px !important;
     min-width: 74px !important;
     min-height: 74px !important;
-    max-width: 74px !important;
-    max-height: 74px !important;
     padding: 6px !important;
     border-radius: 23px !important;
   }
 
-  body .mobile-login-stable-final .workspace-logo-img-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-img-mobile {
+  body .mobile-login-stable-final .workspace-logo-img-mobile {
     border-radius: 17px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-title,
-  body .mobile-login-stable-final:focus-within .mobile-login-title {
+  body .mobile-login-stable-final .mobile-login-title {
     font-size: 29px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card,
-  body .mobile-login-stable-final:focus-within .mobile-login-card {
+  body .mobile-login-stable-final .mobile-login-card {
     padding: 24px 20px 22px !important;
     border-radius: 0 0 30px 30px !important;
     gap: 12px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card h1,
-  body .mobile-login-stable-final:focus-within .mobile-login-card h1 {
+  body .mobile-login-stable-final .mobile-login-card h1 {
     font-size: 27px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-card p,
-  body .mobile-login-stable-final:focus-within .mobile-login-card p {
+  body .mobile-login-stable-final .mobile-login-card p {
     font-size: 12px !important;
   }
 
   body .mobile-login-stable-final .mobile-login-field input,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input,
-  body .mobile-login-stable-final .mobile-login-field input:focus,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input:focus {
-    height: 48px !important;
-    min-height: 48px !important;
-    max-height: 48px !important;
-    line-height: 48px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-submit,
-  body .mobile-login-stable-final:focus-within .mobile-login-submit {
-    height: 50px !important;
-    min-height: 50px !important;
-    max-height: 50px !important;
-  }
-}
-
-
-/* ============================================================
-   WORKSPACE MOBILE LOGIN - FIXED CAPTIONS / NO FOCUS CHANGE
-   Congela testi, caption, logo, top e form anche quando iOS apre la tastiera.
-   ============================================================ */
-
-@media screen and (max-width: 540px) {
-  body .mobile-login-stable-final,
-  body .mobile-login-stable-final:focus,
-  body .mobile-login-stable-final:focus-within,
-  body .mobile-login-stable-final:active {
-    position: fixed !important;
-    inset: 0 !important;
-    overflow: hidden !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    max-height: 100vh !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-phone,
-  body .mobile-login-stable-final:focus .mobile-login-phone,
-  body .mobile-login-stable-final:focus-within .mobile-login-phone,
-  body .mobile-login-stable-final:active .mobile-login-phone {
-    position: fixed !important;
-    top: 22px !important;
-    left: 50% !important;
-    width: calc(100vw - 36px) !important;
-    max-width: 430px !important;
-    height: 650px !important;
-    min-height: 650px !important;
-    max-height: 650px !important;
-    transform: translateX(-50%) !important;
-    overflow: visible !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-top,
-  body .mobile-login-stable-final:focus .mobile-login-top,
-  body .mobile-login-stable-final:focus-within .mobile-login-top,
-  body .mobile-login-stable-final:active .mobile-login-top {
-    position: relative !important;
-    width: 100% !important;
-    height: 210px !important;
-    min-height: 210px !important;
-    max-height: 210px !important;
-    flex: none !important;
-    display: block !important;
-    padding: 0 !important;
-    border-radius: 32px 32px 0 0 !important;
-    overflow: hidden !important;
-  }
-
-  body .mobile-login-stable-final .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:focus .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:active .workspace-logo-shell-mobile {
-    position: absolute !important;
-    top: 36px !important;
-    left: 50% !important;
-    width: 84px !important;
-    height: 84px !important;
-    min-width: 84px !important;
-    min-height: 84px !important;
-    max-width: 84px !important;
-    max-height: 84px !important;
-    margin: 0 !important;
-    padding: 7px !important;
-    transform: translateX(-50%) !important;
-    border-radius: 26px !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  body .mobile-login-stable-final .workspace-logo-img-mobile,
-  body .mobile-login-stable-final:focus .workspace-logo-img-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-img-mobile,
-  body .mobile-login-stable-final:active .workspace-logo-img-mobile {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-    transform: none !important;
-    border-radius: 19px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-title,
-  body .mobile-login-stable-final:focus .mobile-login-title,
-  body .mobile-login-stable-final:focus-within .mobile-login-title,
-  body .mobile-login-stable-final:active .mobile-login-title {
-    position: absolute !important;
-    top: 135px !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    max-height: 38px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-
-    color: #ffffff !important;
-    font-size: 32px !important;
-    line-height: 38px !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.055em !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card,
-  body .mobile-login-stable-final:focus .mobile-login-card,
-  body .mobile-login-stable-final:focus-within .mobile-login-card,
-  body .mobile-login-stable-final:active .mobile-login-card {
-    position: relative !important;
-    width: 100% !important;
-    height: 412px !important;
-    min-height: 412px !important;
-    max-height: 412px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 0 0 32px 32px !important;
-    overflow: hidden !important;
-    display: block !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card h1,
-  body .mobile-login-stable-final:focus .mobile-login-card h1,
-  body .mobile-login-stable-final:focus-within .mobile-login-card h1,
-  body .mobile-login-stable-final:active .mobile-login-card h1 {
-    position: absolute !important;
-    top: 34px !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: 36px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    color: #111827 !important;
-    font-size: 30px !important;
-    line-height: 36px !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.05em !important;
-    text-align: center !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card p,
-  body .mobile-login-stable-final:focus .mobile-login-card p,
-  body .mobile-login-stable-final:focus-within .mobile-login-card p,
-  body .mobile-login-stable-final:active .mobile-login-card p {
-    position: absolute !important;
-    top: 88px !important;
-    left: 22px !important;
-    right: 22px !important;
-    width: auto !important;
-    height: 18px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    color: #667085 !important;
-    font-size: 13px !important;
-    line-height: 18px !important;
-    font-weight: 800 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field:nth-of-type(1),
-  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(1) {
-    position: absolute !important;
-    top: 128px !important;
-    left: 22px !important;
-    right: 22px !important;
-    width: auto !important;
-    height: 78px !important;
-    margin: 0 !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field:nth-of-type(2),
-  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(2) {
-    position: absolute !important;
-    top: 222px !important;
-    left: 22px !important;
-    right: 22px !important;
-    width: auto !important;
-    height: 78px !important;
-    margin: 0 !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field span,
-  body .mobile-login-stable-final:focus .mobile-login-field span,
-  body .mobile-login-stable-final:focus-within .mobile-login-field span,
-  body .mobile-login-stable-final:active .mobile-login-field span {
-    display: block !important;
-    height: 18px !important;
-    margin: 0 0 8px !important;
-    color: #2f3b4d !important;
-    font-size: 13px !important;
-    line-height: 18px !important;
-    font-weight: 950 !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field input,
-  body .mobile-login-stable-final:focus .mobile-login-field input,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input,
-  body .mobile-login-stable-final:active .mobile-login-field input,
-  body .mobile-login-stable-final .mobile-login-field input:focus {
-    display: block !important;
-    width: 100% !important;
-    height: 50px !important;
-    min-height: 50px !important;
-    max-height: 50px !important;
-    margin: 0 !important;
-    padding: 0 17px !important;
-    box-sizing: border-box !important;
-
-    border-radius: 15px !important;
-    border: 1.5px solid #d8dee8 !important;
-    background: #ffffff !important;
-    color: #111827 !important;
-
-    font-size: 16px !important;
-    line-height: 50px !important;
-    font-weight: 800 !important;
-
-    box-shadow:
-      0 8px 22px rgba(15,23,42,0.035),
-      inset 0 1px 0 rgba(255,255,255,0.88) !important;
-
-    outline: none !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-password-wrap,
-  body .mobile-login-stable-final:focus .mobile-login-password-wrap,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap,
-  body .mobile-login-stable-final:active .mobile-login-password-wrap {
-    position: relative !important;
-    width: 100% !important;
-    height: 50px !important;
-    margin: 0 !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-password-wrap input,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap input,
-  body .mobile-login-stable-final .mobile-login-password-wrap input:focus {
-    padding-right: 84px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-password-toggle,
-  body .mobile-login-stable-final:focus .mobile-login-password-toggle,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-toggle,
-  body .mobile-login-stable-final:active .mobile-login-password-toggle {
-    position: absolute !important;
-    top: 25px !important;
-    right: 9px !important;
-
-    width: 66px !important;
-    min-width: 66px !important;
-    max-width: 66px !important;
-
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-
-    border-radius: 11px !important;
-    border: 1px solid #e5e7eb !important;
-    background: #f8fafc !important;
-    color: #344054 !important;
-
-    font-size: 12px !important;
-    line-height: 1 !important;
-    font-weight: 950 !important;
-
-    transform: translateY(-50%) !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-submit,
-  body .mobile-login-stable-final:focus .mobile-login-submit,
-  body .mobile-login-stable-final:focus-within .mobile-login-submit,
-  body .mobile-login-stable-final:active .mobile-login-submit {
-    position: absolute !important;
-    top: 324px !important;
-    left: 22px !important;
-    right: 22px !important;
-    width: auto !important;
-
-    height: 52px !important;
-    min-height: 52px !important;
-    max-height: 52px !important;
-    margin: 0 !important;
-
-    border-radius: 15px !important;
-    background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #f04c0b 100%) !important;
-    color: #ffffff !important;
-
-    font-size: 16px !important;
-    line-height: 52px !important;
-    font-weight: 950 !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-footer,
-  body .mobile-login-stable-final:focus .mobile-login-footer,
-  body .mobile-login-stable-final:focus-within .mobile-login-footer,
-  body .mobile-login-stable-final:active .mobile-login-footer {
-    position: absolute !important;
-    top: 648px !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 18px !important;
-    margin: 0 !important;
-
-    color: rgba(17,24,39,0.44) !important;
-    font-size: 12px !important;
-    line-height: 18px !important;
-    letter-spacing: 0.14em !important;
-    font-weight: 950 !important;
-    text-align: center !important;
-    text-transform: uppercase !important;
-
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-@media screen and (max-width: 390px) {
-  body .mobile-login-stable-final .mobile-login-phone,
-  body .mobile-login-stable-final:focus-within .mobile-login-phone {
-    top: 16px !important;
-    width: calc(100vw - 28px) !important;
-    height: 612px !important;
-    min-height: 612px !important;
-    max-height: 612px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-top,
-  body .mobile-login-stable-final:focus-within .mobile-login-top {
-    height: 184px !important;
-    min-height: 184px !important;
-    max-height: 184px !important;
-    border-radius: 30px 30px 0 0 !important;
-  }
-
-  body .mobile-login-stable-final .workspace-logo-shell-mobile,
-  body .mobile-login-stable-final:focus-within .workspace-logo-shell-mobile {
-    top: 30px !important;
-    width: 74px !important;
-    height: 74px !important;
-    min-width: 74px !important;
-    min-height: 74px !important;
-    max-width: 74px !important;
-    max-height: 74px !important;
-    padding: 6px !important;
-    border-radius: 23px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-title,
-  body .mobile-login-stable-final:focus-within .mobile-login-title {
-    top: 122px !important;
-    font-size: 29px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card,
-  body .mobile-login-stable-final:focus-within .mobile-login-card {
-    height: 392px !important;
-    min-height: 392px !important;
-    max-height: 392px !important;
-    border-radius: 0 0 30px 30px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card h1,
-  body .mobile-login-stable-final:focus-within .mobile-login-card h1 {
-    top: 30px !important;
-    font-size: 27px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-card p,
-  body .mobile-login-stable-final:focus-within .mobile-login-card p {
-    top: 82px !important;
-    font-size: 12px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field:nth-of-type(1),
-  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(1) {
-    top: 118px !important;
-    left: 20px !important;
-    right: 20px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field:nth-of-type(2),
-  body .mobile-login-stable-final:focus-within .mobile-login-field:nth-of-type(2) {
-    top: 208px !important;
-    left: 20px !important;
-    right: 20px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-field input,
-  body .mobile-login-stable-final:focus-within .mobile-login-field input,
   body .mobile-login-stable-final .mobile-login-field input:focus {
     height: 48px !important;
     min-height: 48px !important;
-    max-height: 48px !important;
-    line-height: 48px !important;
   }
 
-  body .mobile-login-stable-final .mobile-login-password-wrap,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-wrap {
-    height: 48px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-password-toggle,
-  body .mobile-login-stable-final:focus-within .mobile-login-password-toggle {
-    top: 24px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-submit,
-  body .mobile-login-stable-final:focus-within .mobile-login-submit {
-    top: 304px !important;
-    left: 20px !important;
-    right: 20px !important;
+  body .mobile-login-stable-final .mobile-login-submit {
     height: 50px !important;
     min-height: 50px !important;
-    max-height: 50px !important;
-    line-height: 50px !important;
-  }
-
-  body .mobile-login-stable-final .mobile-login-footer,
-  body .mobile-login-stable-final:focus-within .mobile-login-footer {
-    top: 610px !important;
   }
 }
 
