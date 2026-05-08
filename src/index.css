@@ -13151,3 +13151,63 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE OFFICIAL LOGO
+   ============================================================ */
+
+.login-redesign-logo,
+.login-brand-logo {
+  width: 92px;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow:
+    0 22px 48px rgba(255, 106, 24, 0.26),
+    0 10px 28px rgba(15, 23, 42, 0.22);
+}
+
+.login-redesign-small-logo,
+.login-form-logo {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow:
+    0 14px 30px rgba(255, 106, 24, 0.20),
+    0 8px 18px rgba(15, 23, 42, 0.16);
+}
+
+.app-logo-img {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow:
+    0 14px 26px rgba(255, 106, 24, 0.22),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.sidebar.collapsed .app-logo-img,
+.sidebar-collapsed .app-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+@media screen and (max-width: 540px) {
+  .login-redesign-logo,
+  .login-brand-logo {
+    width: 86px;
+    height: 86px;
+    border-radius: 22px;
+  }
+
+  .login-redesign-small-logo,
+  .login-form-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+}
+
