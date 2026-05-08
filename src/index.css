@@ -16314,3 +16314,199 @@ body:has(.page-title) .kpi-grid .kpi-card .kpi-value {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE DESKTOP LOGIN - PREMIUM TECH DESIGN
+   Solo desktop/tablet. Mobile non toccato.
+   ============================================================ */
+
+@media screen and (min-width: 541px) {
+  body .login-desktop-view,
+  body .login-desktop-view:focus-within {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 106, 24, 0.23), transparent 28%),
+      radial-gradient(circle at 78% 76%, rgba(255, 106, 24, 0.13), transparent 36%),
+      radial-gradient(circle at 48% 115%, rgba(255,255,255,0.055), transparent 38%),
+      linear-gradient(135deg, #0d1118 0%, #151b24 44%, #262a31 100%) !important;
+  }
+
+  body .login-desktop-view::before {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.034) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.034) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(255,106,24,0.050) 0 1px, transparent 1px 100%) !important;
+    background-size: 42px 42px, 42px 42px, 88px 88px !important;
+    opacity: 0.82 !important;
+  }
+
+  body .login-desktop-view::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 640px !important;
+    height: 640px !important;
+    right: -260px !important;
+    bottom: -270px !important;
+    border-radius: 50% !important;
+    border: 82px solid rgba(255,106,24,0.10) !important;
+    box-shadow:
+      0 0 90px rgba(255,106,24,0.08),
+      inset 0 0 80px rgba(255,106,24,0.07) !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,248,242,0.95)) !important;
+    border: 1px solid rgba(255,255,255,0.74) !important;
+    box-shadow:
+      0 38px 100px rgba(0, 0, 0, 0.46),
+      0 0 0 1px rgba(255,106,24,0.09),
+      0 0 64px rgba(255,106,24,0.13) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view:focus-within .login-redesign-brand {
+    background:
+      radial-gradient(circle at 22% 24%, rgba(255,255,255,0.20), transparent 20%),
+      radial-gradient(circle at 0% 100%, rgba(255,255,255,0.14), transparent 34%),
+      linear-gradient(135deg, #ff8a2a 0%, #ff6818 38%, #c85a2e 68%, #252a32 100%) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand::before,
+  body .login-desktop-view:focus-within .login-redesign-brand::before {
+    width: 420px !important;
+    height: 420px !important;
+    left: -195px !important;
+    bottom: -198px !important;
+    border: 62px solid rgba(255,255,255,0.11) !important;
+    opacity: 1 !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand::after,
+  body .login-desktop-view:focus-within .login-redesign-brand::after {
+    background:
+      radial-gradient(circle at 22% 29%, rgba(255,255,255,0.16), transparent 23%),
+      linear-gradient(135deg, transparent 0 46%, rgba(17,24,39,0.16) 46% 58%, transparent 58%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 28px) !important;
+    opacity: 1 !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand .workspace-logo-shell-big,
+  body .login-desktop-view:focus-within .login-redesign-brand .workspace-logo-shell-big {
+    background:
+      radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(255,255,255,0.04) 58%, transparent 70%),
+      linear-gradient(145deg, rgba(17,24,39,0.30), rgba(255,106,24,0.12)) !important;
+    border: 1px solid rgba(255,255,255,0.30) !important;
+    box-shadow:
+      0 22px 48px rgba(15, 23, 42, 0.28),
+      0 0 0 10px rgba(255,255,255,0.060),
+      0 0 0 22px rgba(255,106,24,0.045),
+      0 20px 44px rgba(255,106,24,0.24),
+      inset 0 1px 0 rgba(255,255,255,0.24),
+      inset 0 -12px 22px rgba(15,23,42,0.18) !important;
+  }
+
+  body .login-desktop-view .login-redesign-kicker,
+  body .login-desktop-view:focus-within .login-redesign-kicker {
+    background: rgba(17,24,39,0.18) !important;
+    border: 1px solid rgba(255,255,255,0.34) !important;
+    color: rgba(255,255,255,0.95) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand h1,
+  body .login-desktop-view:focus-within .login-redesign-brand h1 {
+    text-shadow:
+      0 15px 30px rgba(15,23,42,0.25),
+      0 0 28px rgba(255,255,255,0.13) !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand p,
+  body .login-desktop-view:focus-within .login-redesign-brand p {
+    color: rgba(255,255,255,0.93) !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    background:
+      radial-gradient(circle at 94% 10%, rgba(255,106,24,0.12), transparent 29%),
+      radial-gradient(circle at 102% 100%, rgba(255,106,24,0.075), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,0.99), rgba(255,250,246,0.97)) !important;
+    position: relative !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::before,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 18px !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255,106,24,0.075) !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel::after,
+  body .login-desktop-view:focus-within .login-redesign-form-panel::after {
+    content: '' !important;
+    position: absolute !important;
+    right: -130px !important;
+    bottom: -158px !important;
+    width: 330px !important;
+    height: 330px !important;
+    border-radius: 50% !important;
+    border: 42px solid rgba(255,106,24,0.06) !important;
+    pointer-events: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel > *,
+  body .login-desktop-view:focus-within .login-redesign-form-panel > * {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading .workspace-logo-shell-small,
+  body .login-desktop-view:focus-within .login-redesign-heading .workspace-logo-shell-small {
+    border: 1px solid rgba(255,106,24,0.18) !important;
+    box-shadow:
+      0 12px 28px rgba(15,23,42,0.12),
+      0 0 0 6px rgba(255,106,24,0.045),
+      inset 0 1px 0 rgba(255,255,255,0.30) !important;
+  }
+
+  body .login-desktop-view .login-redesign-field input,
+  body .login-desktop-view:focus-within .login-redesign-field input {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,248,242,0.90)) !important;
+    border: 1.5px solid #d7dce4 !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.75),
+      0 8px 22px rgba(16,24,40,0.04) !important;
+  }
+
+  body .login-desktop-view .login-redesign-field input:focus {
+    border-color: #ff6a18 !important;
+    background: #ffffff !important;
+    box-shadow:
+      0 0 0 4px rgba(255,106,24,0.14),
+      0 14px 34px rgba(255,106,24,0.13) !important;
+  }
+
+  body .login-desktop-view .login-redesign-password-toggle {
+    background: linear-gradient(135deg, #f6f7f9, #ffffff) !important;
+    color: #344054 !important;
+    border: 1px solid #eaecf0 !important;
+    box-shadow:
+      0 8px 18px rgba(16,24,40,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  }
+
+  body .login-desktop-view .login-redesign-submit {
+    background: linear-gradient(135deg, #ff8a2a 0%, #ff6a18 44%, #ff4f0a 100%) !important;
+    box-shadow:
+      0 18px 38px rgba(255,95,15,0.31),
+      inset 0 1px 0 rgba(255,255,255,0.24) !important;
+  }
+}
+
