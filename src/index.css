@@ -12599,3 +12599,417 @@ body .app-layout [style*="rgb(219, 234, 254)"] {
   border-color: rgba(255,106,24,0.34) !important;
 }
 
+
+/* ============================================================
+   WORKSPACE INTERNAL APP - MOBILE LAYOUT FIX
+   Sistema tutta l'app interna da telefono.
+   Non tocca la dashboard/login.
+   ============================================================ */
+
+@media screen and (max-width: 768px) {
+  body:has(.app-layout) {
+    overflow-x: hidden !important;
+    background: #f3ece4 !important;
+  }
+
+  body .app-layout.is-mobile {
+    width: 100vw !important;
+    min-height: 100dvh !important;
+    display: block !important;
+    overflow-x: hidden !important;
+    background:
+      radial-gradient(circle at 96% 4%, rgba(255,106,24,0.055), transparent 26%),
+      linear-gradient(135deg, #f4ece4 0%, #eee2d8 48%, #faf7f2 100%) !important;
+  }
+
+  /* Sidebar mobile: command rail compatta */
+  body .app-layout.is-mobile .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+
+    width: 82px !important;
+    min-width: 82px !important;
+    max-width: 82px !important;
+
+    z-index: 1000 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    padding: 14px 10px !important;
+
+    background:
+      linear-gradient(180deg, #080d14 0%, #0e151f 48%, #080d14 100%) !important;
+
+    border-right: 1px solid rgba(255,255,255,0.10) !important;
+    box-shadow:
+      16px 0 44px rgba(15,23,42,0.30),
+      inset -1px 0 0 rgba(255,255,255,0.045) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-header {
+    padding: 0 0 14px !important;
+    margin: 0 0 12px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    min-height: 58px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 5px !important;
+    margin: 0 auto !important;
+    border-radius: 17px !important;
+  }
+
+  body .app-layout.is-mobile .workspace-logo-img-sidebar {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo-text,
+  body .app-layout.is-mobile .sidebar-section-title,
+  body .app-layout.is-mobile .sidebar-link span:not(.sidebar-link-icon),
+  body .app-layout.is-mobile .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  body .app-layout.is-mobile .sidebar-section-chevron,
+  body .app-layout.is-mobile .sidebar-user-details,
+  body .app-layout.is-mobile .sidebar-badge {
+    display: none !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-nav,
+  body .app-layout.is-mobile .sidebar-nav-collapsible {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: center !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section,
+  body .app-layout.is-mobile .sidebar-section.open,
+  body .app-layout.is-mobile .sidebar-section.closed {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section-toggle,
+  body .app-layout.is-mobile .sidebar-link {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+
+    padding: 0 !important;
+    margin: 0 auto !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-link-icon,
+  body .app-layout.is-mobile .sidebar-section-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    color: rgba(226,232,240,0.76) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-link.active,
+  body .app-layout.is-mobile .sidebar-section.has-active .sidebar-section-toggle {
+    background:
+      linear-gradient(135deg, rgba(255,106,24,0.24), rgba(255,106,24,0.08)) !important;
+    border: 1px solid rgba(255,129,38,0.34) !important;
+    border-left: 3px solid #ff8126 !important;
+    box-shadow:
+      0 12px 26px rgba(255,106,24,0.14),
+      inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-user {
+    padding: 12px 0 0 !important;
+    margin-top: 14px !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-user-info {
+    justify-content: center !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    margin: 0 auto !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logout {
+    width: 44px !important;
+    height: 44px !important;
+    margin: 10px auto 0 !important;
+  }
+
+  /* Contenuto: usa quasi tutto lo schermo restante */
+  body .app-layout.is-mobile .main-content {
+    margin-left: 82px !important;
+    width: calc(100vw - 82px) !important;
+    min-width: 0 !important;
+
+    padding: 18px 12px 96px !important;
+    overflow-x: hidden !important;
+
+    background:
+      radial-gradient(circle at 96% 4%, rgba(255,106,24,0.045), transparent 24%),
+      linear-gradient(135deg, #f5eee7 0%, #eee4da 45%, #faf7f2 100%) !important;
+  }
+
+  /* Top breadcrumb/header interno */
+  body .app-layout.is-mobile .topbar,
+  body .app-layout.is-mobile .breadcrumb-bar,
+  body .app-layout.is-mobile .app-header,
+  body .app-layout.is-mobile .page-topbar {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px 16px !important;
+    margin-bottom: 18px !important;
+
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.90) !important;
+    border: 1px solid rgba(17,24,39,0.10) !important;
+    box-shadow: 0 10px 24px rgba(15,23,42,0.06) !important;
+  }
+
+  body .app-layout.is-mobile .main-content > div:first-child {
+    max-width: 100% !important;
+  }
+
+  /* Header pagina */
+  body .app-layout.is-mobile .page-header {
+    width: 100% !important;
+    margin: 0 0 18px !important;
+    padding: 20px 18px !important;
+    border-radius: 14px !important;
+
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  body .app-layout.is-mobile .page-header > div {
+    max-width: 100% !important;
+  }
+
+  body .app-layout.is-mobile .page-title {
+    font-size: 26px !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.055em !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  body .app-layout.is-mobile .page-header p,
+  body .app-layout.is-mobile .page-subtitle {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    max-width: 100% !important;
+  }
+
+  body .app-layout.is-mobile .page-header .btn,
+  body .app-layout.is-mobile .page-header button,
+  body .app-layout.is-mobile .page-header a.btn {
+    margin-top: 10px !important;
+  }
+
+  /* Card/KPI mobile */
+  body .app-layout.is-mobile .card,
+  body .app-layout.is-mobile .kpi-card,
+  body .app-layout.is-mobile .table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 14px !important;
+  }
+
+  body .app-layout.is-mobile .card-body {
+    padding: 16px !important;
+  }
+
+  body .app-layout.is-mobile .card-header {
+    padding: 14px 16px !important;
+    min-height: auto !important;
+  }
+
+  body .app-layout.is-mobile .card-title {
+    font-size: 18px !important;
+    line-height: 1.15 !important;
+  }
+
+  body .app-layout.is-mobile .kpi-grid,
+  body .app-layout.is-mobile .stats-grid,
+  body .app-layout.is-mobile .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  body .app-layout.is-mobile .kpi-card {
+    padding: 18px !important;
+  }
+
+  body .app-layout.is-mobile .kpi-value {
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+
+  /* Filtri e form: una colonna leggibile */
+  body .app-layout.is-mobile .filters-grid,
+  body .app-layout.is-mobile .form-grid,
+  body .app-layout.is-mobile .grid,
+  body .app-layout.is-mobile [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .app-layout.is-mobile input,
+  body .app-layout.is-mobile select,
+  body .app-layout.is-mobile textarea,
+  body .app-layout.is-mobile .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 48px !important;
+    font-size: 16px !important;
+  }
+
+  body .app-layout.is-mobile textarea {
+    height: auto !important;
+    min-height: 96px !important;
+  }
+
+  body .app-layout.is-mobile .btn {
+    min-height: 44px !important;
+    font-size: 15px !important;
+  }
+
+  body .app-layout.is-mobile .btn-lg {
+    min-height: 50px !important;
+  }
+
+  /* Bottoni in header/card non devono uscire */
+  body .app-layout.is-mobile .page-header > div,
+  body .app-layout.is-mobile .card-header,
+  body .app-layout.is-mobile .card-footer {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  body .app-layout.is-mobile .page-header .btn,
+  body .app-layout.is-mobile .card-header .btn,
+  body .app-layout.is-mobile .card-footer .btn {
+    white-space: normal !important;
+  }
+
+  /* Tabelle: scroll orizzontale, non compressione */
+  body .app-layout.is-mobile .card:has(.data-table),
+  body .app-layout.is-mobile .card:has(table) {
+    overflow: hidden !important;
+  }
+
+  body .app-layout.is-mobile .card-body:has(.data-table),
+  body .app-layout.is-mobile .card-body:has(table),
+  body .app-layout.is-mobile .table-container,
+  body .app-layout.is-mobile div[style*="overflowX"],
+  body .app-layout.is-mobile div[style*="overflow-x"] {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body .app-layout.is-mobile .data-table {
+    min-width: 720px !important;
+    width: max-content !important;
+    font-size: 13px !important;
+  }
+
+  body .app-layout.is-mobile .data-table th,
+  body .app-layout.is-mobile .data-table td {
+    white-space: nowrap !important;
+    padding: 12px 14px !important;
+  }
+
+  /* Dashboard azioni rapide su mobile */
+  body .app-layout.is-mobile .quick-actions-grid,
+  body .app-layout.is-mobile .quick-actions,
+  body .app-layout.is-mobile .actions-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  body .app-layout.is-mobile .quick-action-card,
+  body .app-layout.is-mobile .quick-action,
+  body .app-layout.is-mobile .dashboard-action,
+  body .app-layout.is-mobile .action-card {
+    min-height: 82px !important;
+    padding: 16px !important;
+  }
+
+  /* Evita testi tagliati enormi su mobile */
+  body .app-layout.is-mobile h1,
+  body .app-layout.is-mobile h2,
+  body .app-layout.is-mobile h3 {
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* iPhone stretti */
+@media screen and (max-width: 430px) {
+  body .app-layout.is-mobile .sidebar {
+    width: 76px !important;
+    min-width: 76px !important;
+    max-width: 76px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  body .app-layout.is-mobile .main-content {
+    margin-left: 76px !important;
+    width: calc(100vw - 76px) !important;
+    padding: 16px 10px 96px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-logo {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  body .app-layout.is-mobile .sidebar-section-toggle,
+  body .app-layout.is-mobile .sidebar-link {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+  }
+
+  body .app-layout.is-mobile .page-title {
+    font-size: 24px !important;
+  }
+
+  body .app-layout.is-mobile .page-header {
+    padding: 18px 16px !important;
+  }
+
+  body .app-layout.is-mobile .card-body {
+    padding: 14px !important;
+  }
+}
+
