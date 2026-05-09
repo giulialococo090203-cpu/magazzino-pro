@@ -81,12 +81,6 @@ function getMovementDate(movement) {
 function isInvoiceMovement(movement) {
   const reason = String(movement.reason || '').toLowerCase();
   const notes = String(movement.notes || '').toLowerCase();
-
-  const visibleSupplierRows = useMemo(() => {
-    return supplierRows.slice(0, 80);
-  }, [supplierRows]);
-
-
   return (
     reason.includes('fattura') ||
     reason.includes('importazione') ||
