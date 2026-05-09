@@ -15794,3 +15794,49 @@ body .app-layout .data-table thead,
 body .app-layout .data-table thead th {
   z-index: 2 !important;
 }
+
+/* ============================================================
+   Storico Movimenti: dropdown filtri sopra la tabella
+   ============================================================ */
+
+body .app-layout .storico-movimenti-page {
+  position: relative !important;
+}
+
+body .app-layout .storico-movimenti-filters-card {
+  position: relative !important;
+  z-index: 5000 !important;
+  overflow: visible !important;
+  transition: margin-bottom 0.16s ease !important;
+}
+
+body .app-layout .storico-movimenti-filters-card .card-body,
+body .app-layout .storico-movimenti-filters-card .filters-row,
+body .app-layout .storico-movimenti-filters-card .filter-group {
+  overflow: visible !important;
+}
+
+body .app-layout .storico-movimenti-filters-card.has-open-client-menu,
+body .app-layout .storico-movimenti-filters-card.has-open-component-menu {
+  margin-bottom: 150px !important;
+}
+
+body .app-layout .storico-client-suggestions,
+body .app-layout .storico-filter-suggestions {
+  z-index: 100000 !important;
+  max-height: 260px !important;
+  overflow-y: auto !important;
+  background: #fff !important;
+  border: 1px solid rgba(100, 116, 139, 0.28) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.22) !important;
+}
+
+body .app-layout .storico-movimenti-page .table-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body .app-layout .storico-movimenti-page .data-table thead th {
+  z-index: 2 !important;
+}

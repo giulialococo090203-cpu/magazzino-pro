@@ -782,7 +782,7 @@ export default function StoricoMovimenti() {
   };
 
   return (
-    <div className="animate-slideUp">
+    <div className="animate-slideUp storico-movimenti-page">
       <div className="page-header">
         <div>
           <h1 className="page-title"><Icon name="assignment" className="ui-inline-icon" aria-hidden="true" /> Storico Movimenti</h1>
@@ -990,6 +990,7 @@ export default function StoricoMovimenti() {
 
               {showClientSuggestions && clientSuggestions.length > 0 && (
                 <div
+                  className="storico-client-suggestions combo-suggestions"
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
