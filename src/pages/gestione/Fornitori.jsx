@@ -85,10 +85,17 @@ export default function Fornitori() {
       setLoading(true);
       setError('');
 
+      const today = new Date();
+      const from = new Date();
+      from.setDate(from.getDate() - 90);
+
+      const dateFrom = from.toISOString().slice(0, 10);
+      const dateTo = today.toISOString().slice(0, 10);
+
       const [mats, movs, invs] = await Promise.all([
         materialStore.getAll(),
-        movementStore.getAll(),
-        invoiceImportStore.getAll(),
+        movementStore.getFiltered({ dateFrom, dateTo }),
+        invoiceImportStore.getAll(300),
       ]);
 
       setMaterials(Array.isArray(mats) ? mats : []);

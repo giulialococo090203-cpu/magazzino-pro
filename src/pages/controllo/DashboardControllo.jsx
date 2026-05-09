@@ -65,13 +65,20 @@ export default function DashboardControllo() {
       try {
         setLoading(true);
 
+        const today = new Date();
+        const from = new Date();
+        from.setDate(from.getDate() - 30);
+
+        const dateFrom = from.toISOString().slice(0, 10);
+        const dateTo = today.toISOString().slice(0, 10);
+
         const [mats, cats, unread, mostMoved, evs, allMovements, usrs] = await Promise.all([
           materialStore.getAll(),
           categoryStore.getAll(),
           notificationStore.getUnread(),
-          movementStore.getMostMoved(8),
+          movementStore.getMostMoved(8, 30),
           movementStore.getEntriesVsExits(30),
-          movementStore.getAll(),
+          movementStore.getFiltered({ dateFrom, dateTo }),
           userStore.getAll()
         ]);
 

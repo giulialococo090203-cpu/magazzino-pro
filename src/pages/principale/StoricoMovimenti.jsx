@@ -238,9 +238,16 @@ export default function StoricoMovimenti() {
         ? userFilterValue.replace(/^operator:/, '')
         : '';
 
+      const today = new Date();
+      const from = new Date();
+      from.setDate(from.getDate() - 30);
+
+      const effectiveDateFrom = dateFrom || from.toISOString().slice(0, 10);
+      const effectiveDateTo = dateTo || today.toISOString().slice(0, 10);
+
       const filtered = await movementStore.getFiltered({
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
+        dateFrom: effectiveDateFrom,
+        dateTo: effectiveDateTo,
         userId: selectedUserId || undefined,
         categoryId: filterCategory || undefined,
         materialId: filterMaterial || undefined,
