@@ -10,6 +10,48 @@ import { useAuth } from '../../App';
 import Icon from '../../components/Icon';
 import FaIcon from '../../components/FaIcon';
 
+
+const RENDICONTAZIONE_FAST_CACHE_KEY = 'magazzino_rendicontazione_fast_cache_v1';
+
+function readRendicontazioneCache() {
+  try {
+    const raw = localStorage.getItem(RENDICONTAZIONE_FAST_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeRendicontazioneCache(patch) {
+  try {
+    const prev = readRendicontazioneCache();
+
+    localStorage.setItem(
+      RENDICONTAZIONE_FAST_CACHE_KEY,
+      JSON.stringify({
+        ...prev,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // cache non indispensabile
+  }
+}
+
+function getDefaultRendicontazioneRange() {
+  const today = new Date();
+  const from = new Date();
+
+  from.setDate(from.getDate() - 30);
+
+  return {
+    dateFrom: from.toISOString().slice(0, 10),
+    dateTo: today.toISOString().slice(0, 10),
+  };
+}
+
+
 function formatCurrency(value = 0) {
   return Number(value || 0).toLocaleString('it-IT', {
     style: 'currency',
@@ -72,22 +114,24 @@ function isWithinRange(value, start, end) {
 }
 
 export default function RendicontazioneEconomica() {
+  const cachedRendicontazione = readRendicontazioneCache();
+
   const { user } = useAuth();
 
-  const [materials, setMaterials] = useState([]);
-  const [movements, setMovements] = useState([]);
+  const [materials, setMaterials] = useState(() => cachedRendicontazione.materials || []);
+  const [movements, setMovements] = useState(() => cachedRendicontazione.movements || []);
   const [prices, setPrices] = useState([]);
   const [period, setPeriod] = useState('mese');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [supplier, setSupplier] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const refresh = async () => {
     try {
-      setLoading(true);
+      setLoading(false);
       setError('');
 
       const { start, end } = getPeriodRange(period, selectedYear, selectedMonth);
@@ -101,11 +145,16 @@ export default function RendicontazioneEconomica() {
         movementStore.getFiltered({
           dateFrom,
           dateTo,
+          limit: 700,
         }),
       ]);
 
-      setMaterials(Array.isArray(mats) ? mats : []);
-      setMovements(Array.isArray(movs) ? movs : []);
+      const safeMats = Array.isArray(mats) ? mats : [];
+      setMaterials(safeMats);
+      writeRendicontazioneCache({ materials: safeMats });
+      const safeMovs = Array.isArray(movs) ? movs : [];
+      setMovements(safeMovs);
+      writeRendicontazioneCache({ movements: safeMovs });
       setPrices([]);
 
       setSuccess(
