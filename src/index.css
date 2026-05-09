@@ -15620,3 +15620,41 @@ body .app-layout .inventory-scroll-table .data-table thead th {
   top: 0 !important;
   z-index: 10 !important;
 }
+
+/* ============================================================
+   Fix definitivo dropdown filtri sopra tabelle
+   ============================================================ */
+
+body .app-layout .filters-row,
+body .app-layout .filters-grid,
+body .app-layout .filter-group,
+body .app-layout .combo-field {
+  overflow: visible !important;
+}
+
+body .app-layout .filters-row,
+body .app-layout .filters-grid {
+  position: relative !important;
+  z-index: 80 !important;
+}
+
+body .app-layout .combo-field {
+  position: relative !important;
+  z-index: 90 !important;
+}
+
+body .app-layout .combo-field:focus-within {
+  z-index: 9999 !important;
+}
+
+body .app-layout .combo-suggestions,
+body .app-layout .search-suggestions,
+body .app-layout .autocomplete-suggestions,
+body .app-layout [class*="suggestion"] {
+  z-index: 99999 !important;
+}
+
+body .app-layout .table-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
