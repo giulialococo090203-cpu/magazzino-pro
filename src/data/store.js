@@ -976,27 +976,35 @@ export const movementStore = {
     notifySupabaseUsageChanged();
   },
 
-  async getMostMoved(limit = 10) {
-    const all = await this.getAll();
-    const counts = {};
+  async getMostMoved(limit = 10, days = 30) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
 
-    all.forEach((m) => {
-      counts[m.materialId] = (counts[m.materialId] || 0) + Number(m.quantity || 0);
+    const recent = await this.getFiltered({
+      dateFrom: cutoff.toISOString().slice(0, 10),
+      dateTo: new Date().toISOString().slice(0, 10),
     });
 
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
-      .map(([id, total]) => {
-        const mov = all.find((m) => m.materialId === id);
+    const counts = {};
 
-        return {
-          materialId: id,
-          code: mov?.materialCode || 'N/A',
-          description: mov?.materialDescription || 'N/A',
-          totalMoved: total,
+    recent.forEach((m) => {
+      const key = m.materialId || m.materialCode || m.materialDescription || 'N/A';
+
+      if (!counts[key]) {
+        counts[key] = {
+          materialId: m.materialId || key,
+          code: m.materialCode || 'N/A',
+          description: m.materialDescription || 'N/A',
+          totalMoved: 0,
         };
-      });
+      }
+
+      counts[key].totalMoved += Math.abs(Number(m.quantity || 0));
+    });
+
+    return Object.values(counts)
+      .sort((a, b) => Number(b.totalMoved || 0) - Number(a.totalMoved || 0))
+      .slice(0, limit);
   },
 
   async getEntriesVsExits(days = 30) {
@@ -1226,9 +1234,16 @@ export const notificationStore = {
   },
 
   async getUnread() {
-    const all = await this.getAll();
+    const { data, error } = await supabase
+      .from('notifiche')
+      .select('*, materiali(codice, descrizione, quantita, soglia_minima)')
+      .eq('letta', false)
+      .order('created_at', { ascending: false })
+      .limit(100);
 
-    return all.filter((n) => !n.read);
+    if (error) throw error;
+
+    return data.map(mapNotification.toModel);
   },
 
   async create(notification) {
@@ -1355,11 +1370,12 @@ export const notificationStore = {
 };
 
 export const adminLogStore = {
-  async getAll() {
+  async getAll(limit = 500) {
     const { data, error } = await supabase
       .from('log_modifiche')
       .select('*, utenti(nome)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
@@ -1547,11 +1563,12 @@ export const invoiceImportStore = {
     });
   },
 
-  async getAll() {
+  async getAll(limit = 300) {
     const { data, error } = await supabase
       .from('fatture_importate')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
@@ -1747,11 +1764,12 @@ export const priceHistoryStore = {
     };
   },
 
-  async getAll() {
+  async getAll(limit = 1000) {
     const { data, error } = await supabase
       .from('storico_prezzi')
       .select('*')
-      .order('data_registrazione', { ascending: false });
+      .order('data_registrazione', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
@@ -1893,11 +1911,12 @@ export const reorderProposalStore = {
       });
   },
 
-  async getAll() {
+  async getAll(limit = 300) {
     const { data, error } = await supabase
       .from('proposte_ordine')
       .select('*, righe_proposta_ordine(*)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
@@ -2026,11 +2045,12 @@ export const reorderProposalStore = {
 };
 
 export const physicalInventoryStore = {
-  async getAllSessions() {
+  async getAllSessions(limit = 100) {
     const { data, error } = await supabase
       .from('sessioni_inventario')
       .select('*, righe_inventario(*)')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
@@ -2274,13 +2294,15 @@ export const statsStore = {
     const categories = await categoryStore.getAll();
     const notificationsAll = await notificationStore.getAll();
     const recentMovements = await movementStore.getRecent(8);
-    const allMovements = await movementStore.getAll();
 
     const today = new Date().toISOString().substring(0, 10);
 
-    const todayMovements = allMovements.filter(
-      (m) => String(m.date || '').substring(0, 10) === today
-    ).length;
+    const todayRows = await movementStore.getFiltered({
+      dateFrom: today,
+      dateTo: today,
+    });
+
+    const todayMovements = Array.isArray(todayRows) ? todayRows.length : 0;
 
     const belowThreshold = materials.filter(
       (m) =>
