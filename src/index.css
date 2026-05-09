@@ -15097,3 +15097,64 @@ body .app-layout .rendicontazione-scroll-table .data-table td:nth-child(3) {
     min-width: 860px !important;
   }
 }
+
+/* ============================================================
+   GLOBAL TABLE SCROLL — tutte le tabelle scrollabili
+   ============================================================ */
+
+body .app-layout .table-container {
+  max-height: 560px !important;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-radius: 14px !important;
+}
+
+/* Tabelle larghe: abilita scroll orizzontale quando servono molte colonne */
+body .app-layout .table-container .data-table {
+  min-width: 920px !important;
+  width: max-content !important;
+  margin: 0 !important;
+}
+
+/* Header sempre visibile durante scroll verticale */
+body .app-layout .table-container .data-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+
+/* Celle compatte e leggibili */
+body .app-layout .table-container .data-table th,
+body .app-layout .table-container .data-table td {
+  white-space: nowrap !important;
+}
+
+/* Colonne descrittive: permettono testo su più righe senza allargare troppo */
+body .app-layout .table-container .data-table td:nth-child(2),
+body .app-layout .table-container .data-table td:nth-child(3),
+body .app-layout .table-container .data-table td:nth-child(4) {
+  max-width: 360px !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Dashboard monitoraggio datore: più alta ma sempre scrollabile */
+body .app-layout .dashboard-monitoring-table {
+  max-height: 560px !important;
+}
+
+/* Tabelle nei dettagli/modal: altezza più contenuta */
+body .app-layout .modal .table-container,
+body .app-layout .card-body .table-container {
+  max-height: 420px !important;
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  body .app-layout .table-container {
+    max-height: 460px !important;
+  }
+
+  body .app-layout .table-container .data-table {
+    min-width: 760px !important;
+  }
+}
