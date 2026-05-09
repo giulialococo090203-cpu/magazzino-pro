@@ -595,25 +595,67 @@ export default function Dashboard() {
   const operatorSuggestions = useMemo(() => {
     const q = safeLower(searchOperator.trim());
 
-    if (!q) return [];
+    const fromUsers = users.map((u) => ({
+      id: u.id || u.uid || u.username || u.email || u.fullName || u.name,
+      fullName: u.fullName || u.name || u.nome || '',
+      username: u.username || u.email || '',
+    }));
 
-    return users
-      .filter(
-        (u) =>
-          safeLower(u.fullName).includes(q) ||
-          safeLower(u.username).includes(q) ||
-          safeLower(u.name).includes(q)
+    const fromMovements = movements
+      .map((m) => {
+        const name = String(m.operatorName || m.userName || '').trim();
+
+        if (!name) return null;
+
+        return {
+          id: `mov-${name}`,
+          fullName: name,
+          username: '',
+        };
+      })
+      .filter(Boolean);
+
+    const unique = new Map();
+
+    [...fromUsers, ...fromMovements].forEach((item) => {
+      const label = String(item.fullName || item.username || '').trim();
+      if (!label) return;
+
+      const key = label.toLowerCase();
+
+      if (!unique.has(key)) {
+        unique.set(key, item);
+      }
+    });
+
+    return [...unique.values()]
+      .filter((item) => {
+        const label = safeLower(item.fullName || item.name || item.username);
+        const username = safeLower(item.username);
+
+        return !q || label.includes(q) || username.includes(q);
+      })
+      .sort((a, b) =>
+        String(a.fullName || a.username || '').localeCompare(String(b.fullName || b.username || ''))
       )
-      .slice(0, 8);
-  }, [searchOperator, users]);
+      .slice(0, 30);
+  }, [searchOperator, users, movements]);
 
   const clientSuggestions = useMemo(() => {
-    const allClients = [...new Set(movements.map((m) => m.clientName).filter(Boolean))];
     const q = safeLower(searchClient.trim());
 
-    if (!q) return [];
+    const allClients = [
+      ...new Set(
+        movements
+          .map((m) => String(m.clientName || '').trim())
+          .filter(Boolean)
+      ),
+    ];
 
-    return allClients.filter((c) => safeLower(c).includes(q)).slice(0, 8);
+    return allClients
+      .filter((c) => !q || safeLower(c).includes(q))
+      .sort((a, b) => a.localeCompare(b))
+      .slice(0, 30);
   }, [searchClient, movements]);
 
   const monitoredRows = useMemo(() => {
@@ -984,8 +1026,8 @@ export default function Dashboard() {
         <span className="icon">🔎</span> Monitoraggio Datore
       </h2>
 
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div className="card-body">
+      <div className="card dashboard-filter-card" style={{ marginBottom: 32, overflow: 'visible', position: 'relative', zIndex: 500 }}>
+        <div className="card-body" style={{ overflow: 'visible' }}>
           <div className="filters-row">
             <div
               className="filter-group"
@@ -1011,7 +1053,7 @@ export default function Dashboard() {
                     top: 'calc(100% + 6px)',
                     left: 0,
                     right: 0,
-                    zIndex: 20,
+                    zIndex: 99999,
                     background: '#fff',
                     border: '1px solid var(--gray-200)',
                     borderRadius: 'var(--border-radius-md)',
