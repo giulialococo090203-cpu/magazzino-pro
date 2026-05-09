@@ -1,4 +1,32 @@
 import Icon from '../../components/Icon';
+
+const FORNITORI_FAST_CACHE_KEY = 'magazzino_fornitori_fast_cache_v1';
+
+function readFornitoriCache() {
+  try {
+    const raw = localStorage.getItem(FORNITORI_FAST_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeFornitoriCache(patch) {
+  try {
+    const prev = readFornitoriCache();
+    localStorage.setItem(
+      FORNITORI_FAST_CACHE_KEY,
+      JSON.stringify({
+        ...prev,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // cache non indispensabile
+  }
+}
+
 // ============================================================
 // FORNITORI.JSX - Monitoraggio fornitori da fatture e inserimenti
 // ============================================================
@@ -72,39 +100,60 @@ function sanitizeSheetName(value = '') {
 export default function Fornitori() {
   const { user } = useAuth();
 
-  const [materials, setMaterials] = useState([]);
-  const [movements, setMovements] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cachedFornitori = readFornitoriCache();
+
+  const [materials, setMaterials] = useState(() => cachedFornitori.materials || []);
+  const [movements, setMovements] = useState(() => cachedFornitori.movements || []);
+  const [invoices, setInvoices] = useState(() => cachedFornitori.invoices || []);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState(null);
 
   const loadData = async () => {
     try {
-      setLoading(true);
       setError('');
+      setLoading(false);
 
-      const today = new Date();
-      const from = new Date();
-      from.setDate(from.getDate() - 90);
+      // Primo caricamento: solo materiali, così la schermata si apre subito.
+      const mats = await materialStore.getAll();
+      const safeMats = Array.isArray(mats) ? mats : [];
 
-      const dateFrom = from.toISOString().slice(0, 10);
-      const dateTo = today.toISOString().slice(0, 10);
+      setMaterials(safeMats);
+      writeFornitoriCache({ materials: safeMats });
 
-      const [mats, movs, invs] = await Promise.all([
-        materialStore.getAll(),
-        movementStore.getFiltered({ dateFrom, dateTo }),
-        invoiceImportStore.getAll(300),
-      ]);
+      // Secondo caricamento non bloccante: movimenti ultimi 30 giorni + ultime fatture.
+      window.setTimeout(async () => {
+        try {
+          const today = new Date();
+          const from = new Date();
+          from.setDate(from.getDate() - 30);
 
-      setMaterials(Array.isArray(mats) ? mats : []);
-      setMovements(Array.isArray(movs) ? movs : []);
-      setInvoices(Array.isArray(invs) ? invs : []);
+          const dateFrom = from.toISOString().slice(0, 10);
+          const dateTo = today.toISOString().slice(0, 10);
+
+          const [movs, invs] = await Promise.all([
+            movementStore.getFiltered({ dateFrom, dateTo }),
+            invoiceImportStore.getAll(150),
+          ]);
+
+          const safeMovs = Array.isArray(movs) ? movs : [];
+          const safeInvs = Array.isArray(invs) ? invs : [];
+
+          setMovements(safeMovs);
+          setInvoices(safeInvs);
+
+          writeFornitoriCache({
+            movements: safeMovs,
+            invoices: safeInvs,
+          });
+        } catch (err) {
+          console.error('Errore caricamento dati secondari fornitori:', err);
+        }
+      }, 250);
     } catch (err) {
       console.error('Errore caricamento fornitori:', err);
       setError(err?.message || 'Errore durante il caricamento dei fornitori.');
-    } finally {
       setLoading(false);
     }
   };
