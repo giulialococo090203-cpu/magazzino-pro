@@ -227,31 +227,104 @@ export default function Dashboard() {
           window.setTimeout(async () => {
             if (!mounted || !datoreView) return;
 
-            const usrs = await userStore.getAll().catch(() => []);
+            const to = new Date();
+            const from = new Date();
+            from.setDate(from.getDate() - 30);
 
-            if (!mounted) return;
-            setUsers(Array.isArray(usrs) ? usrs : []);
-          }, 600)
-        );
+            const dateFrom = from.toISOString().slice(0, 10);
+            const dateTo = to.toISOString().slice(0, 10);
 
-        timers.push(
-          window.setTimeout(async () => {
-            if (!mounted || !datoreView) return;
-
-            const [mostMovedRows, evs] = await Promise.all([
-              movementStore.getMostMoved
-                ? movementStore.getMostMoved(8).catch(() => [])
-                : Promise.resolve([]),
-              movementStore.getEntriesVsExits
-                ? movementStore.getEntriesVsExits(30).catch(() => [])
-                : Promise.resolve([]),
-            ]);
+            const monthlyMovements = await (
+              movementStore.getFiltered
+                ? movementStore.getFiltered({ dateFrom, dateTo }).catch((err) => {
+                    console.error('Errore caricamento movimenti 30 giorni:', err);
+                    return [];
+                  })
+                : Promise.resolve([])
+            );
 
             if (!mounted) return;
 
-            setMostMoved(Array.isArray(mostMovedRows) ? mostMovedRows : []);
-            setEntriesVsExits(Array.isArray(evs) ? evs : []);
-          }, 1500)
+            const safeMonthlyMovements = Array.isArray(monthlyMovements)
+              ? monthlyMovements
+              : [];
+
+            setMovements(safeMonthlyMovements);
+
+            const byMaterial = new Map();
+
+            safeMonthlyMovements.forEach((mov) => {
+              const key =
+                mov.materialId ||
+                mov.material_id ||
+                mov.materialCode ||
+                mov.material_code ||
+                mov.materialDescription ||
+                mov.material_description ||
+                'Materiale';
+
+              const qty = Math.abs(Number(mov.quantity || mov.qty || mov.quantita || 0));
+
+              const current = byMaterial.get(key) || {
+                materialId: mov.materialId || mov.material_id || key,
+                code: mov.materialCode || mov.material_code || 'N/A',
+                materialCode: mov.materialCode || mov.material_code || 'N/A',
+                description:
+                  mov.materialDescription ||
+                  mov.material_description ||
+                  mov.description ||
+                  'N/A',
+                materialDescription:
+                  mov.materialDescription ||
+                  mov.material_description ||
+                  mov.description ||
+                  'N/A',
+                totalMoved: 0,
+              };
+
+              current.totalMoved += qty;
+
+              byMaterial.set(key, current);
+            });
+
+            const calculatedMostMoved = Array.from(byMaterial.values())
+              .filter((row) => Number(row.totalMoved || 0) > 0)
+              .sort((a, b) => Number(b.totalMoved || 0) - Number(a.totalMoved || 0))
+              .slice(0, 8);
+
+            const byDay = new Map();
+
+            for (let i = 29; i >= 0; i -= 1) {
+              const d = new Date();
+              d.setDate(d.getDate() - i);
+
+              const key = d.toISOString().slice(0, 10);
+
+              byDay.set(key, {
+                date: key,
+                entries: 0,
+                exits: 0,
+              });
+            }
+
+            safeMonthlyMovements.forEach((mov) => {
+              const key = String(mov.date || mov.created_at || '').slice(0, 10);
+              if (!byDay.has(key)) return;
+
+              const row = byDay.get(key);
+              const qty = Math.abs(Number(mov.quantity || mov.qty || mov.quantita || 0));
+              const type = String(mov.type || mov.tipo || mov.tipo_movimento || '').toLowerCase();
+
+              if (type === 'uscita' || type.includes('scarico') || type.includes('exit')) {
+                row.exits += qty;
+              } else if (type === 'entrata' || type === 'reintegro' || type.includes('entry')) {
+                row.entries += qty;
+              }
+            });
+
+            setMostMoved(calculatedMostMoved);
+            setEntriesVsExits(Array.from(byDay.values()));
+          }, 1200)
         );
       } catch (err) {
         console.error('Errore caricamento dashboard veloce:', err);
