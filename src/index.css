@@ -14796,3 +14796,136 @@ main,
 .card::after {
   opacity: 0.10 !important;
 }
+
+/* =========================================================
+   FINAL BACKGROUND FIX — grigio tech freddo, niente beige
+   ========================================================= */
+
+:root {
+  --pro-bg: #dbe2ea !important;
+  --ui-bg: #dbe2ea !important;
+  --tech-bg: #dbe2ea !important;
+  --enterprise-bg: #dbe2ea !important;
+
+  --pro-surface: #ffffff !important;
+  --pro-surface-soft: #f8fafc !important;
+  --ui-surface: #ffffff !important;
+  --tech-surface: #ffffff !important;
+  --tech-surface-soft: #f8fafc !important;
+}
+
+/* Sfondo globale freddo */
+html,
+body,
+#root {
+  background: #dbe2ea !important;
+  background-color: #dbe2ea !important;
+}
+
+/* Spegne eventuali layer beige/almond */
+html::before,
+html::after,
+body::before,
+body::after,
+#root::before,
+#root::after {
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+/* Contenitori principali */
+.app,
+.app-shell,
+.app-layout,
+.layout,
+.main-layout,
+.main,
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.dashboard-page,
+.dashboard-layout,
+.private-layout,
+.private-main,
+.private-content {
+  background: #dbe2ea !important;
+  background-color: #dbe2ea !important;
+  background-image: none !important;
+}
+
+/* Area pagina: grigio tech con leggerissima profondità fredda */
+main,
+.animate-slideUp {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(15, 23, 42, 0.08), transparent 28%),
+    radial-gradient(circle at 85% 90%, rgba(30, 64, 175, 0.07), transparent 34%),
+    linear-gradient(135deg, #e2e8f0 0%, #dbe2ea 48%, #cbd5e1 100%) !important;
+  background-color: #dbe2ea !important;
+}
+
+/* Rimuove qualunque alone caldo dai wrapper */
+[class*="layout"],
+[class*="main"],
+[class*="content"],
+[class*="page"],
+[class*="dashboard"] {
+  background-color: transparent !important;
+}
+
+/* Ma il contenitore principale deve restare tech */
+.app-main,
+.main-content,
+.page-content,
+.content-area {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(15, 23, 42, 0.075), transparent 28%),
+    radial-gradient(circle at 85% 90%, rgba(30, 64, 175, 0.06), transparent 34%),
+    linear-gradient(135deg, #e2e8f0 0%, #dbe2ea 48%, #cbd5e1 100%) !important;
+}
+
+/* Card fredde e pulite, non crema */
+.page-header,
+.kpi-card,
+.quick-action-btn,
+.card,
+.table-container {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  background-color: #ffffff !important;
+  border-color: rgba(100, 116, 139, 0.28) !important;
+}
+
+/* Spegne gli aloni beige/arancio dentro le card */
+.page-header::before,
+.page-header::after,
+.kpi-card::before,
+.kpi-card::after,
+.quick-action-btn::before,
+.quick-action-btn::after,
+.card::before,
+.card::after,
+.table-container::before,
+.table-container::after {
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+/* Header superiore freddo */
+.breadcrumb-bar,
+.topbar,
+.app-topbar,
+.header,
+.app-header {
+  background: rgba(248, 250, 252, 0.96) !important;
+  background-image: none !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+/* Sidebar invariata dark tech */
+.sidebar,
+.app-sidebar,
+.nav-sidebar {
+  background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
+}
