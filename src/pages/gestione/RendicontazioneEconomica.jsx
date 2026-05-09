@@ -90,23 +90,30 @@ export default function RendicontazioneEconomica() {
       setLoading(true);
       setError('');
 
-      const [mats, movs, priceRows] = await Promise.all([
+      const { start, end } = getPeriodRange(period, selectedYear, selectedMonth);
+      const endInclusive = new Date(end.getTime() - 1);
+
+      const dateFrom = start.toISOString().slice(0, 10);
+      const dateTo = endInclusive.toISOString().slice(0, 10);
+
+      const [mats, movs] = await Promise.all([
         materialStore.getAll(),
-        movementStore.getAll(),
-        priceHistoryStore.getAll(),
+        movementStore.getFiltered({
+          dateFrom,
+          dateTo,
+        }),
       ]);
 
       setMaterials(Array.isArray(mats) ? mats : []);
       setMovements(Array.isArray(movs) ? movs : []);
-      setPrices(Array.isArray(priceRows) ? priceRows : []);
+      setPrices([]);
 
       setSuccess(
         `Dati aggiornati: ${Array.isArray(mats) ? mats.length : 0} materiali, ` +
-          `${Array.isArray(movs) ? movs.length : 0} movimenti, ` +
-          `${Array.isArray(priceRows) ? priceRows.length : 0} prezzi.`
+          `${Array.isArray(movs) ? movs.length : 0} movimenti nel periodo.`
       );
 
-      setTimeout(() => setSuccess(''), 3500);
+      setTimeout(() => setSuccess(''), 2500);
     } catch (err) {
       console.error('Errore rendicontazione economica:', err);
       setError(err?.message || 'Errore durante il caricamento della rendicontazione.');
@@ -117,7 +124,7 @@ export default function RendicontazioneEconomica() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [period, selectedYear, selectedMonth]);
 
   const materialById = useMemo(
     () => new Map(materials.map((material) => [String(material.id), material])),
@@ -129,22 +136,32 @@ export default function RendicontazioneEconomica() {
       ...new Set(
         [
           ...materials.map((m) => String(m.supplier || '').trim()),
+          ...movements.map((m) => String(m.supplier || m.fornitore || '').trim()),
           ...prices.map((p) => String(p.supplier || '').trim()),
         ].filter(Boolean)
       ),
     ].sort((a, b) => a.localeCompare(b));
-  }, [materials, prices]);
+  }, [materials, movements, prices]);
 
   const report = useMemo(() => {
     const { start, end } = getPeriodRange(period, selectedYear, selectedMonth);
 
-    const periodPrices = prices.filter((price) =>
-      isWithinRange(price.date || price.createdAt, start, end)
+    const periodMovements = movements.filter((movement) =>
+      isWithinRange(getMovementDate(movement), start, end)
     );
 
-    const filteredPrices = periodPrices.filter((price) => {
+    const filteredMovements = periodMovements.filter((movement) => {
+      const material = materialById.get(String(movement.materialId));
+      const movementSupplier = String(
+        movement.supplier ||
+          movement.fornitore ||
+          material?.supplier ||
+          ''
+      ).trim();
+
       if (!supplier) return true;
-      return String(price.supplier || '').trim() === String(supplier || '').trim();
+
+      return movementSupplier === String(supplier || '').trim();
     });
 
     const stockValue = materials
@@ -155,19 +172,43 @@ export default function RendicontazioneEconomica() {
         0
       );
 
-    const entriesValue = filteredPrices.reduce(
-      (sum, row) => sum + Number(row.netPrice || 0) * Number(row.quantity || 0),
-      0
-    );
+    let entriesValue = 0;
+    let exitsValue = 0;
+    let entriesCount = 0;
+    let exitsCount = 0;
 
     const supplierGroups = {};
+    const materialGroups = {};
 
-    filteredPrices.forEach((row) => {
-      const key = String(row.supplier || '').trim() || 'Senza fornitore';
+    filteredMovements.forEach((movement) => {
+      const material = materialById.get(String(movement.materialId));
+      const code = movement.materialCode || material?.code || '';
+      const description = movement.materialDescription || material?.description || '';
+      const movementSupplier = String(
+        movement.supplier ||
+          movement.fornitore ||
+          material?.supplier ||
+          'Senza fornitore'
+      ).trim() || 'Senza fornitore';
 
-      if (!supplierGroups[key]) {
-        supplierGroups[key] = {
-          supplier: key,
+      const quantity = Number(movement.quantity || 0);
+      const netPrice = Number(material?.netPrice || 0);
+      const value = quantity * netPrice;
+      const type = String(movement.type || '').toLowerCase();
+
+      if (type === 'entrata' || type === 'reintegro') {
+        entriesValue += value;
+        entriesCount += 1;
+      }
+
+      if (type === 'uscita') {
+        exitsValue += value;
+        exitsCount += 1;
+      }
+
+      if (!supplierGroups[movementSupplier]) {
+        supplierGroups[movementSupplier] = {
+          supplier: movementSupplier,
           invoices: 0,
           quantity: 0,
           value: 0,
@@ -175,44 +216,31 @@ export default function RendicontazioneEconomica() {
         };
       }
 
-      supplierGroups[key].rows += 1;
-      supplierGroups[key].quantity += Number(row.quantity || 0);
-      supplierGroups[key].value += Number(row.netPrice || 0) * Number(row.quantity || 0);
+      supplierGroups[movementSupplier].rows += 1;
+      supplierGroups[movementSupplier].quantity += quantity;
 
-      const origin = String(row.origin || '').toLowerCase();
-      const document = String(row.document || '').toLowerCase();
-
-      if (
-        origin.includes('fattura') ||
-        origin.includes('import') ||
-        document.includes('fattura') ||
-        document.includes('.pdf')
-      ) {
-        supplierGroups[key].invoices += 1;
+      if (type === 'entrata' || type === 'reintegro') {
+        supplierGroups[movementSupplier].value += value;
       }
-    });
 
-    const materialGroups = {};
+      const materialKey = `${code}|${movementSupplier}`;
 
-    filteredPrices.forEach((row) => {
-      const key = `${String(row.code || '').trim()}|${String(row.supplier || '').trim()}` || row.id;
-
-      if (!materialGroups[key]) {
-        materialGroups[key] = {
-          code: row.code || '',
-          description: row.description || '',
-          supplier: row.supplier || '',
+      if (!materialGroups[materialKey]) {
+        materialGroups[materialKey] = {
+          code,
+          description,
+          supplier: movementSupplier,
           quantity: 0,
           value: 0,
-          lastPrice: 0,
+          lastPrice: netPrice,
           rows: 0,
         };
       }
 
-      materialGroups[key].rows += 1;
-      materialGroups[key].quantity += Number(row.quantity || 0);
-      materialGroups[key].value += Number(row.netPrice || 0) * Number(row.quantity || 0);
-      materialGroups[key].lastPrice = Number(row.netPrice || 0);
+      materialGroups[materialKey].rows += 1;
+      materialGroups[materialKey].quantity += quantity;
+      materialGroups[materialKey].value += value;
+      materialGroups[materialKey].lastPrice = netPrice;
     });
 
     const supplierRows = Object.values(supplierGroups).sort((a, b) => b.value - a.value);
@@ -223,17 +251,17 @@ export default function RendicontazioneEconomica() {
       end,
       stockValue,
       entriesValue,
-      exitsValue: 0,
-      netBalance: entriesValue,
-      movementsCount: filteredPrices.length,
-      entriesCount: filteredPrices.length,
-      exitsCount: 0,
+      exitsValue,
+      netBalance: entriesValue - exitsValue,
+      movementsCount: filteredMovements.length,
+      entriesCount,
+      exitsCount,
       supplierRows,
       materialRows,
-      filteredMovements: [],
-      filteredPrices,
+      filteredMovements,
+      filteredPrices: [],
     };
-  }, [period, selectedYear, selectedMonth, supplier, prices, materials]);
+  }, [period, selectedYear, selectedMonth, supplier, movements, materials, materialById]);
 
   const monthOptions = [
     { value: 0, label: 'Gennaio' },
