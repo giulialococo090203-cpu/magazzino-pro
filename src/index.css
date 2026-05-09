@@ -14597,3 +14597,80 @@ body,
   background-image: none !important;
   opacity: 0 !important;
 }
+
+/* ============================================================
+   DASHBOARD FINAL LOOK — no beige, tech grey + white panels
+   ============================================================ */
+
+body,
+#root,
+.app-layout,
+.main-content,
+.page-content {
+  background: #d8dee8 !important;
+  background-color: #d8dee8 !important;
+  background-image: none !important;
+}
+
+.animate-slideUp {
+  background: #d8dee8 !important;
+  background-color: #d8dee8 !important;
+  background-image: none !important;
+}
+
+/* elimina il beige dalle card principali della dashboard */
+.animate-slideUp .page-header,
+.animate-slideUp .kpi-card,
+.animate-slideUp .quick-action-btn,
+.animate-slideUp .card,
+.animate-slideUp .table-container {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border-color: rgba(100, 116, 139, 0.28) !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10) !important;
+}
+
+/* header dashboard leggermente più bianco */
+.animate-slideUp .page-header {
+  background: #f9fafb !important;
+  background-color: #f9fafb !important;
+}
+
+/* KPI più coerenti con tech grey */
+.animate-slideUp .kpi-card {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+}
+
+/* bottoni rapidi puliti */
+.animate-slideUp .quick-action-btn {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+/* spegne definitivamente tutti gli aloni interni */
+.animate-slideUp .page-header::before,
+.animate-slideUp .page-header::after,
+.animate-slideUp .kpi-card::before,
+.animate-slideUp .kpi-card::after,
+.animate-slideUp .quick-action-btn::before,
+.animate-slideUp .quick-action-btn::after,
+.animate-slideUp .card::before,
+.animate-slideUp .card::after,
+.animate-slideUp .table-container::before,
+.animate-slideUp .table-container::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+/* mantiene solo accenti arancioni sui bordi/icone, non sugli sfondi */
+.animate-slideUp .kpi-card.warning,
+.animate-slideUp .kpi-card.danger {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+}
