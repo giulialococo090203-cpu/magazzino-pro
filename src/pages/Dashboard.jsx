@@ -652,7 +652,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="animate-slideUp">
+    <div className="animate-slideUp dashboard-tech-page">
       <div className="page-header">
         <div>
           <h1 className="page-title"><SafeIcon name="dashboard" className="ui-title-icon" />Dashboard</h1>

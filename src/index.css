@@ -14679,3 +14679,91 @@ body,
 :root {
   --dashboard-tech-bg-build: 20260509;
 }
+
+/* ============================================================
+   DASHBOARD TECH PAGE — override diretto e isolato
+   ============================================================ */
+
+.dashboard-tech-page {
+  min-height: 100vh !important;
+  background: #d8dee7 !important;
+  background-color: #d8dee7 !important;
+  background-image: none !important;
+  padding-bottom: 48px;
+}
+
+/* elimina qualsiasi sfondo ereditato nell'area dashboard */
+.page-content:has(.dashboard-tech-page) {
+  background: #d8dee7 !important;
+  background-color: #d8dee7 !important;
+  background-image: none !important;
+}
+
+.main-content:has(.dashboard-tech-page) {
+  background: #d8dee7 !important;
+  background-color: #d8dee7 !important;
+  background-image: none !important;
+}
+
+/* header dashboard: bianco freddo, niente crema */
+.dashboard-tech-page > .page-header {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.26) !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* KPI dashboard */
+.dashboard-tech-page .kpi-card,
+.dashboard-tech-page .kpi-card.warning,
+.dashboard-tech-page .kpi-card.danger {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border-color: rgba(100, 116, 139, 0.28) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Azioni rapide */
+.dashboard-tech-page .quick-action-btn {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(100, 116, 139, 0.24) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* Card e tabelle */
+.dashboard-tech-page .card,
+.dashboard-tech-page .table-container {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border-color: rgba(100, 116, 139, 0.28) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* spegne ogni alone beige/arancio residuo solo nella dashboard */
+.dashboard-tech-page .page-header::before,
+.dashboard-tech-page .page-header::after,
+.dashboard-tech-page .kpi-card::before,
+.dashboard-tech-page .kpi-card::after,
+.dashboard-tech-page .quick-action-btn::before,
+.dashboard-tech-page .quick-action-btn::after,
+.dashboard-tech-page .card::before,
+.dashboard-tech-page .card::after,
+.dashboard-tech-page .table-container::before,
+.dashboard-tech-page .table-container::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
+/* icone soft coerenti, non crema */
+.dashboard-tech-page .quick-action-icon {
+  background: #eef2f7 !important;
+  color: #f97316 !important;
+}
