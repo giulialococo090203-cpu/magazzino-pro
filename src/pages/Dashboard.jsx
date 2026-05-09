@@ -1026,9 +1026,16 @@ export default function Dashboard() {
         <span className="icon">🔎</span> Monitoraggio Datore
       </h2>
 
-      <div className="card dashboard-filter-card" style={{ marginBottom: 32, overflow: 'visible', position: 'relative', zIndex: 500 }}>
+      <div
+        className={`card dashboard-filter-card dashboard-monitoring-filters-card ${
+          showComponentSuggestions || showOperatorSuggestions || showClientSuggestions
+            ? 'has-open-monitoring-menu'
+            : ''
+        }`}
+        style={{ marginBottom: 32, overflow: 'visible', position: 'relative', zIndex: 500 }}
+      >
         <div className="card-body" style={{ overflow: 'visible' }}>
-          <div className="filters-row">
+          <div className="filters-row dashboard-monitoring-filters-row">
             <div
               className="filter-group"
               ref={componentRef}

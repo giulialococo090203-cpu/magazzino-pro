@@ -15840,3 +15840,61 @@ body .app-layout .storico-movimenti-page .table-container {
 body .app-layout .storico-movimenti-page .data-table thead th {
   z-index: 2 !important;
 }
+
+/* ============================================================
+   Dashboard Monitoraggio Datore: dropdown senza sovrapporre data/tabella
+   ============================================================ */
+
+body .app-layout .dashboard-monitoring-filters-card {
+  position: relative !important;
+  z-index: 7000 !important;
+  overflow: visible !important;
+  transition: padding-bottom 0.16s ease, margin-bottom 0.16s ease !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-card.has-open-monitoring-menu {
+  padding-bottom: 260px !important;
+  margin-bottom: 40px !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-card .card-body,
+body .app-layout .dashboard-monitoring-filters-row,
+body .app-layout .dashboard-monitoring-filters-row .filter-group,
+body .app-layout .dashboard-monitoring-filters-row .combo-field {
+  overflow: visible !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-row {
+  position: relative !important;
+  z-index: 7001 !important;
+  align-items: flex-start !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-row .filter-group,
+body .app-layout .dashboard-monitoring-filters-row .combo-field {
+  position: relative !important;
+  z-index: 7002 !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-row .filter-group:focus-within,
+body .app-layout .dashboard-monitoring-filters-row .combo-field:focus-within {
+  z-index: 100000 !important;
+}
+
+body .app-layout .dashboard-monitoring-filters-row .combo-suggestions,
+body .app-layout .dashboard-monitoring-filters-row .search-suggestions,
+body .app-layout .dashboard-monitoring-filters-row .autocomplete-suggestions {
+  position: absolute !important;
+  z-index: 100001 !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  background: #fff !important;
+  border: 1px solid rgba(100, 116, 139, 0.28) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.22) !important;
+}
+
+body .app-layout .dashboard-monitoring-table {
+  position: relative !important;
+  z-index: 1 !important;
+}
