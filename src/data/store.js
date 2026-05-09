@@ -732,6 +732,50 @@ export const materialStore = {
     return allRows.map(mapMaterial.toModel);
   },
 
+  async getPage({ search = '', categoryId = '', status = '', limit = 200, offset = 0 } = {}) {
+    const cleanSearch = String(search || '').trim();
+    const safeLimit = Math.max(1, Math.min(Number(limit || 200), 500));
+    const safeOffset = Math.max(0, Number(offset || 0));
+
+    let query = supabase
+      .from('materiali')
+      .select('*', { count: 'exact' });
+
+    if (cleanSearch) {
+      const q = cleanSearch.replace(/[%_]/g, '\\$&');
+      query = query.or(
+        [
+          `codice.ilike.%${q}%`,
+          `descrizione.ilike.%${q}%`,
+          `marca.ilike.%${q}%`,
+          `fornitore.ilike.%${q}%`,
+          `posizione_scaffale.ilike.%${q}%`,
+        ].join(',')
+      );
+    }
+
+    if (categoryId) {
+      query = query.eq('categoria_id', categoryId);
+    }
+
+    if (status) {
+      query = query.eq('stato_disponibilita', status);
+    }
+
+    const { data, error, count } = await query
+      .order('codice')
+      .range(safeOffset, safeOffset + safeLimit - 1);
+
+    if (error) throw error;
+
+    return {
+      rows: (Array.isArray(data) ? data : []).map(mapMaterial.toModel),
+      total: Number(count || 0),
+      limit: safeLimit,
+      offset: safeOffset,
+    };
+  },
+
   async getById(id) {
     const { data, error } = await supabase
       .from('materiali')
@@ -1686,6 +1730,50 @@ export const invoiceImportStore = {
     return data.map(mapImportedInvoice.toModel);
   },
 
+  async getPage({ search = '', categoryId = '', status = '', limit = 200, offset = 0 } = {}) {
+    const cleanSearch = String(search || '').trim();
+    const safeLimit = Math.max(1, Math.min(Number(limit || 200), 500));
+    const safeOffset = Math.max(0, Number(offset || 0));
+
+    let query = supabase
+      .from('materiali')
+      .select('*', { count: 'exact' });
+
+    if (cleanSearch) {
+      const q = cleanSearch.replace(/[%_]/g, '\\$&');
+      query = query.or(
+        [
+          `codice.ilike.%${q}%`,
+          `descrizione.ilike.%${q}%`,
+          `marca.ilike.%${q}%`,
+          `fornitore.ilike.%${q}%`,
+          `posizione_scaffale.ilike.%${q}%`,
+        ].join(',')
+      );
+    }
+
+    if (categoryId) {
+      query = query.eq('categoria_id', categoryId);
+    }
+
+    if (status) {
+      query = query.eq('stato_disponibilita', status);
+    }
+
+    const { data, error, count } = await query
+      .order('codice')
+      .range(safeOffset, safeOffset + safeLimit - 1);
+
+    if (error) throw error;
+
+    return {
+      rows: (Array.isArray(data) ? data : []).map(mapMaterial.toModel),
+      total: Number(count || 0),
+      limit: safeLimit,
+      offset: safeOffset,
+    };
+  },
+
   async getById(id) {
     if (!id) {
       throw new Error('ID fattura mancante.');
@@ -2032,6 +2120,50 @@ export const reorderProposalStore = {
     if (error) throw error;
 
     return (data || []).map(mapReorderProposal.toModel);
+  },
+
+  async getPage({ search = '', categoryId = '', status = '', limit = 200, offset = 0 } = {}) {
+    const cleanSearch = String(search || '').trim();
+    const safeLimit = Math.max(1, Math.min(Number(limit || 200), 500));
+    const safeOffset = Math.max(0, Number(offset || 0));
+
+    let query = supabase
+      .from('materiali')
+      .select('*', { count: 'exact' });
+
+    if (cleanSearch) {
+      const q = cleanSearch.replace(/[%_]/g, '\\$&');
+      query = query.or(
+        [
+          `codice.ilike.%${q}%`,
+          `descrizione.ilike.%${q}%`,
+          `marca.ilike.%${q}%`,
+          `fornitore.ilike.%${q}%`,
+          `posizione_scaffale.ilike.%${q}%`,
+        ].join(',')
+      );
+    }
+
+    if (categoryId) {
+      query = query.eq('categoria_id', categoryId);
+    }
+
+    if (status) {
+      query = query.eq('stato_disponibilita', status);
+    }
+
+    const { data, error, count } = await query
+      .order('codice')
+      .range(safeOffset, safeOffset + safeLimit - 1);
+
+    if (error) throw error;
+
+    return {
+      rows: (Array.isArray(data) ? data : []).map(mapMaterial.toModel),
+      total: Number(count || 0),
+      limit: safeLimit,
+      offset: safeOffset,
+    };
   },
 
   async getById(id) {

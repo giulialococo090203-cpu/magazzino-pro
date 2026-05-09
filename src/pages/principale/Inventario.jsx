@@ -108,6 +108,11 @@ export default function Inventario() {
   const [materialMovements, setMaterialMovements] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [exportFormat, setExportFormat] = useState('excel');
+  const [totalMaterials, setTotalMaterials] = useState(0);
+  const [loadingMaterials, setLoadingMaterials] = useState(false);
+  const [loadingMoreMaterials, setLoadingMoreMaterials] = useState(false);
+
+  const MATERIAL_PAGE_SIZE = 200;
 
   const searchWrapRef = useRef(null);
 
@@ -117,13 +122,41 @@ export default function Inventario() {
 
   const installerPriceLabel = priceSettings.installerPriceLabel || 'Prezzo installatore';
 
+  const loadMaterialsPage = async ({ reset = false } = {}) => {
+    const nextOffset = reset ? 0 : materials.length;
+
+    try {
+      if (reset) {
+        setLoadingMaterials(true);
+      } else {
+        setLoadingMoreMaterials(true);
+      }
+
+      const result = await materialStore.getPage({
+        search,
+        categoryId: filterCategory,
+        status: filterStatus,
+        limit: MATERIAL_PAGE_SIZE,
+        offset: nextOffset,
+      });
+
+      const rows = Array.isArray(result.rows) ? result.rows : [];
+
+      setTotalMaterials(Number(result.total || 0));
+      setMaterials((current) => (reset ? rows : [...current, ...rows]));
+    } catch (err) {
+      console.error('Errore caricamento materiali:', err);
+    } finally {
+      setLoadingMaterials(false);
+      setLoadingMoreMaterials(false);
+    }
+  };
+
   const refresh = async () => {
     try {
-      const mats = await materialStore.getAll();
       const cats = await categoryStore.getAll();
-
-      setMaterials(Array.isArray(mats) ? mats : []);
       setCategories(Array.isArray(cats) ? cats : []);
+      await loadMaterialsPage({ reset: true });
     } catch (err) {
       console.error('Errore durante il refresh:', err);
     }
@@ -166,6 +199,16 @@ export default function Inventario() {
   }, [searchParams]);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadMaterialsPage({ reset: true });
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [search, filterCategory, filterStatus]);
+
+
+
+  useEffect(() => {
     async function loadMovements() {
       if (detailMaterial) {
         try {
@@ -200,22 +243,8 @@ export default function Inventario() {
   const getCategoryName = (id) => categoryNameById.get(id) || id;
 
   const filtered = useMemo(() => {
-    return materials.filter((m) => {
-      const q = search.toLowerCase();
-
-      const matchSearch =
-        !q ||
-        m.code?.toLowerCase().includes(q) ||
-        m.description?.toLowerCase().includes(q) ||
-        m.brand?.toLowerCase().includes(q) ||
-        getCategoryName(m.category)?.toLowerCase().includes(q);
-
-      const matchCat = !filterCategory || m.category === filterCategory;
-      const matchStatus = !filterStatus || m.status === filterStatus;
-
-      return matchSearch && matchCat && matchStatus;
-    });
-  }, [materials, search, filterCategory, filterStatus, categoryNameById]);
+    return materials;
+  }, [materials]);
 
   const suggestions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -376,7 +405,7 @@ export default function Inventario() {
         <div>
           <h1 className="page-title"><Icon name="inventory_2" className="ui-title-icon" aria-hidden="true" />Inventario Magazzino</h1>
           <p className="page-subtitle">
-            {filtered.length} materiali trovati su {materials.length} totali
+            {totalMaterials || filtered.length} materiali trovati · {materials.length} caricati
           </p>
         </div>
 
@@ -491,6 +520,12 @@ export default function Inventario() {
         </div>
       </div>
 
+      {loadingMaterials && (
+        <div className="card" style={{ marginBottom: 12, padding: '12px 16px', fontWeight: 700 }}>
+          Caricamento materiali...
+        </div>
+      )}
+
       <div className="table-container inventario-scroll-table">
         <table className="data-table">
           <thead>
@@ -583,6 +618,20 @@ export default function Inventario() {
           </tbody>
         </table>
       </div>
+
+      {materials.length < totalMaterials && (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 24px' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => loadMaterialsPage({ reset: false })}
+            disabled={loadingMaterials || loadingMoreMaterials}
+          >
+            {loadingMoreMaterials
+              ? 'Caricamento...'
+              : `Carica altri materiali (${materials.length}/${totalMaterials})`}
+          </button>
+        </div>
+      )}
 
       {detailMaterial && (
         <div className="modal-overlay" onClick={() => setDetailMaterial(null)}>
