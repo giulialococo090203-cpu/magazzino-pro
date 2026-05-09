@@ -134,6 +134,12 @@ export default function MovimentiForm() {
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapRef = useRef(null);
+  const operatorWrapRef = useRef(null);
+  const clientWrapRef = useRef(null);
+  const [operatorSuggestions, setOperatorSuggestions] = useState([]);
+  const [clientSuggestions, setClientSuggestions] = useState([]);
+  const [showOperatorSuggestions, setShowOperatorSuggestions] = useState(false);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
 
   const canUsePage = canManageMovements(user?.role);
 
@@ -169,9 +175,49 @@ export default function MovimentiForm() {
   }, [tipo]);
 
   useEffect(() => {
+    let mounted = true;
+
+    async function loadMovementSuggestions() {
+      try {
+        const recent = movementStore.getRecent
+          ? await movementStore.getRecent(500)
+          : [];
+
+        if (!mounted) return;
+
+        const operators = [
+          user?.fullName || user?.username || '',
+          ...recent.map((m) => m.operatorName || m.userName || '').filter(Boolean),
+        ];
+
+        const clients = recent.map((m) => m.clientName || '').filter(Boolean);
+
+        setOperatorSuggestions([...new Set(operators.map((v) => String(v).trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)));
+        setClientSuggestions([...new Set(clients.map((v) => String(v).trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)));
+      } catch (err) {
+        console.warn('Suggerimenti operatore/cliente non caricati:', err);
+      }
+    }
+
+    loadMovementSuggestions();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.fullName, user?.username]);
+
+  useEffect(() => {
     const onClickOutside = (e) => {
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
         setShowSuggestions(false);
+      }
+
+      if (operatorWrapRef.current && !operatorWrapRef.current.contains(e.target)) {
+        setShowOperatorSuggestions(false);
+      }
+
+      if (clientWrapRef.current && !clientWrapRef.current.contains(e.target)) {
+        setShowClientSuggestions(false);
       }
     };
 
@@ -561,15 +607,43 @@ export default function MovimentiForm() {
             </div>
 
             <div className="form-row">
-              <div className="form-group">
+              <div className="form-group combo-field" ref={clientWrapRef}>
                 <label className="form-label">Nome Cliente</label>
                 <input
                   type="text"
                   className="form-control"
                   value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Es: Rossi Impianti"
+                  onChange={(e) => {
+                    setClientName(e.target.value);
+                    setShowClientSuggestions(true);
+                  }}
+                  onFocus={() => setShowClientSuggestions(true)}
+                  placeholder="Scrivi o seleziona cliente..."
                 />
+
+                {showClientSuggestions && clientSuggestions.length > 0 && (
+                  <div className="combo-suggestions">
+                    {clientSuggestions
+                      .filter((name) =>
+                        !clientName.trim() ||
+                        name.toLowerCase().includes(clientName.trim().toLowerCase())
+                      )
+                      .slice(0, 12)
+                      .map((name) => (
+                        <button
+                          key={name}
+                          type="button"
+                          className="combo-suggestion-item"
+                          onClick={() => {
+                            setClientName(name);
+                            setShowClientSuggestions(false);
+                          }}
+                        >
+                          {name}
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -584,15 +658,43 @@ export default function MovimentiForm() {
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="form-group combo-field" ref={operatorWrapRef}>
               <label className="form-label">Operatore <span className="required">*</span></label>
               <input
                 type="text"
                 className="form-control"
                 value={operatorName}
-                onChange={(e) => setOperatorName(e.target.value)}
-                placeholder="Nome operatore"
+                onChange={(e) => {
+                  setOperatorName(e.target.value);
+                  setShowOperatorSuggestions(true);
+                }}
+                onFocus={() => setShowOperatorSuggestions(true)}
+                placeholder="Scrivi o seleziona operatore..."
               />
+
+              {showOperatorSuggestions && operatorSuggestions.length > 0 && (
+                <div className="combo-suggestions">
+                  {operatorSuggestions
+                    .filter((name) =>
+                      !operatorName.trim() ||
+                      name.toLowerCase().includes(operatorName.trim().toLowerCase())
+                    )
+                    .slice(0, 12)
+                    .map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className="combo-suggestion-item"
+                        onClick={() => {
+                          setOperatorName(name);
+                          setShowOperatorSuggestions(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
 
             <div className="form-group">

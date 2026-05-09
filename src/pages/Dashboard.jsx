@@ -994,7 +994,7 @@ export default function Dashboard() {
             </div>
 
             <div
-              className="filter-group"
+              className="filter-group combo-field"
               ref={operatorRef}
               style={{ position: 'relative', minWidth: 240 }}
             >
@@ -1011,55 +1011,44 @@ export default function Dashboard() {
               />
 
               {showOperatorSuggestions && operatorSuggestions.length > 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    left: 0,
-                    right: 0,
-                    zIndex: 20,
-                    background: '#fff',
-                    border: '1px solid var(--gray-200)',
-                    borderRadius: 'var(--border-radius-md)',
-                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
-                    maxHeight: 240,
-                    overflowY: 'auto',
-                  }}
-                >
-                  {operatorSuggestions.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setSearchOperator(
-                          item.fullName || item.username || item.name || ''
-                        );
-                        setShowOperatorSuggestions(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        border: 'none',
-                        background: 'transparent',
-                        padding: '10px 12px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid var(--gray-100)',
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>
-                        {item.fullName || item.name || item.username}
-                      </div>
-                      <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>
-                        {item.username}
-                      </div>
-                    </button>
-                  ))}
+                <div className="combo-suggestions">
+                  {operatorSuggestions
+                    .filter((item) => {
+                      const q = searchOperator.trim().toLowerCase();
+                      const label = String(item.fullName || item.name || item.username || '').toLowerCase();
+                      const username = String(item.username || '').toLowerCase();
+
+                      return !q || label.includes(q) || username.includes(q);
+                    })
+                    .slice(0, 12)
+                    .map((item) => (
+                      <button
+                        key={item.id || item.username || item.fullName || item.name}
+                        type="button"
+                        className="combo-suggestion-item"
+                        onClick={() => {
+                          setSearchOperator(
+                            item.fullName || item.username || item.name || ''
+                          );
+                          setShowOperatorSuggestions(false);
+                        }}
+                      >
+                        <div style={{ fontWeight: 800 }}>
+                          {item.fullName || item.name || item.username}
+                        </div>
+                        {item.username && (
+                          <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 2 }}>
+                            {item.username}
+                          </div>
+                        )}
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
 
             <div
-              className="filter-group"
+              className="filter-group combo-field"
               ref={clientRef}
               style={{ position: 'relative', minWidth: 220 }}
             >
@@ -1076,42 +1065,26 @@ export default function Dashboard() {
               />
 
               {showClientSuggestions && clientSuggestions.length > 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    left: 0,
-                    right: 0,
-                    zIndex: 20,
-                    background: '#fff',
-                    border: '1px solid var(--gray-200)',
-                    borderRadius: 'var(--border-radius-md)',
-                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.12)',
-                    maxHeight: 240,
-                    overflowY: 'auto',
-                  }}
-                >
-                  {clientSuggestions.map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => {
-                        setSearchClient(item);
-                        setShowClientSuggestions(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        border: 'none',
-                        background: 'transparent',
-                        padding: '10px 12px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid var(--gray-100)',
-                      }}
-                    >
-                      {item}
-                    </button>
-                  ))}
+                <div className="combo-suggestions">
+                  {clientSuggestions
+                    .filter((item) => {
+                      const q = searchClient.trim().toLowerCase();
+                      return !q || String(item || '').toLowerCase().includes(q);
+                    })
+                    .slice(0, 12)
+                    .map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        className="combo-suggestion-item"
+                        onClick={() => {
+                          setSearchClient(item);
+                          setShowClientSuggestions(false);
+                        }}
+                      >
+                        {item}
+                      </button>
+                    ))}
                 </div>
               )}
             </div>
