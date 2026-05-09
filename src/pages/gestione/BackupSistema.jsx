@@ -229,7 +229,7 @@ export default function BackupSistema() {
             >
               {loading
                 ? `Creazione backup... ${progress.current}/${progress.total}`
-                : '<SafeIcon name="download" size={16} /> Scarica backup JSON completo'}
+                : ''}
             </button>
 
             <button
