@@ -15158,3 +15158,62 @@ body .app-layout .card-body .table-container {
     min-width: 760px !important;
   }
 }
+
+/* ============================================================
+   GLOBAL LIST SCROLL — notifiche e liste lunghe scrollabili
+   ============================================================ */
+
+/* Pagina notifiche / centro notifiche */
+body .app-layout .notifications-list,
+body .app-layout .notification-list,
+body .app-layout .notifiche-list,
+body .app-layout .notifications-container,
+body .app-layout .notifiche-container,
+body .app-layout .notification-center,
+body .app-layout .notifications-grid,
+body .app-layout .notifiche-grid {
+  max-height: 560px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-right: 6px !important;
+}
+
+/* Card/lista notifiche se sono dentro una card-body */
+body .app-layout .card-body:has(.notification-item),
+body .app-layout .card-body:has(.notifica-item),
+body .app-layout .card-body:has(.notification-card),
+body .app-layout .card-body:has(.notifica-card) {
+  max-height: 560px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Singole notifiche: evita che testi lunghi rompano la pagina */
+body .app-layout .notification-item,
+body .app-layout .notifica-item,
+body .app-layout .notification-card,
+body .app-layout .notifica-card,
+body .app-layout [class*="notification"],
+body .app-layout [class*="notifica"] {
+  overflow-wrap: anywhere !important;
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  body .app-layout .notifications-list,
+  body .app-layout .notification-list,
+  body .app-layout .notifiche-list,
+  body .app-layout .notifications-container,
+  body .app-layout .notifiche-container,
+  body .app-layout .notification-center,
+  body .app-layout .notifications-grid,
+  body .app-layout .notifiche-grid,
+  body .app-layout .card-body:has(.notification-item),
+  body .app-layout .card-body:has(.notifica-item),
+  body .app-layout .card-body:has(.notification-card),
+  body .app-layout .card-body:has(.notifica-card) {
+    max-height: 460px !important;
+  }
+}
