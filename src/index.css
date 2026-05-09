@@ -14569,3 +14569,56 @@ body,
 .animate-slideUp {
   background: transparent !important;
 }
+
+/* Override finale Dashboard: sfondo tech neutro, no beige */
+body,
+#root {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.045), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 34%),
+    linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 42%, #dbe1e8 100%) !important;
+}
+
+.app-layout,
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.dashboard-layout,
+.animate-slideUp {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.035), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.075), transparent 36%),
+    linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 48%, #dbe1e8 100%) !important;
+}
+
+/* Dashboard cards: più bianche e meno crema */
+.page-header,
+.kpi-card,
+.quick-action-btn,
+.card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94)) !important;
+}
+
+/* Riduce gli aloni arancioni troppo caldi */
+.kpi-card::before,
+.card::before,
+.page-header::before {
+  opacity: 0.28 !important;
+}
+
+/* Bordo più freddo/tech */
+.kpi-card,
+.quick-action-btn,
+.card,
+.page-header {
+  border-color: rgba(148, 163, 184, 0.32) !important;
+}
+
+/* Sidebar resta dark e coerente */
+.sidebar,
+.app-sidebar {
+  background:
+    linear-gradient(180deg, #020617 0%, #0f172a 52%, #020617 100%) !important;
+}
