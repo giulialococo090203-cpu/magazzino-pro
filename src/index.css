@@ -14546,3 +14546,26 @@ body .mobile-login-footer::after {
     max-height: 500px;
   }
 }
+
+/* Dashboard: sfondo grigio tech, meno beige/almond */
+body,
+#root {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.08), transparent 32%),
+    linear-gradient(135deg, #e5e7eb 0%, #d1d5db 42%, #cbd5e1 100%) !important;
+}
+
+.app-layout,
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.dashboard-layout {
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.07), transparent 34%),
+    linear-gradient(135deg, #e5e7eb 0%, #d1d5db 45%, #cbd5e1 100%) !important;
+}
+
+.animate-slideUp {
+  background: transparent !important;
+}

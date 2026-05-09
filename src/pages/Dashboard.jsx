@@ -43,6 +43,33 @@ const CHART_COLORS = [
 
 const SUPABASE_USAGE_LIMIT_BYTES = 500 * 1024 * 1024;
 
+const DASHBOARD_FAST_CACHE_KEY = 'magazzino_dashboard_fast_analytics_v2';
+
+function readDashboardFastCache() {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_FAST_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeDashboardFastCache(patch) {
+  try {
+    const prev = readDashboardFastCache();
+    localStorage.setItem(
+      DASHBOARD_FAST_CACHE_KEY,
+      JSON.stringify({
+        ...prev,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // cache non indispensabile
+  }
+}
+
 function normalizeRole(role) {
   return String(role || '').trim().toLowerCase();
 }
@@ -120,13 +147,13 @@ export default function Dashboard() {
     unreadNotifications: 0,
     recentMovements: [],
   });
-  const [materials, setMaterials] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [movements, setMovements] = useState([]);
+  const [materials, setMaterials] = useState(() => readDashboardFastCache().materials || []);
+  const [categories, setCategories] = useState(() => readDashboardFastCache().categories || []);
+  const [notifications, setNotifications] = useState(() => readDashboardFastCache().notifications || []);
+  const [movements, setMovements] = useState(() => readDashboardFastCache().movements || []);
   const [users, setUsers] = useState([]);
-  const [mostMoved, setMostMoved] = useState([]);
-  const [entriesVsExits, setEntriesVsExits] = useState([]);
+  const [mostMoved, setMostMoved] = useState(() => readDashboardFastCache().mostMoved || []);
+  const [entriesVsExits, setEntriesVsExits] = useState(() => readDashboardFastCache().entriesVsExits || []);
 
   const [supabaseUsage, setSupabaseUsage] = useState(null);
   const [supabaseUsageError, setSupabaseUsageError] = useState('');
