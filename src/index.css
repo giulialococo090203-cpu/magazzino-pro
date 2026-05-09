@@ -2613,7 +2613,7 @@ textarea {
    ============================================================ */
 
 :root {
-  --enterprise-bg: #f4f7fb;
+  --enterprise-bg: #d7dde6;
   --enterprise-surface: #ffffff;
   --enterprise-border: #d7e0ea;
   --enterprise-border-soft: #e6edf5;
@@ -2976,7 +2976,7 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --tech-bg: #eef2f7;
+  --tech-bg: #d7dde6;
   --tech-surface: #ffffff;
   --tech-surface-soft: #f8fafc;
   --tech-border: #d8e1ec;
@@ -3306,7 +3306,7 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --ui-bg: #f5f6f8;
+  --ui-bg: #d7dde6;
   --ui-surface: #ffffff;
   --ui-surface-2: #fafafa;
   --ui-border: #e4e7ec;
@@ -3807,9 +3807,9 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --pro-bg: #f3f4f6;
+  --pro-bg: #d7dde6;
   --pro-surface: #ffffff;
-  --pro-surface-soft: #f9fafb;
+  --pro-surface-soft: #f8fafc;
   --pro-border: #e5e7eb;
   --pro-border-strong: #d1d5db;
 
@@ -14547,51 +14547,6 @@ body .mobile-login-footer::after {
   }
 }
 
-/* Dashboard: sfondo grigio tech, meno beige/almond */
-body,
-#root {
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.08), transparent 32%),
-    linear-gradient(135deg, #e5e7eb 0%, #d1d5db 42%, #cbd5e1 100%) !important;
-}
-
-.app-layout,
-.app-main,
-.main-content,
-.page-content,
-.content-area,
-.dashboard-layout {
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.07), transparent 34%),
-    linear-gradient(135deg, #e5e7eb 0%, #d1d5db 45%, #cbd5e1 100%) !important;
-}
-
-.animate-slideUp {
-  background: transparent !important;
-}
-
-/* Override finale Dashboard: sfondo tech neutro, no beige */
-body,
-#root {
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.045), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 34%),
-    linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 42%, #dbe1e8 100%) !important;
-}
-
-.app-layout,
-.app-main,
-.main-content,
-.page-content,
-.content-area,
-.dashboard-layout,
-.animate-slideUp {
-  background:
-    radial-gradient(circle at top left, rgba(249, 115, 22, 0.035), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.075), transparent 36%),
-    linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 48%, #dbe1e8 100%) !important;
-}
-
 /* Dashboard cards: più bianche e meno crema */
 .page-header,
 .kpi-card,
@@ -14621,20 +14576,6 @@ body,
 .app-sidebar {
   background:
     linear-gradient(180deg, #020617 0%, #0f172a 52%, #020617 100%) !important;
-}
-
-/* FORCE FIX: sfondo dashboard grigio tech freddo */
-html,
-body,
-#root {
-  background: #e5e7eb !important;
-}
-
-body::before,
-body::after,
-#root::before,
-#root::after {
-  background: none !important;
 }
 
 /* contenitori principali app */
@@ -14725,19 +14666,6 @@ main,
     linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
 }
 
-/* FINAL OVERRIDE: tema dashboard grigio tech freddo */
-:root {
-  --pro-bg: #e5e7eb !important;
-  --ui-bg: #e5e7eb !important;
-  --tech-bg: #e5e7eb !important;
-
-  --pro-surface: #ffffff !important;
-  --pro-surface-soft: #f8fafc !important;
-  --ui-surface: #ffffff !important;
-  --tech-surface: #ffffff !important;
-  --tech-surface-soft: #f8fafc !important;
-}
-
 /* forza lo sfondo dopo i temi pro/ui/tech */
 html,
 body,
@@ -14795,23 +14723,6 @@ main,
 .card::before,
 .card::after {
   opacity: 0.10 !important;
-}
-
-/* =========================================================
-   FINAL BACKGROUND FIX — grigio tech freddo, niente beige
-   ========================================================= */
-
-:root {
-  --pro-bg: #dbe2ea !important;
-  --ui-bg: #dbe2ea !important;
-  --tech-bg: #dbe2ea !important;
-  --enterprise-bg: #dbe2ea !important;
-
-  --pro-surface: #ffffff !important;
-  --pro-surface-soft: #f8fafc !important;
-  --ui-surface: #ffffff !important;
-  --tech-surface: #ffffff !important;
-  --tech-surface-soft: #f8fafc !important;
 }
 
 /* Sfondo globale freddo */
@@ -14929,3 +14840,48 @@ main,
 .nav-sidebar {
   background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
 }
+
+/* Dashboard background pulito: grigio tech freddo */
+body,
+#root,
+.app,
+.app-layout,
+.app-main,
+.main-content,
+.page-content,
+.content-area {
+  background: var(--pro-bg) !important;
+  background-color: var(--pro-bg) !important;
+}
+
+.animate-slideUp {
+  background: var(--pro-bg) !important;
+  background-color: var(--pro-bg) !important;
+}
+
+/* Card/dashboard: superfici fredde, niente crema */
+.page-header,
+.kpi-card,
+.quick-action-btn,
+.card,
+.table-container {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  background-color: #ffffff !important;
+}
+
+/* Spegne aloni beige/arancio dentro le card */
+.page-header::before,
+.page-header::after,
+.kpi-card::before,
+.kpi-card::after,
+.quick-action-btn::before,
+.quick-action-btn::after,
+.card::before,
+.card::after,
+.table-container::before,
+.table-container::after {
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+
