@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authStore } from '../data/authStore';
 
 function getLoginErrorMessage(err) {
@@ -29,6 +29,22 @@ export default function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [useMobileLogin, setUseMobileLogin] = useState(false);
+
+  useEffect(() => {
+    const updateLoginLayout = () => {
+      setUseMobileLogin(window.innerWidth <= 768);
+    };
+
+    updateLoginLayout();
+    window.addEventListener('resize', updateLoginLayout);
+    window.addEventListener('orientationchange', updateLoginLayout);
+
+    return () => {
+      window.removeEventListener('resize', updateLoginLayout);
+      window.removeEventListener('orientationchange', updateLoginLayout);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,43 +110,8 @@ export default function Login({ onLogin }) {
     </>
   );
 
-  return (
-    <>
-      {/* DESKTOP / TABLET: NON TOCCARE */}
-      <main className="login-page login-redesign-page login-desktop-view">
-        <div className="login-redesign-card">
-          <section className="login-redesign-brand" aria-label="WorkSpace">
-            <div className="workspace-logo-shell workspace-logo-shell-big"><img className="workspace-logo-img workspace-logo-img-big" src="/workspace-logo.png" alt="WorkSpace" /></div>
-
-            <div className="login-redesign-brand-content">
-              <div className="login-redesign-kicker">Gestionale tecnico</div>
-              <h1>WorkSpace</h1>
-              <p>Controlla operazioni, materiali, fatture e performance aziendali da un unico ambiente.</p>
-            </div>
-          </section>
-
-          <section className="login-redesign-form-panel">
-            <div className="login-redesign-heading">
-              <div className="workspace-logo-shell workspace-logo-shell-small"><img className="workspace-logo-img workspace-logo-img-small" src="/workspace-logo.png" alt="WorkSpace" /></div>
-              <div>
-                <h2>Accedi</h2>
-                <p>Centro operativo aziendale</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="login-redesign-form">
-              <div>
-                <h3>Accedi alla piattaforma</h3>
-                <p className="login-redesign-helper">Gestisci il lavoro con controllo, ordine e continuità.</p>
-              </div>
-
-              {formFields}
-            </form>
-          </section>
-        </div>
-      </main>
-
-      {/* TELEFONO: SCHERMATA SEPARATA */}
+  if (useMobileLogin) {
+    return (
       <main className="mobile-login-view mobile-login-stable-final">
         <section className="mobile-login-phone">
           <div className="mobile-login-top">
@@ -150,6 +131,41 @@ export default function Login({ onLogin }) {
           </div>
         </section>
       </main>
-    </>
+    );
+  }
+
+  return (
+    <main className="login-page login-redesign-page login-desktop-view">
+      <div className="login-redesign-card">
+        <section className="login-redesign-brand" aria-label="WorkSpace">
+          <div className="workspace-logo-shell workspace-logo-shell-big"><img className="workspace-logo-img workspace-logo-img-big" src="/workspace-logo.png" alt="WorkSpace" /></div>
+
+          <div className="login-redesign-brand-content">
+            <div className="login-redesign-kicker">Gestionale tecnico</div>
+            <h1>WorkSpace</h1>
+            <p>Controlla operazioni, materiali, fatture e performance aziendali da un unico ambiente.</p>
+          </div>
+        </section>
+
+        <section className="login-redesign-form-panel">
+          <div className="login-redesign-heading">
+            <div className="workspace-logo-shell workspace-logo-shell-small"><img className="workspace-logo-img workspace-logo-img-small" src="/workspace-logo.png" alt="WorkSpace" /></div>
+            <div>
+              <h2>Accedi</h2>
+              <p>Centro operativo aziendale</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="login-redesign-form">
+            <div>
+              <h3>Accedi alla piattaforma</h3>
+              <p className="login-redesign-helper">Gestisci il lavoro con controllo, ordine e continuità.</p>
+            </div>
+
+            {formFields}
+          </form>
+        </section>
+      </div>
+    </main>
   );
 }
