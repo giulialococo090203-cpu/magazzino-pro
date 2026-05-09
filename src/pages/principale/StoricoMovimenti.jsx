@@ -30,6 +30,48 @@ const PDF_COLORS = {
 
 import Icon from '../../components/Icon';
 
+
+const STORICO_MOVIMENTI_FAST_CACHE_KEY = 'magazzino_storico_movimenti_fast_cache_v1';
+
+function readStoricoMovimentiCache() {
+  try {
+    const raw = localStorage.getItem(STORICO_MOVIMENTI_FAST_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStoricoMovimentiCache(patch) {
+  try {
+    const prev = readStoricoMovimentiCache();
+
+    localStorage.setItem(
+      STORICO_MOVIMENTI_FAST_CACHE_KEY,
+      JSON.stringify({
+        ...prev,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+  } catch {
+    // cache non indispensabile
+  }
+}
+
+function getDefaultHistoryRange() {
+  const today = new Date();
+  const from = new Date();
+
+  from.setDate(from.getDate() - 30);
+
+  return {
+    dateFrom: from.toISOString().slice(0, 10),
+    dateTo: today.toISOString().slice(0, 10),
+  };
+}
+
+
 function formatDate(iso) {
   if (!iso) return '';
 
@@ -176,12 +218,14 @@ function csvEscape(value) {
 }
 
 export default function StoricoMovimenti() {
+  const cachedStoricoMovimenti = readStoricoMovimentiCache();
+
   const { user } = useAuth();
 
-  const [movements, setMovements] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [materials, setMaterials] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [movements, setMovements] = useState(() => cachedStoricoMovimenti.movements || []);
+  const [categories, setCategories] = useState(() => cachedStoricoMovimenti.categories || []);
+  const [materials, setMaterials] = useState(() => cachedStoricoMovimenti.materials || []);
+  const [users, setUsers] = useState(() => cachedStoricoMovimenti.users || []);
 
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -208,17 +252,33 @@ export default function StoricoMovimenti() {
 
   const loadStatic = async () => {
     try {
-      const [cats, mats, usrs] = await Promise.all([
-        categoryStore.getAll(),
-        materialStore.getAll(),
-        userStore.getAll(),
-      ]);
+      window.setTimeout(async () => {
+        try {
+          const [cats, mats, usrs] = await Promise.all([
+            categoryStore.getAll(),
+            materialStore.getAll(),
+            userStore.getAll(),
+          ]);
 
-      setCategories(Array.isArray(cats) ? cats : []);
-      setMaterials(Array.isArray(mats) ? mats : []);
-      setUsers(Array.isArray(usrs) ? usrs : []);
+          const safeCats = Array.isArray(cats) ? cats : [];
+          const safeMats = Array.isArray(mats) ? mats : [];
+          const safeUsers = Array.isArray(usrs) ? usrs : [];
+
+          setCategories(safeCats);
+          setMaterials(safeMats);
+          setUsers(safeUsers);
+
+          writeStoricoMovimentiCache({
+            categories: safeCats,
+            materials: safeMats,
+            users: safeUsers,
+          });
+        } catch (err) {
+          console.error('Errore caricamento dati statici:', err);
+        }
+      }, 250);
     } catch (err) {
-      console.error('Errore caricamento dati statici:', err);
+      console.error('Errore avvio caricamento dati statici:', err);
     }
   };
 
@@ -238,12 +298,10 @@ export default function StoricoMovimenti() {
         ? userFilterValue.replace(/^operator:/, '')
         : '';
 
-      const today = new Date();
-      const from = new Date();
-      from.setDate(from.getDate() - 30);
+      const defaultRange = getDefaultHistoryRange();
 
-      const effectiveDateFrom = dateFrom || from.toISOString().slice(0, 10);
-      const effectiveDateTo = dateTo || today.toISOString().slice(0, 10);
+      const effectiveDateFrom = dateFrom || defaultRange.dateFrom;
+      const effectiveDateTo = dateTo || defaultRange.dateTo;
 
       const filtered = await movementStore.getFiltered({
         dateFrom: effectiveDateFrom,
@@ -264,8 +322,14 @@ export default function StoricoMovimenti() {
           )
         : operatorFiltered;
 
-      setMovements(Array.isArray(clientFiltered) ? clientFiltered : []);
+      const safeClientFiltered = Array.isArray(clientFiltered) ? clientFiltered : [];
+
+      setMovements(safeClientFiltered);
       setPage(1);
+
+      writeStoricoMovimentiCache({
+        movements: safeClientFiltered,
+      });
     } catch (err) {
       console.error('Errore caricamento movimenti:', err);
     }
