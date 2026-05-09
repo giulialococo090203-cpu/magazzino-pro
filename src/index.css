@@ -15597,3 +15597,26 @@ body .app-layout a[title*="Esporta"]:not(.btn-primary) {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
   border-color: rgba(100, 116, 139, 0.34) !important;
 }
+
+/* ============================================================
+   Inventario massivo: tabella completa ma scrollabile
+   ============================================================ */
+
+body .app-layout .inventario-scroll-table,
+body .app-layout .inventory-scroll-table {
+  max-height: 68vh !important;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body .app-layout .inventario-scroll-table .data-table,
+body .app-layout .inventory-scroll-table .data-table {
+  min-width: max-content !important;
+}
+
+body .app-layout .inventario-scroll-table .data-table thead th,
+body .app-layout .inventory-scroll-table .data-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}

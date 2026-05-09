@@ -697,24 +697,36 @@ export const materialStore = {
 
   async getAll() {
     const pageSize = 1000;
-    let from = 0;
-    let allRows = [];
 
-    while (true) {
-      const { data, error } = await supabase
-        .from('materiali')
-        .select('*')
-        .order('codice')
-        .range(from, from + pageSize - 1);
+    const { count, error: countError } = await supabase
+      .from('materiali')
+      .select('id', { count: 'exact', head: true });
 
-      if (error) throw error;
+    if (countError) throw countError;
 
-      const rows = Array.isArray(data) ? data : [];
-      allRows = allRows.concat(rows);
+    const total = Number(count || 0);
 
-      if (rows.length < pageSize) break;
+    if (total === 0) return [];
 
-      from += pageSize;
+    const pages = [];
+
+    for (let from = 0; from < total; from += pageSize) {
+      pages.push(
+        supabase
+          .from('materiali')
+          .select('*')
+          .order('codice')
+          .range(from, from + pageSize - 1)
+      );
+    }
+
+    const results = await Promise.all(pages);
+
+    const allRows = [];
+
+    for (const result of results) {
+      if (result.error) throw result.error;
+      allRows.push(...(Array.isArray(result.data) ? result.data : []));
     }
 
     return allRows.map(mapMaterial.toModel);

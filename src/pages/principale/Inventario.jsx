@@ -193,7 +193,11 @@ export default function Inventario() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || id;
+  const categoryNameById = useMemo(() => {
+    return new Map(categories.map((c) => [c.id, c.name]));
+  }, [categories]);
+
+  const getCategoryName = (id) => categoryNameById.get(id) || id;
 
   const filtered = useMemo(() => {
     return materials.filter((m) => {
@@ -211,7 +215,7 @@ export default function Inventario() {
 
       return matchSearch && matchCat && matchStatus;
     });
-  }, [materials, search, filterCategory, filterStatus, categories]);
+  }, [materials, search, filterCategory, filterStatus, categoryNameById]);
 
   const suggestions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -227,7 +231,7 @@ export default function Inventario() {
           getCategoryName(m.category)?.toLowerCase().includes(q)
       )
       .slice(0, 8);
-  }, [search, materials, categories]);
+  }, [search, materials, categoryNameById]);
 
   const buildExportRows = () => {
     return filtered.map((m) => {
@@ -487,7 +491,7 @@ export default function Inventario() {
         </div>
       </div>
 
-      <div className="table-container">
+      <div className="table-container inventario-scroll-table">
         <table className="data-table">
           <thead>
             <tr>
