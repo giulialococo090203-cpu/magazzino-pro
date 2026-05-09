@@ -15658,3 +15658,139 @@ body .app-layout .table-container {
   position: relative !important;
   z-index: 1 !important;
 }
+
+/* ============================================================
+   Fix hard dropdown filtri Storico/Dashboard sopra tabelle
+   ============================================================ */
+
+body .app-layout .card:has(.combo-suggestions),
+body .app-layout .card-body:has(.combo-suggestions),
+body .app-layout .card:has(.search-suggestions),
+body .app-layout .card-body:has(.search-suggestions),
+body .app-layout .card:has(.autocomplete-suggestions),
+body .app-layout .card-body:has(.autocomplete-suggestions),
+body .app-layout .filters-row,
+body .app-layout .filters-grid,
+body .app-layout .filter-group,
+body .app-layout .combo-field {
+  overflow: visible !important;
+}
+
+body .app-layout .card:has(.combo-suggestions),
+body .app-layout .card-body:has(.combo-suggestions),
+body .app-layout .card:has(.search-suggestions),
+body .app-layout .card-body:has(.search-suggestions),
+body .app-layout .card:has(.autocomplete-suggestions),
+body .app-layout .card-body:has(.autocomplete-suggestions) {
+  position: relative !important;
+  z-index: 9990 !important;
+}
+
+body .app-layout .filters-row,
+body .app-layout .filters-grid {
+  position: relative !important;
+  z-index: 9991 !important;
+}
+
+body .app-layout .filter-group,
+body .app-layout .combo-field {
+  position: relative !important;
+  z-index: 9992 !important;
+}
+
+body .app-layout .filter-group:focus-within,
+body .app-layout .combo-field:focus-within {
+  z-index: 99999 !important;
+}
+
+body .app-layout .combo-suggestions,
+body .app-layout .search-suggestions,
+body .app-layout .autocomplete-suggestions {
+  position: absolute !important;
+  z-index: 100000 !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  background: #fff !important;
+}
+
+/* Le tabelle devono sempre stare sotto ai dropdown */
+body .app-layout .table-container,
+body .app-layout .dashboard-scroll-table,
+body .app-layout .dashboard-monitoring-table,
+body .app-layout .storico-movimenti-scroll-table {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body .app-layout .data-table thead,
+body .app-layout .data-table thead th {
+  z-index: 2 !important;
+}
+
+/* ============================================================
+   Fix hard dropdown filtri Storico/Dashboard sopra tabelle
+   ============================================================ */
+
+body .app-layout .card:has(.combo-suggestions),
+body .app-layout .card-body:has(.combo-suggestions),
+body .app-layout .card:has(.search-suggestions),
+body .app-layout .card-body:has(.search-suggestions),
+body .app-layout .card:has(.autocomplete-suggestions),
+body .app-layout .card-body:has(.autocomplete-suggestions),
+body .app-layout .filters-row,
+body .app-layout .filters-grid,
+body .app-layout .filter-group,
+body .app-layout .combo-field {
+  overflow: visible !important;
+}
+
+body .app-layout .card:has(.combo-suggestions),
+body .app-layout .card-body:has(.combo-suggestions),
+body .app-layout .card:has(.search-suggestions),
+body .app-layout .card-body:has(.search-suggestions),
+body .app-layout .card:has(.autocomplete-suggestions),
+body .app-layout .card-body:has(.autocomplete-suggestions) {
+  position: relative !important;
+  z-index: 9990 !important;
+}
+
+body .app-layout .filters-row,
+body .app-layout .filters-grid {
+  position: relative !important;
+  z-index: 9991 !important;
+}
+
+body .app-layout .filter-group,
+body .app-layout .combo-field {
+  position: relative !important;
+  z-index: 9992 !important;
+}
+
+body .app-layout .filter-group:focus-within,
+body .app-layout .combo-field:focus-within {
+  z-index: 99999 !important;
+}
+
+body .app-layout .combo-suggestions,
+body .app-layout .search-suggestions,
+body .app-layout .autocomplete-suggestions {
+  position: absolute !important;
+  z-index: 100000 !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  background: #fff !important;
+}
+
+/* Le tabelle devono sempre stare sotto ai dropdown */
+body .app-layout .table-container,
+body .app-layout .dashboard-scroll-table,
+body .app-layout .dashboard-monitoring-table,
+body .app-layout .storico-movimenti-scroll-table {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body .app-layout .data-table thead,
+body .app-layout .data-table thead th {
+  z-index: 2 !important;
+}
