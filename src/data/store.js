@@ -842,17 +842,39 @@ export const materialStore = {
 };
 
 export const movementStore = {
+  async _fetchAllMovements(buildQuery) {
+    const pageSize = 1000;
+    let from = 0;
+    let allRows = [];
+
+    while (true) {
+      const query = buildQuery()
+        .order('data_movimento', { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const rows = Array.isArray(data) ? data : [];
+      allRows = allRows.concat(rows);
+
+      if (rows.length < pageSize) break;
+
+      from += pageSize;
+    }
+
+    return allRows.map(mapMovement.toModel);
+  },
+
   async getAll() {
-    const { data, error } = await supabase
-      .from('movimenti')
-      .select(
-        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
-      )
-      .order('data_movimento', { ascending: false });
-
-    if (error) throw error;
-
-    return data.map(mapMovement.toModel);
+    return this._fetchAllMovements(() =>
+      supabase
+        .from('movimenti')
+        .select(
+          '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
+        )
+    );
   },
 
   async getByMaterial(materialId) {
@@ -935,13 +957,7 @@ export const movementStore = {
     if (userId) query = query.eq('utente_id', userId);
     if (type) query = query.eq('tipo_movimento', type);
 
-    const { data, error } = await query.order('data_movimento', {
-      ascending: false,
-    });
-
-    if (error) throw error;
-
-    let result = data.map(mapMovement.toModel);
+    let result = await this._fetchAllMovements(() => query);
 
     if (categoryId) result = result.filter((m) => m.categoryId === categoryId);
     if (materialId) result = result.filter((m) => m.materialId === materialId);
