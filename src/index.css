@@ -15054,3 +15054,46 @@ body .app-layout a.btn-primary:not(.disabled) {
     background-image: none !important;
   }
 }
+
+/* Rendicontazione economica: tabelle annue scrollabili */
+body .app-layout .rendicontazione-scroll-table {
+  max-height: 560px !important;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-radius: 14px !important;
+}
+
+body .app-layout .rendicontazione-scroll-table .data-table {
+  min-width: 980px !important;
+  width: max-content !important;
+  margin: 0 !important;
+}
+
+body .app-layout .rendicontazione-scroll-table .data-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 8 !important;
+}
+
+body .app-layout .rendicontazione-scroll-table .data-table th,
+body .app-layout .rendicontazione-scroll-table .data-table td {
+  white-space: nowrap !important;
+}
+
+/* La descrizione resta leggibile senza allargare troppo la tabella */
+body .app-layout .rendicontazione-scroll-table .data-table td:nth-child(2),
+body .app-layout .rendicontazione-scroll-table .data-table td:nth-child(3) {
+  white-space: normal !important;
+  min-width: 220px !important;
+  max-width: 360px !important;
+}
+
+@media screen and (max-width: 768px) {
+  body .app-layout .rendicontazione-scroll-table {
+    max-height: 480px !important;
+  }
+
+  body .app-layout .rendicontazione-scroll-table .data-table {
+    min-width: 860px !important;
+  }
+}

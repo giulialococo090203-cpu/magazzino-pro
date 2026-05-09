@@ -611,7 +611,7 @@ export default function RendicontazioneEconomica() {
           <h3 className="card-title"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /> Spesa per fornitore</h3>
         </div>
 
-        <div className="table-container">
+        <div className="table-container rendicontazione-scroll-table">
           <table className="data-table">
             <thead>
               <tr>
@@ -659,7 +659,7 @@ export default function RendicontazioneEconomica() {
           <h3 className="card-title"><Icon name="push_pin" className="ui-section-icon" aria-hidden="true" />Materiali con maggiore impatto economico</h3>
         </div>
 
-        <div className="table-container">
+        <div className="table-container rendicontazione-scroll-table">
           <table className="data-table">
             <thead>
               <tr>
