@@ -163,8 +163,8 @@ export default function LogModifiche() {
           </div>
         </div>
       ) : (
-        <div className="card">
-          <div className="card-body" style={{ padding: 0 }}>
+        <div className="card log-modifiche-card">
+          <div className="card-body log-modifiche-scroll-list" style={{ padding: 0 }}>
             {filtered.map((log) => (
               <div
                 key={log.id}

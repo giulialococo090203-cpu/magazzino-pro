@@ -15291,3 +15291,89 @@ body .app-layout .table-container:has(.data-table) {
     min-width: 760px !important;
   }
 }
+
+/* ============================================================
+   REGISTRO MODIFICHE — scroll verticale forzato
+   ============================================================ */
+
+body .app-layout .log-modifiche-scroll-table {
+  max-height: 560px !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  border-radius: 14px !important;
+  scrollbar-gutter: stable !important;
+}
+
+body .app-layout .log-modifiche-scroll-table .data-table {
+  min-width: 980px !important;
+  width: max-content !important;
+  margin: 0 !important;
+}
+
+body .app-layout .log-modifiche-scroll-table .data-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+}
+
+body .app-layout .log-modifiche-scroll-table .data-table th,
+body .app-layout .log-modifiche-scroll-table .data-table td {
+  white-space: nowrap !important;
+}
+
+/* Colonna descrizione/dettagli più leggibile */
+body .app-layout .log-modifiche-scroll-table .data-table td:nth-child(4),
+body .app-layout .log-modifiche-scroll-table .data-table td:nth-child(5) {
+  white-space: normal !important;
+  min-width: 260px !important;
+  max-width: 420px !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media screen and (max-width: 768px) {
+  body .app-layout .log-modifiche-scroll-table {
+    max-height: 460px !important;
+  }
+
+  body .app-layout .log-modifiche-scroll-table .data-table {
+    min-width: 860px !important;
+  }
+}
+
+/* ============================================================
+   REGISTRO MODIFICHE — lista scrollabile
+   ============================================================ */
+
+body .app-layout .log-modifiche-card {
+  overflow: hidden !important;
+}
+
+body .app-layout .log-modifiche-scroll-list {
+  max-height: 560px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-gutter: stable !important;
+}
+
+/* Riga log più compatta e ordinata */
+body .app-layout .log-modifiche-scroll-list > div {
+  min-width: 0 !important;
+}
+
+body .app-layout .log-modifiche-scroll-list > div > div:last-child {
+  min-width: 0 !important;
+}
+
+body .app-layout .log-modifiche-scroll-list > div > div:last-child div {
+  overflow-wrap: anywhere !important;
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  body .app-layout .log-modifiche-scroll-list {
+    max-height: 460px !important;
+  }
+}
