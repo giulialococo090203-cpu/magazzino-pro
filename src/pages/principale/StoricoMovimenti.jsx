@@ -298,19 +298,32 @@ export default function StoricoMovimenti() {
         ? userFilterValue.replace(/^operator:/, '')
         : '';
 
+      const hasManualFilters =
+        Boolean(dateFrom) ||
+        Boolean(dateTo) ||
+        Boolean(selectedUserId) ||
+        Boolean(selectedOperator) ||
+        Boolean(filterCategory) ||
+        Boolean(filterMaterial) ||
+        Boolean(filterType) ||
+        Boolean(filterClient);
+
       const defaultRange = getDefaultHistoryRange();
 
       const effectiveDateFrom = dateFrom || defaultRange.dateFrom;
       const effectiveDateTo = dateTo || defaultRange.dateTo;
 
-      const filtered = await movementStore.getFiltered({
-        dateFrom: effectiveDateFrom,
-        dateTo: effectiveDateTo,
-        userId: selectedUserId || undefined,
-        categoryId: filterCategory || undefined,
-        materialId: filterMaterial || undefined,
-        type: filterType || undefined,
-      });
+      const filtered = hasManualFilters
+        ? await movementStore.getFiltered({
+            dateFrom: effectiveDateFrom,
+            dateTo: effectiveDateTo,
+            userId: selectedUserId || undefined,
+            categoryId: filterCategory || undefined,
+            materialId: filterMaterial || undefined,
+            type: filterType || undefined,
+            limit: 500,
+          })
+        : await movementStore.getRecent(120);
 
       const operatorFiltered = selectedOperator
         ? filtered.filter((m) => getOperatorName(m) === selectedOperator)

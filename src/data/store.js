@@ -842,8 +842,8 @@ export const materialStore = {
 };
 
 export const movementStore = {
-  async _fetchAllMovements(buildQuery) {
-    const pageSize = 1000;
+  async _fetchAllMovements(buildQuery, { maxRows = 0 } = {}) {
+    const pageSize = maxRows > 0 ? Math.min(1000, maxRows) : 1000;
     let from = 0;
     let allRows = [];
 
@@ -858,6 +858,11 @@ export const movementStore = {
 
       const rows = Array.isArray(data) ? data : [];
       allRows = allRows.concat(rows);
+
+      if (maxRows > 0 && allRows.length >= maxRows) {
+        allRows = allRows.slice(0, maxRows);
+        break;
+      }
 
       if (rows.length < pageSize) break;
 
@@ -945,7 +950,7 @@ export const movementStore = {
     return data.map(mapMovement.toModel);
   },
 
-  async getFiltered({ dateFrom, dateTo, userId, categoryId, materialId, type } = {}) {
+  async getFiltered({ dateFrom, dateTo, userId, categoryId, materialId, type, limit = 0 } = {}) {
     let query = supabase
       .from('movimenti')
       .select(
@@ -955,12 +960,12 @@ export const movementStore = {
     if (dateFrom) query = query.gte('data_movimento', dateFrom);
     if (dateTo) query = query.lte('data_movimento', `${dateTo}T23:59:59`);
     if (userId) query = query.eq('utente_id', userId);
+    if (materialId) query = query.eq('materiale_id', materialId);
     if (type) query = query.eq('tipo_movimento', type);
 
-    let result = await this._fetchAllMovements(() => query);
+    let result = await this._fetchAllMovements(() => query, { maxRows: limit });
 
     if (categoryId) result = result.filter((m) => m.categoryId === categoryId);
-    if (materialId) result = result.filter((m) => m.materialId === materialId);
 
     return result;
   },
