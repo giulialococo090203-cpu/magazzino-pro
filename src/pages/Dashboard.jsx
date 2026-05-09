@@ -651,6 +651,63 @@ export default function Dashboard() {
     return <Navigate to="/inventario" replace />;
   }
 
+  const dashboardOperatorSuggestions = useMemo(() => {
+    const fromUsers = Array.isArray(users)
+      ? users
+          .map((u) => ({
+            id: u.id || u.uid || u.username || u.email,
+            fullName: u.fullName || u.name || u.nome || '',
+            username: u.username || u.email || '',
+          }))
+          .filter((u) => String(u.fullName || u.username || '').trim())
+      : [];
+
+    const fromMovements = Array.isArray(movements)
+      ? movements
+          .map((m) => {
+            const name = String(m.operatorName || m.userName || '').trim();
+
+            if (!name) return null;
+
+            return {
+              id: `movement-${name}`,
+              fullName: name,
+              username: '',
+            };
+          })
+          .filter(Boolean)
+      : [];
+
+    const map = new Map();
+
+    [...fromUsers, ...fromMovements].forEach((item) => {
+      const label = String(item.fullName || item.username || '').trim();
+      if (!label) return;
+
+      const key = label.toLowerCase();
+
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    });
+
+    return [...map.values()].sort((a, b) =>
+      String(a.fullName || a.username || '').localeCompare(String(b.fullName || b.username || ''))
+    );
+  }, [users, movements]);
+
+  const dashboardClientSuggestions = useMemo(() => {
+    const source = Array.isArray(movements) ? movements : [];
+
+    return [
+      ...new Set(
+        source
+          .map((m) => String(m.clientName || '').trim())
+          .filter(Boolean)
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+  }, [movements]);
+
   return (
     <div className="animate-slideUp dashboard-tech-page">
       <div className="page-header">
@@ -1010,9 +1067,9 @@ export default function Dashboard() {
                 placeholder="Nome, cognome o username..."
               />
 
-              {showOperatorSuggestions && operatorSuggestions.length > 0 && (
+              {showOperatorSuggestions && dashboardOperatorSuggestions.length > 0 && (
                 <div className="combo-suggestions">
-                  {operatorSuggestions
+                  {dashboardOperatorSuggestions
                     .filter((item) => {
                       const q = searchOperator.trim().toLowerCase();
                       const label = String(item.fullName || item.name || item.username || '').toLowerCase();
@@ -1064,9 +1121,9 @@ export default function Dashboard() {
                 placeholder="Nome cliente..."
               />
 
-              {showClientSuggestions && clientSuggestions.length > 0 && (
+              {showClientSuggestions && dashboardClientSuggestions.length > 0 && (
                 <div className="combo-suggestions">
-                  {clientSuggestions
+                  {dashboardClientSuggestions
                     .filter((item) => {
                       const q = searchClient.trim().toLowerCase();
                       return !q || String(item || '').toLowerCase().includes(q);

@@ -15454,3 +15454,54 @@ body .app-layout .file-link:hover {
   background: rgba(249, 115, 22, 0.10);
   color: #f97316;
 }
+
+/* ============================================================
+   Dashboard Datore: dropdown filtri sempre sopra la tabella
+   ============================================================ */
+
+.dashboard-tech-page .filters-row,
+.dashboard-tech-page .filters-grid,
+.dashboard-tech-page .filter-group,
+.dashboard-tech-page .combo-field {
+  overflow: visible !important;
+}
+
+.dashboard-tech-page .filters-row,
+.dashboard-tech-page .filters-grid {
+  position: relative !important;
+  z-index: 300 !important;
+  margin-bottom: 22px !important;
+}
+
+.dashboard-tech-page .filter-group.combo-field {
+  position: relative !important;
+  z-index: 320 !important;
+}
+
+.dashboard-tech-page .filter-group.combo-field:focus-within {
+  z-index: 500 !important;
+}
+
+.dashboard-tech-page .combo-suggestions {
+  z-index: 9999 !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  border: 1px solid rgba(100, 116, 139, 0.34) !important;
+  box-shadow: 0 22px 58px rgba(15, 23, 42, 0.26) !important;
+}
+
+.dashboard-tech-page .dashboard-scroll-table,
+.dashboard-tech-page .dashboard-monitoring-table {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Dropdown inline vecchi della Dashboard: sopra tabelle */
+.dashboard-tech-page .filter-group > div[style*="position: absolute"],
+.dashboard-tech-page .filters-row > div > div[style*="position: absolute"],
+.dashboard-tech-page .filters-grid > div > div[style*="position: absolute"] {
+  z-index: 9999 !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 22px 58px rgba(15, 23, 42, 0.26) !important;
+}
