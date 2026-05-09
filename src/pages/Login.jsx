@@ -126,9 +126,7 @@ export default function Login({ onLogin }) {
             {formFields}
           </form>
 
-          <div className="mobile-login-footer">
-            Gestionale tecnico
-          </div>
+          <div className="mobile-login-footer" aria-hidden="true"></div>
         </section>
       </main>
     );
