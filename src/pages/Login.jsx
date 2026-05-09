@@ -139,7 +139,7 @@ export default function Login({ onLogin }) {
           <div className="workspace-logo-shell workspace-logo-shell-big"><img className="workspace-logo-img workspace-logo-img-big" src="/workspace-logo.png" alt="WorkSpace" /></div>
 
           <div className="login-redesign-brand-content">
-            <div className="login-redesign-kicker">Gestionale tecnico</div>
+            <div className="login-redesign-kicker"></div>
             <h1>WorkSpace</h1>
             <p>Controlla operazioni, materiali, fatture e performance aziendali da un unico ambiente.</p>
           </div>

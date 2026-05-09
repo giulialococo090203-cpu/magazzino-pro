@@ -3301,7 +3301,7 @@ textarea:focus {
 }
 
 /* ============================================================
-   FINAL UI THEME - Gestionale tecnico/admin dashboard
+   FINAL UI THEME - /admin dashboard
    Ispirazione: finance/admin SaaS pulito, compatto, professionale
    ============================================================ */
 
@@ -4227,7 +4227,7 @@ textarea:focus {
 }
 
 /* ============================================================
-   Login page - stile gestionale tecnico coerente
+   Login page - stile  coerente
    ============================================================ */
 
 .login-page,
@@ -14464,3 +14464,33 @@ body .app-layout button.backup-json-button:disabled {
     font-size: 15px !important;
   }
 }
+
+/* ============================================================
+   WORKSPACE LOGIN - REMOVE TECHNICAL KICKER BADGE
+   Rimuove definitivamente il badge "Gestionale tecnico".
+   ============================================================ */
+
+body .login-redesign-kicker,
+body .login-redesign-brand .login-redesign-kicker,
+body .login-desktop-view .login-redesign-kicker,
+body .login-page .login-redesign-kicker,
+body .mobile-login-footer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+body .login-redesign-kicker::before,
+body .login-redesign-kicker::after,
+body .mobile-login-footer::before,
+body .mobile-login-footer::after {
+  content: none !important;
+  display: none !important;
+}
+
