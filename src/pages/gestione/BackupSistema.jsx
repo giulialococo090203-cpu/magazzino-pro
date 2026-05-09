@@ -222,15 +222,15 @@ export default function BackupSistema() {
 
           <div className="backup-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <button
-              type="button"
-              className="btn btn-primary btn-lg"
-              onClick={() => runBackup('json')}
-              disabled={loading}
-            >
-              {loading
-                ? `Creazione backup... ${progress.current}/${progress.total}`
-                : ''}
-            </button>
+                type="button"
+                className="btn btn-primary btn-lg backup-json-button"
+                onClick={() => runBackup('json')}
+                disabled={loading}
+              >
+                {loading
+                  ? `Creazione backup... ${progress.current}/${progress.total}`
+                  : 'Scarica backup JSON completo'}
+              </button>
 
             <button
               type="button"

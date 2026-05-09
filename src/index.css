@@ -14392,3 +14392,76 @@ body .app-layout .backup-actions .material-symbols-outlined {
   }
 }
 
+
+/* ============================================================
+   WORKSPACE BACKUP PAGE - FINAL JSON BUTTON FIX
+   Bottone JSON leggibile e non influenzato da regole globali.
+   ============================================================ */
+
+body .app-layout button.backup-json-button,
+body .app-layout .backup-actions button.backup-json-button {
+  width: auto !important;
+  min-width: 360px !important;
+  max-width: 100% !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  padding: 0 28px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #ffffff !important;
+  font-size: 17px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.02em !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+
+  text-indent: 0 !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+
+  background: linear-gradient(135deg, #ff8126 0%, #ff5f14 48%, #e84408 100%) !important;
+  border: 1px solid rgba(198, 55, 5, 0.72) !important;
+  border-radius: 13px !important;
+  box-shadow:
+    0 14px 30px rgba(255, 106, 24, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+  text-shadow: 0 1px 1px rgba(80, 24, 0, 0.28) !important;
+}
+
+body .app-layout button.backup-json-button::before {
+  content: "↓";
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 10px !important;
+  color: #ffffff !important;
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body .app-layout button.backup-json-button:disabled {
+  color: rgba(255,255,255,0.92) !important;
+  opacity: 0.72 !important;
+}
+
+@media screen and (max-width: 768px) {
+  body .app-layout.is-mobile button.backup-json-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    font-size: 15px !important;
+  }
+}
+
