@@ -336,7 +336,7 @@ export default function Inventario() {
         cellPadding: 3,
       },
       headStyles: {
-        fillColor: [30, 64, 175],
+        fillColor: PDF_COLORS.graphite,
         textColor: PDF_COLORS.white,
         fontStyle: 'bold',
       },
