@@ -14674,3 +14674,8 @@ body,
   background-color: #f8fafc !important;
   background-image: none !important;
 }
+
+/* build marker dashboard tech background */
+:root {
+  --dashboard-tech-bg-build: 20260509;
+}
