@@ -1088,7 +1088,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="table-container" style={{ marginBottom: 28 }}>
+      <div
+        className="table-container dashboard-scroll-table dashboard-monitoring-table"
+        style={{ marginBottom: 28 }}
+      >
         <table className="data-table">
           <thead>
             <tr>

@@ -14494,3 +14494,55 @@ body .mobile-login-footer::after {
   display: none !important;
 }
 
+
+/* Dashboard: tabelle lunghe più pulite e scrollabili */
+.dashboard-scroll-table {
+  max-height: 520px;
+  overflow: auto;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--gray-200);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.dashboard-scroll-table .data-table {
+  min-width: 1180px;
+  margin: 0;
+}
+
+.dashboard-scroll-table .data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(248, 250, 252, 0.96);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--gray-200);
+}
+
+.dashboard-scroll-table .data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-monitoring-table {
+  max-height: 560px;
+}
+
+.dashboard-monitoring-table .data-table td,
+.dashboard-monitoring-table .data-table th {
+  white-space: nowrap;
+}
+
+.dashboard-monitoring-table .data-table td:nth-child(5) {
+  min-width: 260px;
+  max-width: 340px;
+  white-space: normal;
+}
+
+@media (max-width: 768px) {
+  .dashboard-scroll-table {
+    max-height: 460px;
+  }
+
+  .dashboard-monitoring-table {
+    max-height: 500px;
+  }
+}
