@@ -296,7 +296,7 @@ async function main() {
   await upsertMany('utenti', userRows, 'username');
 
   const materialRows = [];
-  for (let i = 0; i < 420; i++) {
+  for (let i = 0; i < 1200; i++) {
     const [baseName, categoryName, prefix] = products[i % products.length];
     const supplier = suppliers[i % suppliers.length];
     const min = 4 + Math.floor(rand(i + 22) * 28);
@@ -375,16 +375,16 @@ async function main() {
     }
   }
 
-  // Storico prezzi: 6 rilevazioni per materiale distribuite nei 3 anni.
+  // Storico prezzi: 12 rilevazioni per materiale distribuite nei 3 anni.
   dbMaterials.forEach((m, materialIndex) => {
     const base = Number(m.prezzo_netto || 10);
 
-    for (let k = 0; k < 6; k++) {
+    for (let k = 0; k < 12; k++) {
       const drift = 1 + k * 0.035;
       const seasonal = 1 + (rand(materialIndex * 7 + k * 19) - 0.5) * 0.18;
       const net = Math.max(0.5, base * drift * seasonal);
       const quantity = 2 + Math.floor(rand(materialIndex + k + 55) * 80);
-      const dayIndex = Math.floor((1095 / 6) * k) + Math.floor(rand(materialIndex + k) * 60);
+      const dayIndex = Math.floor((1095 / 12) * k) + Math.floor(rand(materialIndex + k) * 45);
 
       priceHistory.push({
         materiale_id: m.id,
@@ -402,12 +402,12 @@ async function main() {
     }
   });
 
-  // 20 utenti, 10 operazioni a utente, circa 10 movimenti a operazione = 2000 movimenti.
+  // 20 utenti, 150 operazioni a utente, circa 10 movimenti a operazione = 30000 movimenti.
   dbUsers.slice(0, 20).forEach((person, userIndex) => {
-    for (let operation = 0; operation < 10; operation++) {
+    for (let operation = 0; operation < 150; operation++) {
       const client = pick(clients, userIndex * 71 + operation);
       const reason = pick(operationReasons, userIndex * 97 + operation);
-      const dayIndex = Math.floor(rand(userIndex * 100 + operation * 13) * 1080);
+      const dayIndex = Math.floor(((userIndex * 150 + operation) / (20 * 150)) * 1080) + Math.floor(rand(userIndex * 100 + operation * 13) * 8);
       const operatorName = person.nome || person.username;
       const role = String(person.ruolo || '').toLowerCase();
 
@@ -442,7 +442,7 @@ async function main() {
                 : type === 'reintegro'
                   ? `${reason} - reintegro rientro materiale`
                   : `${reason} - rettifica inventariale`,
-          note: `${TAG} - operazione reale ${operation + 1}/10 - movimento ${movementIndex + 1}/10`,
+          note: `${TAG} - operazione reale ${operation + 1}/150 - movimento ${movementIndex + 1}/10`,
           utente_id: person.id,
           data_movimento: dateIsoFromIndex(
             dayIndex + movementIndex,
@@ -471,7 +471,7 @@ async function main() {
 
   dbMaterials
     .filter((m) => Number(m.quantita || 0) <= Number(m.soglia_minima || 0))
-    .slice(0, 80)
+    .slice(0, 250)
     .forEach((m, i) => {
       notifications.push({
         materiale_id: m.id,
@@ -482,7 +482,7 @@ async function main() {
       });
     });
 
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 600; i++) {
     const person = dbUsers[i % dbUsers.length];
 
     logs.push({
@@ -495,7 +495,7 @@ async function main() {
     });
   }
 
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 80; i++) {
     const supplier = suppliers[i % suppliers.length];
     proposals.push({
       numero: `${TAG}-PO-${String(i + 1).padStart(4, '0')}`,
