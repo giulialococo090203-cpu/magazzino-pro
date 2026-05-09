@@ -14767,3 +14767,120 @@ body,
   background: #eef2f7 !important;
   color: #f97316 !important;
 }
+
+/* ============================================================
+   DASHBOARD REAL FIX — override selettori body .app-layout
+   ============================================================ */
+
+body .app-layout .main-content:has(.dashboard-tech-page),
+body .app-layout .page-content:has(.dashboard-tech-page) {
+  background: #d9dee7 !important;
+  background-color: #d9dee7 !important;
+  background-image: none !important;
+}
+
+body .app-layout .dashboard-tech-page {
+  background: #d9dee7 !important;
+  background-color: #d9dee7 !important;
+  background-image: none !important;
+}
+
+/* Header dashboard */
+body .app-layout .dashboard-tech-page .page-header {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.30) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10) !important;
+}
+
+/* KPI */
+body .app-layout .dashboard-tech-page .kpi-card,
+body .app-layout .dashboard-tech-page .kpi-card.warning,
+body .app-layout .dashboard-tech-page .kpi-card.danger {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.30) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09) !important;
+}
+
+/* Card, grafici, tabelle */
+body .app-layout .dashboard-tech-page .card,
+body .app-layout .dashboard-tech-page .table-container {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background-image: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.30) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09) !important;
+}
+
+/* Header interni delle card */
+body .app-layout .dashboard-tech-page .card-header {
+  background: #f1f5f9 !important;
+  background-color: #f1f5f9 !important;
+  background-image: none !important;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.22) !important;
+}
+
+/* Azioni rapide */
+body .app-layout .dashboard-tech-page .quick-action-btn,
+body .app-layout .dashboard-tech-page .quick-action-card,
+body .app-layout .dashboard-tech-page .quick-action,
+body .app-layout .dashboard-tech-page .dashboard-action,
+body .app-layout .dashboard-tech-page .action-card {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.26) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Icone azioni rapide: niente crema */
+body .app-layout .dashboard-tech-page .quick-action-icon,
+body .app-layout .dashboard-tech-page .quick-action-btn [class*="icon"],
+body .app-layout .dashboard-tech-page [class*="quick"] [style*="background"],
+body .app-layout .dashboard-tech-page [class*="action"] [style*="background"] {
+  background: #eef2f7 !important;
+  background-color: #eef2f7 !important;
+  background-image: none !important;
+  color: #f97316 !important;
+  border-color: rgba(249, 115, 22, 0.28) !important;
+}
+
+/* Spegne corner/aloni arancioni dentro dashboard */
+body .app-layout .dashboard-tech-page .page-header::before,
+body .app-layout .dashboard-tech-page .page-header::after,
+body .app-layout .dashboard-tech-page .kpi-card::before,
+body .app-layout .dashboard-tech-page .kpi-card::after,
+body .app-layout .dashboard-tech-page .card::before,
+body .app-layout .dashboard-tech-page .card::after,
+body .app-layout .dashboard-tech-page .quick-action-btn::before,
+body .app-layout .dashboard-tech-page .quick-action-btn::after,
+body .app-layout .dashboard-tech-page .table-container::before,
+body .app-layout .dashboard-tech-page .table-container::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Tabelle dashboard */
+body .app-layout .dashboard-tech-page .data-table thead th {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.45) !important;
+}
+
+body .app-layout .dashboard-tech-page .data-table tbody tr:nth-child(2n) {
+  background: #f8fafc !important;
+}
+
+body .app-layout .dashboard-tech-page .data-table tbody tr:hover td {
+  background: #eef2f7 !important;
+}
