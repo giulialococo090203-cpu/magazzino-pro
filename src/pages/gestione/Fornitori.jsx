@@ -82,6 +82,11 @@ function isInvoiceMovement(movement) {
   const reason = String(movement.reason || '').toLowerCase();
   const notes = String(movement.notes || '').toLowerCase();
 
+  const visibleSupplierRows = useMemo(() => {
+    return supplierRows.slice(0, 80);
+  }, [supplierRows]);
+
+
   return (
     reason.includes('fattura') ||
     reason.includes('importazione') ||
@@ -115,26 +120,26 @@ export default function Fornitori() {
       setError('');
       setLoading(false);
 
-      // Primo caricamento: solo materiali, così la schermata si apre subito.
-      const mats = await materialStore.getAll();
-      const safeMats = Array.isArray(mats) ? mats : [];
-
-      setMaterials(safeMats);
-      writeFornitoriCache({ materials: safeMats });
-
-      // Secondo caricamento non bloccante: movimenti ultimi 30 giorni + ultime fatture.
+      // Apertura immediata: se ho cache, la pagina è già visibile.
+      // Dopo il primo frame aggiorno i materiali.
       window.setTimeout(async () => {
         try {
-          const today = new Date();
-          const from = new Date();
-          from.setDate(from.getDate() - 30);
+          const mats = await materialStore.getAll();
+          const safeMats = Array.isArray(mats) ? mats : [];
 
-          const dateFrom = from.toISOString().slice(0, 10);
-          const dateTo = today.toISOString().slice(0, 10);
+          setMaterials(safeMats);
+          writeFornitoriCache({ materials: safeMats });
+        } catch (err) {
+          console.error('Errore caricamento materiali fornitori:', err);
+        }
+      }, 80);
 
+      // Dati pesanti: carico solo ultimi movimenti e ultime fatture.
+      window.setTimeout(async () => {
+        try {
           const [movs, invs] = await Promise.all([
-            movementStore.getFiltered({ dateFrom, dateTo }),
-            invoiceImportStore.getAll(150),
+            movementStore.getRecent(250),
+            invoiceImportStore.getAll(80),
           ]);
 
           const safeMovs = Array.isArray(movs) ? movs : [];
@@ -150,7 +155,7 @@ export default function Fornitori() {
         } catch (err) {
           console.error('Errore caricamento dati secondari fornitori:', err);
         }
-      }, 250);
+      }, 180);
     } catch (err) {
       console.error('Errore caricamento fornitori:', err);
       setError(err?.message || 'Errore durante il caricamento dei fornitori.');
