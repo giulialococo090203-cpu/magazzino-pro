@@ -220,7 +220,7 @@ export default function BackupSistema() {
             tecnico completo oppure in Excel leggibile.
           </p>
 
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div className="backup-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <button
               type="button"
               className="btn btn-primary btn-lg"

@@ -14319,3 +14319,76 @@ body .app-layout a.btn-primary.disabled * {
   opacity: 1 !important;
 }
 
+
+/* ============================================================
+   WORKSPACE BACKUP PAGE - JSON BUTTON VISIBILITY FIX
+   Evita che il bottone JSON diventi solo un quadrato arancione.
+   ============================================================ */
+
+body .app-layout .backup-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+body .app-layout .backup-actions .btn,
+body .app-layout .backup-actions button.btn,
+body .app-layout .backup-actions a.btn {
+  width: auto !important;
+  min-width: 280px !important;
+  max-width: 100% !important;
+  min-height: 54px !important;
+  padding: 0 22px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-indent: 0 !important;
+
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+body .app-layout .backup-actions .btn *,
+body .app-layout .backup-actions button.btn *,
+body .app-layout .backup-actions a.btn * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-indent: 0 !important;
+}
+
+body .app-layout .backup-actions .btn-primary,
+body .app-layout .backup-actions button.btn-primary {
+  color: #ffffff !important;
+}
+
+body .app-layout .backup-actions .btn-primary *,
+body .app-layout .backup-actions button.btn-primary * {
+  color: #ffffff !important;
+}
+
+body .app-layout .backup-actions .ui-inline-icon,
+body .app-layout .backup-actions .material-symbols-rounded,
+body .app-layout .backup-actions .material-symbols-outlined {
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  font-size: 19px !important;
+  color: currentColor !important;
+}
+
+@media screen and (max-width: 768px) {
+  body .app-layout.is-mobile .backup-actions .btn,
+  body .app-layout.is-mobile .backup-actions button.btn,
+  body .app-layout.is-mobile .backup-actions a.btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
