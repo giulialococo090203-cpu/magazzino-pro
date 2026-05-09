@@ -15555,3 +15555,45 @@ body .app-layout .file-link:hover {
 .dashboard-filter-card .filter-group > div[style*="position: absolute"] button {
   min-height: 44px !important;
 }
+
+/* ============================================================
+   Fix PDF/export: niente blu, palette arancio/nero/grigio
+   ============================================================ */
+
+body .app-layout button[class*="pdf"],
+body .app-layout a[class*="pdf"],
+body .app-layout button[class*="PDF"],
+body .app-layout a[class*="PDF"],
+body .app-layout button[title*="PDF"],
+body .app-layout a[title*="PDF"],
+body .app-layout button[aria-label*="PDF"],
+body .app-layout a[aria-label*="PDF"],
+body .app-layout .btn-pdf,
+body .app-layout .export-pdf,
+body .app-layout .pdf-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #ff8126 0%, #ff6414 48%, #d94308 100%) !important;
+  border-color: rgba(217, 67, 8, 0.72) !important;
+  box-shadow: 0 10px 22px rgba(249, 115, 22, 0.22), inset 0 1px rgba(255,255,255,0.22) !important;
+}
+
+body .app-layout button[class*="pdf"] *,
+body .app-layout a[class*="pdf"] *,
+body .app-layout button[class*="PDF"] *,
+body .app-layout a[class*="PDF"] *,
+body .app-layout .btn-pdf *,
+body .app-layout .export-pdf *,
+body .app-layout .pdf-button * {
+  color: currentColor !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+body .app-layout button[class*="export"]:not(.btn-primary),
+body .app-layout a[class*="export"]:not(.btn-primary),
+body .app-layout button[title*="Esporta"]:not(.btn-primary),
+body .app-layout a[title*="Esporta"]:not(.btn-primary) {
+  color: #111827 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: rgba(100, 116, 139, 0.34) !important;
+}

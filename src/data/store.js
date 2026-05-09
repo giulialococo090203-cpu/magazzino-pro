@@ -696,14 +696,28 @@ export const materialStore = {
   },
 
   async getAll() {
-    const { data, error } = await supabase
-      .from('materiali')
-      .select('*')
-      .order('codice');
+    const pageSize = 1000;
+    let from = 0;
+    let allRows = [];
 
-    if (error) throw error;
+    while (true) {
+      const { data, error } = await supabase
+        .from('materiali')
+        .select('*')
+        .order('codice')
+        .range(from, from + pageSize - 1);
 
-    return data.map(mapMaterial.toModel);
+      if (error) throw error;
+
+      const rows = Array.isArray(data) ? data : [];
+      allRows = allRows.concat(rows);
+
+      if (rows.length < pageSize) break;
+
+      from += pageSize;
+    }
+
+    return allRows.map(mapMaterial.toModel);
   },
 
   async getById(id) {
