@@ -14622,3 +14622,105 @@ body,
   background:
     linear-gradient(180deg, #020617 0%, #0f172a 52%, #020617 100%) !important;
 }
+
+/* FORCE FIX: sfondo dashboard grigio tech freddo */
+html,
+body,
+#root {
+  background: #e5e7eb !important;
+}
+
+body::before,
+body::after,
+#root::before,
+#root::after {
+  background: none !important;
+}
+
+/* contenitori principali app */
+.app,
+.app-shell,
+.app-layout,
+.layout,
+.main-layout,
+.main,
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.dashboard-page,
+.dashboard-layout,
+.animate-slideUp {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* area centrale dietro dashboard */
+main,
+[class*="main"],
+[class*="content"],
+[class*="page"] {
+  background-color: transparent !important;
+}
+
+/* sfondo effettivo freddo su tutta l'area visibile */
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.animate-slideUp {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.045), transparent 24%),
+    radial-gradient(circle at 88% 92%, rgba(15, 23, 42, 0.08), transparent 32%),
+    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 45%, #cbd5e1 100%) !important;
+}
+
+/* se il beige arriva da pseudo-layer */
+.app-main::before,
+.main-content::before,
+.page-content::before,
+.content-area::before,
+.animate-slideUp::before,
+.app-main::after,
+.main-content::after,
+.page-content::after,
+.content-area::after,
+.animate-slideUp::after {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.035), transparent 24%),
+    radial-gradient(circle at 88% 92%, rgba(15, 23, 42, 0.07), transparent 32%),
+    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 45%, #cbd5e1 100%) !important;
+}
+
+/* cards più fredde, meno crema */
+.page-header,
+.kpi-card,
+.quick-action-btn,
+.card,
+.table-container {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.95)) !important;
+  border-color: rgba(148, 163, 184, 0.34) !important;
+}
+
+/* elimina aloni beige/arancio troppo forti nelle card */
+.page-header::before,
+.kpi-card::before,
+.quick-action-btn::before,
+.card::before,
+.table-container::before,
+.page-header::after,
+.kpi-card::after,
+.quick-action-btn::after,
+.card::after,
+.table-container::after {
+  opacity: 0.12 !important;
+}
+
+/* sidebar invariata dark */
+.sidebar,
+.app-sidebar,
+.nav-sidebar {
+  background:
+    linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
+}
