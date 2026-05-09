@@ -171,6 +171,19 @@ export default function Dashboard() {
     }
   }, [datoreView]);
 
+
+  useEffect(() => {
+    if (!datoreView) return undefined;
+
+    const timer = window.setTimeout(() => {
+      loadSupabaseUsage();
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [datoreView, loadSupabaseUsage]);
+
   useEffect(() => {
     let mounted = true;
     const timers = [];
