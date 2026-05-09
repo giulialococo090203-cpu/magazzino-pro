@@ -752,20 +752,79 @@ export const materialStore = {
   },
 
   async update(id, updates) {
-    if (updates.quantity !== undefined || updates.minThreshold !== undefined) {
-      const mat = await this.getById(id);
-      const merged = { ...mat, ...updates };
-      updates.status = this.getStatus(merged);
+    if (!id) {
+      throw new Error('ID materiale mancante.');
     }
+
+    const safeUpdates = { ...(updates || {}) };
+
+    if (safeUpdates.quantity !== undefined) {
+      const qty = Number(safeUpdates.quantity);
+
+      if (!Number.isFinite(qty)) {
+        throw new Error('Quantità materiale non valida.');
+      }
+
+      safeUpdates.quantity = qty;
+    }
+
+    if (safeUpdates.minThreshold !== undefined) {
+      const min = Number(safeUpdates.minThreshold);
+
+      if (!Number.isFinite(min)) {
+        throw new Error('Soglia minima non valida.');
+      }
+
+      safeUpdates.minThreshold = min;
+    }
+
+    if (safeUpdates.netPrice !== undefined) {
+      const price = Number(safeUpdates.netPrice);
+
+      if (!Number.isFinite(price)) {
+        throw new Error('Prezzo netto non valido.');
+      }
+
+      safeUpdates.netPrice = price;
+    }
+
+    if (safeUpdates.quantity !== undefined || safeUpdates.minThreshold !== undefined) {
+      const mat = await this.getById(id);
+      const merged = { ...mat, ...safeUpdates };
+      safeUpdates.status = this.getStatus(merged);
+    }
+
+    if (
+      safeUpdates.status !== undefined &&
+      !['disponibile', 'sotto_soglia', 'esaurito'].includes(String(safeUpdates.status))
+    ) {
+      safeUpdates.status = 'disponibile';
+    }
+
+    const payload = mapMaterial.toRow(safeUpdates);
+
+    if (!payload || Object.keys(payload).length === 0) {
+      throw new Error('Nessun dato materiale da aggiornare.');
+    }
+
+    console.log('[materialStore.update] id:', id);
+    console.log('[materialStore.update] payload:', payload);
 
     const { data, error } = await supabase
       .from('materiali')
-      .update(mapMaterial.toRow(updates))
+      .update(payload)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[materialStore.update] Supabase error:', error);
+      throw new Error(error.message || 'Errore aggiornamento materiale.');
+    }
+
+    if (!data) {
+      throw new Error(`Materiale non trovato o non aggiornabile: ${id}`);
+    }
 
     const model = mapMaterial.toModel(data);
 
@@ -897,21 +956,42 @@ export const movementStore = {
   },
 
   async create(movement) {
+    if (!movement?.materialId) {
+      throw new Error('Materiale mancante.');
+    }
+
+    const qty = Number(movement.quantity);
+
+    if (!Number.isFinite(qty) || qty < 0) {
+      throw new Error('Quantità movimento non valida.');
+    }
+
     const mat = await materialStore.getById(movement.materialId);
+
+    if (!mat?.id) {
+      throw new Error('Materiale non trovato.');
+    }
+
     const previousQty = Number(mat.quantity || 0);
 
     let newQty = previousQty;
 
     if (movement.type === 'entrata' || movement.type === 'reintegro') {
-      newQty = previousQty + Number(movement.quantity);
+      newQty = previousQty + qty;
     } else if (movement.type === 'uscita') {
-      newQty = previousQty - Number(movement.quantity);
+      newQty = previousQty - qty;
 
       if (newQty < 0) {
         throw new Error('Quantità insufficiente');
       }
     } else if (movement.type === 'rettifica') {
-      newQty = Number(movement.quantity);
+      newQty = qty;
+    } else {
+      throw new Error('Tipo movimento non valido.');
+    }
+
+    if (!Number.isFinite(newQty)) {
+      throw new Error('Nuova quantità non valida.');
     }
 
     await materialStore.update(mat.id, { quantity: newQty });

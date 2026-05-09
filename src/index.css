@@ -15377,3 +15377,40 @@ body .app-layout .log-modifiche-scroll-list > div > div:last-child div {
     max-height: 460px !important;
   }
 }
+
+/* ============================================================
+   Link/PDF: niente blu, solo nero/grigio/arancio
+   ============================================================ */
+
+body .app-layout a,
+body .app-layout .data-table a,
+body .app-layout .table-container a,
+body .app-layout .card a {
+  color: #111827 !important;
+  text-decoration-color: rgba(249, 115, 22, 0.55) !important;
+}
+
+body .app-layout a:hover,
+body .app-layout .data-table a:hover,
+body .app-layout .table-container a:hover,
+body .app-layout .card a:hover {
+  color: #f97316 !important;
+}
+
+body .app-layout a[href$=".pdf"],
+body .app-layout a[href*=".pdf"],
+body .app-layout .pdf-link,
+body .app-layout .invoice-file-link,
+body .app-layout .file-link {
+  color: #111827 !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+body .app-layout a[href$=".pdf"]:hover,
+body .app-layout a[href*=".pdf"]:hover,
+body .app-layout .pdf-link:hover,
+body .app-layout .invoice-file-link:hover,
+body .app-layout .file-link:hover {
+  color: #f97316 !important;
+}
