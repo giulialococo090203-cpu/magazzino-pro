@@ -217,33 +217,95 @@ async function main() {
   const notifications = [];
   const logs = [];
 
+  const workers = Array.from({ length: 20 }, (_, i) => ({
+    name: `Operaio Demo ${String(i + 1).padStart(2, '0')}`,
+    role: 'operaio',
+  }));
+
+  const secretaries = Array.from({ length: 4 }, (_, i) => ({
+    name: `Segretaria Demo ${String(i + 1).padStart(2, '0')}`,
+    role: 'segretaria',
+  }));
+
+  const staff = [...workers, ...secretaries];
+
+  const clients = [
+    'Cantiere Rossi',
+    'Condominio Aurora',
+    'Impianto Alfa',
+    'Hotel Centrale',
+    'Stabilimento Nord',
+    'Residenza Verdi',
+    'Cliente Demo Industriale',
+    'Manutenzione Programmata',
+  ];
+
+  const operationTypes = [
+    'Installazione impianto',
+    'Manutenzione ordinaria',
+    'Intervento urgente',
+    'Ripristino materiale',
+    'Allestimento cantiere',
+    'Controllo tecnico',
+    'Rifornimento squadra',
+    'Chiusura commessa',
+  ];
+
+  // Fatture realistiche: circa 6 al mese per 3 anni = 216 fatture.
   for (const year of years) {
     for (let month = 1; month <= 12; month++) {
-      const monthlySupplier = pick(suppliers, year + month);
-      invoices.push({
-        nome_file: `${DEMO}_fattura_${year}_${String(month).padStart(2, '0')}.pdf`,
-        nome_file_originale: `Fattura demo ${monthlySupplier} ${year}-${String(month).padStart(2, '0')}.pdf`,
-        percorso_file: `demo/${year}/${String(month).padStart(2, '0')}/fattura-demo.pdf`,
-        bucket: 'fatture',
-        dimensione_file: 125000 + Math.floor(rand(year + month) * 900000),
-        tipo_file: 'application/pdf',
-        utente_id: null,
-        utente_nome: OPERATOR,
-        stato_importazione: 'completata',
-        numero_materiali_rilevati: 8 + Math.floor(rand(year + month + 2) * 24),
-        numero_materiali_creati: 1 + Math.floor(rand(year + month + 3) * 4),
-        numero_materiali_aggiornati: 6 + Math.floor(rand(year + month + 4) * 18),
-        eventuali_errori: null,
-        fornitore: monthlySupplier,
-        created_at: dateIso(year, month, 5, 10, 30),
-      });
+      for (let f = 0; f < 6; f++) {
+        const monthlySupplier = pick(suppliers, year + month + f * 17);
+        const secretary = secretaries[(year + month + f) % secretaries.length];
 
-      for (let k = 0; k < 28; k++) {
-        const material = dbMaterials[(year * 1000 + month * 31 + k * 7) % dbMaterials.length];
-        const type = k % 5 === 0 ? 'reintegro' : k % 3 === 0 ? 'uscita' : 'entrata';
-        const qty = type === 'uscita'
-          ? 1 + Math.floor(rand(year + month + k) * 12)
-          : 5 + Math.floor(rand(year + month + k) * 35);
+        invoices.push({
+          nome_file: `${DEMO}_fattura_${year}_${String(month).padStart(2, '0')}_${String(f + 1).padStart(2, '0')}.pdf`,
+          nome_file_originale: `Fattura demo ${monthlySupplier} ${year}-${String(month).padStart(2, '0')}-${String(f + 1).padStart(2, '0')}.pdf`,
+          percorso_file: `demo/${year}/${String(month).padStart(2, '0')}/fattura-demo-${f + 1}.pdf`,
+          bucket: 'fatture',
+          dimensione_file: 125000 + Math.floor(rand(year + month + f) * 900000),
+          tipo_file: 'application/pdf',
+          utente_id: null,
+          utente_nome: secretary.name,
+          stato_importazione: f % 13 === 0 ? 'completata_con_errori' : 'completata',
+          numero_materiali_rilevati: 8 + Math.floor(rand(year + month + f + 2) * 24),
+          numero_materiali_creati: f % 5 === 0 ? 1 + Math.floor(rand(year + month + f + 3) * 4) : 0,
+          numero_materiali_aggiornati: 6 + Math.floor(rand(year + month + f + 4) * 18),
+          eventuali_errori: f % 13 === 0 ? 'Una riga verificata manualmente dalla segreteria.' : null,
+          fornitore: monthlySupplier,
+          created_at: dateIso(year, month, 3 + ((f * 4) % 24), 9 + (f % 6), 20),
+        });
+      }
+    }
+  }
+
+  // Test aziendale: 24 persone totali, 15 operazioni ciascuna, 10 movimenti per operazione.
+  // Totale previsto: 24 * 15 * 10 = 3600 movimenti.
+  staff.forEach((person, personIndex) => {
+    for (let operation = 0; operation < 15; operation++) {
+      const year = years[(personIndex + operation) % years.length];
+      const month = ((personIndex * 2 + operation) % 12) + 1;
+      const day = 2 + ((personIndex + operation * 3) % 25);
+      const client = pick(clients, personIndex * 101 + operation);
+      const operationType = pick(operationTypes, personIndex * 37 + operation);
+
+      for (let movementIndex = 0; movementIndex < 10; movementIndex++) {
+        const material = dbMaterials[
+          (personIndex * 211 + operation * 31 + movementIndex * 7) % dbMaterials.length
+        ];
+
+        let type = 'uscita';
+
+        if (person.role === 'segretaria') {
+          type = movementIndex % 4 === 0 ? 'entrata' : movementIndex % 7 === 0 ? 'reintegro' : 'uscita';
+        } else {
+          type = movementIndex % 6 === 0 ? 'reintegro' : movementIndex % 5 === 0 ? 'entrata' : 'uscita';
+        }
+
+        const qty =
+          type === 'uscita'
+            ? 1 + Math.floor(rand(personIndex + operation + movementIndex + 100) * 10)
+            : 4 + Math.floor(rand(personIndex + operation + movementIndex + 200) * 32);
 
         movements.push({
           materiale_id: material.id,
@@ -251,23 +313,55 @@ async function main() {
           quantita: qty,
           motivo:
             type === 'uscita'
-              ? 'Prelievo per commessa demo'
+              ? `${operationType} - prelievo materiale`
               : type === 'reintegro'
-                ? 'Reintegro stock demo'
-                : 'Carico da fattura demo',
-          note: `${DEMO} - movimento storico ${year}/${String(month).padStart(2, '0')}`,
+                ? `${operationType} - reintegro operativo`
+                : `${operationType} - carico da fornitura`,
+          note: `${DEMO} - azienda 20 operai + segreteria - operazione ${operation + 1}/15 - movimento ${movementIndex + 1}/10`,
           utente_id: null,
-          data_movimento: dateIso(year, month, 2 + (k % 24), 8 + (k % 9), (k * 7) % 60),
-          cliente_nome: type === 'uscita' ? pick(['Cantiere Rossi', 'Condominio Aurora', 'Impianto Alfa', 'Cliente Demo'], k + year) : null,
-          autorizzato_da: type === 'uscita' ? 'Responsabile tecnico' : null,
-          operatore_nome: OPERATOR,
+          data_movimento: dateIso(
+            year,
+            month,
+            day,
+            7 + ((operation + movementIndex) % 10),
+            (movementIndex * 6 + personIndex) % 60
+          ),
+          cliente_nome: type === 'uscita' ? client : null,
+          autorizzato_da: type === 'uscita' ? 'Responsabile tecnico demo' : null,
+          operatore_nome: person.name,
           previous_qty: null,
           new_qty: null,
           fornitore: type === 'uscita' ? null : material.fornitore,
         });
       }
+
+      logs.push({
+        utente_id: null,
+        entita: 'operazione',
+        entita_id: null,
+        azione: `${DEMO} operazione aziendale`,
+        descrizione: `${person.name} ha completato operazione demo ${operation + 1}/15: ${operationType} presso ${client}.`,
+        created_at: dateIso(year, month, day, 18, 0),
+      });
     }
-  }
+  });
+
+  // Log aggiuntivi di segreteria: caricamento fatture, verifiche, controlli.
+  secretaries.forEach((person, personIndex) => {
+    for (let i = 0; i < 36; i++) {
+      const year = years[i % years.length];
+      const month = (i % 12) + 1;
+
+      logs.push({
+        utente_id: null,
+        entita: i % 2 === 0 ? 'fatture_importate' : 'magazzino',
+        entita_id: null,
+        azione: `${DEMO} attività segreteria`,
+        descrizione: `${person.name} ha verificato documenti, fatture e movimenti nel periodo ${year}-${String(month).padStart(2, '0')}.`,
+        created_at: dateIso(year, month, 10 + (personIndex % 10), 12, 30),
+      });
+    }
+  });
 
   dbMaterials.slice(0, 36).forEach((m, i) => {
     notifications.push({
