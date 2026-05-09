@@ -56,7 +56,7 @@
   --info-500: #3b82f6;
   --info-600: #2563eb;
 
-  --app-bg: #f3f6fb;
+  --app-bg: #dde2ea;
   --surface: #ffffff;
   --border-soft: #dbe3ee;
   --text-main: #162033;
@@ -2613,7 +2613,7 @@ textarea {
    ============================================================ */
 
 :root {
-  --enterprise-bg: #d7dde6;
+  --enterprise-bg: #dde2ea;
   --enterprise-surface: #ffffff;
   --enterprise-border: #d7e0ea;
   --enterprise-border-soft: #e6edf5;
@@ -2976,7 +2976,7 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --tech-bg: #d7dde6;
+  --tech-bg: #dde2ea;
   --tech-surface: #ffffff;
   --tech-surface-soft: #f8fafc;
   --tech-border: #d8e1ec;
@@ -3306,7 +3306,7 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --ui-bg: #d7dde6;
+  --ui-bg: #dde2ea;
   --ui-surface: #ffffff;
   --ui-surface-2: #fafafa;
   --ui-border: #e4e7ec;
@@ -3807,7 +3807,7 @@ textarea:focus {
    ============================================================ */
 
 :root {
-  --pro-bg: #d7dde6;
+  --pro-bg: #dde2ea;
   --pro-surface: #ffffff;
   --pro-surface-soft: #f8fafc;
   --pro-border: #e5e7eb;
@@ -14494,7 +14494,6 @@ body .mobile-login-footer::after {
   display: none !important;
 }
 
-
 /* Dashboard: tabelle lunghe più pulite e scrollabili */
 .dashboard-scroll-table {
   max-height: 520px;
@@ -14546,257 +14545,33 @@ body .mobile-login-footer::after {
     max-height: 500px;
   }
 }
-
-/* Dashboard cards: più bianche e meno crema */
-.page-header,
-.kpi-card,
-.quick-action-btn,
-.card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94)) !important;
+/* Dashboard / app background definitivo: grigio tech coerente */
+:root {
+  --app-bg: #dde2ea;
+  --pro-bg: #dde2ea;
+  --ui-bg: #dde2ea;
+  --tech-bg: #dde2ea;
+  --enterprise-bg: #dde2ea;
 }
 
-/* Riduce gli aloni arancioni troppo caldi */
-.kpi-card::before,
-.card::before,
-.page-header::before {
-  opacity: 0.28 !important;
-}
-
-/* Bordo più freddo/tech */
-.kpi-card,
-.quick-action-btn,
-.card,
-.page-header {
-  border-color: rgba(148, 163, 184, 0.32) !important;
-}
-
-/* Sidebar resta dark e coerente */
-.sidebar,
-.app-sidebar {
-  background:
-    linear-gradient(180deg, #020617 0%, #0f172a 52%, #020617 100%) !important;
-}
-
-/* contenitori principali app */
-.app,
-.app-shell,
+html,
+body,
+#root,
 .app-layout,
-.layout,
-.main-layout,
-.main,
-.app-main,
 .main-content,
-.page-content,
-.content-area,
-.dashboard-page,
-.dashboard-layout,
+.page-content {
+  background: #dde2ea !important;
+  background-color: #dde2ea !important;
+  background-image: none !important;
+}
+
 .animate-slideUp {
   background: transparent !important;
   background-color: transparent !important;
-}
-
-/* area centrale dietro dashboard */
-main,
-[class*="main"],
-[class*="content"],
-[class*="page"] {
-  background-color: transparent !important;
-}
-
-/* sfondo effettivo freddo su tutta l'area visibile */
-.app-main,
-.main-content,
-.page-content,
-.content-area,
-.animate-slideUp {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.045), transparent 24%),
-    radial-gradient(circle at 88% 92%, rgba(15, 23, 42, 0.08), transparent 32%),
-    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 45%, #cbd5e1 100%) !important;
-}
-
-/* se il beige arriva da pseudo-layer */
-.app-main::before,
-.main-content::before,
-.page-content::before,
-.content-area::before,
-.animate-slideUp::before,
-.app-main::after,
-.main-content::after,
-.page-content::after,
-.content-area::after,
-.animate-slideUp::after {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.035), transparent 24%),
-    radial-gradient(circle at 88% 92%, rgba(15, 23, 42, 0.07), transparent 32%),
-    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 45%, #cbd5e1 100%) !important;
-}
-
-/* cards più fredde, meno crema */
-.page-header,
-.kpi-card,
-.quick-action-btn,
-.card,
-.table-container {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.95)) !important;
-  border-color: rgba(148, 163, 184, 0.34) !important;
-}
-
-/* elimina aloni beige/arancio troppo forti nelle card */
-.page-header::before,
-.kpi-card::before,
-.quick-action-btn::before,
-.card::before,
-.table-container::before,
-.page-header::after,
-.kpi-card::after,
-.quick-action-btn::after,
-.card::after,
-.table-container::after {
-  opacity: 0.12 !important;
-}
-
-/* sidebar invariata dark */
-.sidebar,
-.app-sidebar,
-.nav-sidebar {
-  background:
-    linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
-}
-
-/* forza lo sfondo dopo i temi pro/ui/tech */
-html,
-body,
-#root,
-.app,
-.app-shell,
-.app-layout,
-.layout,
-.main-layout,
-.main,
-.app-main,
-.main-content,
-.page-content,
-.content-area,
-.dashboard-page,
-.dashboard-layout {
-  background: #e5e7eb !important;
-  background-color: #e5e7eb !important;
-}
-
-/* area dashboard con grigio tech leggero */
-.animate-slideUp {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.035), transparent 26%),
-    radial-gradient(circle at 88% 88%, rgba(15, 23, 42, 0.08), transparent 34%),
-    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 48%, #cbd5e1 100%) !important;
-  background-color: #e5e7eb !important;
-}
-
-/* elimina il beige dai contenitori */
-main,
-[class*="content"],
-[class*="page"],
-[class*="dashboard"] {
-  background-color: transparent !important;
-}
-
-/* card bianche/fredde, non crema */
-.page-header,
-.kpi-card,
-.quick-action-btn,
-.card,
-.table-container {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
-  border-color: rgba(148, 163, 184, 0.36) !important;
-}
-
-/* attenua aloni caldi */
-.page-header::before,
-.page-header::after,
-.kpi-card::before,
-.kpi-card::after,
-.quick-action-btn::before,
-.quick-action-btn::after,
-.card::before,
-.card::after {
-  opacity: 0.10 !important;
-}
-
-/* Sfondo globale freddo */
-html,
-body,
-#root {
-  background: #dbe2ea !important;
-  background-color: #dbe2ea !important;
-}
-
-/* Spegne eventuali layer beige/almond */
-html::before,
-html::after,
-body::before,
-body::after,
-#root::before,
-#root::after {
-  background: none !important;
-  background-image: none !important;
-  opacity: 0 !important;
-}
-
-/* Contenitori principali */
-.app,
-.app-shell,
-.app-layout,
-.layout,
-.main-layout,
-.main,
-.app-main,
-.main-content,
-.page-content,
-.content-area,
-.dashboard-page,
-.dashboard-layout,
-.private-layout,
-.private-main,
-.private-content {
-  background: #dbe2ea !important;
-  background-color: #dbe2ea !important;
   background-image: none !important;
 }
 
-/* Area pagina: grigio tech con leggerissima profondità fredda */
-main,
-.animate-slideUp {
-  background:
-    radial-gradient(circle at 15% 10%, rgba(15, 23, 42, 0.08), transparent 28%),
-    radial-gradient(circle at 85% 90%, rgba(30, 64, 175, 0.07), transparent 34%),
-    linear-gradient(135deg, #e2e8f0 0%, #dbe2ea 48%, #cbd5e1 100%) !important;
-  background-color: #dbe2ea !important;
-}
-
-/* Rimuove qualunque alone caldo dai wrapper */
-[class*="layout"],
-[class*="main"],
-[class*="content"],
-[class*="page"],
-[class*="dashboard"] {
-  background-color: transparent !important;
-}
-
-/* Ma il contenitore principale deve restare tech */
-.app-main,
-.main-content,
-.page-content,
-.content-area {
-  background:
-    radial-gradient(circle at 15% 10%, rgba(15, 23, 42, 0.075), transparent 28%),
-    radial-gradient(circle at 85% 90%, rgba(30, 64, 175, 0.06), transparent 34%),
-    linear-gradient(135deg, #e2e8f0 0%, #dbe2ea 48%, #cbd5e1 100%) !important;
-}
-
-/* Card fredde e pulite, non crema */
+/* Superfici dashboard pulite, coerenti con il grigio tech */
 .page-header,
 .kpi-card,
 .quick-action-btn,
@@ -14804,10 +14579,10 @@ main,
 .table-container {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
   background-color: #ffffff !important;
-  border-color: rgba(100, 116, 139, 0.28) !important;
+  border-color: rgba(100, 116, 139, 0.30) !important;
 }
 
-/* Spegne gli aloni beige/arancio dentro le card */
+/* Spegne definitivamente gli aloni crema/arancio delle card */
 .page-header::before,
 .page-header::after,
 .kpi-card::before,
@@ -14822,66 +14597,3 @@ main,
   background-image: none !important;
   opacity: 0 !important;
 }
-
-/* Header superiore freddo */
-.breadcrumb-bar,
-.topbar,
-.app-topbar,
-.header,
-.app-header {
-  background: rgba(248, 250, 252, 0.96) !important;
-  background-image: none !important;
-  border-color: rgba(148, 163, 184, 0.25) !important;
-}
-
-/* Sidebar invariata dark tech */
-.sidebar,
-.app-sidebar,
-.nav-sidebar {
-  background: linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
-}
-
-/* Dashboard background pulito: grigio tech freddo */
-body,
-#root,
-.app,
-.app-layout,
-.app-main,
-.main-content,
-.page-content,
-.content-area {
-  background: var(--pro-bg) !important;
-  background-color: var(--pro-bg) !important;
-}
-
-.animate-slideUp {
-  background: var(--pro-bg) !important;
-  background-color: var(--pro-bg) !important;
-}
-
-/* Card/dashboard: superfici fredde, niente crema */
-.page-header,
-.kpi-card,
-.quick-action-btn,
-.card,
-.table-container {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
-  background-color: #ffffff !important;
-}
-
-/* Spegne aloni beige/arancio dentro le card */
-.page-header::before,
-.page-header::after,
-.kpi-card::before,
-.kpi-card::after,
-.quick-action-btn::before,
-.quick-action-btn::after,
-.card::before,
-.card::after,
-.table-container::before,
-.table-container::after {
-  background: none !important;
-  background-image: none !important;
-  opacity: 0 !important;
-}
-
