@@ -14724,3 +14724,75 @@ main,
   background:
     linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%) !important;
 }
+
+/* FINAL OVERRIDE: tema dashboard grigio tech freddo */
+:root {
+  --pro-bg: #e5e7eb !important;
+  --ui-bg: #e5e7eb !important;
+  --tech-bg: #e5e7eb !important;
+
+  --pro-surface: #ffffff !important;
+  --pro-surface-soft: #f8fafc !important;
+  --ui-surface: #ffffff !important;
+  --tech-surface: #ffffff !important;
+  --tech-surface-soft: #f8fafc !important;
+}
+
+/* forza lo sfondo dopo i temi pro/ui/tech */
+html,
+body,
+#root,
+.app,
+.app-shell,
+.app-layout,
+.layout,
+.main-layout,
+.main,
+.app-main,
+.main-content,
+.page-content,
+.content-area,
+.dashboard-page,
+.dashboard-layout {
+  background: #e5e7eb !important;
+  background-color: #e5e7eb !important;
+}
+
+/* area dashboard con grigio tech leggero */
+.animate-slideUp {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(249, 115, 22, 0.035), transparent 26%),
+    radial-gradient(circle at 88% 88%, rgba(15, 23, 42, 0.08), transparent 34%),
+    linear-gradient(135deg, #f1f5f9 0%, #e5e7eb 48%, #cbd5e1 100%) !important;
+  background-color: #e5e7eb !important;
+}
+
+/* elimina il beige dai contenitori */
+main,
+[class*="content"],
+[class*="page"],
+[class*="dashboard"] {
+  background-color: transparent !important;
+}
+
+/* card bianche/fredde, non crema */
+.page-header,
+.kpi-card,
+.quick-action-btn,
+.card,
+.table-container {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: rgba(148, 163, 184, 0.36) !important;
+}
+
+/* attenua aloni caldi */
+.page-header::before,
+.page-header::after,
+.kpi-card::before,
+.kpi-card::after,
+.quick-action-btn::before,
+.quick-action-btn::after,
+.card::before,
+.card::after {
+  opacity: 0.10 !important;
+}
