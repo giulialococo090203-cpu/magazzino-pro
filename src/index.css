@@ -15217,3 +15217,77 @@ body .app-layout [class*="notifica"] {
     max-height: 460px !important;
   }
 }
+
+/* ============================================================
+   CARD TABLE SCROLL — tabelle dentro card-body scrollabili
+   Dashboard, Registro modifiche, liste interne
+   ============================================================ */
+
+body .app-layout .card-body:has(> .data-table),
+body .app-layout .card-body:has(table.data-table),
+body .app-layout .card:has(.data-table) .card-body {
+  max-height: 520px !important;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Dashboard: Ultimi Movimenti / Materiali Critici */
+body .app-layout .dashboard-tech-page .card-body:has(.data-table) {
+  max-height: 430px !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+}
+
+/* Registro modifiche e tabelle gestionali */
+body .app-layout .table-container,
+body .app-layout .card-body:has(.data-table) {
+  scrollbar-gutter: stable !important;
+}
+
+/* Tabelle dentro card: larghezza minima per scroll orizzontale */
+body .app-layout .card-body:has(.data-table) .data-table {
+  min-width: 820px !important;
+  width: max-content !important;
+  margin: 0 !important;
+}
+
+/* Header sticky anche nelle tabelle dentro card */
+body .app-layout .card-body:has(.data-table) .data-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 12 !important;
+}
+
+/* Celle compatte */
+body .app-layout .card-body:has(.data-table) .data-table th,
+body .app-layout .card-body:has(.data-table) .data-table td {
+  white-space: nowrap !important;
+}
+
+/* Dashboard: descrizioni leggibili ma non infinite */
+body .app-layout .dashboard-tech-page .card-body:has(.data-table) .data-table td:nth-child(2) {
+  max-width: 280px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Registro modifiche: contenitore più ordinato */
+body .app-layout .log-table,
+body .app-layout .audit-log-table,
+body .app-layout .table-container:has(.data-table) {
+  max-height: 560px !important;
+  overflow: auto !important;
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  body .app-layout .card-body:has(.data-table),
+  body .app-layout .dashboard-tech-page .card-body:has(.data-table),
+  body .app-layout .table-container {
+    max-height: 440px !important;
+  }
+
+  body .app-layout .card-body:has(.data-table) .data-table {
+    min-width: 760px !important;
+  }
+}
