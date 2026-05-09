@@ -2322,3 +2322,65 @@ export const statsStore = {
     return Object.entries(dist).map(([name, count]) => ({ name, count }));
   },
 };
+
+// DEBUG PERFORMANCE STORE - temporaneo per beta test
+if (typeof window !== 'undefined' && !window.__WM_STORE_PERF_PATCHED__) {
+  window.__WM_STORE_PERF_PATCHED__ = true;
+
+  const patchStorePerf = (storeName, storeObject) => {
+    if (!storeObject || typeof storeObject !== 'object') return;
+
+    Object.keys(storeObject).forEach((key) => {
+      const original = storeObject[key];
+
+      if (typeof original !== 'function') return;
+      if (original.__perfWrapped) return;
+
+      const wrapped = async function wrappedStoreCall(...args) {
+        const label = `[STORE PERF] ${storeName}.${key}`;
+        const start = performance.now();
+
+        try {
+          const result = await original.apply(this, args);
+          const end = performance.now();
+          const ms = Math.round(end - start);
+
+          let count = '';
+          if (Array.isArray(result)) count = ` | rows=${result.length}`;
+          if (result && Array.isArray(result.data)) count = ` | rows=${result.data.length}`;
+
+          if (ms >= 300) {
+            console.warn(`${label} ${ms}ms${count}`, args);
+          } else {
+            console.info(`${label} ${ms}ms${count}`, args);
+          }
+
+          return result;
+        } catch (error) {
+          const end = performance.now();
+          console.error(`${label} ERRORE ${Math.round(end - start)}ms`, error);
+          throw error;
+        }
+      };
+
+      wrapped.__perfWrapped = true;
+      storeObject[key] = wrapped;
+    });
+  };
+
+  setTimeout(() => {
+    try {
+      patchStorePerf('materialStore', materialStore);
+      patchStorePerf('categoryStore', categoryStore);
+      patchStorePerf('movementStore', movementStore);
+      patchStorePerf('notificationStore', notificationStore);
+      patchStorePerf('userStore', userStore);
+      patchStorePerf('logStore', typeof logStore !== 'undefined' ? logStore : null);
+      patchStorePerf('invoiceImportStore', typeof invoiceImportStore !== 'undefined' ? invoiceImportStore : null);
+      patchStorePerf('reorderProposalStore', typeof reorderProposalStore !== 'undefined' ? reorderProposalStore : null);
+      patchStorePerf('statsStore', typeof statsStore !== 'undefined' ? statsStore : null);
+    } catch (error) {
+      console.warn('[STORE PERF] patch non applicata completamente', error);
+    }
+  }, 0);
+}
