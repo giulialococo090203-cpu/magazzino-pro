@@ -1,0 +1,101 @@
+import fs from 'fs';
+import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+function loadDotEnv() {
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (!fs.existsSync(envPath)) return;
+
+  for (const line of fs.readFileSync(envPath, 'utf-8').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+    const index = trimmed.indexOf('=');
+    const key = trimmed.slice(0, index).trim();
+    let value = trimmed.slice(index + 1).trim();
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+loadDotEnv();
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_KEY =
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('❌ Mancano SUPABASE_URL / SUPABASE_KEY.');
+  process.exit(1);
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const DEMO = 'DEMO-3Y';
+
+async function remove(table, queryBuilder) {
+  const { error } = await queryBuilder;
+  if (error) {
+    console.warn(`⚠️ Non pulito ${table}:`, error.message);
+    return;
+  }
+  console.log(`✅ Pulito ${table}`);
+}
+
+async function main() {
+  console.log('🧹 Pulizia dati demo triennali...');
+
+  await remove(
+    'righe_proposta_ordine',
+    supabase.from('righe_proposta_ordine').delete().like('note', `${DEMO}%`)
+  );
+
+  await remove(
+    'proposte_ordine',
+    supabase.from('proposte_ordine').delete().like('numero', `${DEMO}-%`)
+  );
+
+  await remove(
+    'notifiche',
+    supabase.from('notifiche').delete().like('messaggio', `${DEMO}%`)
+  );
+
+  await remove(
+    'log_modifiche',
+    supabase.from('log_modifiche').delete().like('azione', `${DEMO}%`)
+  );
+
+  await remove(
+    'movimenti',
+    supabase.from('movimenti').delete().like('note', `${DEMO}%`)
+  );
+
+  await remove(
+    'fatture_importate',
+    supabase.from('fatture_importate').delete().like('nome_file', `${DEMO}%`)
+  );
+
+  await remove(
+    'materiali',
+    supabase.from('materiali').delete().like('codice', `${DEMO}-%`)
+  );
+
+  await remove(
+    'categorie',
+    supabase.from('categorie').delete().like('descrizione', `%${DEMO}%`)
+  );
+
+  console.log('✅ Pulizia completata.');
+}
+
+main().catch((error) => {
+  console.error('❌ Pulizia fallita:', error);
+  process.exit(1);
+});
