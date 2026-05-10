@@ -89,6 +89,13 @@ function isExpired(company) {
   return !Number.isNaN(end.getTime()) && end < new Date();
 }
 
+function isTechnicalProgrammerCompany(company) {
+  const id = String(company?.id || '').trim().toLowerCase();
+  const code = String(company?.code || company?.codice || '').trim().toUpperCase();
+
+  return id === 'programmatore' || code === 'PROGRAMMATORE';
+}
+
 function getCompanyAccessState(company) {
   const status = String(company.subscriptionStatus || company.stato_abbonamento || 'attivo')
     .trim()
@@ -131,6 +138,10 @@ export default function GestioneAziende() {
 
   const allowed = canManageCompanies(user);
 
+  const managedCompanies = useMemo(() => {
+    return companies.filter((company) => !isTechnicalProgrammerCompany(company));
+  }, [companies]);
+
   const loadCompanies = async () => {
     try {
       setLoading(true);
@@ -157,9 +168,9 @@ export default function GestioneAziende() {
   const filteredCompanies = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    if (!q) return companies;
+    if (!q) return managedCompanies;
 
-    return companies.filter((company) => {
+    return managedCompanies.filter((company) => {
       return (
         String(company.name || company.nome || '').toLowerCase().includes(q) ||
         String(company.code || company.codice || '').toLowerCase().includes(q) ||
@@ -168,7 +179,7 @@ export default function GestioneAziende() {
         String(company.plan || company.piano || '').toLowerCase().includes(q)
       );
     });
-  }, [companies, query]);
+  }, [managedCompanies, query]);
 
   const updateForm = (field, value) => {
     setError('');
@@ -354,21 +365,21 @@ export default function GestioneAziende() {
       <div className="license-kpi-grid">
         <div className="license-kpi-card">
           <span>Aziende totali</span>
-          <strong>{companies.length}</strong>
+          <strong>{managedCompanies.length}</strong>
         </div>
         <div className="license-kpi-card">
           <span>Attive</span>
-          <strong>{companies.filter((c) => getCompanyAccessState(c).label === 'Attiva').length}</strong>
+          <strong>{managedCompanies.filter((c) => getCompanyAccessState(c).label === 'Attiva').length}</strong>
         </div>
         <div className="license-kpi-card">
           <span>Demo</span>
-          <strong>{companies.filter((c) => getCompanyAccessState(c).label === 'Demo').length}</strong>
+          <strong>{managedCompanies.filter((c) => getCompanyAccessState(c).label === 'Demo').length}</strong>
         </div>
         <div className="license-kpi-card danger">
           <span>Bloccate</span>
           <strong>
             {
-              companies.filter((c) =>
+              managedCompanies.filter((c) =>
                 ['Spenta', 'Sospesa', 'Scaduta', 'Disattivata'].includes(getCompanyAccessState(c).label)
               ).length
             }

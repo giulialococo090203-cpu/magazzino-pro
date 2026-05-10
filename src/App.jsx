@@ -157,21 +157,42 @@ function App() {
           <Routes>
             <Route path="*" element={<Login onLogin={login} />} />
           </Routes>
+        ) : isProgrammerMode(currentUser) ? (
+          <Layout>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedSuperRoute user={currentUser}>
+                    <GestioneAziende />
+                  </ProtectedSuperRoute>
+                }
+              />
+
+              <Route
+                path="/super/aziende"
+                element={
+                  <ProtectedSuperRoute user={currentUser}>
+                    <GestioneAziende />
+                  </ProtectedSuperRoute>
+                }
+              />
+
+              <Route
+                path="*"
+                element={<Navigate to="/super/aziende" replace />}
+              />
+            </Routes>
+          </Layout>
         ) : (
           <Layout>
             <Routes>
               <Route
                 path="/"
                 element={
-                  isProgrammerMode(currentUser) ? (
-                    <ProtectedSuperRoute user={currentUser}>
-                      <GestioneAziende />
-                    </ProtectedSuperRoute>
-                  ) : (
-                    <ProtectedRoute user={currentUser} permission="canViewDashboard">
-                      <Dashboard />
-                    </ProtectedRoute>
-                  )
+                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
+                    <Dashboard />
+                  </ProtectedRoute>
                 }
               />
 
