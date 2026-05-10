@@ -151,9 +151,15 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
-                    <Dashboard />
-                  </ProtectedRoute>
+                  isProgrammerMode(currentUser) ? (
+                    <ProtectedSuperRoute user={currentUser}>
+                      <GestioneAziende />
+                    </ProtectedSuperRoute>
+                  ) : (
+                    <ProtectedRoute user={currentUser} permission="canViewDashboard">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  )
                 }
               />
 

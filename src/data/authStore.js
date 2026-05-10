@@ -28,6 +28,25 @@ function readSelectedCompany() {
   }
 }
 
+function isProgrammerCompany(company = {}) {
+  const id = String(company.id || '').trim().toLowerCase();
+  const code = String(company.code || company.codice || '').trim().toUpperCase();
+
+  return id === 'cl_programmatore' || code === 'PROGRAMMATORE';
+}
+
+function isSuperAdminUser(user = {}) {
+  const role = String(user.role || '').trim().toLowerCase();
+  const email = String(user.email || '').trim().toLowerCase();
+
+  return (
+    role === 'sviluppatore' ||
+    role === 'super_admin' ||
+    role === 'admin_tecnico' ||
+    email === 'giulia@gmail.com'
+  );
+}
+
 function getCompanyIdFromProfile(profile = {}) {
   return (
     readString(profile.companyId) ||
@@ -142,7 +161,14 @@ export const authStore = {
 
     const selectedCompany = readSelectedCompany();
 
-    if (selectedCompany?.id && appUser.companyId !== selectedCompany.id) {
+    if (isProgrammerCompany(selectedCompany)) {
+      if (!isSuperAdminUser(appUser)) {
+        await signOut(firebaseAuth);
+        localStorage.removeItem(CURRENT_USER_KEY);
+
+        throw new Error('Accesso programmatore non autorizzato.');
+      }
+    } else if (selectedCompany?.id && appUser.companyId !== selectedCompany.id) {
       await signOut(firebaseAuth);
       localStorage.removeItem(CURRENT_USER_KEY);
 
@@ -152,6 +178,7 @@ export const authStore = {
     const userWithCompany = {
       ...appUser,
       selectedCompany: selectedCompany || null,
+      programmerMode: isProgrammerCompany(selectedCompany),
     };
 
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithCompany));
