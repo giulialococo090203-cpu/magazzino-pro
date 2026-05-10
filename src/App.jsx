@@ -65,10 +65,22 @@ function isSuperAdmin(user) {
   );
 }
 
+function isProgrammerMode(user) {
+  const selectedCompany = user?.selectedCompany || {};
+  const companyId = String(selectedCompany.id || '').trim().toLowerCase();
+  const companyCode = String(selectedCompany.code || selectedCompany.codice || '').trim().toUpperCase();
+
+  return (
+    Boolean(user?.programmerMode) ||
+    companyId === 'cl_programmatore' ||
+    companyCode === 'PROGRAMMATORE'
+  );
+}
+
 function ProtectedSuperRoute({ user, children }) {
   if (!user) return <Navigate to="/" replace />;
 
-  if (!isSuperAdmin(user)) {
+  if (!isSuperAdmin(user) || !isProgrammerMode(user)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
