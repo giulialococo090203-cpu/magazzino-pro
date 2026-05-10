@@ -15925,3 +15925,151 @@ body .app-layout .dashboard-monitoring-table {
   cursor: pointer;
   padding: 0;
 }
+
+/* ============================================================
+   Super Admin - Licenze Aziendali
+   ============================================================ */
+
+.license-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.license-kpi-card {
+  padding: 18px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(100, 116, 139, 0.14);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.license-kpi-card span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.license-kpi-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 28px;
+  color: #111827;
+  font-weight: 950;
+}
+
+.license-kpi-card.danger strong {
+  color: #dc2626;
+}
+
+.company-success-message {
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.10);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  color: #047857;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.company-active-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 106, 24, 0.08);
+  border: 1px solid rgba(255, 106, 24, 0.18);
+  color: #111827;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.company-active-switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: #ff6a18;
+}
+
+.company-list {
+  display: grid;
+  gap: 12px;
+}
+
+.company-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(100, 116, 139, 0.18);
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.company-list-main {
+  min-width: 0;
+}
+
+.company-list-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.company-list-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.company-list-warning {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.company-list-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 130px;
+}
+
+.btn-warning {
+  background: #f59e0b !important;
+  color: #fff !important;
+  border-color: #f59e0b !important;
+}
+
+@media (max-width: 980px) {
+  .license-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .license-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .company-list-item {
+    flex-direction: column;
+  }
+
+  .company-list-actions {
+    align-items: flex-start;
+  }
+}

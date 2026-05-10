@@ -33,6 +33,7 @@ import RendicontazioneEconomica from './pages/gestione/RendicontazioneEconomica'
 // Pagine - Controllo
 import Soglie from './pages/controllo/Soglie';
 import Notifiche from './pages/controllo/Notifiche';
+import GestioneAziende from './pages/super/GestioneAziende';
 
 import './index.css';
 
@@ -307,6 +308,11 @@ function App() {
                     <Notifiche />
                   </ProtectedRoute>
                 }
+              />
+
+              <Route
+                path="/super/aziende"
+                element={<GestioneAziende />}
               />
 
               <Route
