@@ -72,7 +72,7 @@ function isProgrammerMode(user) {
 
   return (
     Boolean(user?.programmerMode) ||
-    companyId === 'cl_programmatore' ||
+    companyId === 'programmatore' ||
     companyCode === 'PROGRAMMATORE'
   );
 }

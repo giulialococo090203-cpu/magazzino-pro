@@ -32,7 +32,7 @@ function isProgrammerCompany(company = {}) {
   const id = String(company.id || '').trim().toLowerCase();
   const code = String(company.code || company.codice || '').trim().toUpperCase();
 
-  return id === 'cl_programmatore' || code === 'PROGRAMMATORE';
+  return id === 'programmatore' || code === 'PROGRAMMATORE';
 }
 
 function isSuperAdminUser(user = {}) {
