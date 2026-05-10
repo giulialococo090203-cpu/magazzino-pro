@@ -53,6 +53,29 @@ function ProtectedRoute({ user, permission, children }) {
   return children;
 }
 
+function isSuperAdmin(user) {
+  const role = String(user?.role || '').trim().toLowerCase();
+  const email = String(user?.email || '').trim().toLowerCase();
+
+  return (
+    role === 'sviluppatore' ||
+    role === 'super_admin' ||
+    role === 'admin_tecnico' ||
+    email === 'giulia@gmail.com'
+  );
+}
+
+function ProtectedSuperRoute({ user, children }) {
+  if (!user) return <Navigate to="/" replace />;
+
+  if (!isSuperAdmin(user)) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
+  }
+
+  return children;
+}
+
+
 function ProtectedMovementRoute({ user }) {
   const { tipo } = useParams();
 
@@ -312,7 +335,11 @@ function App() {
 
               <Route
                 path="/super/aziende"
-                element={<GestioneAziende />}
+                element={
+                  <ProtectedSuperRoute user={currentUser}>
+                    <GestioneAziende />
+                  </ProtectedSuperRoute>
+                }
               />
 
               <Route
