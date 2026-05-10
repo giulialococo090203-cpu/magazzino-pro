@@ -9,14 +9,12 @@ const SUPER_ADMIN_EMAILS = [
 
 const SUBSCRIPTION_STATUSES = [
   { value: 'attivo', label: 'Attivo' },
-  { value: 'demo', label: 'Demo' },
   { value: 'sospeso', label: 'Sospeso' },
   { value: 'scaduto', label: 'Scaduto' },
   { value: 'disattivato', label: 'Disattivato' },
 ];
 
 const PLANS = [
-  { value: 'demo', label: 'Demo' },
   { value: 'base', label: 'Base' },
   { value: 'pro', label: 'Pro' },
   { value: 'enterprise', label: 'Enterprise' },
@@ -44,7 +42,7 @@ function createEmptyForm() {
     code: '',
     active: true,
     subscriptionStatus: 'attivo',
-    plan: 'pro',
+    plan: 'base',
     subscriptionStartDate: new Date().toISOString().slice(0, 10),
     subscriptionEndDate: '',
     maxUsers: '',
@@ -111,10 +109,6 @@ function getCompanyAccessState(company) {
 
   if (status === 'scaduto' || isExpired(company)) {
     return { label: 'Scaduta', className: 'status-esaurito' };
-  }
-
-  if (status === 'demo') {
-    return { label: 'Demo', className: 'status-sotto_soglia' };
   }
 
   if (status === 'disattivato') {
@@ -371,10 +365,6 @@ export default function GestioneAziende() {
           <span>Attive</span>
           <strong>{managedCompanies.filter((c) => getCompanyAccessState(c).label === 'Attiva').length}</strong>
         </div>
-        <div className="license-kpi-card">
-          <span>Demo</span>
-          <strong>{managedCompanies.filter((c) => getCompanyAccessState(c).label === 'Demo').length}</strong>
-        </div>
         <div className="license-kpi-card danger">
           <span>Bloccate</span>
           <strong>
@@ -486,8 +476,11 @@ export default function GestioneAziende() {
                   min="0"
                   value={form.maxUsers}
                   onChange={(e) => updateForm('maxUsers', e.target.value)}
-                  placeholder="Lascia vuoto se illimitato"
+                  placeholder="Lascia vuoto o 0 se illimitato"
                 />
+                <div className="form-hint">
+                  Se impostato, il datore non potrà creare più utenti attivi di questo limite.
+                </div>
               </div>
 
               <label className="company-active-switch">

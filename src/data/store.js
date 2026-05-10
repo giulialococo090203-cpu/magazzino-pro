@@ -384,6 +384,44 @@ export const companyStore = {
 };
 
 
+async function assertCompanyUserLimitNotReached(companyId) {
+  const cleanCompanyId = String(companyId || '').trim();
+
+  if (!cleanCompanyId || cleanCompanyId === 'programmatore') {
+    return;
+  }
+
+  const { data: company, error: companyError } = await supabase
+    .from('aziende')
+    .select('id, nome, codice, max_utenti')
+    .eq('id', cleanCompanyId)
+    .maybeSingle();
+
+  if (companyError) throw companyError;
+
+  const maxUsers = Number(company?.max_utenti || 0);
+
+  if (!maxUsers || maxUsers <= 0) {
+    return;
+  }
+
+  const { count, error: countError } = await supabase
+    .from('utenti')
+    .select('id', { count: 'exact', head: true })
+    .eq('azienda_id', cleanCompanyId)
+    .eq('attivo', true);
+
+  if (countError) throw countError;
+
+  if (Number(count || 0) >= maxUsers) {
+    throw new Error(
+      `Limite utenti raggiunto per questa azienda (${count}/${maxUsers}). ` +
+        'Aumenta il numero massimo utenti dalla dashboard programmatore.'
+    );
+  }
+}
+
+
 function notifySupabaseUsageChanged() {
   try {
     window.dispatchEvent(new CustomEvent('wm_supabase_usage_refresh'));
@@ -1531,13 +1569,29 @@ export const userStore = {
       throw new Error('Password obbligatoria per creare un nuovo utente.');
     }
 
+    const currentAppUser = authStore.getCurrentUser();
+    const companyId =
+      user.companyId ||
+      user.company_id ||
+      currentAppUser?.companyId ||
+      currentAppUser?.company_id ||
+      getCurrentCompanyId();
+
+    await assertCompanyUserLimitNotReached(companyId);
+
     // 1. Crea o aggiorna l'utente in Firebase Auth + Firestore tramite backend Vercel.
-    const created = await createFirebaseUserFromAdmin(user);
+    const created = await createFirebaseUserFromAdmin({
+      ...user,
+      companyId,
+      company_id: companyId,
+    });
 
     // 2. Mantiene una copia compatibile nella vecchia tabella Supabase "utenti",
     // così la schermata Gestione Utenti continua a mostrare subito il nuovo utente.
     const compatibilityUser = {
       ...user,
+      companyId,
+      company_id: companyId,
       username: user.username || created.email,
       fullName: user.fullName || created.fullName,
       email: created.email,
