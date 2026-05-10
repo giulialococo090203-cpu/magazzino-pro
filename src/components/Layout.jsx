@@ -201,6 +201,32 @@ const NAV_SECTIONS = [
   },
 ];
 
+const PROGRAMMER_NAV_SECTIONS = [
+  {
+    title: 'Controllo Software',
+    icon: 'admin_panel_settings',
+    items: [
+      {
+        path: '/super/aziende',
+        label: 'Monitoraggio Aziendale',
+        icon: 'business_center',
+      },
+    ],
+  },
+];
+
+function isProgrammerMode(user) {
+  const selectedCompany = user?.selectedCompany || {};
+  const companyId = String(selectedCompany.id || '').trim().toLowerCase();
+  const companyCode = String(selectedCompany.code || selectedCompany.codice || '').trim().toUpperCase();
+
+  return (
+    Boolean(user?.programmerMode) ||
+    companyId === 'programmatore' ||
+    companyCode === 'PROGRAMMATORE'
+  );
+}
+
 const PAGE_TITLES = {
   '/': 'Dashboard',
   '/inventario': 'Giacenza',
@@ -226,6 +252,7 @@ const PAGE_TITLES = {
   '/controllo': 'Dashboard',
   '/controllo/soglie': 'Soglie Scorta',
   '/controllo/notifiche': 'Centro Notifiche',
+  '/super/aziende': 'Monitoraggio Aziendale',
 };
 
 const SECTION_NAMES = {
@@ -240,6 +267,7 @@ const SECTION_NAMES = {
   '/importa': 'Fatture',
   '/fatture': 'Fatture',
   '/gestione': 'Configurazione',
+  '/super': 'Programmatore',
   '/controllo': 'Controllo Datore',
   '/': 'Generale',
 };
@@ -287,7 +315,8 @@ export default function Layout({ children }) {
 const [openSections, setOpenSections] = useState({});
   const [mobileOpenSection, setMobileOpenSection] = useState(null);
 
-  const canSeeNotifications = hasPermission(user, 'canViewNotifications');
+  const programmerMode = isProgrammerMode(user);
+  const canSeeNotifications = !programmerMode && hasPermission(user, 'canViewNotifications');
 
   useEffect(() => {
     if (!canSeeNotifications) {
@@ -333,8 +362,10 @@ const [openSections, setOpenSections] = useState({});
   }, []);
 
 
-  const section = getSection(location.pathname);
-  const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
+  const section = programmerMode ? 'Programmatore' : getSection(location.pathname);
+  const pageTitle = programmerMode
+    ? 'Monitoraggio Aziendale'
+    : PAGE_TITLES[location.pathname] || 'Magazzino';
 
   const today = new Date().toLocaleDateString('it-IT', {
     weekday: 'long',
@@ -353,13 +384,15 @@ const [openSections, setOpenSections] = useState({});
     .toUpperCase()
     .slice(0, 2);
 
-  const visibleSections = NAV_SECTIONS.map((navSection) => {
-    const visibleItems = navSection.items.filter((item) =>
-      hasPermission(user, item.permission)
-    );
+  const visibleSections = programmerMode
+    ? PROGRAMMER_NAV_SECTIONS
+    : NAV_SECTIONS.map((navSection) => {
+        const visibleItems = navSection.items.filter((item) =>
+          hasPermission(user, item.permission)
+        );
 
-    return { ...navSection, items: visibleItems };
-  }).filter((navSection) => navSection.items.length > 0);
+        return { ...navSection, items: visibleItems };
+      }).filter((navSection) => navSection.items.length > 0);
 
   const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
 
@@ -398,11 +431,11 @@ return (
     <div className={`app-layout ${isMobile ? "is-mobile" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
-          <Link to={getDefaultRouteForUser(user)} className="sidebar-logo">
+          <Link to={programmerMode ? '/super/aziende' : getDefaultRouteForUser(user)} className="sidebar-logo">
             <img className="workspace-logo-img workspace-logo-img-sidebar" src="/optimized/workspace-logo.webp" alt="WorkSpace" />
             <div className="sidebar-logo-text">
               <h1>WorkSpace</h1>
-              <span>Gestione Magazzino</span>
+              <span>{programmerMode ? 'Controllo Software' : 'Gestione Magazzino'}</span>
             </div>
           </Link>
         </div>
