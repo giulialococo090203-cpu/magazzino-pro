@@ -15898,3 +15898,30 @@ body .app-layout .dashboard-monitoring-table {
   position: relative !important;
   z-index: 1 !important;
 }
+
+/* ============================================================
+   Login multi-azienda
+   ============================================================ */
+
+.login-company-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 106, 24, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 106, 24, 0.08);
+  color: #111827;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.login-company-pill button {
+  border: 0;
+  background: transparent;
+  color: #ff6a18;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 0;
+}

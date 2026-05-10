@@ -87,6 +87,104 @@ function isValidSupabaseUuid(value) {
   );
 }
 
+const DEFAULT_COMPANY_ID = 'cl_thermoservice';
+const SELECTED_COMPANY_KEY = 'wm_selected_company';
+
+function readJsonStorage(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    localStorage.removeItem(key);
+    return null;
+  }
+}
+
+export function getSelectedCompany() {
+  return readJsonStorage(SELECTED_COMPANY_KEY);
+}
+
+export function getCurrentCompanyId() {
+  const currentUser = readJsonStorage('wm_current_user');
+  const selectedCompany = getSelectedCompany();
+
+  return (
+    currentUser?.companyId ||
+    currentUser?.company_id ||
+    currentUser?.aziendaId ||
+    currentUser?.azienda_id ||
+    selectedCompany?.id ||
+    DEFAULT_COMPANY_ID
+  );
+}
+
+function normalizeCompany(row = {}) {
+  return {
+    id: row.id,
+    companyId: row.id,
+    company_id: row.id,
+    name: row.nome,
+    nome: row.nome,
+    code: row.codice,
+    codice: row.codice,
+    logoUrl: row.logo_url || '',
+    logo_url: row.logo_url || '',
+    active: row.attiva !== false,
+    attiva: row.attiva !== false,
+    notes: row.note || '',
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+  };
+}
+
+export const companyStore = {
+  async getByCode(code) {
+    const cleanCode = String(code || '').trim().toUpperCase();
+
+    if (!cleanCode) {
+      throw new Error('Inserisci il codice azienda.');
+    }
+
+    const { data, error } = await supabase
+      .from('aziende')
+      .select('*')
+      .eq('codice', cleanCode)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      throw new Error('Codice azienda non trovato.');
+    }
+
+    const company = normalizeCompany(data);
+
+    if (!company.active) {
+      throw new Error('Azienda non attiva. Contatta l’amministratore.');
+    }
+
+    return company;
+  },
+
+  setSelected(company) {
+    if (!company?.id) {
+      throw new Error('Azienda non valida.');
+    }
+
+    localStorage.setItem(SELECTED_COMPANY_KEY, JSON.stringify(company));
+    return company;
+  },
+
+  getSelected() {
+    return getSelectedCompany();
+  },
+
+  clearSelected() {
+    localStorage.removeItem(SELECTED_COMPANY_KEY);
+  },
+};
+
+
 function notifySupabaseUsageChanged() {
   try {
     window.dispatchEvent(new CustomEvent('wm_supabase_usage_refresh'));

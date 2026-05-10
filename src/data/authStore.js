@@ -8,6 +8,7 @@ import { firebaseAuth, firebaseDb } from '../firebaseClient';
 import { normalizeRole } from './permissions';
 
 const CURRENT_USER_KEY = 'wm_current_user';
+const SELECTED_COMPANY_KEY = 'wm_selected_company';
 
 // Per ora abbiamo una sola azienda iniziale.
 // Quando aggiungeremo altre aziende, questo valore verrà sempre letto dal profilo utente.
@@ -15,6 +16,16 @@ const DEFAULT_COMPANY_ID = 'cl_thermoservice';
 
 function readString(value) {
   return String(value || '').trim();
+}
+
+function readSelectedCompany() {
+  try {
+    const raw = localStorage.getItem(SELECTED_COMPANY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    localStorage.removeItem(SELECTED_COMPANY_KEY);
+    return null;
+  }
 }
 
 function getCompanyIdFromProfile(profile = {}) {
@@ -129,9 +140,23 @@ export const authStore = {
       throw new Error('Account non attivo.');
     }
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(appUser));
+    const selectedCompany = readSelectedCompany();
 
-    return appUser;
+    if (selectedCompany?.id && appUser.companyId !== selectedCompany.id) {
+      await signOut(firebaseAuth);
+      localStorage.removeItem(CURRENT_USER_KEY);
+
+      throw new Error('Questo utente non appartiene all’azienda selezionata.');
+    }
+
+    const userWithCompany = {
+      ...appUser,
+      selectedCompany: selectedCompany || null,
+    };
+
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithCompany));
+
+    return userWithCompany;
   },
 
   getCurrentUser() {
@@ -155,6 +180,7 @@ export const authStore = {
 
   async logout() {
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(SELECTED_COMPANY_KEY);
 
     try {
       await signOut(firebaseAuth);

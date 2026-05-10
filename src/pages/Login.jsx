@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { authStore } from '../data/authStore';
+import { companyStore } from '../data/store';
 
 function getLoginErrorMessage(err) {
   const code = String(err?.code || err?.message || '').toLowerCase();
@@ -24,6 +25,9 @@ function getLoginErrorMessage(err) {
 }
 
 export default function Login({ onLogin }) {
+  const [step, setStep] = useState(() => (companyStore.getSelected() ? 'user' : 'company'));
+  const [companyCode, setCompanyCode] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState(() => companyStore.getSelected());
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,8 +50,47 @@ export default function Login({ onLogin }) {
     };
   }, []);
 
+  const handleCompanySubmit = async (e) => {
+    e.preventDefault();
+
+    if (!companyCode.trim()) {
+      setError('Inserisci il codice azienda.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const company = await companyStore.getByCode(companyCode.trim());
+      companyStore.setSelected(company);
+      setSelectedCompany(company);
+      setStep('user');
+    } catch (err) {
+      setError(err?.message || 'Azienda non trovata.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangeCompany = () => {
+    companyStore.clearSelected();
+    setSelectedCompany(null);
+    setCompanyCode('');
+    setEmail('');
+    setPassword('');
+    setError('');
+    setStep('company');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!selectedCompany?.id) {
+      setError('Seleziona prima l’azienda.');
+      setStep('company');
+      return;
+    }
 
     if (!email.trim() || !password) {
       setError('Inserisci email e password.');
@@ -66,6 +109,36 @@ export default function Login({ onLogin }) {
       setLoading(false);
     }
   };
+
+  const companyFields = (
+    <>
+      {error && <div className="login-error">{error}</div>}
+
+      {selectedCompany && (
+        <div className="login-company-pill">
+          <span>{selectedCompany.name || selectedCompany.nome}</span>
+          <button type="button" onClick={handleChangeCompany}>
+            Cambia azienda
+          </button>
+        </div>
+      )}
+
+      <label className="login-redesign-field mobile-login-field">
+        <span>Codice azienda</span>
+        <input
+          type="text"
+          autoComplete="organization"
+          value={companyCode}
+          onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
+          placeholder="Es. THERMOSERVICE"
+        />
+      </label>
+
+      <button type="submit" className="btn btn-primary login-redesign-submit mobile-login-submit" disabled={loading}>
+        {loading ? 'Verifica azienda...' : 'Continua'}
+      </button>
+    </>
+  );
 
   const formFields = (
     <>
@@ -119,11 +192,15 @@ export default function Login({ onLogin }) {
             <div className="mobile-login-title">WorkSpace</div>
           </div>
 
-          <form onSubmit={handleSubmit} className="mobile-login-card">
-            <h1>Login</h1>
-            <p>Accedi alla piattaforma di gestione magazzino</p>
+          <form onSubmit={step === 'company' ? handleCompanySubmit : handleSubmit} className="mobile-login-card">
+            <h1>{step === 'company' ? 'Azienda' : 'Login'}</h1>
+            <p>
+              {step === 'company'
+                ? 'Inserisci il codice aziendale per accedere al tuo ambiente.'
+                : `Accedi come utente${selectedCompany?.name ? ` di ${selectedCompany.name}` : ''}.`}
+            </p>
 
-            {formFields}
+            {step === 'company' ? companyFields : formFields}
           </form>
 
           <div className="mobile-login-footer" aria-hidden="true"></div>
@@ -154,13 +231,17 @@ export default function Login({ onLogin }) {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="login-redesign-form">
+          <form onSubmit={step === 'company' ? handleCompanySubmit : handleSubmit} className="login-redesign-form">
             <div>
-              <h3>Accedi alla piattaforma</h3>
-              <p className="login-redesign-helper">Gestisci il lavoro con controllo, ordine e continuità.</p>
+              <h3>{step === 'company' ? 'Accedi alla tua azienda' : `Accedi a ${selectedCompany?.name || selectedCompany?.nome || 'WorkSpace'}`}</h3>
+              <p className="login-redesign-helper">
+                {step === 'company'
+                  ? 'Inserisci il codice aziendale fornito dall’amministratore.'
+                  : 'Inserisci le credenziali del tuo account operativo.'}
+              </p>
             </div>
 
-            {formFields}
+            {step === 'company' ? companyFields : formFields}
           </form>
         </section>
       </div>
