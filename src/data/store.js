@@ -123,21 +123,97 @@ function normalizeCompany(row = {}) {
     id: row.id,
     companyId: row.id,
     company_id: row.id,
+
     name: row.nome,
     nome: row.nome,
+
     code: row.codice,
     codice: row.codice,
+
     logoUrl: row.logo_url || '',
     logo_url: row.logo_url || '',
+
     active: row.attiva !== false,
     attiva: row.attiva !== false,
+
+    subscriptionStatus: row.stato_abbonamento || 'attivo',
+    stato_abbonamento: row.stato_abbonamento || 'attivo',
+
+    plan: row.piano || 'pro',
+    piano: row.piano || 'pro',
+
+    subscriptionStartDate: row.data_inizio_abbonamento || null,
+    data_inizio_abbonamento: row.data_inizio_abbonamento || null,
+
+    subscriptionEndDate: row.data_scadenza_abbonamento || null,
+    data_scadenza_abbonamento: row.data_scadenza_abbonamento || null,
+
+    maxUsers: row.max_utenti ?? null,
+    max_utenti: row.max_utenti ?? null,
+
+    lastAccessAt: row.ultimo_accesso || null,
+    ultimo_accesso: row.ultimo_accesso || null,
+
+    suspensionReason: row.sospesa_motivo || '',
+    sospesa_motivo: row.sospesa_motivo || '',
+
     notes: row.note || '',
+    note: row.note || '',
+
     createdAt: row.created_at || null,
     updatedAt: row.updated_at || null,
   };
 }
 
+function isCompanySubscriptionExpired(company) {
+  const endDate = company?.subscriptionEndDate || company?.data_scadenza_abbonamento;
+
+  if (!endDate) return false;
+
+  const end = new Date(`${endDate}T23:59:59`);
+  return !Number.isNaN(end.getTime()) && end < new Date();
+}
+
+function assertCompanyCanAccess(company) {
+  if (!company?.id) {
+    throw new Error('Azienda non valida.');
+  }
+
+  if (company.active === false || company.attiva === false) {
+    throw new Error('Azienda disattivata. Contattare l’amministratore del servizio.');
+  }
+
+  const status = String(company.subscriptionStatus || company.stato_abbonamento || 'attivo')
+    .trim()
+    .toLowerCase();
+
+  if (['sospeso', 'scaduto', 'disattivato'].includes(status)) {
+    throw new Error(
+      company.suspensionReason ||
+        company.sospesa_motivo ||
+        'Accesso aziendale momentaneamente sospeso. Contattare l’amministratore del servizio.'
+    );
+  }
+
+  if (isCompanySubscriptionExpired(company)) {
+    throw new Error('Abbonamento aziendale scaduto. Contattare l’amministratore del servizio.');
+  }
+
+  return true;
+}
+
 export const companyStore = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('aziende')
+      .select('*')
+      .order('nome');
+
+    if (error) throw error;
+
+    return (Array.isArray(data) ? data : []).map(normalizeCompany);
+  },
+
   async getByCode(code) {
     const cleanCode = String(code || '').trim().toUpperCase();
 
@@ -159,11 +235,134 @@ export const companyStore = {
 
     const company = normalizeCompany(data);
 
-    if (!company.active) {
-      throw new Error('Azienda non attiva. Contatta l’amministratore.');
+    assertCompanyCanAccess(company);
+
+    try {
+      await supabase
+        .from('aziende')
+        .update({ ultimo_accesso: new Date().toISOString() })
+        .eq('id', company.id);
+    } catch {
+      // Non bloccare il login se l'aggiornamento ultimo_accesso fallisce.
     }
 
     return company;
+  },
+
+  async create(company) {
+    const name = String(company.name || company.nome || '').trim();
+    const code = String(company.code || company.codice || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9_-]+/g, '');
+
+    if (!name) {
+      throw new Error('Nome azienda obbligatorio.');
+    }
+
+    if (!code) {
+      throw new Error('Codice azienda obbligatorio.');
+    }
+
+    const id =
+      company.id ||
+      `cl_${code.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+
+    const payload = {
+      id,
+      nome: name,
+      codice: code,
+      logo_url: company.logoUrl || company.logo_url || null,
+      attiva: company.active !== undefined ? Boolean(company.active) : true,
+      stato_abbonamento: company.subscriptionStatus || company.stato_abbonamento || 'attivo',
+      piano: company.plan || company.piano || 'pro',
+      data_inizio_abbonamento:
+        company.subscriptionStartDate || company.data_inizio_abbonamento || null,
+      data_scadenza_abbonamento:
+        company.subscriptionEndDate || company.data_scadenza_abbonamento || null,
+      max_utenti:
+        company.maxUsers !== undefined
+          ? company.maxUsers
+          : company.max_utenti !== undefined
+            ? company.max_utenti
+            : null,
+      sospesa_motivo: company.suspensionReason || company.sospesa_motivo || null,
+      note: company.notes || company.note || null,
+    };
+
+    const { data, error } = await supabase
+      .from('aziende')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      if (
+        String(error.message || '').toLowerCase().includes('duplicate') ||
+        String(error.code || '') === '23505'
+      ) {
+        throw new Error('Esiste già un’azienda con questo codice o ID.');
+      }
+
+      throw error;
+    }
+
+    return normalizeCompany(data);
+  },
+
+  async update(id, updates) {
+    const payload = clean({
+      nome: updates.name || updates.nome,
+      codice: updates.code || updates.codice
+        ? String(updates.code || updates.codice).trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '')
+        : undefined,
+      logo_url: updates.logoUrl || updates.logo_url,
+      attiva:
+        updates.active !== undefined
+          ? Boolean(updates.active)
+          : updates.attiva !== undefined
+            ? Boolean(updates.attiva)
+            : undefined,
+      stato_abbonamento: updates.subscriptionStatus || updates.stato_abbonamento,
+      piano: updates.plan || updates.piano,
+      data_inizio_abbonamento:
+        updates.subscriptionStartDate !== undefined
+          ? updates.subscriptionStartDate || null
+          : updates.data_inizio_abbonamento !== undefined
+            ? updates.data_inizio_abbonamento || null
+            : undefined,
+      data_scadenza_abbonamento:
+        updates.subscriptionEndDate !== undefined
+          ? updates.subscriptionEndDate || null
+          : updates.data_scadenza_abbonamento !== undefined
+            ? updates.data_scadenza_abbonamento || null
+            : undefined,
+      max_utenti:
+        updates.maxUsers !== undefined
+          ? updates.maxUsers || null
+          : updates.max_utenti !== undefined
+            ? updates.max_utenti || null
+            : undefined,
+      sospesa_motivo:
+        updates.suspensionReason !== undefined
+          ? updates.suspensionReason || null
+          : updates.sospesa_motivo !== undefined
+            ? updates.sospesa_motivo || null
+            : undefined,
+      note: updates.notes || updates.note,
+      updated_at: new Date().toISOString(),
+    });
+
+    const { data, error } = await supabase
+      .from('aziende')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return normalizeCompany(data);
   },
 
   setSelected(company) {
