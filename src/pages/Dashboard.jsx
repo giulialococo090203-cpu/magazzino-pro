@@ -9,6 +9,7 @@ import {
   userStore,
 } from '../data/store';
 import { useAuth } from '../App';
+import { FEATURES, hasPlanFeature } from '../data/subscriptionPlans';
 import {
   getSupabaseUsageMonitor,
   formatBytes,
@@ -136,6 +137,9 @@ function getUsageColor(percent) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+
+  const canUseImportInvoices = hasPlanFeature(user, FEATURES.INVOICES_IMPORT);
+  const canUseHistory = hasPlanFeature(user, FEATURES.HISTORY_BASE);
 
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -883,9 +887,11 @@ export default function Dashboard() {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title"><Icon name="assignment" className="ui-section-icon" aria-hidden="true" />Ultimi Movimenti</h3>
-            <Link to="/storico" className="btn btn-sm btn-ghost">
-              Vedi tutti →
-            </Link>
+            {canUseHistory && (
+              <Link to="/storico" className="btn btn-sm btn-ghost">
+                Vedi tutti →
+              </Link>
+            )}
           </div>
 
           <div className="card-body" style={{ padding: 0 }}>
