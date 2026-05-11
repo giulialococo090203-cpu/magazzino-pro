@@ -140,6 +140,9 @@ export default function Dashboard() {
 
   const canUseImportInvoices = hasPlanFeature(user, FEATURES.INVOICES_IMPORT);
   const canUseHistory = hasPlanFeature(user, FEATURES.HISTORY_BASE);
+  const canUseAdvancedHistory = hasPlanFeature(user, FEATURES.HISTORY_ADVANCED);
+  const canUseClientOperatorMonitoring = hasPlanFeature(user, FEATURES.CLIENTS_OPERATORS);
+  const canUseBackupMonitor = hasPlanFeature(user, FEATURES.BACKUP);
 
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -862,37 +865,40 @@ export default function Dashboard() {
           <span>Scarica Materiale</span>
         </Link>
 
-        <Link to="/importa" className="quick-action-btn">
-          <div
-            className="quick-action-icon"
-            style={{ background: '#dbeafe', color: '#2563eb' }}
-          >
-            <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />
-          </div>
-          <span>Importa / Inserisci</span>
-        </Link>
+        {canUseImportInvoices && (
+          <Link to="/importa" className="quick-action-btn">
+            <div
+              className="quick-action-icon"
+              style={{ background: '#dbeafe', color: '#2563eb' }}
+            >
+              <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" />
+            </div>
+            <span>Importa / Inserisci</span>
+          </Link>
+        )}
 
-        <Link to="/storico" className="quick-action-btn">
-          <div
-            className="quick-action-icon"
-            style={{ background: '#ecfdf5', color: '#059669' }}
-          >
-            <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" />
-          </div>
-          <span>Storico Movimenti</span>
-        </Link>
+        {canUseHistory && (
+          <Link to="/storico" className="quick-action-btn">
+            <div
+              className="quick-action-icon"
+              style={{ background: '#ecfdf5', color: '#059669' }}
+            >
+              <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" />
+            </div>
+            <span>Storico Movimenti</span>
+          </Link>
+        )}
       </div>
 
       <div className="grid-2" style={{ marginTop: 20 }}>
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Icon name="assignment" className="ui-section-icon" aria-hidden="true" />Ultimi Movimenti</h3>
-            {canUseHistory && (
+        {canUseHistory && (
+          <div className="card">
+            <div className="card-header">
+              <h3 className="card-title"><Icon name="assignment" className="ui-section-icon" aria-hidden="true" />Ultimi Movimenti</h3>
               <Link to="/storico" className="btn btn-sm btn-ghost">
                 Vedi tutti →
               </Link>
-            )}
-          </div>
+            </div>
 
           <div className="card-body" style={{ padding: 0 }}>
             <table className="data-table">
@@ -952,7 +958,8 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
+        )}
 
         <div className="card">
           <div className="card-header">
@@ -1028,12 +1035,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <h2 className="section-title" style={{ marginTop: 28 }}>
-        <span className="icon">🔎</span> Monitoraggio Datore
-      </h2>
+      {canUseClientOperatorMonitoring && (
+        <>
+          <h2 className="section-title" style={{ marginTop: 28 }}>
+            <span className="icon">🔎</span> Monitoraggio Datore
+          </h2>
 
-      <div
-        className={`card dashboard-filter-card dashboard-monitoring-filters-card ${
+          <div
+            className={`card dashboard-filter-card dashboard-monitoring-filters-card ${
           showComponentSuggestions || showOperatorSuggestions || showClientSuggestions
             ? 'has-open-monitoring-menu'
             : ''
@@ -1273,21 +1282,26 @@ export default function Dashboard() {
         </table>
       </div>
 
+        </>
+      )}
+
       <div className="charts-grid">
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Entrate vs Uscite (30 giorni)</h3>
+        {canUseAdvancedHistory && (
+          <div className="card">
+            <div className="card-header">
+              <h3 className="card-title"><Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Entrate vs Uscite (30 giorni)</h3>
+            </div>
+            <div className="chart-container">
+              {entriesVsExits.length > 0 ? (
+                <Bar data={evChartData} options={barOptions} />
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-state-text">Nessun dato disponibile</div>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="chart-container">
-            {entriesVsExits.length > 0 ? (
-              <Bar data={evChartData} options={barOptions} />
-            ) : (
-              <div className="empty-state">
-                <div className="empty-state-text">Nessun dato disponibile</div>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         <div className="card">
           <div className="card-header">
@@ -1304,20 +1318,22 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Icon name="local_fire_department" className="ui-section-icon" aria-hidden="true" />Materiali Più Movimentati</h3>
+        {canUseAdvancedHistory && (
+          <div className="card">
+            <div className="card-header">
+              <h3 className="card-title"><Icon name="local_fire_department" className="ui-section-icon" aria-hidden="true" />Materiali Più Movimentati</h3>
+            </div>
+            <div className="chart-container">
+              {mostMoved.length > 0 ? (
+                <Bar data={mostMovedData} options={{ ...barOptions, indexAxis: 'y' }} />
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-state-text">Nessun dato</div>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="chart-container">
-            {mostMoved.length > 0 ? (
-              <Bar data={mostMovedData} options={{ ...barOptions, indexAxis: 'y' }} />
-            ) : (
-              <div className="empty-state">
-                <div className="empty-state-text">Nessun dato</div>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         <div className="card">
           <div className="card-header">
@@ -1335,9 +1351,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Icon name="database" className="ui-section-icon" aria-hidden="true" />Memoria Supabase</h3>
+        {canUseBackupMonitor && (
+          <div className="card">
+            <div className="card-header">
+              <h3 className="card-title"><Icon name="database" className="ui-section-icon" aria-hidden="true" />Memoria Supabase</h3>
             <button
               type="button"
               className="btn btn-sm btn-secondary"
@@ -1572,7 +1589,8 @@ export default function Dashboard() {
               )}
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
