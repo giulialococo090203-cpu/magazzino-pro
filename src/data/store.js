@@ -232,7 +232,53 @@ export const companyStore = {
 
     if (error) throw error;
 
-    return (Array.isArray(data) ? data : []).map(normalizeCompany);
+    const companies = (Array.isArray(data) ? data : []).map(normalizeCompany);
+
+    const companyIds = companies
+      .map((company) => company.id)
+      .filter(Boolean)
+      .filter((id) => id !== 'programmatore');
+
+    if (companyIds.length === 0) {
+      return companies;
+    }
+
+    const { data: usersData, error: usersError } = await supabase
+      .from('utenti')
+      .select('azienda_id, attivo')
+      .in('azienda_id', companyIds);
+
+    if (usersError) {
+      console.warn('Conteggio utenti aziende non disponibile:', usersError);
+      return companies;
+    }
+
+    const counts = new Map();
+
+    (Array.isArray(usersData) ? usersData : []).forEach((row) => {
+      const companyId = row.azienda_id;
+      if (!companyId) return;
+
+      const current = counts.get(companyId) || { totalUsers: 0, activeUsers: 0 };
+
+      current.totalUsers += 1;
+
+      if (row.attivo !== false) {
+        current.activeUsers += 1;
+      }
+
+      counts.set(companyId, current);
+    });
+
+    return companies.map((company) => {
+      const count = counts.get(company.id) || { totalUsers: 0, activeUsers: 0 };
+
+      return {
+        ...company,
+        totalUsers: count.totalUsers,
+        activeUsers: count.activeUsers,
+      };
+    });
   },
 
   async getByCode(code) {

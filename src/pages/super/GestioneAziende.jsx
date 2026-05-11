@@ -94,6 +94,32 @@ function isTechnicalProgrammerCompany(company) {
   return id === 'programmatore' || code === 'PROGRAMMATORE';
 }
 
+function formatUserLimit(company) {
+  const activeUsers = Number(company?.activeUsers || 0);
+  const maxUsers = Number(company?.maxUsers ?? company?.max_utenti ?? 0);
+
+  if (!maxUsers || maxUsers <= 0) {
+    return `${activeUsers} / illimitati`;
+  }
+
+  return `${activeUsers} / ${maxUsers}`;
+}
+
+function getUserLimitClass(company) {
+  const activeUsers = Number(company?.activeUsers || 0);
+  const maxUsers = Number(company?.maxUsers ?? company?.max_utenti ?? 0);
+
+  if (!maxUsers || maxUsers <= 0) return '';
+
+  if (activeUsers >= maxUsers) return 'danger';
+
+  if (activeUsers >= Math.max(1, Math.floor(maxUsers * 0.8))) {
+    return 'warning';
+  }
+
+  return '';
+}
+
 function getCompanyAccessState(company) {
   const status = String(company.subscriptionStatus || company.stato_abbonamento || 'attivo')
     .trim()
@@ -587,16 +613,26 @@ export default function GestioneAziende() {
                           ID: {company.id}
                         </div>
 
-                        <div className="company-list-meta">
-                          Piano: <strong>{company.plan || company.piano || 'pro'}</strong>
-                        </div>
+                        <div className="company-license-grid">
+                          <div className="company-license-pill">
+                            <span>Piano</span>
+                            <strong>{String(company.plan || company.piano || 'base').toUpperCase()}</strong>
+                          </div>
 
-                        <div className="company-list-meta">
-                          Scadenza: {formatDate(company.subscriptionEndDate || company.data_scadenza_abbonamento)}
-                        </div>
+                          <div className={`company-license-pill ${getUserLimitClass(company)}`}>
+                            <span>Utenti</span>
+                            <strong>{formatUserLimit(company)}</strong>
+                          </div>
 
-                        <div className="company-list-meta">
-                          Ultimo accesso: {formatDateTime(company.lastAccessAt || company.ultimo_accesso)}
+                          <div className="company-license-pill">
+                            <span>Scadenza</span>
+                            <strong>{formatDate(company.subscriptionEndDate || company.data_scadenza_abbonamento)}</strong>
+                          </div>
+
+                          <div className="company-license-pill">
+                            <span>Ultimo accesso</span>
+                            <strong>{formatDateTime(company.lastAccessAt || company.ultimo_accesso)}</strong>
+                          </div>
                         </div>
 
                         {(company.suspensionReason || company.sospesa_motivo) && (

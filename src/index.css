@@ -16073,3 +16073,53 @@ body .app-layout .dashboard-monitoring-table {
     align-items: flex-start;
   }
 }
+
+.company-license-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.company-license-pill {
+  border: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.company-license-pill span {
+  display: block;
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.company-license-pill strong {
+  display: block;
+  color: var(--gray-900);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.company-license-pill.warning {
+  border-color: var(--warning-300);
+  background: var(--warning-50);
+}
+
+.company-license-pill.warning strong {
+  color: var(--warning-700);
+}
+
+.company-license-pill.danger {
+  border-color: var(--danger-300);
+  background: var(--danger-50);
+}
+
+.company-license-pill.danger strong {
+  color: var(--danger-700);
+}
