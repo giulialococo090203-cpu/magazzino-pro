@@ -328,58 +328,124 @@ export const companyStore = {
   },
 
   async update(id, updates) {
+    if (!id) {
+      throw new Error('ID azienda mancante.');
+    }
+
     const payload = clean({
-      nome: updates.name || updates.nome,
-      codice: updates.code || updates.codice
-        ? String(updates.code || updates.codice).trim().toUpperCase().replace(/[^A-Z0-9_-]+/g, '')
-        : undefined,
-      logo_url: updates.logoUrl || updates.logo_url,
+      nome:
+        updates.name !== undefined
+          ? updates.name
+          : updates.nome !== undefined
+            ? updates.nome
+            : undefined,
+
+      codice:
+        updates.code !== undefined || updates.codice !== undefined
+          ? String(updates.code || updates.codice || '')
+              .trim()
+              .toUpperCase()
+              .replace(/[^A-Z0-9_-]+/g, '')
+          : undefined,
+
+      logo_url:
+        updates.logoUrl !== undefined
+          ? updates.logoUrl || null
+          : updates.logo_url !== undefined
+            ? updates.logo_url || null
+            : undefined,
+
       attiva:
         updates.active !== undefined
           ? Boolean(updates.active)
           : updates.attiva !== undefined
             ? Boolean(updates.attiva)
             : undefined,
-      stato_abbonamento: updates.subscriptionStatus || updates.stato_abbonamento,
-      piano: updates.plan || updates.piano,
+
+      stato_abbonamento:
+        updates.subscriptionStatus !== undefined
+          ? updates.subscriptionStatus
+          : updates.stato_abbonamento !== undefined
+            ? updates.stato_abbonamento
+            : undefined,
+
+      piano:
+        updates.plan !== undefined
+          ? updates.plan
+          : updates.piano !== undefined
+            ? updates.piano
+            : undefined,
+
       data_inizio_abbonamento:
         updates.subscriptionStartDate !== undefined
           ? updates.subscriptionStartDate || null
           : updates.data_inizio_abbonamento !== undefined
             ? updates.data_inizio_abbonamento || null
             : undefined,
+
       data_scadenza_abbonamento:
         updates.subscriptionEndDate !== undefined
           ? updates.subscriptionEndDate || null
           : updates.data_scadenza_abbonamento !== undefined
             ? updates.data_scadenza_abbonamento || null
             : undefined,
+
       max_utenti:
         updates.maxUsers !== undefined
           ? normalizeCompanyMaxUsers(updates.maxUsers)
           : updates.max_utenti !== undefined
             ? normalizeCompanyMaxUsers(updates.max_utenti)
             : undefined,
+
       sospesa_motivo:
         updates.suspensionReason !== undefined
           ? updates.suspensionReason || null
           : updates.sospesa_motivo !== undefined
             ? updates.sospesa_motivo || null
             : undefined,
-      note: updates.notes || updates.note,
+
+      note:
+        updates.notes !== undefined
+          ? updates.notes || null
+          : updates.note !== undefined
+            ? updates.note || null
+            : undefined,
+
       updated_at: new Date().toISOString(),
     });
 
-    const { data, error } = await supabase
+    console.log('[companyStore.update] id:', id);
+    console.log('[companyStore.update] payload:', payload);
+
+    const { error } = await supabase
       .from('aziende')
       .update(payload)
+      .eq('id', id);
+
+    if (error) {
+      console.error('[companyStore.update] update error:', error);
+      throw error;
+    }
+
+    const { data: refreshedCompany, error: readError } = await supabase
+      .from('aziende')
+      .select('*')
       .eq('id', id)
-      .select()
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (readError) {
+      console.error('[companyStore.update] read error:', readError);
+      throw readError;
+    }
 
-    return normalizeCompany(data);
+    if (!refreshedCompany) {
+      return normalizeCompany({
+        id,
+        ...payload,
+      });
+    }
+
+    return normalizeCompany(refreshedCompany);
   },
 
   setSelected(company) {
