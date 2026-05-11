@@ -9,6 +9,7 @@ import {
 import { useState, useEffect } from 'react';
 import FaIcon from './FaIcon';
 import SafeIcon from './SafeIcon';
+import { FEATURES, hasPlanFeature, getPlanLabel } from '../data/subscriptionPlans';
 
 function SidebarIcon({ name, className = '' }) {
   return (
@@ -39,36 +40,42 @@ const NAV_SECTIONS = [
         label: 'Giacenza',
         icon: 'inventory_2',
         permission: 'canViewInventory',
+        feature: FEATURES.INVENTORY,
       },
       {
         path: '/movimento/entrata',
         label: 'Carico Materiale',
         icon: 'move_to_inbox',
         permission: 'canMoveIn',
+        feature: FEATURES.MOVE_IN,
       },
       {
         path: '/movimento/uscita',
         label: 'Scarica Materiale',
         icon: 'outbox',
         permission: 'canMoveOut',
+        feature: FEATURES.MOVE_OUT,
       },
       {
         path: '/movimento/reintegro',
         label: 'Reintegra Materiale',
         icon: 'sync',
         permission: 'canReintegrate',
+        feature: FEATURES.REINTEGRATE,
       },
       {
         path: '/movimento/rettifica',
         label: 'Rettifica Magazzino',
         icon: 'edit_square',
         permission: 'canRectify',
+        feature: FEATURES.RECTIFY,
       },
       {
         path: '/storico',
         label: 'Storico Movimenti',
         icon: 'calendar_month',
         permission: 'canViewHistory',
+        feature: FEATURES.HISTORY_BASE,
       },
     ],
   },
@@ -81,30 +88,35 @@ const NAV_SECTIONS = [
         label: 'Riordino Automatico',
         icon: 'shopping_cart',
         permission: 'canManageReorderProposals',
+        feature: FEATURES.REORDER,
       },
       {
         path: '/proposte-ordine',
         label: 'Proposte Ordine',
         icon: 'request_quote',
         permission: 'canManageReorderProposals',
+        feature: FEATURES.REORDER_ARCHIVE,
       },
       {
         path: '/importa',
         label: 'Importa / Inserisci',
         icon: 'upload_file',
         permission: 'canImportInvoices',
+        feature: FEATURES.INVOICES_IMPORT,
       },
       {
         path: '/fatture',
         label: 'Archivio Fatture',
         icon: 'folder_open',
         permission: 'canImportInvoices',
+        feature: FEATURES.INVOICES_ARCHIVE,
       },
       {
         path: '/gestione/fornitori',
         label: 'Fornitori',
         icon: 'factory',
         permission: 'canManageMaterials',
+        feature: FEATURES.SUPPLIERS,
       },
     ],
   },
@@ -117,18 +129,21 @@ const NAV_SECTIONS = [
         label: 'Inventario Fisico',
         icon: 'fact_check',
         permission: 'canPhysicalInventory',
+        feature: FEATURES.PHYSICAL_INVENTORY,
       },
       {
         path: '/controllo/soglie',
         label: 'Soglie Scorta',
         icon: 'settings',
         permission: 'canManageThresholds',
+        feature: FEATURES.NOTIFICATIONS,
       },
       {
         path: '/controllo/notifiche',
         label: 'Notifiche',
         icon: 'notifications',
         permission: 'canViewNotifications',
+        feature: FEATURES.NOTIFICATIONS,
         badge: true,
       },
     ],
@@ -142,24 +157,28 @@ const NAV_SECTIONS = [
         label: 'Dashboard',
         icon: 'analytics',
         permission: 'canViewDashboard',
+        feature: FEATURES.DASHBOARD,
       },
       {
         path: '/gestione/rendicontazione',
         label: 'Rendicontazione',
         icon: 'receipt_long',
         permission: 'canManageMaterials',
+        feature: FEATURES.ECONOMIC_REPORTING,
       },
       {
         path: '/gestione/storico-prezzi',
         label: 'Storico Prezzi',
         icon: 'trending_up',
         permission: 'canManagePriceSettings',
+        feature: FEATURES.PRICE_HISTORY,
       },
       {
         path: '/gestione/prezzi',
         label: 'Impostazioni Prezzi',
         icon: 'euro',
         permission: 'canManagePriceSettings',
+        feature: FEATURES.PRICE_SETTINGS,
       },
     ],
   },
@@ -172,30 +191,35 @@ const NAV_SECTIONS = [
         label: 'Anagrafica Materiali',
         icon: 'construction',
         permission: 'canManageMaterials',
+        feature: FEATURES.INVENTORY,
       },
       {
         path: '/gestione/categorie',
         label: 'Categorie',
         icon: 'sell',
         permission: 'canManageCategories',
+        feature: FEATURES.CATEGORIES,
       },
       {
         path: '/gestione/utenti',
         label: 'Utenti',
         icon: 'manage_accounts',
         permission: 'canManageUsers',
+        feature: FEATURES.USERS_BASE,
       },
       {
         path: '/gestione/backup',
         label: 'Backup Sistema',
         icon: 'backup',
         permission: 'canManageUsers',
+        feature: FEATURES.BACKUP,
       },
       {
         path: '/gestione/log',
         label: 'Registro modifiche',
         icon: 'history_edu',
         permission: 'canViewAuditLog',
+        feature: FEATURES.AUDIT_LOG,
       },
     ],
   },
@@ -388,7 +412,8 @@ const [openSections, setOpenSections] = useState({});
     ? PROGRAMMER_NAV_SECTIONS
     : NAV_SECTIONS.map((navSection) => {
         const visibleItems = navSection.items.filter((item) =>
-          hasPermission(user, item.permission)
+          hasPermission(user, item.permission) &&
+          (!item.feature || hasPlanFeature(user, item.feature))
         );
 
         return { ...navSection, items: visibleItems };
@@ -496,7 +521,10 @@ return (
 
             <div className="sidebar-user-details">
               <div className="sidebar-user-name">{displayName}</div>
-              <div className="sidebar-user-role">{getRoleLabel(user?.role)}</div>
+              <div className="sidebar-user-role">
+                {programmerMode ? 'Programmatore' : `${getRoleLabel(user?.role)} · Piano ${getPlanLabel(user)}`
+                }
+              </div>
             </div>
 
             <button className="sidebar-logout" onClick={logout} title="Esci"><span aria-hidden="true" className="logout-symbol">⏻</span></button>

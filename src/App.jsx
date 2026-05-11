@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import { authStore } from './data/authStore';
 import { INITIAL_UNITS } from './data/initialData';
 import { hasPermission, getDefaultRouteForUser } from './data/permissions';
+import { FEATURES, hasPlanFeature } from './data/subscriptionPlans';
 
 // Pagine - Login e Generale
 import Login from './pages/Login';
@@ -43,10 +44,14 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-function ProtectedRoute({ user, permission, children }) {
+function ProtectedRoute({ user, permission, feature, children }) {
   if (!user) return <Navigate to="/" replace />;
 
   if (!hasPermission(user, permission)) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
+  }
+
+  if (feature && !hasPlanFeature(user, feature)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
@@ -100,7 +105,20 @@ function ProtectedMovementRoute({ user }) {
 
   const requiredPermission = permissionByTipo[tipo];
 
+  const featureByTipo = {
+    entrata: FEATURES.MOVE_IN,
+    uscita: FEATURES.MOVE_OUT,
+    reintegro: FEATURES.REINTEGRATE,
+    rettifica: FEATURES.RECTIFY,
+  };
+
+  const requiredFeature = featureByTipo[tipo];
+
   if (!requiredPermission || !hasPermission(user, requiredPermission)) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
+  }
+
+  if (requiredFeature && !hasPlanFeature(user, requiredFeature)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
@@ -190,7 +208,7 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
+                  <ProtectedRoute user={currentUser} permission="canViewDashboard" feature={FEATURES.DASHBOARD}>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -199,7 +217,7 @@ function App() {
               <Route
                 path="/inventario"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewInventory">
+                  <ProtectedRoute user={currentUser} permission="canViewInventory" feature={FEATURES.INVENTORY}>
                     <Inventario />
                   </ProtectedRoute>
                 }
@@ -208,7 +226,7 @@ function App() {
               <Route
                 path="/riordino"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
+                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals" feature={FEATURES.REORDER}>
                     <RiordinoAutomatico />
                   </ProtectedRoute>
                 }
@@ -217,7 +235,7 @@ function App() {
               <Route
                 path="/proposte-ordine"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
+                  <ProtectedRoute user={currentUser} permission="canManageReorderProposals" feature={FEATURES.REORDER_ARCHIVE}>
                     <ArchivioProposteOrdine />
                   </ProtectedRoute>
                 }
@@ -226,7 +244,7 @@ function App() {
               <Route
                 path="/inventario-fisico"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canPhysicalInventory">
+                  <ProtectedRoute user={currentUser} permission="canPhysicalInventory" feature={FEATURES.PHYSICAL_INVENTORY}>
                     <InventarioFisico />
                   </ProtectedRoute>
                 }
@@ -240,7 +258,7 @@ function App() {
               <Route
                 path="/storico"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewHistory">
+                  <ProtectedRoute user={currentUser} permission="canViewHistory" feature={FEATURES.HISTORY_BASE}>
                     <StoricoMovimenti />
                   </ProtectedRoute>
                 }
@@ -249,7 +267,7 @@ function App() {
               <Route
                 path="/importa"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canImportInvoices">
+                  <ProtectedRoute user={currentUser} permission="canImportInvoices" feature={FEATURES.INVOICES_IMPORT}>
                     <ImportaFatture />
                   </ProtectedRoute>
                 }
@@ -258,7 +276,7 @@ function App() {
               <Route
                 path="/fatture"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canImportInvoices">
+                  <ProtectedRoute user={currentUser} permission="canImportInvoices" feature={FEATURES.INVOICES_ARCHIVE}>
                     <ArchivioFatture />
                   </ProtectedRoute>
                 }
@@ -267,7 +285,7 @@ function App() {
               <Route
                 path="/gestione/categorie"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageCategories">
+                  <ProtectedRoute user={currentUser} permission="canManageCategories" feature={FEATURES.CATEGORIES}>
                     <GestioneCategorie />
                   </ProtectedRoute>
                 }
@@ -276,7 +294,7 @@ function App() {
               <Route
                 path="/gestione/materiali"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials" feature={FEATURES.INVENTORY}>
                     <GestioneMateriali />
                   </ProtectedRoute>
                 }
@@ -285,7 +303,7 @@ function App() {
               <Route
                 path="/gestione/fornitori"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials" feature={FEATURES.SUPPLIERS}>
                     <Fornitori />
                   </ProtectedRoute>
                 }
@@ -294,7 +312,7 @@ function App() {
               <Route
                 path="/gestione/rendicontazione"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageMaterials">
+                  <ProtectedRoute user={currentUser} permission="canManageMaterials" feature={FEATURES.ECONOMIC_REPORTING}>
                     <RendicontazioneEconomica />
                   </ProtectedRoute>
                 }
@@ -303,7 +321,7 @@ function App() {
               <Route
                 path="/gestione/prezzi"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManagePriceSettings">
+                  <ProtectedRoute user={currentUser} permission="canManagePriceSettings" feature={FEATURES.PRICE_SETTINGS}>
                     <ImpostazioniPrezzi />
                   </ProtectedRoute>
                 }
@@ -312,7 +330,7 @@ function App() {
               <Route
                 path="/gestione/storico-prezzi"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManagePriceSettings">
+                  <ProtectedRoute user={currentUser} permission="canManagePriceSettings" feature={FEATURES.PRICE_HISTORY}>
                     <StoricoPrezzi />
                   </ProtectedRoute>
                 }
@@ -321,7 +339,7 @@ function App() {
               <Route
                 path="/gestione/utenti"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageUsers">
+                  <ProtectedRoute user={currentUser} permission="canManageUsers" feature={FEATURES.USERS_BASE}>
                     <GestioneUtenti />
                   </ProtectedRoute>
                 }
@@ -330,7 +348,7 @@ function App() {
               <Route
                 path="/gestione/backup"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageUsers">
+                  <ProtectedRoute user={currentUser} permission="canManageUsers" feature={FEATURES.BACKUP}>
                     <BackupSistema />
                   </ProtectedRoute>
                 }
@@ -339,7 +357,7 @@ function App() {
               <Route
                 path="/gestione/log"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewAuditLog">
+                  <ProtectedRoute user={currentUser} permission="canViewAuditLog" feature={FEATURES.AUDIT_LOG}>
                     <LogModifiche />
                   </ProtectedRoute>
                 }
@@ -348,7 +366,7 @@ function App() {
               <Route
                 path="/controllo"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewDashboard">
+                  <ProtectedRoute user={currentUser} permission="canViewDashboard" feature={FEATURES.DASHBOARD}>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -357,7 +375,7 @@ function App() {
               <Route
                 path="/controllo/soglie"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canManageThresholds">
+                  <ProtectedRoute user={currentUser} permission="canManageThresholds" feature={FEATURES.NOTIFICATIONS}>
                     <Soglie />
                   </ProtectedRoute>
                 }
@@ -366,7 +384,7 @@ function App() {
               <Route
                 path="/controllo/notifiche"
                 element={
-                  <ProtectedRoute user={currentUser} permission="canViewNotifications">
+                  <ProtectedRoute user={currentUser} permission="canViewNotifications" feature={FEATURES.NOTIFICATIONS}>
                     <Notifiche />
                   </ProtectedRoute>
                 }
