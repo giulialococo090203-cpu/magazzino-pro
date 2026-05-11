@@ -95,53 +95,15 @@ async function verifyFirebaseUser(env, token) {
   return payload.users[0];
 }
 
-async function getFirestoreUserProfile(env, uid) {
-  const projectId = env.VITE_FIREBASE_PROJECT_ID || env.FIREBASE_PROJECT_ID;
+function assertProgrammer(firebaseUser, env) {
+  const programmerEmail = String(env.PROGRAMMER_EMAIL || '').trim().toLowerCase();
+  const userEmail = String(firebaseUser?.email || '').trim().toLowerCase();
 
-  if (!projectId) {
-    throw new Error('FIREBASE_PROJECT_ID non configurato nel backend.');
+  if (!programmerEmail) {
+    throw new Error('PROGRAMMER_EMAIL non configurata nel backend.');
   }
 
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error('Profilo programmatore non trovato in Firestore.');
-  }
-
-  const doc = await response.json();
-  const fields = doc.fields || {};
-
-  const getString = (name) => fields[name]?.stringValue || '';
-  const getBoolean = (name) => fields[name]?.booleanValue;
-
-  return {
-    uid,
-    email: getString('email'),
-    role: getString('role') || getString('ruolo'),
-    companyId: getString('companyId') || getString('company_id'),
-    active:
-      getBoolean('active') !== undefined
-        ? Boolean(getBoolean('active'))
-        : true,
-  };
-}
-
-function assertProgrammer(profile) {
-  const role = String(profile?.role || '').trim().toLowerCase();
-  const companyId = String(profile?.companyId || '').trim().toLowerCase();
-
-  const allowedRole =
-    role === 'sviluppatore' ||
-    role === 'super_admin' ||
-    role === 'admin_tecnico';
-
-  if (!profile?.active) {
-    throw new Error('Account programmatore non attivo.');
-  }
-
-  if (!allowedRole || companyId !== 'programmatore') {
+  if (!userEmail || userEmail !== programmerEmail) {
     throw new Error('Operazione riservata al programmatore.');
   }
 }
@@ -172,9 +134,8 @@ export async function onRequestPost(context) {
     }
 
     const firebaseUser = await verifyFirebaseUser(env, token);
-    const profile = await getFirestoreUserProfile(env, firebaseUser.localId);
 
-    assertProgrammer(profile);
+    assertProgrammer(firebaseUser, env);
 
     const body = await request.json();
     const id = String(body?.id || '').trim();
