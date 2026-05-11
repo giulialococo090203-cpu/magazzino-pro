@@ -12,6 +12,10 @@ const ADMIN_CREATE_USER_URL =
 const ADMIN_DELETE_USER_URL =
   import.meta.env.VITE_ADMIN_DELETE_USER_URL ||
   'https://pdf-parser-vercel-wheat.vercel.app/api/admin/delete-user';
+const ADMIN_UPDATE_COMPANY_URL =
+  import.meta.env.VITE_ADMIN_UPDATE_COMPANY_URL ||
+  '/api/admin/update-company';
+
 import { authStore } from './authStore';
 import { firebaseAuth } from '../firebaseClient';
 
@@ -414,38 +418,44 @@ export const companyStore = {
       updated_at: new Date().toISOString(),
     });
 
-    console.log('[companyStore.update] id:', id);
-    console.log('[companyStore.update] payload:', payload);
+    const currentFirebaseUser = firebaseAuth.currentUser;
 
-    const { error } = await supabase
-      .from('aziende')
-      .update(payload)
-      .eq('id', id);
-
-    if (error) {
-      console.error('[companyStore.update] update error:', error);
-      throw error;
+    if (!currentFirebaseUser) {
+      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
     }
 
-    const { data: refreshedCompany, error: readError } = await supabase
-      .from('aziende')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const token = await currentFirebaseUser.getIdToken(true);
 
-    if (readError) {
-      console.error('[companyStore.update] read error:', readError);
-      throw readError;
-    }
-
-    if (!refreshedCompany) {
-      return normalizeCompany({
+    const response = await fetch(ADMIN_UPDATE_COMPANY_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         id,
-        ...payload,
-      });
+        updates: payload,
+      }),
+    });
+
+    const responseText = await response.text();
+
+    let result = null;
+    try {
+      result = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      result = null;
     }
 
-    return normalizeCompany(refreshedCompany);
+    if (!response.ok || result?.ok === false) {
+      throw new Error(
+        result?.message ||
+          responseText ||
+          `Errore aggiornamento azienda (${response.status}).`
+      );
+    }
+
+    return normalizeCompany(result.company);
   },
 
   setSelected(company) {
