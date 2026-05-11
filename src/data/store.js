@@ -663,6 +663,8 @@ const mapUser = {
       row.permessi && typeof row.permessi === 'object'
         ? row.permessi
         : {},
+    companyId: row.azienda_id || row.company_id || null,
+    company_id: row.azienda_id || row.company_id || null,
     createdAt: row.created_at,
   }),
 
@@ -675,6 +677,12 @@ const mapUser = {
       attivo: model.active,
       password: model.password,
       permessi: model.permissions,
+      azienda_id:
+        model.companyId ||
+        model.company_id ||
+        model.aziendaId ||
+        model.azienda_id ||
+        getCurrentCompanyId(),
     }),
 };
 
