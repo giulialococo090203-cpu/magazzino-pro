@@ -16123,3 +16123,74 @@ body .app-layout .dashboard-monitoring-table {
 .company-license-pill.danger strong {
   color: var(--danger-700);
 }
+
+.plan-matrix-card {
+  margin-bottom: 22px;
+}
+
+.plan-matrix-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.plan-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+.plan-matrix-table th {
+  background: var(--gray-900);
+  color: #fff;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 13px 14px;
+  text-align: center;
+}
+
+.plan-matrix-table th:first-child {
+  text-align: left;
+}
+
+.plan-matrix-table td {
+  border-bottom: 1px solid var(--gray-100);
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.plan-matrix-table td:first-child {
+  text-align: left;
+  color: var(--gray-800);
+  font-weight: 700;
+}
+
+.plan-matrix-table tr:last-child td {
+  border-bottom: none;
+}
+
+.plan-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.plan-check.included {
+  background: var(--success-50);
+  color: var(--success-700);
+  border: 1px solid var(--success-200);
+}
+
+.plan-check.excluded {
+  background: var(--gray-100);
+  color: var(--gray-400);
+  border: 1px solid var(--gray-200);
+}

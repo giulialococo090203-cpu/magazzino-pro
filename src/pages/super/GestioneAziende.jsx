@@ -144,6 +144,125 @@ function getCompanyAccessState(company) {
   return { label: 'Attiva', className: 'status-disponibile' };
 }
 
+const PLAN_MATRIX = [
+  {
+    feature: 'Dashboard di controllo',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Giacenza / inventario',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Carico e scarico materiale',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Categorie',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Utenti con limite abbonamento',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Notifiche sotto soglia',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Impostazioni prezzi',
+    base: true,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Storico movimenti',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Reintegro e rettifica magazzino',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Fatture e archivio documenti',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Fornitori',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Rendicontazione economica',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Storico prezzi',
+    base: false,
+    pro: true,
+    enterprise: true,
+  },
+  {
+    feature: 'Riordino automatico',
+    base: false,
+    pro: false,
+    enterprise: true,
+  },
+  {
+    feature: 'Proposte ordine',
+    base: false,
+    pro: false,
+    enterprise: true,
+  },
+  {
+    feature: 'Inventario fisico',
+    base: false,
+    pro: false,
+    enterprise: true,
+  },
+  {
+    feature: 'Backup sistema',
+    base: false,
+    pro: false,
+    enterprise: true,
+  },
+  {
+    feature: 'Registro modifiche / audit',
+    base: false,
+    pro: false,
+    enterprise: true,
+  },
+];
+
+function PlanCheck({ value }) {
+  return (
+    <span className={`plan-check ${value ? 'included' : 'excluded'}`}>
+      {value ? '✓' : '—'}
+    </span>
+  );
+}
+
 export default function GestioneAziende() {
   const { user } = useAuth();
 
@@ -406,6 +525,43 @@ export default function GestioneAziende() {
               ).length
             }
           </strong>
+        </div>
+      </div>
+
+      <div className="card plan-matrix-card">
+        <div className="card-header">
+          <div>
+            <h3 className="card-title">Confronto piani abbonamento</h3>
+            <p className="text-sm text-muted" style={{ marginTop: 4 }}>
+              Riepilogo rapido delle funzionalità disponibili per Base, Pro ed Enterprise.
+            </p>
+          </div>
+        </div>
+
+        <div className="card-body" style={{ paddingTop: 0 }}>
+          <div className="plan-matrix-table-wrap">
+            <table className="plan-matrix-table">
+              <thead>
+                <tr>
+                  <th>Funzionalità</th>
+                  <th>Base</th>
+                  <th>Pro</th>
+                  <th>Enterprise</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {PLAN_MATRIX.map((row) => (
+                  <tr key={row.feature}>
+                    <td>{row.feature}</td>
+                    <td><PlanCheck value={row.base} /></td>
+                    <td><PlanCheck value={row.pro} /></td>
+                    <td><PlanCheck value={row.enterprise} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
