@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { companyStore, userStore } from '../../data/store';
+import { companyStore } from '../../data/store';
 import { useAuth } from '../../App';
 import FaIcon from '../../components/FaIcon';
+import { firebaseAuth } from '../../firebaseClient';
+
+const ADMIN_CREATE_COMPANY_OWNER_URL =
+  import.meta.env.VITE_ADMIN_CREATE_COMPANY_OWNER_URL ||
+  '/api/admin/create-company-owner';
 
 const SUPER_ADMIN_EMAILS = [
   'giulia@gmail.com',
@@ -511,17 +516,44 @@ export default function GestioneAziende() {
       setError('');
       setSuccess('');
 
-      await userStore.create({
-        username: ownerForm.email.trim(),
-        email: ownerForm.email.trim(),
-        password: ownerForm.password.trim(),
-        fullName: ownerForm.fullName.trim(),
-        role: 'datore',
-        active: true,
-        permissions: {},
-        companyId: ownerCompany.id,
-        company_id: ownerCompany.id,
+      const currentFirebaseUser = firebaseAuth.currentUser;
+
+      if (!currentFirebaseUser) {
+        throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
+      }
+
+      const token = await currentFirebaseUser.getIdToken(true);
+
+      const response = await fetch(ADMIN_CREATE_COMPANY_OWNER_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          companyId: ownerCompany.id,
+          email: ownerForm.email.trim(),
+          password: ownerForm.password.trim(),
+          fullName: ownerForm.fullName.trim(),
+        }),
       });
+
+      const responseText = await response.text();
+
+      let result = null;
+      try {
+        result = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        result = null;
+      }
+
+      if (!response.ok || result?.ok === false) {
+        throw new Error(
+          result?.message ||
+            responseText ||
+            `Errore creazione datore (${response.status}).`
+        );
+      }
 
       setSuccess(
         `Datore creato per ${ownerCompany.name || ownerCompany.nome}. Ora può accedere con il codice azienda ${
