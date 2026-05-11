@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { companyStore } from '../../data/store';
+import { companyStore, userStore } from '../../data/store';
 import { useAuth } from '../../App';
 import FaIcon from '../../components/FaIcon';
 
@@ -34,6 +34,14 @@ function canManageCompanies(user) {
     role === 'admin_tecnico' ||
     SUPER_ADMIN_EMAILS.includes(email)
   );
+}
+
+function createEmptyOwnerForm() {
+  return {
+    fullName: '',
+    email: '',
+    password: '',
+  };
 }
 
 function createEmptyForm() {
@@ -274,6 +282,9 @@ export default function GestioneAziende() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [ownerCompany, setOwnerCompany] = useState(null);
+  const [ownerForm, setOwnerForm] = useState(createEmptyOwnerForm());
+  const [ownerSaving, setOwnerSaving] = useState(false);
 
   const allowed = canManageCompanies(user);
 
@@ -446,6 +457,85 @@ export default function GestioneAziende() {
     } catch (err) {
       console.error('Errore cambio stato azienda:', err);
       setError(err?.message || 'Errore durante il cambio stato.');
+    }
+  };
+
+  const openOwnerCreator = (company) => {
+    setOwnerCompany(company);
+    setOwnerForm(createEmptyOwnerForm());
+    setError('');
+    setSuccess('');
+  };
+
+  const closeOwnerCreator = () => {
+    if (ownerSaving) return;
+
+    setOwnerCompany(null);
+    setOwnerForm(createEmptyOwnerForm());
+  };
+
+  const updateOwnerForm = (field, value) => {
+    setOwnerForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setError('');
+    setSuccess('');
+  };
+
+  const handleCreateOwner = async (e) => {
+    e.preventDefault();
+
+    if (!ownerCompany?.id) {
+      setError('Seleziona un’azienda valida.');
+      return;
+    }
+
+    if (!ownerForm.fullName.trim()) {
+      setError('Inserisci il nome completo del datore.');
+      return;
+    }
+
+    if (!ownerForm.email.trim()) {
+      setError('Inserisci l’email del datore.');
+      return;
+    }
+
+    if (!ownerForm.password.trim()) {
+      setError('Inserisci una password iniziale.');
+      return;
+    }
+
+    try {
+      setOwnerSaving(true);
+      setError('');
+      setSuccess('');
+
+      await userStore.create({
+        username: ownerForm.email.trim(),
+        email: ownerForm.email.trim(),
+        password: ownerForm.password.trim(),
+        fullName: ownerForm.fullName.trim(),
+        role: 'datore',
+        active: true,
+        permissions: {},
+        companyId: ownerCompany.id,
+        company_id: ownerCompany.id,
+      });
+
+      setSuccess(
+        `Datore creato per ${ownerCompany.name || ownerCompany.nome}. Ora può accedere con il codice azienda ${
+          ownerCompany.code || ownerCompany.codice
+        }.`
+      );
+
+      closeOwnerCreator();
+      await loadCompanies();
+    } catch (err) {
+      console.error('Errore creazione datore:', err);
+      setError(err?.message || 'Errore durante la creazione del datore.');
+    } finally {
+      setOwnerSaving(false);
     }
   };
 
@@ -807,6 +897,10 @@ export default function GestioneAziende() {
                           Modifica
                         </button>
 
+                        <button className="btn btn-sm btn-secondary" onClick={() => openOwnerCreator(company)}>
+                          Crea datore
+                        </button>
+
                         <button className="btn btn-sm btn-primary" onClick={() => setQuickStatus(company, 'attiva')}>
                           Attiva
                         </button>
@@ -827,6 +921,103 @@ export default function GestioneAziende() {
           </div>
         </div>
       </div>
+      {ownerCompany && (
+        <div className="modal-overlay">
+          <div className="modal-content owner-modal">
+            <div className="modal-header">
+              <div>
+                <h2>Crea datore azienda</h2>
+                <p className="text-sm text-muted">
+                  Primo amministratore per {ownerCompany.name || ownerCompany.nome} · codice accesso{' '}
+                  <strong>{ownerCompany.code || ownerCompany.codice}</strong>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close"
+                onClick={closeOwnerCreator}
+                disabled={ownerSaving}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateOwner} className="modal-body">
+              <div className="form-group">
+                <label className="form-label">
+                  Nome completo <span className="required">*</span>
+                </label>
+                <input
+                  className="form-control"
+                  value={ownerForm.fullName}
+                  onChange={(e) => updateOwnerForm('fullName', e.target.value)}
+                  placeholder="Es. Mario Rossi"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Email datore <span className="required">*</span>
+                </label>
+                <input
+                  className="form-control"
+                  type="email"
+                  value={ownerForm.email}
+                  onChange={(e) => updateOwnerForm('email', e.target.value)}
+                  placeholder="datore@azienda.it"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Password iniziale <span className="required">*</span>
+                </label>
+                <input
+                  className="form-control"
+                  type="password"
+                  value={ownerForm.password}
+                  onChange={(e) => updateOwnerForm('password', e.target.value)}
+                  placeholder="Password temporanea"
+                />
+                <div className="form-hint">
+                  Il datore entrerà con codice azienda, email e questa password.
+                </div>
+              </div>
+
+              <div className="company-owner-summary">
+                <div>
+                  <span>Azienda</span>
+                  <strong>{ownerCompany.name || ownerCompany.nome}</strong>
+                </div>
+                <div>
+                  <span>ID azienda</span>
+                  <strong>{ownerCompany.id}</strong>
+                </div>
+                <div>
+                  <span>Ruolo</span>
+                  <strong>DATORE</strong>
+                </div>
+              </div>
+
+              <div className="btn-group" style={{ marginTop: 18 }}>
+                <button className="btn btn-primary" type="submit" disabled={ownerSaving}>
+                  {ownerSaving ? 'Creazione...' : 'Crea datore'}
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={closeOwnerCreator}
+                  disabled={ownerSaving}
+                >
+                  Annulla
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
