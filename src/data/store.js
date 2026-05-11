@@ -415,8 +415,8 @@ async function assertCompanyUserLimitNotReached(companyId) {
 
   if (Number(count || 0) >= maxUsers) {
     throw new Error(
-      `Limite utenti raggiunto per questa azienda (${count}/${maxUsers}). ` +
-        'Aumenta il numero massimo utenti dalla dashboard programmatore.'
+      `Non è possibile aggiungere nuovi utenti: è stato raggiunto il limite consentito dall’abbonamento attivo (${count}/${maxUsers}). ` +
+        'Per aumentare il numero di utenti disponibili, contattare l’amministratore del servizio.'
     );
   }
 }
