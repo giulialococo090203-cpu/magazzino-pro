@@ -16,6 +16,10 @@ const ADMIN_UPDATE_COMPANY_URL =
   import.meta.env.VITE_ADMIN_UPDATE_COMPANY_URL ||
   '/api/admin/update-company';
 
+const ADMIN_CREATE_COMPANY_URL =
+  import.meta.env.VITE_ADMIN_CREATE_COMPANY_URL ||
+  '/api/admin/create-company';
+
 import { authStore } from './authStore';
 import { firebaseAuth } from '../firebaseClient';
 
@@ -357,24 +361,43 @@ export const companyStore = {
       note: company.notes || company.note || null,
     };
 
-    const { data, error } = await supabase
-      .from('aziende')
-      .insert(payload)
-      .select()
-      .single();
+    const currentFirebaseUser = firebaseAuth.currentUser;
 
-    if (error) {
-      if (
-        String(error.message || '').toLowerCase().includes('duplicate') ||
-        String(error.code || '') === '23505'
-      ) {
-        throw new Error('Esiste già un’azienda con questo codice o ID.');
-      }
-
-      throw error;
+    if (!currentFirebaseUser) {
+      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
     }
 
-    return normalizeCompany(data);
+    const token = await currentFirebaseUser.getIdToken(true);
+
+    const response = await fetch(ADMIN_CREATE_COMPANY_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        company: payload,
+      }),
+    });
+
+    const responseText = await response.text();
+
+    let result = null;
+    try {
+      result = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      result = null;
+    }
+
+    if (!response.ok || result?.ok === false) {
+      throw new Error(
+        result?.message ||
+          responseText ||
+          `Errore creazione azienda (${response.status}).`
+      );
+    }
+
+    return normalizeCompany(result.company);
   },
 
   async update(id, updates) {
