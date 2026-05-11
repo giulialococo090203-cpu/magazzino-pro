@@ -118,6 +118,23 @@ export function getCurrentCompanyId() {
   );
 }
 
+function normalizeCompanyMaxUsers(value) {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+
+  const text = String(value).trim();
+
+  if (!text) return null;
+
+  const number = Number(text);
+
+  if (!Number.isFinite(number) || number <= 0) {
+    return null;
+  }
+
+  return Math.floor(number);
+}
+
 function normalizeCompany(row = {}) {
   return {
     id: row.id,
@@ -282,9 +299,9 @@ export const companyStore = {
         company.subscriptionEndDate || company.data_scadenza_abbonamento || null,
       max_utenti:
         company.maxUsers !== undefined
-          ? company.maxUsers
+          ? normalizeCompanyMaxUsers(company.maxUsers)
           : company.max_utenti !== undefined
-            ? company.max_utenti
+            ? normalizeCompanyMaxUsers(company.max_utenti)
             : null,
       sospesa_motivo: company.suspensionReason || company.sospesa_motivo || null,
       note: company.notes || company.note || null,
@@ -339,9 +356,9 @@ export const companyStore = {
             : undefined,
       max_utenti:
         updates.maxUsers !== undefined
-          ? updates.maxUsers || null
+          ? normalizeCompanyMaxUsers(updates.maxUsers)
           : updates.max_utenti !== undefined
-            ? updates.max_utenti || null
+            ? normalizeCompanyMaxUsers(updates.max_utenti)
             : undefined,
       sospesa_motivo:
         updates.suspensionReason !== undefined

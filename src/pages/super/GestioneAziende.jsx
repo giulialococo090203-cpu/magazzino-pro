@@ -236,9 +236,15 @@ export default function GestioneAziende() {
       setError('');
       setSuccess('');
 
+      const cleanMaxUsersText = String(form.maxUsers ?? '').trim();
+      const cleanMaxUsersNumber = cleanMaxUsersText ? Number(cleanMaxUsersText) : null;
+
       const payload = {
         ...form,
-        maxUsers: form.maxUsers === '' ? null : Number(form.maxUsers),
+        maxUsers:
+          cleanMaxUsersNumber && Number.isFinite(cleanMaxUsersNumber) && cleanMaxUsersNumber > 0
+            ? Math.floor(cleanMaxUsersNumber)
+            : null,
       };
 
       if (editingCompany?.id) {
