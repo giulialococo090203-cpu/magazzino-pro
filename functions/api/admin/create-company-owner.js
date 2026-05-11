@@ -67,10 +67,10 @@ async function verifyProgrammerFirebaseUser(env, token) {
   return firebaseUser;
 }
 
-async function firebaseCreateUser(env, { email, password, fullName }) {
+async function firebaseCreateOrSignInUser(env, { email, password, fullName }) {
   const apiKey = env.VITE_FIREBASE_API_KEY || env.FIREBASE_API_KEY;
 
-  const response = await fetch(
+  const signUpResponse = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
     {
       method: 'POST',
@@ -84,30 +84,51 @@ async function firebaseCreateUser(env, { email, password, fullName }) {
     }
   );
 
-  const payload = await response.json();
+  const signUpPayload = await signUpResponse.json();
 
-  if (!response.ok) {
-    const code = payload?.error?.message || '';
-
-    if (code.includes('EMAIL_EXISTS')) {
-      throw new Error('Esiste già un utente Firebase con questa email.');
-    }
-
-    if (code.includes('WEAK_PASSWORD')) {
-      throw new Error('Password troppo debole. Usa almeno 6 caratteri.');
-    }
-
-    if (code.includes('INVALID_EMAIL')) {
-      throw new Error('Email non valida.');
-    }
-
-    throw new Error(code || 'Errore creazione utente Firebase.');
+  if (signUpResponse.ok) {
+    return signUpPayload;
   }
 
-  return payload;
+  const code = signUpPayload?.error?.message || '';
+
+  if (code.includes('EMAIL_EXISTS')) {
+    const signInResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      }
+    );
+
+    const signInPayload = await signInResponse.json();
+
+    if (!signInResponse.ok) {
+      throw new Error(
+        'Esiste già un utente Firebase con questa email, ma la password inserita non coincide.'
+      );
+    }
+
+    return signInPayload;
+  }
+
+  if (code.includes('WEAK_PASSWORD')) {
+    throw new Error('Password troppo debole. Usa almeno 6 caratteri.');
+  }
+
+  if (code.includes('INVALID_EMAIL')) {
+    throw new Error('Email non valida.');
+  }
+
+  throw new Error(code || 'Errore creazione utente Firebase.');
 }
 
-async function firestoreSetUser(env, uid, profile) {
+async function firestoreSetUser(env, uid, profile, idToken) {
   const projectId = env.VITE_FIREBASE_PROJECT_ID || env.FIREBASE_PROJECT_ID;
 
   if (!projectId) {
@@ -137,7 +158,10 @@ async function firestoreSetUser(env, uid, profile) {
 
   const response = await fetch(url, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
     body: JSON.stringify(body),
   });
 
@@ -281,20 +305,21 @@ export async function onRequestPost(context) {
 
     const role = normalizeRole('datore');
 
-    const firebaseUser = await firebaseCreateUser(env, {
+    const firebaseUser = await firebaseCreateOrSignInUser(env, {
       email,
       password,
       fullName,
     });
 
     const uid = firebaseUser.localId;
+    const newUserIdToken = firebaseUser.idToken;
 
     await firestoreSetUser(env, uid, {
       companyId,
       email,
       fullName,
       role,
-    });
+    }, newUserIdToken);
 
     const supabasePayload = {
       username: email,
