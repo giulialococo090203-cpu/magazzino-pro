@@ -314,12 +314,9 @@ export async function onRequestPost(context) {
     const uid = firebaseUser.localId;
     const newUserIdToken = firebaseUser.idToken;
 
-    await firestoreSetUser(env, uid, {
-      companyId,
-      email,
-      fullName,
-      role,
-    }, newUserIdToken);
+    // Non scrivo il profilo Firestore da qui: alcune regole Firestore lo bloccano.
+    // La fonte compatibile per l'app resta Supabase "utenti", collegata al Firebase uid.
+    console.log('Profilo Firestore saltato per primo datore:', uid);
 
     const supabasePayload = {
       username: email,
