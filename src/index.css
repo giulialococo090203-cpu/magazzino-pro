@@ -16357,3 +16357,130 @@ body .login-desktop-view:focus-within .login-redesign-submit {
   }
 }
 /* === FINE OVERRIDE FINALE LOGIN DESKTOP === */
+
+/* === OVERRIDE FINALE LOGIN DESKTOP - layout stabile === */
+body .login-desktop-view.login-redesign-page,
+body .login-desktop-view.login-redesign-page:focus-within {
+  min-height: 100vh !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 28px !important;
+  overflow: hidden !important;
+}
+
+body .login-desktop-view .login-redesign-card,
+body .login-desktop-view:focus-within .login-redesign-card {
+  width: min(1320px, calc(100vw - 56px)) !important;
+  height: min(700px, calc(100vh - 56px)) !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 56px) !important;
+  display: grid !important;
+  grid-template-columns: 1.08fr 0.92fr !important;
+  overflow: hidden !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+body .login-desktop-view .login-redesign-brand,
+body .login-desktop-view:focus-within .login-redesign-brand,
+body .login-desktop-view .login-redesign-form-panel,
+body .login-desktop-view:focus-within .login-redesign-form-panel {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+body .login-desktop-view .login-redesign-form-panel,
+body .login-desktop-view:focus-within .login-redesign-form-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 34px 48px !important;
+  overflow: hidden !important;
+}
+
+body .login-desktop-view .login-redesign-heading,
+body .login-desktop-view:focus-within .login-redesign-heading {
+  margin-bottom: 14px !important;
+}
+
+body .login-desktop-view .login-redesign-form,
+body .login-desktop-view:focus-within .login-redesign-form {
+  width: 100% !important;
+  max-width: 520px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  padding: 0 !important;
+}
+
+body .login-desktop-view .login-redesign-form h3,
+body .login-desktop-view:focus-within .login-redesign-form h3 {
+  margin: 0 !important;
+  font-size: clamp(38px, 4vw, 54px) !important;
+  line-height: 0.98 !important;
+}
+
+body .login-desktop-view .login-redesign-helper {
+  margin: 10px 0 0 !important;
+}
+
+body .login-desktop-view .login-change-company-btn,
+body .login-desktop-view:focus-within .login-change-company-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: flex-start !important;
+  width: fit-content !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--gray-700) !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  padding: 0 !important;
+  margin: 8px 0 0 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+}
+
+body .login-desktop-view .login-change-company-btn:hover,
+body .login-desktop-view:focus-within .login-change-company-btn:hover {
+  color: var(--primary-600) !important;
+}
+
+body .login-desktop-view .login-redesign-submit,
+body .login-desktop-view:focus-within .login-redesign-submit {
+  margin-top: 4px !important;
+}
+
+@media (max-height: 760px) {
+  body .login-desktop-view.login-redesign-page,
+  body .login-desktop-view.login-redesign-page:focus-within {
+    padding: 18px !important;
+  }
+
+  body .login-desktop-view .login-redesign-card,
+  body .login-desktop-view:focus-within .login-redesign-card {
+    height: calc(100vh - 36px) !important;
+    max-height: calc(100vh - 36px) !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel,
+  body .login-desktop-view:focus-within .login-redesign-form-panel {
+    padding: 22px 42px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form,
+  body .login-desktop-view:focus-within .login-redesign-form {
+    gap: 10px !important;
+  }
+
+  body .login-desktop-view .login-redesign-form h3,
+  body .login-desktop-view:focus-within .login-redesign-form h3 {
+    font-size: clamp(32px, 3.4vw, 46px) !important;
+  }
+}
+/* === FINE OVERRIDE FINALE LOGIN DESKTOP === */
