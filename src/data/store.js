@@ -804,7 +804,7 @@ const mapMaterial = {
       descrizione: model.description,
       marca: model.brand,
       quantita: model.quantity,
-      categoria_id: model.category,
+      categoria_id: isValidSupabaseUuid(model.category) ? model.category : null,
       unita_misura: model.unit,
       soglia_minima: model.minThreshold,
       stato_disponibilita: model.status,
@@ -1382,9 +1382,25 @@ export const materialStore = {
   },
 
   async create(material) {
+    const companyId = getCurrentCompanyId();
     const row = mapMaterial.toRow(material);
-    row.azienda_id = getCurrentCompanyId();
-    row.stato_disponibilita = this.getStatus(material);
+
+    row.azienda_id = companyId;
+    row.codice = String(row.codice || '').trim();
+    row.descrizione = String(row.descrizione || '').trim() || row.codice || 'Materiale importato';
+    row.quantita = Number.isFinite(Number(row.quantita)) ? Number(row.quantita) : 0;
+    row.soglia_minima = Number.isFinite(Number(row.soglia_minima)) ? Number(row.soglia_minima) : 0;
+    row.prezzo_netto = Number.isFinite(Number(row.prezzo_netto)) ? Number(row.prezzo_netto) : 0;
+
+    if (!row.codice) {
+      row.codice = `IMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+    }
+
+    row.stato_disponibilita = this.getStatus({
+      ...material,
+      quantity: row.quantita,
+      minThreshold: row.soglia_minima,
+    });
 
     const { data, error } = await supabase
       .from('materiali')
@@ -1392,7 +1408,38 @@ export const materialStore = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[materialStore.create] Supabase error:', error);
+      console.error('[materialStore.create] Payload:', row);
+
+      // Se il codice esiste già nella stessa azienda, aggiorno invece di bloccare l'import fattura.
+      if (
+        String(error.code || '') === '23505' ||
+        String(error.message || '').toLowerCase().includes('duplicate key')
+      ) {
+        const existing = await this.getByCode(row.codice);
+
+        if (existing?.id) {
+          const updated = await this.update(existing.id, {
+            description: row.descrizione || existing.description,
+            brand: row.marca || existing.brand,
+            quantity: Number(existing.quantity || 0) + Number(row.quantita || 0),
+            category: row.categoria_id || existing.category,
+            unit: row.unita_misura || existing.unit,
+            minThreshold: row.soglia_minima ?? existing.minThreshold,
+            location: row.posizione_scaffale || existing.location,
+            supplier: row.fornitore || existing.supplier,
+            notes: row.note || existing.notes,
+            netPrice: row.prezzo_netto ?? existing.netPrice,
+          });
+
+          notifySupabaseUsageChanged();
+          return updated;
+        }
+      }
+
+      throw error;
+    }
 
     const model = mapMaterial.toModel(data);
 
