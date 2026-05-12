@@ -465,6 +465,49 @@ export default function GestioneAziende() {
     }
   };
 
+  const handleDeleteCompany = async (company) => {
+    const companyName = company?.name || company?.nome || company?.id;
+    const companyCode = company?.code || company?.codice || '';
+
+    if (!company?.id) {
+      setError('Azienda non valida.');
+      return;
+    }
+
+    if (company.id === 'programmatore') {
+      setError('L’ambiente programmatore non può essere eliminato.');
+      return;
+    }
+
+    const firstConfirm = window.confirm(
+      `Vuoi davvero eliminare l’azienda "${companyName}"?\n\nQuesta operazione non è una sospensione: l’azienda verrà cancellata.`
+    );
+
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(
+      `CONFERMA DEFINITIVA\n\nVerranno eliminati anche dati collegati a "${companyName}" (${companyCode}):\n- utenti\n- materiali\n- categorie\n- movimenti\n- notifiche\n- fatture importate\n- log\n- impostazioni\n\nL’operazione non è reversibile. Procedere?`
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      setError('');
+      setSuccess('');
+      setSaving(true);
+
+      await companyStore.delete(company.id);
+
+      setSuccess(`Azienda "${companyName}" eliminata definitivamente.`);
+      await loadCompanies();
+    } catch (err) {
+      console.error('Errore eliminazione azienda:', err);
+      setError(err?.message || 'Errore durante eliminazione azienda.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const openOwnerCreator = (company) => {
     setOwnerCompany(company);
     setOwnerForm(createEmptyOwnerForm());
@@ -941,8 +984,8 @@ export default function GestioneAziende() {
                           Sospendi
                         </button>
 
-                        <button className="btn btn-sm btn-danger" onClick={() => setQuickStatus(company, 'spenta')}>
-                          Spegni
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDeleteCompany(company)}>
+                          Elimina
                         </button>
                       </div>
                     </div>

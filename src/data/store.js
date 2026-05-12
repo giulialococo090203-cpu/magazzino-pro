@@ -16,6 +16,10 @@ const ADMIN_UPDATE_COMPANY_URL =
   import.meta.env.VITE_ADMIN_UPDATE_COMPANY_URL ||
   '/api/admin/update-company';
 
+const ADMIN_DELETE_COMPANY_URL =
+  import.meta.env.VITE_ADMIN_DELETE_COMPANY_URL ||
+  '/api/admin/delete-company';
+
 const ADMIN_CREATE_COMPANY_URL =
   import.meta.env.VITE_ADMIN_CREATE_COMPANY_URL ||
   '/api/admin/create-company';
@@ -525,6 +529,58 @@ export const companyStore = {
     }
 
     return normalizeCompany(result.company);
+  },
+
+  async delete(id) {
+    const cleanId = String(id || '').trim();
+
+    if (!cleanId) {
+      throw new Error('ID azienda mancante.');
+    }
+
+    if (cleanId === 'programmatore') {
+      throw new Error('L’ambiente programmatore non può essere eliminato.');
+    }
+
+    const currentFirebaseUser = firebaseAuth.currentUser;
+
+    if (!currentFirebaseUser) {
+      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
+    }
+
+    const token = await currentFirebaseUser.getIdToken(true);
+
+    const response = await fetch(ADMIN_DELETE_COMPANY_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: cleanId,
+      }),
+    });
+
+    const responseText = await response.text();
+
+    let result = null;
+    try {
+      result = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      result = null;
+    }
+
+    if (!response.ok || result?.ok === false) {
+      throw new Error(
+        result?.message ||
+          responseText ||
+          `Errore eliminazione azienda (${response.status}).`
+      );
+    }
+
+    notifySupabaseUsageChanged();
+
+    return result;
   },
 
   setSelected(company) {
