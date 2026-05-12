@@ -14630,3 +14630,52 @@ body .app-layout .dashboard-monitoring-table {
 }
 /* === FINE LOGIN DESKTOP FINAL VISUAL RESTORE === */
 
+
+/* === SIDEBAR SAFEICON RENDER FIX === */
+/* Solo rendering icone SVG nella sidebar. Non cambia larghezze/layout. */
+.sidebar .sidebar-section-icon,
+.sidebar .sidebar-link-icon {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  color: inherit !important;
+}
+
+.sidebar .sidebar-section-icon .safe-icon,
+.sidebar .sidebar-link-icon .safe-icon {
+  display: block !important;
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  min-height: 19px !important;
+  max-width: 19px !important;
+  max-height: 19px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+
+/* Dashboard è l’unica SafeIcon piena: nella sidebar la rendiamo coerente alle altre. */
+.sidebar .sidebar-section-icon .safe-icon path,
+.sidebar .sidebar-link-icon .safe-icon path {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Evita che l’icona sezione, ora SVG, invada la label quando la sidebar è aperta. */
+.sidebar:hover .sidebar-section-toggle-left,
+.sidebar:focus-within .sidebar-section-toggle-left {
+  gap: 12px !important;
+}
+
+.sidebar:hover .sidebar-link,
+.sidebar:focus-within .sidebar-link {
+  gap: 12px !important;
+}
+/* === FINE SIDEBAR SAFEICON RENDER FIX === */
