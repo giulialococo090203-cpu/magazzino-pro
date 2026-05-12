@@ -326,7 +326,6 @@ export async function onRequestPost(context) {
       attivo: true,
       permessi: {},
       azienda_id: companyId,
-      company_id: companyId,
       auth_uid: uid,
     };
 
@@ -340,7 +339,11 @@ export async function onRequestPost(context) {
 
       supabaseUser = Array.isArray(rows) ? rows[0] : rows;
     } catch (error) {
-      console.warn('Utente creato in Firebase/Firestore ma non copiato in Supabase:', error);
+      console.error('Utente creato in Firebase Auth ma non copiato in Supabase:', error);
+      throw new Error(
+        'Utente Firebase creato, ma profilo applicazione non salvato in Supabase: ' +
+          (error?.message || 'errore sconosciuto')
+      );
     }
 
     return jsonResponse({
