@@ -14715,3 +14715,59 @@ body .app-layout .dashboard-monitoring-table {
   color: #99f6e4 !important;
 }
 /* === FINE SIDEBAR COLLAPSED SVG ICON VISIBILITY FIX === */
+
+/* === SIDEBAR COLLAPSED MAIN ICON RAIL === */
+/* Icone principali sempre visibili nella sidebar chiusa.
+   Non modifica la sidebar aperta né il contenuto centrale. */
+@media screen and (min-width: 901px) {
+  .sidebar-collapsed-icon-rail {
+    position: absolute;
+    top: 148px;
+    left: 0;
+    width: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 34px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .sidebar:hover .sidebar-collapsed-icon-rail,
+  .sidebar:focus-within .sidebar-collapsed-icon-rail {
+    display: none !important;
+  }
+
+  .sidebar-collapsed-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+  }
+
+  .sidebar-collapsed-icon.active {
+    color: #99f6e4;
+    background: rgba(255, 106, 24, 0.12);
+    box-shadow: inset 4px 0 0 #ff6a18;
+  }
+
+  .sidebar-collapsed-icon .safe-icon,
+  .sidebar-collapsed-icon svg {
+    display: block !important;
+    width: 21px !important;
+    height: 21px !important;
+    min-width: 21px !important;
+    min-height: 21px !important;
+    max-width: 21px !important;
+    max-height: 21px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: currentColor !important;
+    stroke: currentColor !important;
+    fill: none !important;
+  }
+}
+/* === FINE SIDEBAR COLLAPSED MAIN ICON RAIL === */
