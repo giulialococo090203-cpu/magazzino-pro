@@ -14631,105 +14631,20 @@ body .app-layout .dashboard-monitoring-table {
 /* === FINE LOGIN DESKTOP FINAL VISUAL RESTORE === */
 
 
-/* === SIDEBAR SAFEICON RENDER FIX === */
-/* Solo rendering icone SVG nella sidebar. Non cambia larghezze/layout. */
-.sidebar .sidebar-section-icon,
-.sidebar .sidebar-link-icon {
-  position: relative !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  overflow: visible !important;
-  color: inherit !important;
-}
-
-.sidebar .sidebar-section-icon .safe-icon,
-.sidebar .sidebar-link-icon .safe-icon {
-  display: block !important;
-  width: 19px !important;
-  height: 19px !important;
-  min-width: 19px !important;
-  min-height: 19px !important;
-  max-width: 19px !important;
-  max-height: 19px !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: currentColor !important;
-  stroke: currentColor !important;
-  fill: none !important;
-  position: relative !important;
-  z-index: 2 !important;
-  pointer-events: none !important;
-}
-
-/* Dashboard è l’unica SafeIcon piena: nella sidebar la rendiamo coerente alle altre. */
-.sidebar .sidebar-section-icon .safe-icon path,
-.sidebar .sidebar-link-icon .safe-icon path {
-  vector-effect: non-scaling-stroke;
-}
-
-/* Evita che l’icona sezione, ora SVG, invada la label quando la sidebar è aperta. */
-.sidebar:hover .sidebar-section-toggle-left,
-.sidebar:focus-within .sidebar-section-toggle-left {
-  gap: 12px !important;
-}
-
-.sidebar:hover .sidebar-link,
-.sidebar:focus-within .sidebar-link {
-  gap: 12px !important;
-}
-/* === FINE SIDEBAR SAFEICON RENDER FIX === */
-
-/* === SIDEBAR COLLAPSED SVG ICON VISIBILITY FIX === */
-/* Sidebar chiusa: mostra sempre le icone SVG SafeIcon senza toccare layout/testi. */
-.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon,
-.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: #cbd5e1 !important;
-}
-
-.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon .safe-icon,
-.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon .safe-icon,
-.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon svg,
-.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon svg {
-  display: block !important;
-  width: 20px !important;
-  height: 20px !important;
-  min-width: 20px !important;
-  min-height: 20px !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: currentColor !important;
-  stroke: currentColor !important;
-  fill: none !important;
-  transform: none !important;
-}
-
-/* Icona attiva nella sidebar chiusa: colore leggibile sul riquadro selezionato. */
-.sidebar:not(:hover):not(:focus-within) .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon,
-.sidebar:not(:hover):not(:focus-within) .sidebar-link.active .sidebar-link-icon {
-  color: #99f6e4 !important;
-}
-/* === FINE SIDEBAR COLLAPSED SVG ICON VISIBILITY FIX === */
-
-/* === SIDEBAR COLLAPSED MAIN ICON RAIL === */
-/* Icone principali sempre visibili nella sidebar chiusa.
-   Non modifica la sidebar aperta né il contenuto centrale. */
+/* === SIDEBAR COLLAPSED ICON RAIL CLEAN === */
+/* Quando la sidebar è chiusa, nasconde le sezioni originali e mostra solo il binario icone.
+   Quando si apre, torna il menu normale. */
 @media screen and (min-width: 901px) {
   .sidebar-collapsed-icon-rail {
     position: absolute;
-    top: 148px;
+    top: 168px;
     left: 0;
     width: var(--sidebar-width);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 34px;
-    z-index: 50;
+    gap: 38px;
+    z-index: 80;
     pointer-events: none;
   }
 
@@ -14738,20 +14653,26 @@ body .app-layout .dashboard-monitoring-table {
     display: none !important;
   }
 
-  .sidebar-collapsed-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+  .sidebar:not(:hover):not(:focus-within) > .sidebar-section {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-collapsed-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #94a3b8;
+    background: transparent;
   }
 
-  .sidebar-collapsed-icon.active {
+  .sidebar:not(:hover):not(:focus-within) .sidebar-collapsed-icon.active {
     color: #99f6e4;
-    background: rgba(255, 106, 24, 0.12);
-    box-shadow: inset 4px 0 0 #ff6a18;
+    background: rgba(15, 118, 110, 0.16);
   }
 
   .sidebar-collapsed-icon .safe-icon,
@@ -14769,5 +14690,12 @@ body .app-layout .dashboard-monitoring-table {
     stroke: currentColor !important;
     fill: none !important;
   }
+
+  .sidebar:hover > .sidebar-section,
+  .sidebar:focus-within > .sidebar-section {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
 }
-/* === FINE SIDEBAR COLLAPSED MAIN ICON RAIL === */
+/* === FINE SIDEBAR COLLAPSED ICON RAIL CLEAN === */
