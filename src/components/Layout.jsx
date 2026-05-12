@@ -11,10 +11,38 @@ import FaIcon from './FaIcon';
 import SafeIcon from './SafeIcon';
 import { FEATURES, hasPlanFeature, getPlanLabel } from '../data/subscriptionPlans';
 
+const SIDEBAR_ICON_MAP = {
+  inventory_2: 'inventory',
+  move_to_inbox: 'download',
+  outbox: 'download',
+  sync: 'backup',
+  edit_square: 'backup',
+  calendar_month: 'chart',
+  receipt_long: 'backup',
+  shopping_cart: 'inventory',
+  request_quote: 'backup',
+  upload_file: 'download',
+  folder_open: 'backup',
+  factory: 'inventory',
+  fact_check: 'backup',
+  settings: 'backup',
+  notifications: 'bell',
+  analytics: 'chart',
+  trending_up: 'chart',
+  euro: 'chart',
+  construction: 'inventory',
+  sell: 'inventory',
+  manage_accounts: 'dashboard',
+  backup: 'backup',
+  history_edu: 'backup',
+  admin_panel_settings: 'backup',
+  business_center: 'inventory',
+};
+
 function SidebarIcon({ name, className = '' }) {
   return (
-    <span className={`material-symbols-rounded ${className}`} aria-hidden="true">
-      {name || 'radio_button_unchecked'}
+    <span className={className} aria-hidden="true">
+      <SafeIcon name={SIDEBAR_ICON_MAP[name] || 'dashboard'} size={22} />
     </span>
   );
 }
