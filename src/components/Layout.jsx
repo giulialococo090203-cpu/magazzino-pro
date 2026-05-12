@@ -45,11 +45,7 @@ const SIDEBAR_ICON_MAP = {
 };
 
 function SidebarIcon({ name, className = '' }) {
-  return (
-    <span className={className} aria-hidden="true">
-      <SafeIcon name={SIDEBAR_ICON_MAP[name] || 'dashboard'} size={22} />
-    </span>
-  );
+  return <SafeIcon name={SIDEBAR_ICON_MAP[name] || 'dashboard'} className={className} size={22} />;
 }
 
 function getRoleLabel(role) {
@@ -495,22 +491,6 @@ export default function Layout({ children }) {
 return (
     <div className={`app-layout ${isMobile ? "is-mobile" : ""}`}>
       <aside className="sidebar">
-        <div className="sidebar-collapsed-icon-rail" aria-hidden="true">
-          {visibleSections.map((navSection) => {
-            const hasActiveItem = navSection.items.some((item) =>
-              isActivePath(location.pathname, item.path)
-            );
-
-            return (
-              <div
-                key={navSection.title}
-                className={`sidebar-collapsed-icon ${hasActiveItem ? 'active' : ''}`}
-              >
-                <SidebarIcon name={navSection.icon} />
-              </div>
-            );
-          })}
-        </div>
         <div className="sidebar-header">
           <Link to={programmerMode ? '/super/aziende' : getDefaultRouteForUser(user)} className="sidebar-logo">
             <img className="workspace-logo-img workspace-logo-img-sidebar" src="/optimized/workspace-logo.webp" alt="WorkSpace" />

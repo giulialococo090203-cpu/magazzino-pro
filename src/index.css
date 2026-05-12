@@ -14631,71 +14631,30 @@ body .app-layout .dashboard-monitoring-table {
 /* === FINE LOGIN DESKTOP FINAL VISUAL RESTORE === */
 
 
-/* === SIDEBAR COLLAPSED ICON RAIL CLEAN === */
-/* Quando la sidebar è chiusa, nasconde le sezioni originali e mostra solo il binario icone.
-   Quando si apre, torna il menu normale. */
-@media screen and (min-width: 901px) {
-  .sidebar-collapsed-icon-rail {
-    position: absolute;
-    top: 168px;
-    left: 0;
-    width: var(--sidebar-width);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 38px;
-    z-index: 80;
-    pointer-events: none;
-  }
-
-  .sidebar:hover .sidebar-collapsed-icon-rail,
-  .sidebar:focus-within .sidebar-collapsed-icon-rail {
-    display: none !important;
-  }
-
-  .sidebar:not(:hover):not(:focus-within) > .sidebar-section {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  .sidebar:not(:hover):not(:focus-within) .sidebar-collapsed-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #94a3b8;
-    background: transparent;
-  }
-
-  .sidebar:not(:hover):not(:focus-within) .sidebar-collapsed-icon.active {
-    color: #99f6e4;
-    background: rgba(15, 118, 110, 0.16);
-  }
-
-  .sidebar-collapsed-icon .safe-icon,
-  .sidebar-collapsed-icon svg {
-    display: block !important;
-    width: 21px !important;
-    height: 21px !important;
-    min-width: 21px !important;
-    min-height: 21px !important;
-    max-width: 21px !important;
-    max-height: 21px !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    color: currentColor !important;
-    stroke: currentColor !important;
-    fill: none !important;
-  }
-
-  .sidebar:hover > .sidebar-section,
-  .sidebar:focus-within > .sidebar-section {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
+/* === SIDEBAR SVG ICONS SINGLE SOURCE === */
+/* Unico fix icone sidebar: usa gli slot originali, senza binari o sovrapposizioni. */
+.sidebar .sidebar-section-icon,
+.sidebar .sidebar-link-icon,
+.mobile-bottom-nav-icon,
+.mobile-section-drawer-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-/* === FINE SIDEBAR COLLAPSED ICON RAIL CLEAN === */
+
+.sidebar .sidebar-section-icon > .safe-icon,
+.sidebar .sidebar-link-icon > .safe-icon,
+.mobile-bottom-nav-icon > .safe-icon,
+.mobile-section-drawer-icon > .safe-icon {
+  display: block;
+  width: 21px;
+  height: 21px;
+  min-width: 21px;
+  min-height: 21px;
+  color: currentColor;
+  stroke: currentColor;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+}
+/* === FINE SIDEBAR SVG ICONS SINGLE SOURCE === */
