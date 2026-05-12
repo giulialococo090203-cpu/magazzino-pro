@@ -110,9 +110,6 @@ export default function Inventario() {
   const [exportFormat, setExportFormat] = useState('excel');
   const [totalMaterials, setTotalMaterials] = useState(0);
   const [loadingMaterials, setLoadingMaterials] = useState(false);
-  const [loadingMoreMaterials, setLoadingMoreMaterials] = useState(false);
-
-  const MATERIAL_PAGE_SIZE = 200;
 
   const searchWrapRef = useRef(null);
 
@@ -122,33 +119,39 @@ export default function Inventario() {
 
   const installerPriceLabel = priceSettings.installerPriceLabel || 'Prezzo installatore';
 
-  const loadMaterialsPage = async ({ reset = false } = {}) => {
-    const nextOffset = reset ? 0 : materials.length;
-
+  const loadMaterialsPage = async () => {
     try {
-      if (reset) {
-        setLoadingMaterials(true);
-      } else {
-        setLoadingMoreMaterials(true);
-      }
+      setLoadingMaterials(true);
 
-      const result = await materialStore.getPage({
-        search,
-        categoryId: filterCategory,
-        status: filterStatus,
-        limit: MATERIAL_PAGE_SIZE,
-        offset: nextOffset,
+      const allRows = await materialStore.getAll();
+
+      const cleanSearch = String(search || '').trim().toLowerCase();
+
+      const filteredRows = allRows.filter((material) => {
+        const matchesSearch =
+          !cleanSearch ||
+          [
+            material.code,
+            material.description,
+            material.brand,
+            material.supplier,
+            material.location,
+          ]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(cleanSearch));
+
+        const matchesCategory = !filterCategory || material.category === filterCategory;
+        const matchesStatus = !filterStatus || material.status === filterStatus;
+
+        return matchesSearch && matchesCategory && matchesStatus;
       });
 
-      const rows = Array.isArray(result.rows) ? result.rows : [];
-
-      setTotalMaterials(Number(result.total || 0));
-      setMaterials((current) => (reset ? rows : [...current, ...rows]));
+      setTotalMaterials(filteredRows.length);
+      setMaterials(filteredRows);
     } catch (err) {
       console.error('Errore caricamento materiali:', err);
     } finally {
       setLoadingMaterials(false);
-      setLoadingMoreMaterials(false);
     }
   };
 
@@ -618,20 +621,6 @@ export default function Inventario() {
           </tbody>
         </table>
       </div>
-
-      {materials.length < totalMaterials && (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0 24px' }}>
-          <button
-            className="btn btn-secondary"
-            onClick={() => loadMaterialsPage({ reset: false })}
-            disabled={loadingMaterials || loadingMoreMaterials}
-          >
-            {loadingMoreMaterials
-              ? 'Caricamento...'
-              : `Carica altri materiali (${materials.length}/${totalMaterials})`}
-          </button>
-        </div>
-      )}
 
       {detailMaterial && (
         <div className="modal-overlay" onClick={() => setDetailMaterial(null)}>
