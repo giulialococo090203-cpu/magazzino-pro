@@ -240,15 +240,6 @@ export default function Login({ onLogin }) {
                   : 'Inserisci le credenziali del tuo account operativo.'}
               </p>
 
-              {step !== 'company' && (
-                <button
-                  type="button"
-                  className="login-change-company-btn"
-                  onClick={handleChangeCompany}
-                >
-                  ← Cambia azienda
-                </button>
-              )}
             </div>
 
             {step === 'company' ? companyFields : formFields}
