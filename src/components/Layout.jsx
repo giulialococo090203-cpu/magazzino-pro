@@ -14,28 +14,33 @@ import { FEATURES, hasPlanFeature, getPlanLabel } from '../data/subscriptionPlan
 const SIDEBAR_ICON_MAP = {
   inventory_2: 'inventory',
   move_to_inbox: 'download',
-  outbox: 'download',
+  outbox: 'upload',
   sync: 'backup',
-  edit_square: 'backup',
+  edit_square: 'check',
   calendar_month: 'chart',
-  receipt_long: 'backup',
+
+  receipt_long: 'receipt',
   shopping_cart: 'inventory',
-  request_quote: 'backup',
-  upload_file: 'download',
-  folder_open: 'backup',
+  request_quote: 'receipt',
+  upload_file: 'upload',
+  folder_open: 'folder',
   factory: 'inventory',
-  fact_check: 'backup',
-  settings: 'backup',
+
+  fact_check: 'check',
+  settings: 'settings',
   notifications: 'bell',
+
   analytics: 'chart',
   trending_up: 'chart',
-  euro: 'chart',
+  euro: 'euro',
+
   construction: 'inventory',
   sell: 'inventory',
-  manage_accounts: 'dashboard',
+  manage_accounts: 'users',
   backup: 'backup',
-  history_edu: 'backup',
-  admin_panel_settings: 'backup',
+  history_edu: 'receipt',
+
+  admin_panel_settings: 'settings',
   business_center: 'inventory',
 };
 
