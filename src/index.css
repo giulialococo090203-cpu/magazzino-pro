@@ -14632,29 +14632,63 @@ body .app-layout .dashboard-monitoring-table {
 
 
 /* === SIDEBAR SVG ICONS SINGLE SOURCE === */
-/* Unico fix icone sidebar: usa gli slot originali, senza binari o sovrapposizioni. */
+/* Unico fix icone sidebar: usa gli slot originali e forza solo la visibilità SVG. */
 .sidebar .sidebar-section-icon,
 .sidebar .sidebar-link-icon,
 .mobile-bottom-nav-icon,
 .mobile-section-drawer-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  overflow: visible !important;
+  line-height: 1 !important;
+  font-size: 0 !important;
+  color: currentColor !important;
 }
 
-.sidebar .sidebar-section-icon > .safe-icon,
-.sidebar .sidebar-link-icon > .safe-icon,
-.mobile-bottom-nav-icon > .safe-icon,
-.mobile-section-drawer-icon > .safe-icon {
-  display: block;
-  width: 21px;
-  height: 21px;
-  min-width: 21px;
-  min-height: 21px;
-  color: currentColor;
-  stroke: currentColor;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: none;
+.sidebar .sidebar-section-icon .safe-icon,
+.sidebar .sidebar-link-icon .safe-icon,
+.mobile-bottom-nav-icon .safe-icon,
+.mobile-section-drawer-icon .safe-icon {
+  display: block !important;
+  width: 21px !important;
+  min-width: 21px !important;
+  max-width: 21px !important;
+  height: 21px !important;
+  min-height: 21px !important;
+  max-height: 21px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  transform: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+
+.sidebar .sidebar-section-icon .safe-icon path,
+.sidebar .sidebar-link-icon .safe-icon path,
+.mobile-bottom-nav-icon .safe-icon path,
+.mobile-section-drawer-icon .safe-icon path {
+  opacity: 1 !important;
+  visibility: visible !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Mantiene leggibili le icone negli stati attivi originali. */
+.sidebar .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon,
+.sidebar .sidebar-link.active .sidebar-link-icon {
+  color: inherit !important;
 }
 /* === FINE SIDEBAR SVG ICONS SINGLE SOURCE === */
