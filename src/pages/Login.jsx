@@ -144,6 +144,25 @@ export default function Login({ onLogin }) {
     <>
       {error && <div className="login-error">{error}</div>}
 
+      <button
+        type="button"
+        onClick={handleChangeCompany}
+        style={{
+          border: 'none',
+          background: 'transparent',
+          color: 'var(--gray-600)',
+          fontWeight: 800,
+          fontSize: 14,
+          padding: 0,
+          margin: '0 0 -2px',
+          width: 'fit-content',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        ← Cambia azienda
+      </button>
+
       <label className="login-redesign-field mobile-login-field">
         <span>Email</span>
         <input
