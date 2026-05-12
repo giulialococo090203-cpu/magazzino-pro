@@ -1120,9 +1120,12 @@ const mapInventorySession = {
 
 export const categoryStore = {
   async getAll() {
+    const companyId = getCurrentCompanyId();
+
     const { data, error } = await supabase
       .from('categorie')
       .select('*')
+      .eq('azienda_id', companyId)
       .order('nome');
 
     if (error) throw error;
@@ -1131,9 +1134,14 @@ export const categoryStore = {
   },
 
   async create(category) {
+    const companyId = getCurrentCompanyId();
+
     const { data, error } = await supabase
       .from('categorie')
-      .insert(mapCategory.toRow(category))
+      .insert({
+        ...mapCategory.toRow(category),
+        azienda_id: companyId,
+      })
       .select()
       .single();
 
@@ -1149,6 +1157,7 @@ export const categoryStore = {
       .from('categorie')
       .update(mapCategory.toRow(updates))
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .select()
       .single();
 
@@ -1160,7 +1169,11 @@ export const categoryStore = {
   },
 
   async delete(id) {
-    const { error } = await supabase.from('categorie').delete().eq('id', id);
+    const { error } = await supabase
+      .from('categorie')
+      .delete()
+      .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1203,9 +1216,12 @@ export const materialStore = {
   async getAll() {
     const pageSize = 1000;
 
+    const companyId = getCurrentCompanyId();
+
     const { count, error: countError } = await supabase
       .from('materiali')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .eq('azienda_id', companyId);
 
     if (countError) throw countError;
 
@@ -1220,6 +1236,7 @@ export const materialStore = {
         supabase
           .from('materiali')
           .select('*')
+          .eq('azienda_id', companyId)
           .order('codice')
           .range(from, from + pageSize - 1)
       );
@@ -1244,7 +1261,8 @@ export const materialStore = {
 
     let query = supabase
       .from('materiali')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
       const q = cleanSearch.replace(/[%_]/g, '\\$&');
@@ -1286,6 +1304,7 @@ export const materialStore = {
       .from('materiali')
       .select('*')
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .single();
 
     if (error) throw error;
@@ -1298,6 +1317,7 @@ export const materialStore = {
       .from('materiali')
       .select('*')
       .eq('codice', code)
+      .eq('azienda_id', getCurrentCompanyId())
       .maybeSingle();
 
     if (error) throw error;
@@ -1307,6 +1327,7 @@ export const materialStore = {
 
   async create(material) {
     const row = mapMaterial.toRow(material);
+    row.azienda_id = getCurrentCompanyId();
     row.stato_disponibilita = this.getStatus(material);
 
     const { data, error } = await supabase
@@ -1389,6 +1410,7 @@ export const materialStore = {
       .from('materiali')
       .update(payload)
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .select()
       .maybeSingle();
 
@@ -1411,7 +1433,11 @@ export const materialStore = {
   },
 
   async delete(id) {
-    const { error } = await supabase.from('materiali').delete().eq('id', id);
+    const { error } = await supabase
+      .from('materiali')
+      .delete()
+      .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1426,7 +1452,11 @@ export const materialStore = {
     }
 
     for (const chunk of chunkArray(cleanIds, 100)) {
-      const { error } = await supabase.from('materiali').delete().in('id', chunk);
+      const { error } = await supabase
+        .from('materiali')
+        .delete()
+        .in('id', chunk)
+        .eq('azienda_id', getCurrentCompanyId());
 
       if (error) throw error;
     }
@@ -1437,19 +1467,24 @@ export const materialStore = {
   },
 
   async deleteAll() {
+    const companyId = getCurrentCompanyId();
+
     await supabase
       .from('notifiche')
       .delete()
+      .eq('azienda_id', companyId)
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     await supabase
       .from('movimenti')
       .delete()
+      .eq('azienda_id', companyId)
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     const { error } = await supabase
       .from('materiali')
       .delete()
+      .eq('azienda_id', companyId)
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw error;
@@ -1507,12 +1542,15 @@ export const movementStore = {
   },
 
   async getAll() {
+    const companyId = getCurrentCompanyId();
+
     return this._fetchAllMovements(() =>
       supabase
         .from('movimenti')
         .select(
           '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
         )
+        .eq('azienda_id', companyId)
     );
   },
 
@@ -1523,6 +1561,7 @@ export const movementStore = {
         '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
       )
       .eq('materiale_id', materialId)
+      .eq('azienda_id', getCurrentCompanyId())
       .order('data_movimento', { ascending: false });
 
     if (error) throw error;
@@ -1597,6 +1636,7 @@ export const movementStore = {
     const { data, error } = await supabase
       .from('movimenti')
       .select('*, materiali(codice, descrizione, categoria_id), utenti(nome, username)')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('data_movimento', { ascending: false })
       .limit(limit);
 
@@ -1610,7 +1650,8 @@ export const movementStore = {
       .from('movimenti')
       .select(
         '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
-      );
+      )
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (dateFrom) query = query.gte('data_movimento', dateFrom);
     if (dateTo) query = query.lte('data_movimento', `${dateTo}T23:59:59`);
@@ -1629,6 +1670,7 @@ export const movementStore = {
     const { error } = await supabase
       .from('movimenti')
       .delete()
+      .eq('azienda_id', getCurrentCompanyId())
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw error;
@@ -1674,6 +1716,7 @@ export const movementStore = {
     const { data, error } = await supabase
       .from('movimenti')
       .select('*')
+      .eq('azienda_id', getCurrentCompanyId())
       .gte('data_movimento', cutoff.toISOString());
 
     if (error) throw error;
@@ -1707,6 +1750,7 @@ export const userStore = {
     const { data, error } = await supabase
       .from('utenti')
       .select('*')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('nome');
 
     if (error) throw error;
@@ -1786,6 +1830,7 @@ export const userStore = {
         .from('utenti')
         .select('id')
         .eq('username', row.username)
+        .eq('azienda_id', companyId)
         .maybeSingle();
 
       if (existingError) throw existingError;
@@ -1799,6 +1844,7 @@ export const userStore = {
             permessi: row.permessi ?? {},
           })
           .eq('id', existing.id)
+          .eq('azienda_id', companyId)
           .select()
           .single();
 
@@ -1855,6 +1901,7 @@ export const userStore = {
       .from('utenti')
       .update(row)
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .select()
       .single();
 
@@ -1877,6 +1924,7 @@ export const userStore = {
       .from('utenti')
       .select('*')
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .maybeSingle();
 
     if (readError) throw readError;
@@ -1889,7 +1937,11 @@ export const userStore = {
       }
     }
 
-    const { error } = await supabase.from('utenti').delete().eq('id', id);
+    const { error } = await supabase
+      .from('utenti')
+      .delete()
+      .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1902,6 +1954,7 @@ export const notificationStore = {
     const { data, error } = await supabase
       .from('notifiche')
       .select('*, materiali(codice, descrizione, quantita, soglia_minima)')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -1913,6 +1966,7 @@ export const notificationStore = {
     const { data, error } = await supabase
       .from('notifiche')
       .select('*, materiali(codice, descrizione, quantita, soglia_minima)')
+      .eq('azienda_id', getCurrentCompanyId())
       .eq('letta', false)
       .order('created_at', { ascending: false })
       .limit(100);
@@ -1927,6 +1981,7 @@ export const notificationStore = {
       .from('notifiche')
       .select('id')
       .eq('materiale_id', notification.materialId)
+      .eq('azienda_id', getCurrentCompanyId())
       .eq('tipo', notification.type)
       .eq('letta', false);
 
@@ -1934,7 +1989,10 @@ export const notificationStore = {
 
     const { data, error } = await supabase
       .from('notifiche')
-      .insert(mapNotification.toRow(notification))
+      .insert({
+        ...mapNotification.toRow(notification),
+        azienda_id: getCurrentCompanyId(),
+      })
       .select()
       .single();
 
@@ -1953,7 +2011,8 @@ export const notificationStore = {
     const { error } = await supabase
       .from('notifiche')
       .update({ letta: true })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1964,7 +2023,8 @@ export const notificationStore = {
     const { error } = await supabase
       .from('notifiche')
       .update({ letta: true })
-      .eq('letta', false);
+      .eq('letta', false)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1976,7 +2036,11 @@ export const notificationStore = {
       throw new Error('ID notifica mancante.');
     }
 
-    const { error } = await supabase.from('notifiche').delete().eq('id', id);
+    const { error } = await supabase
+      .from('notifiche')
+      .delete()
+      .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -1991,6 +2055,7 @@ export const notificationStore = {
     const { data: readRows, error: readError } = await supabase
       .from('notifiche')
       .select('id')
+      .eq('azienda_id', getCurrentCompanyId())
       .eq('letta', true);
 
     if (readError) throw readError;
@@ -2004,7 +2069,11 @@ export const notificationStore = {
     }
 
     for (const chunk of chunkArray(ids, 100)) {
-      const { error } = await supabase.from('notifiche').delete().in('id', chunk);
+      const { error } = await supabase
+        .from('notifiche')
+        .delete()
+        .in('id', chunk)
+        .eq('azienda_id', getCurrentCompanyId());
 
       if (error) throw error;
     }
@@ -2019,7 +2088,8 @@ export const notificationStore = {
   async deleteAll() {
     const { data: rows, error: readError } = await supabase
       .from('notifiche')
-      .select('id');
+      .select('id')
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (readError) throw readError;
 
@@ -2032,7 +2102,11 @@ export const notificationStore = {
     }
 
     for (const chunk of chunkArray(ids, 100)) {
-      const { error } = await supabase.from('notifiche').delete().in('id', chunk);
+      const { error } = await supabase
+        .from('notifiche')
+        .delete()
+        .in('id', chunk)
+        .eq('azienda_id', getCurrentCompanyId());
 
       if (error) throw error;
     }
@@ -2050,6 +2124,7 @@ export const adminLogStore = {
     const { data, error } = await supabase
       .from('log_modifiche')
       .select('*, utenti(nome)')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -2061,7 +2136,10 @@ export const adminLogStore = {
   async create(log) {
     const { error } = await supabase
       .from('log_modifiche')
-      .insert(mapLog.toRow(log));
+      .insert({
+        ...mapLog.toRow(log),
+        azienda_id: log.companyId || log.company_id || log.azienda_id || getCurrentCompanyId(),
+      });
 
     if (error) throw error;
 
@@ -2072,6 +2150,7 @@ export const adminLogStore = {
     const { data, error } = await supabase
       .from('log_modifiche')
       .select('*, utenti(nome)')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -2084,6 +2163,7 @@ export const adminLogStore = {
     const { error } = await supabase
       .from('log_modifiche')
       .delete()
+      .eq('azienda_id', getCurrentCompanyId())
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (error) throw error;
@@ -2115,6 +2195,7 @@ export const invoiceImportStore = {
     const { data, error } = await supabase
       .from('fatture_importate')
       .select('*')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false })
       .limit(500);
 
@@ -2158,25 +2239,28 @@ export const invoiceImportStore = {
 
     if (uploadError) throw uploadError;
 
+    const invoiceRow = {
+      ...mapImportedInvoice.toRow({
+        fileName: sanitizeStorageFileName(file.name),
+        originalFileName: file.name,
+        filePath,
+        bucket: this.bucketName,
+        fileSize: file.size || 0,
+        fileType: file.type || '',
+        userId: user?.id || null,
+        userName: user?.fullName || user?.username || '',
+        status: 'caricata',
+        detectedItems: 0,
+        createdItems: 0,
+        updatedItems: 0,
+        errors: null,
+      }),
+      azienda_id: getCurrentCompanyId(),
+    };
+
     const { data, error } = await supabase
       .from('fatture_importate')
-      .insert(
-        mapImportedInvoice.toRow({
-          fileName: sanitizeStorageFileName(file.name),
-          originalFileName: file.name,
-          filePath,
-          bucket: this.bucketName,
-          fileSize: file.size || 0,
-          fileType: file.type || '',
-          userId: user?.id || null,
-          userName: user?.fullName || user?.username || '',
-          status: 'caricata',
-          detectedItems: 0,
-          createdItems: 0,
-          updatedItems: 0,
-          errors: null,
-        })
-      )
+      .insert(invoiceRow)
       .select()
       .single();
 
@@ -2194,6 +2278,7 @@ export const invoiceImportStore = {
       .from('fatture_importate')
       .update(mapImportedInvoice.toRow(updates))
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .select()
       .single();
 
@@ -2243,6 +2328,7 @@ export const invoiceImportStore = {
     const { data, error } = await supabase
       .from('fatture_importate')
       .select('*')
+      .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -2258,7 +2344,8 @@ export const invoiceImportStore = {
 
     let query = supabase
       .from('materiali')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
       const q = cleanSearch.replace(/[%_]/g, '\\$&');
@@ -2304,6 +2391,7 @@ export const invoiceImportStore = {
       .from('fatture_importate')
       .select('*')
       .eq('id', id)
+      .eq('azienda_id', getCurrentCompanyId())
       .single();
 
     if (error) throw error;
@@ -2319,7 +2407,8 @@ export const invoiceImportStore = {
     const { data, error } = await supabase
       .from('fatture_importate')
       .select('*')
-      .in('id', cleanIds);
+      .in('id', cleanIds)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (error) throw error;
 
@@ -2419,7 +2508,8 @@ export const invoiceImportStore = {
     const { error: deleteRecordError } = await supabase
       .from('fatture_importate')
       .delete()
-      .in('id', idsToDelete);
+      .in('id', idsToDelete)
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (deleteRecordError) throw deleteRecordError;
 
@@ -2650,7 +2740,8 @@ export const reorderProposalStore = {
 
     let query = supabase
       .from('materiali')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
       const q = cleanSearch.replace(/[%_]/g, '\\$&');
