@@ -14631,156 +14631,108 @@ body .app-layout .dashboard-monitoring-table {
 /* === FINE LOGIN DESKTOP FINAL VISUAL RESTORE === */
 
 
-/* === SIDEBAR DESKTOP HARD STABILITY === */
-/* Impedisce stati ibridi: sidebar stretta ma testi ancora visibili. */
-@media screen and (min-width: 901px) {
-  .sidebar,
-  .app-sidebar,
-  .layout-sidebar,
-  aside[class*="sidebar"],
-  nav[class*="sidebar"] {
-    width: 280px !important;
-    min-width: 280px !important;
-    max-width: 280px !important;
-    flex: 0 0 280px !important;
-    overflow-x: hidden !important;
-  }
-
-  .sidebar *,
-  .app-sidebar *,
-  .layout-sidebar *,
-  aside[class*="sidebar"] *,
-  nav[class*="sidebar"] * {
-    box-sizing: border-box !important;
-  }
-
-  .sidebar a,
-  .sidebar button,
-  .app-sidebar a,
-  .app-sidebar button,
-  .layout-sidebar a,
-  .layout-sidebar button,
-  aside[class*="sidebar"] a,
-  aside[class*="sidebar"] button,
-  nav[class*="sidebar"] a,
-  nav[class*="sidebar"] button {
-    min-width: 0 !important;
-    max-width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-  }
-
-  .sidebar span,
-  .sidebar p,
-  .sidebar strong,
-  .sidebar small,
-  .app-sidebar span,
-  .app-sidebar p,
-  .app-sidebar strong,
-  .app-sidebar small,
-  .layout-sidebar span,
-  .layout-sidebar p,
-  .layout-sidebar strong,
-  .layout-sidebar small,
-  aside[class*="sidebar"] span,
-  aside[class*="sidebar"] p,
-  aside[class*="sidebar"] strong,
-  aside[class*="sidebar"] small,
-  nav[class*="sidebar"] span,
-  nav[class*="sidebar"] p,
-  nav[class*="sidebar"] strong,
-  nav[class*="sidebar"] small {
-    min-width: 0 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-}
-
-/* Se lo schermo non è abbastanza largo, non comprimere la sidebar desktop:
-   si passa a layout mobile/tablet invece di creare testi sovrapposti. */
-@media screen and (max-width: 900px) {
-  .sidebar,
-  .app-sidebar,
-  .layout-sidebar,
-  aside[class*="sidebar"],
-  nav[class*="sidebar"] {
-    width: 0 !important;
-    min-width: 0 !important;
-    max-width: 0 !important;
-    flex-basis: 0 !important;
-    overflow: hidden !important;
-  }
-}
-
-/* === FINE SIDEBAR DESKTOP HARD STABILITY === */
-
-/* === SIDEBAR CLIENT STABLE FINAL === */
-/* Desktop: sidebar sempre aperta, niente stato hover/ibrido. */
+/* === SIDEBAR COLLAPSED SAFE FINAL === */
+/* Evita stati ibridi: sidebar chiusa con testi compressi/sovrapposti. */
 @media screen and (min-width: 901px) {
   :root {
-    --sidebar-width: 270px !important;
-    --sidebar-expanded-width: 270px !important;
+    --sidebar-width: 72px;
+    --sidebar-expanded-width: 270px;
   }
 
-  .sidebar,
-  .sidebar:hover,
-  .sidebar:focus-within {
-    width: 270px !important;
-    min-width: 270px !important;
-    max-width: 270px !important;
-    flex: 0 0 270px !important;
+  .sidebar {
+    width: var(--sidebar-width) !important;
+    min-width: var(--sidebar-width) !important;
+    max-width: var(--sidebar-width) !important;
     overflow-x: hidden !important;
   }
 
-  .main-content,
-  .app-main,
-  .page-content,
-  main[class*="content"] {
-    margin-left: 270px !important;
+  .sidebar:hover,
+  .sidebar:focus-within {
+    width: var(--sidebar-expanded-width) !important;
+    min-width: var(--sidebar-expanded-width) !important;
+    max-width: var(--sidebar-expanded-width) !important;
   }
 
-  .sidebar-logo-text,
-  .sidebar-section-title,
-  .sidebar-link span:not(.sidebar-link-icon),
-  .sidebar-user-details,
-  .sidebar-badge,
-  .sidebar-section-toggle-left span:not(.sidebar-section-icon),
-  .sidebar-section-chevron {
+  .main-content {
+    margin-left: var(--sidebar-width) !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-logo-text,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-title,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link span:not(.sidebar-link-icon),
+  .sidebar:not(:hover):not(:focus-within) .sidebar-user-details,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-chevron,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-nav-collapsible {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    height: 48px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle-left {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    justify-content: center !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-icon,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  .sidebar:hover .sidebar-logo-text,
+  .sidebar:hover .sidebar-section-title,
+  .sidebar:hover .sidebar-link span:not(.sidebar-link-icon),
+  .sidebar:hover .sidebar-user-details,
+  .sidebar:hover .sidebar-badge,
+  .sidebar:hover .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar:hover .sidebar-section-chevron,
+  .sidebar:focus-within .sidebar-logo-text,
+  .sidebar:focus-within .sidebar-section-title,
+  .sidebar:focus-within .sidebar-link span:not(.sidebar-link-icon),
+  .sidebar:focus-within .sidebar-user-details,
+  .sidebar:focus-within .sidebar-badge,
+  .sidebar:focus-within .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar:focus-within .sidebar-section-chevron {
     opacity: 1 !important;
     visibility: visible !important;
     display: inline-flex !important;
     width: auto !important;
     max-width: 180px !important;
-    transform: none !important;
-  }
-
-  .sidebar-section-toggle,
-  .sidebar-link {
-    width: 100% !important;
-    justify-content: flex-start !important;
-    overflow: hidden !important;
-  }
-
-  .sidebar-section-toggle-left,
-  .sidebar-link {
-    min-width: 0 !important;
-  }
-
-  .sidebar-logo-text,
-  .sidebar-section-title,
-  .sidebar-link-label,
-  .sidebar-user-name,
-  .sidebar-user-role,
-  .sidebar-section-toggle-left span:not(.sidebar-section-icon),
-  .sidebar-link span:not(.sidebar-link-icon) {
-    white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    pointer-events: auto !important;
   }
 
-  .sidebar-section-icon,
-  .sidebar-link-icon {
-    flex: 0 0 auto !important;
+  .sidebar:hover .sidebar-nav-collapsible,
+  .sidebar:focus-within .sidebar-nav-collapsible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: grid !important;
+    width: auto !important;
+    max-width: none !important;
+    pointer-events: auto !important;
   }
 }
-/* === FINE SIDEBAR CLIENT STABLE FINAL === */
+/* === FINE SIDEBAR COLLAPSED SAFE FINAL === */
