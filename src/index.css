@@ -14425,3 +14425,80 @@ body .app-layout .dashboard-monitoring-table {
   font-weight: 900;
   word-break: break-word;
 }
+/* === LOGIN DESKTOP VISIBILITY HARD RESET === */
+@media screen and (min-width: 541px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body .login-desktop-view.login-redesign-page {
+    position: relative !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 32px !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 1 !important;
+  }
+
+  body .login-desktop-view.login-redesign-page::before,
+  body .login-desktop-view.login-redesign-page::after {
+    pointer-events: none !important;
+    z-index: 0 !important;
+  }
+
+  body .login-desktop-view .login-redesign-card {
+    position: relative !important;
+    z-index: 20 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: grid !important;
+    width: min(1040px, calc(100vw - 64px)) !important;
+    min-height: 520px !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr) !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand,
+  body .login-desktop-view .login-redesign-form-panel {
+    position: relative !important;
+    z-index: 21 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 520px !important;
+    transform: none !important;
+  }
+
+  body .login-desktop-view .login-redesign-brand {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  body .login-desktop-view .login-redesign-form-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  body .login-desktop-view .login-redesign-heading,
+  body .login-desktop-view .login-redesign-form,
+  body .login-desktop-view .login-redesign-brand-content,
+  body .login-desktop-view .workspace-logo-shell-big,
+  body .login-desktop-view .workspace-logo-shell-small {
+    position: relative !important;
+    z-index: 22 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+}
+/* === FINE LOGIN DESKTOP VISIBILITY HARD RESET === */
