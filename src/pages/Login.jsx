@@ -130,7 +130,7 @@ export default function Login({ onLogin }) {
           autoComplete="organization"
           value={companyCode}
           onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
-          placeholder="Es. THERMOSERVICE"
+          placeholder=""
         />
       </label>
 
