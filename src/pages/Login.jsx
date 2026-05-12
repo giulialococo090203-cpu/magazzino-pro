@@ -146,15 +146,8 @@ export default function Login({ onLogin }) {
 
       <button
         type="button"
-        className="btn btn-sm btn-ghost"
+        className="login-change-company-btn"
         onClick={handleChangeCompany}
-        style={{
-          alignSelf: 'flex-start',
-          marginBottom: 8,
-          paddingLeft: 0,
-          color: 'var(--gray-600)',
-          fontWeight: 800,
-        }}
       >
         ← Cambia azienda
       </button>

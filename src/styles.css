@@ -1,33 +1,64 @@
 
-/* Fix login desktop: evita tagli e centra meglio il pannello credenziali */
-.login-redesign-card {
-  min-height: min(760px, calc(100vh - 72px));
+
+/* Login layout: cambio azienda compatto e pannello centrato */
+.login-change-company-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 0;
+  background: transparent;
+  color: var(--gray-600);
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 0;
+  margin: -2px 0 2px;
+  cursor: pointer;
+}
+
+.login-change-company-btn:hover {
+  color: var(--primary-600);
 }
 
 .login-redesign-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   overflow: visible;
 }
 
 .login-redesign-form {
-  padding-bottom: 32px;
+  gap: 16px;
+  padding-top: 8px;
+  padding-bottom: 18px;
 }
 
 .login-redesign-heading {
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 
-@media (max-height: 760px) {
+.login-redesign-helper {
+  margin-bottom: 0;
+}
+
+.login-redesign-card {
+  min-height: min(720px, calc(100vh - 56px));
+}
+
+@media (max-height: 820px) {
   .login-redesign-card {
-    min-height: auto;
+    min-height: min(660px, calc(100vh - 32px));
   }
 
   .login-redesign-form {
-    gap: 16px;
-    padding-top: 18px;
-    padding-bottom: 24px;
+    gap: 12px;
+    padding-top: 4px;
+    padding-bottom: 12px;
   }
 
-  .login-redesign-form-panel {
-    justify-content: flex-start;
+  .login-redesign-heading {
+    margin-bottom: 10px;
   }
 }
+
