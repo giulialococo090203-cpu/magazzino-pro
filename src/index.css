@@ -14630,3 +14630,43 @@ body .app-layout .dashboard-monitoring-table {
 }
 /* === FINE LOGIN DESKTOP FINAL VISUAL RESTORE === */
 
+
+/* === SIDEBAR TEXT COLLAPSE FIX - SAFE === */
+/* Non cambia larghezze/layout: impedisce solo testi sfalsati nella sidebar chiusa. */
+@media screen and (min-width: 901px) {
+  .sidebar:not(:hover):not(:focus-within) .sidebar-logo-text,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-title,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-user-details,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-badge,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-chevron,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link span:not(.sidebar-link-icon) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link {
+    justify-content: center !important;
+    text-align: center !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-toggle-left {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .sidebar:not(:hover):not(:focus-within) .sidebar-section-icon,
+  .sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+}
+/* === FINE SIDEBAR TEXT COLLAPSE FIX - SAFE === */
