@@ -1,0 +1,33 @@
+
+/* Fix login desktop: evita tagli e centra meglio il pannello credenziali */
+.login-redesign-card {
+  min-height: min(760px, calc(100vh - 72px));
+}
+
+.login-redesign-form-panel {
+  overflow: visible;
+}
+
+.login-redesign-form {
+  padding-bottom: 32px;
+}
+
+.login-redesign-heading {
+  margin-bottom: 24px;
+}
+
+@media (max-height: 760px) {
+  .login-redesign-card {
+    min-height: auto;
+  }
+
+  .login-redesign-form {
+    gap: 16px;
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+
+  .login-redesign-form-panel {
+    justify-content: flex-start;
+  }
+}
