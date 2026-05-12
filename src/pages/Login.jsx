@@ -144,14 +144,6 @@ export default function Login({ onLogin }) {
     <>
       {error && <div className="login-error">{error}</div>}
 
-      <button
-        type="button"
-        className="login-change-company-btn"
-        onClick={handleChangeCompany}
-      >
-        ← Cambia azienda
-      </button>
-
       <label className="login-redesign-field mobile-login-field">
         <span>Email</span>
         <input
