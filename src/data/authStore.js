@@ -5,6 +5,7 @@
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firebaseAuth, firebaseDb } from '../firebaseClient';
+import { supabase } from '../supabaseClient';
 import { normalizeRole } from './permissions';
 
 const CURRENT_USER_KEY = 'wm_current_user';
@@ -113,6 +114,43 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
   };
 }
 
+async function getSupabaseUserProfile(firebaseUser, email) {
+  const uid = firebaseUser?.uid || '';
+  const cleanEmail = readString(email).toLowerCase();
+
+  if (!uid && !cleanEmail) return null;
+
+  if (uid) {
+    const { data, error } = await supabase
+      .from('utenti')
+      .select('*')
+      .eq('auth_uid', uid)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Profilo Supabase non leggibile tramite auth_uid:', error);
+    }
+
+    if (data) return data;
+  }
+
+  if (cleanEmail) {
+    const { data, error } = await supabase
+      .from('utenti')
+      .select('*')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Profilo Supabase non leggibile tramite email:', error);
+    }
+
+    if (data) return data;
+  }
+
+  return null;
+}
+
 export const authStore = {
   async authenticate(email, password) {
     const cleanEmail = readString(email);
@@ -132,23 +170,36 @@ export const authStore = {
     const userRef = doc(firebaseDb, 'users', firebaseUser.uid);
     const userSnap = await getDoc(userRef);
 
-    if (!userSnap.exists()) {
-      await signOut(firebaseAuth);
-      localStorage.removeItem(CURRENT_USER_KEY);
+    let profile = null;
 
-      throw new Error(
-        `Utente autenticato, ma profilo applicazione non trovato in Firestore. UID: ${firebaseUser.uid}`
-      );
+    if (userSnap.exists()) {
+      profile = userSnap.data() || {};
+
+      console.log('Profilo utente Firestore:', {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        profile,
+        companyIdLetto: getCompanyIdFromProfile(profile),
+      });
+    } else {
+      profile = await getSupabaseUserProfile(firebaseUser, cleanEmail);
+
+      if (!profile) {
+        await signOut(firebaseAuth);
+        localStorage.removeItem(CURRENT_USER_KEY);
+
+        throw new Error(
+          `Utente autenticato, ma profilo applicazione non trovato né in Firestore né in Supabase. UID: ${firebaseUser.uid}`
+        );
+      }
+
+      console.log('Profilo utente Supabase:', {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        profile,
+        companyIdLetto: getCompanyIdFromProfile(profile),
+      });
     }
-
-    const profile = userSnap.data() || {};
-
-    console.log('Profilo utente Firestore:', {
-      uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      profile,
-      companyIdLetto: getCompanyIdFromProfile(profile),
-    });
 
     const appUser = normalizeUserProfile(firebaseUser, profile);
 
