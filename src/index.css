@@ -14679,3 +14679,39 @@ body .app-layout .dashboard-monitoring-table {
   gap: 12px !important;
 }
 /* === FINE SIDEBAR SAFEICON RENDER FIX === */
+
+/* === SIDEBAR COLLAPSED SVG ICON VISIBILITY FIX === */
+/* Sidebar chiusa: mostra sempre le icone SVG SafeIcon senza toccare layout/testi. */
+.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon,
+.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: #cbd5e1 !important;
+}
+
+.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon .safe-icon,
+.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon .safe-icon,
+.sidebar:not(:hover):not(:focus-within) .sidebar-section-icon svg,
+.sidebar:not(:hover):not(:focus-within) .sidebar-link-icon svg {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  transform: none !important;
+}
+
+/* Icona attiva nella sidebar chiusa: colore leggibile sul riquadro selezionato. */
+.sidebar:not(:hover):not(:focus-within) .sidebar-section-accordion.has-active > .sidebar-section-toggle .sidebar-section-icon,
+.sidebar:not(:hover):not(:focus-within) .sidebar-link.active .sidebar-link-icon {
+  color: #99f6e4 !important;
+}
+/* === FINE SIDEBAR COLLAPSED SVG ICON VISIBILITY FIX === */
