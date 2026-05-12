@@ -1388,9 +1388,17 @@ export const materialStore = {
     row.azienda_id = companyId;
     row.codice = String(row.codice || '').trim();
     row.descrizione = String(row.descrizione || '').trim() || row.codice || 'Materiale importato';
-    row.quantita = Number.isFinite(Number(row.quantita)) ? Number(row.quantita) : 0;
-    row.soglia_minima = Number.isFinite(Number(row.soglia_minima)) ? Number(row.soglia_minima) : 0;
-    row.prezzo_netto = Number.isFinite(Number(row.prezzo_netto)) ? Number(row.prezzo_netto) : 0;
+    row.quantita = Number.isFinite(Number(row.quantita))
+      ? Math.max(0, Math.round(Number(row.quantita)))
+      : 0;
+
+    row.soglia_minima = Number.isFinite(Number(row.soglia_minima))
+      ? Math.max(0, Math.round(Number(row.soglia_minima)))
+      : 0;
+
+    row.prezzo_netto = Number.isFinite(Number(row.prezzo_netto))
+      ? Number(row.prezzo_netto)
+      : 0;
 
     if (!row.codice) {
       row.codice = `IMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
@@ -1402,6 +1410,10 @@ export const materialStore = {
       minThreshold: row.soglia_minima,
     });
 
+    if (!['disponibile', 'sotto_soglia', 'esaurito'].includes(String(row.stato_disponibilita))) {
+      row.stato_disponibilita = 'disponibile';
+    }
+
     const { data, error } = await supabase
       .from('materiali')
       .insert(row)
@@ -1410,7 +1422,9 @@ export const materialStore = {
 
     if (error) {
       console.error('[materialStore.create] Supabase error:', error);
+      console.error('[materialStore.create] Supabase error JSON:', JSON.stringify(error, null, 2));
       console.error('[materialStore.create] Payload:', row);
+      console.error('[materialStore.create] Payload JSON:', JSON.stringify(row, null, 2));
 
       // Se il codice esiste già nella stessa azienda, aggiorno invece di bloccare l'import fattura.
       if (
