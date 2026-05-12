@@ -112,6 +112,12 @@ export default function Inventario() {
   const [loadingMaterials, setLoadingMaterials] = useState(false);
 
   const searchWrapRef = useRef(null);
+  const tableScrollRef = useRef(null);
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const VIRTUAL_ROW_HEIGHT = 54;
+  const VIRTUAL_OVERSCAN = 12;
+  const VIRTUAL_VIEWPORT_HEIGHT = 680;
 
   const showListPrice = canSeeListPrice(user?.role);
   const showInstallerPrice = canSeeInstallerPrice(user?.role);
@@ -179,6 +185,13 @@ export default function Inventario() {
     refresh();
     loadPriceSettings();
   }, []);
+
+  useEffect(() => {
+    setScrollTop(0);
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollTop = 0;
+    }
+  }, [search, filterCategory, filterStatus]);
 
   useEffect(() => {
     const onPriceSettingsChanged = (event) => {
@@ -402,6 +415,24 @@ export default function Inventario() {
     }
   };
 
+  const virtualTotalRows = filtered.length;
+  const virtualStartIndex = Math.max(
+    0,
+    Math.floor(scrollTop / VIRTUAL_ROW_HEIGHT) - VIRTUAL_OVERSCAN
+  );
+  const virtualVisibleCount =
+    Math.ceil(VIRTUAL_VIEWPORT_HEIGHT / VIRTUAL_ROW_HEIGHT) + VIRTUAL_OVERSCAN * 2;
+  const virtualEndIndex = Math.min(
+    virtualTotalRows,
+    virtualStartIndex + virtualVisibleCount
+  );
+  const virtualRows = filtered.slice(virtualStartIndex, virtualEndIndex);
+  const virtualTopPadding = virtualStartIndex * VIRTUAL_ROW_HEIGHT;
+  const virtualBottomPadding = Math.max(
+    0,
+    (virtualTotalRows - virtualEndIndex) * VIRTUAL_ROW_HEIGHT
+  );
+
   return (
     <div className="animate-slideUp">
       <div className="page-header">
@@ -529,7 +560,12 @@ export default function Inventario() {
         </div>
       )}
 
-      <div className="table-container inventario-scroll-table">
+      <div
+        className="table-container inventario-scroll-table"
+        ref={tableScrollRef}
+        onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+        style={{ maxHeight: VIRTUAL_VIEWPORT_HEIGHT, overflowY: 'auto' }}
+      >
         <table className="data-table">
           <thead>
             <tr>
@@ -564,8 +600,18 @@ export default function Inventario() {
                 </td>
               </tr>
             ) : (
-              filtered.map((m) => (
-                <tr key={m.id}>
+              <>
+                {virtualTopPadding > 0 && (
+                  <tr aria-hidden="true">
+                    <td
+                      colSpan={10 + (showListPrice ? 1 : 0) + (showInstallerPrice ? 1 : 0)}
+                      style={{ height: virtualTopPadding, padding: 0, border: 0 }}
+                    />
+                  </tr>
+                )}
+
+                {virtualRows.map((m) => (
+                <tr key={m.id} style={{ height: VIRTUAL_ROW_HEIGHT }}>
                   <td>
                     <strong>{m.code}</strong>
                   </td>
@@ -616,7 +662,17 @@ export default function Inventario() {
                     </button>
                   </td>
                 </tr>
-              ))
+                ))}
+
+                {virtualBottomPadding > 0 && (
+                  <tr aria-hidden="true">
+                    <td
+                      colSpan={10 + (showListPrice ? 1 : 0) + (showInstallerPrice ? 1 : 0)}
+                      style={{ height: virtualBottomPadding, padding: 0, border: 0 }}
+                    />
+                  </tr>
+                )}
+              </>
             )}
           </tbody>
         </table>
