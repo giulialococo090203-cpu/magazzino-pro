@@ -336,7 +336,7 @@ export default function Layout({ children }) {
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-const [openSections, setOpenSections] = useState({});
+  const [openSections, setOpenSections] = useState({});
   const [mobileOpenSection, setMobileOpenSection] = useState(null);
 
   const programmerMode = isProgrammerMode(user);
@@ -349,9 +349,14 @@ const [openSections, setOpenSections] = useState({});
     }
 
     let mounted = true;
+    let isUpdating = false;
 
     const updateNotifs = async () => {
+      if (isUpdating) return;
+
       try {
+        isUpdating = true;
+
         const unread = await notificationStore.getUnread();
 
         if (mounted) {
@@ -359,12 +364,14 @@ const [openSections, setOpenSections] = useState({});
         }
       } catch (err) {
         console.error('Errore caricamento notifiche:', err);
+      } finally {
+        isUpdating = false;
       }
     };
 
     updateNotifs();
 
-    const interval = setInterval(updateNotifs, 5000);
+    const interval = setInterval(updateNotifs, 60000);
 
     return () => {
       mounted = false;
