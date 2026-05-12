@@ -14713,3 +14713,74 @@ body .app-layout .dashboard-monitoring-table {
 }
 
 /* === FINE SIDEBAR DESKTOP HARD STABILITY === */
+
+/* === SIDEBAR CLIENT STABLE FINAL === */
+/* Desktop: sidebar sempre aperta, niente stato hover/ibrido. */
+@media screen and (min-width: 901px) {
+  :root {
+    --sidebar-width: 270px !important;
+    --sidebar-expanded-width: 270px !important;
+  }
+
+  .sidebar,
+  .sidebar:hover,
+  .sidebar:focus-within {
+    width: 270px !important;
+    min-width: 270px !important;
+    max-width: 270px !important;
+    flex: 0 0 270px !important;
+    overflow-x: hidden !important;
+  }
+
+  .main-content,
+  .app-main,
+  .page-content,
+  main[class*="content"] {
+    margin-left: 270px !important;
+  }
+
+  .sidebar-logo-text,
+  .sidebar-section-title,
+  .sidebar-link span:not(.sidebar-link-icon),
+  .sidebar-user-details,
+  .sidebar-badge,
+  .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar-section-chevron {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+    width: auto !important;
+    max-width: 180px !important;
+    transform: none !important;
+  }
+
+  .sidebar-section-toggle,
+  .sidebar-link {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar-section-toggle-left,
+  .sidebar-link {
+    min-width: 0 !important;
+  }
+
+  .sidebar-logo-text,
+  .sidebar-section-title,
+  .sidebar-link-label,
+  .sidebar-user-name,
+  .sidebar-user-role,
+  .sidebar-section-toggle-left span:not(.sidebar-section-icon),
+  .sidebar-link span:not(.sidebar-link-icon) {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .sidebar-section-icon,
+  .sidebar-link-icon {
+    flex: 0 0 auto !important;
+  }
+}
+/* === FINE SIDEBAR CLIENT STABLE FINAL === */
