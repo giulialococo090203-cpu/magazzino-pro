@@ -176,6 +176,236 @@ function extractTextFromParserResult(data = {}) {
   return '';
 }
 
+
+function looksLikeGenericInvoiceCode(value = '') {
+  const text = String(value || '').trim();
+
+  if (!text || text.length < 2 || text.length > 45) return false;
+  if (/^\d{1,3}$/.test(text)) return false;
+  if (/^\d+[,.]\d+$/.test(text)) return false;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(text)) return false;
+
+  const compact = text.replace(/\s+/g, '');
+
+  const hasLetter = /[A-Z]/i.test(compact);
+  const hasDigit = /\d/.test(compact);
+  const hasSeparator = /[-_./]/.test(compact);
+
+  if (hasLetter && hasDigit) return true;
+  if (hasDigit && hasSeparator && compact.length >= 4) return true;
+  if (/^[A-Z]{2,}[\dA-Z./_-]{2,}$/i.test(compact)) return true;
+  if (/^\d{5,}$/.test(compact)) return true;
+
+  return false;
+}
+
+function isGenericInvoiceNoise(line = '') {
+  const text = normalizeSpaces(line).toLowerCase();
+
+  if (!text) return true;
+
+  return (
+    text.includes('partita iva') ||
+    text.includes('codice fiscale') ||
+    text.includes('pagamento') ||
+    text.includes('iban') ||
+    text.includes('banca') ||
+    text.includes('totale fattura') ||
+    text.includes('imponibile') ||
+    text.includes('scadenza') ||
+    text.includes('trasporto') ||
+    text.includes('destinatario') ||
+    text.includes('cliente') ||
+    text.includes('fornitore') ||
+    text.includes('documento') ||
+    text.includes('fattura') ||
+    text.includes('pagina') ||
+    text.includes('aliquota') ||
+    text.includes('iva') && text.length < 18 ||
+    /^tel\b/.test(text) ||
+    /^fax\b/.test(text) ||
+    /^pec\b/.test(text) ||
+    /^www\./.test(text) ||
+    /^email\b/.test(text)
+  );
+}
+
+function normalizeGenericDescription(value = '') {
+  return normalizeSpaces(value)
+    .replace(/\biva\b/gi, '')
+    .replace(/\bsc\.?\b/gi, '')
+    .replace(/\bsconto\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .replace(/^[-–—,.;:\s]+/, '')
+    .replace(/[-–—,.;:\s]+$/, '')
+    .trim();
+}
+
+function parseGenericInvoiceTextToRows(text = '') {
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .map((line) => normalizeSpaces(line))
+    .filter(Boolean);
+
+  const header = [
+    'Codice',
+    'Descrizione',
+    'Quantità',
+    'UM',
+    'Prezzo Netto',
+    'Marca',
+    'Categoria',
+    'Posizione',
+    'Fornitore',
+  ];
+
+  const rows = [];
+
+  const unitPattern = '(?:PZ|PCS|NR|N|ST|EA|CF|CONF|KG|LT|L|MT|M|ML|GR|G|M2|M3)';
+  const numberPattern = '\\d+(?:[.,]\\d+)?';
+
+  const patterns = [
+    // Codice Descrizione Qta UM Prezzo [Totale]
+    new RegExp(
+      `^([A-Z0-9][A-Z0-9./_-]{1,44})\\s+(.{4,}?)\\s+(${numberPattern})\\s+(${unitPattern})\\s+(${numberPattern})(?:\\s+${numberPattern})?.*$`,
+      'i'
+    ),
+
+    // Codice Descrizione UM Qta Prezzo [Totale]
+    new RegExp(
+      `^([A-Z0-9][A-Z0-9./_-]{1,44})\\s+(.{4,}?)\\s+(${unitPattern})\\s+(${numberPattern})\\s+(${numberPattern})(?:\\s+${numberPattern})?.*$`,
+      'i'
+    ),
+
+    // Codice Descrizione Qta Prezzo [Totale] senza UM
+    new RegExp(
+      `^([A-Z0-9][A-Z0-9./_-]{1,44})\\s+(.{6,}?)\\s+(${numberPattern})\\s+(${numberPattern})(?:\\s+${numberPattern})?.*$`,
+      'i'
+    ),
+  ];
+
+  for (const originalLine of lines) {
+    const line = normalizeSpaces(originalLine);
+
+    if (isGenericInvoiceNoise(line)) continue;
+
+    let parsed = null;
+
+    for (let patternIndex = 0; patternIndex < patterns.length; patternIndex += 1) {
+      const match = line.match(patterns[patternIndex]);
+      if (!match) continue;
+
+      if (patternIndex === 0) {
+        parsed = {
+          code: match[1],
+          description: match[2],
+          quantity: parseItalianNumber(match[3]),
+          unit: match[4],
+          price: parseItalianNumber(match[5]),
+        };
+      } else if (patternIndex === 1) {
+        parsed = {
+          code: match[1],
+          description: match[2],
+          quantity: parseItalianNumber(match[4]),
+          unit: match[3],
+          price: parseItalianNumber(match[5]),
+        };
+      } else {
+        parsed = {
+          code: match[1],
+          description: match[2],
+          quantity: parseItalianNumber(match[3]),
+          unit: 'PZ',
+          price: parseItalianNumber(match[4]),
+        };
+      }
+
+      break;
+    }
+
+    if (!parsed) {
+      // Fallback per righe senza codice: descrizione lunga + quantità + prezzo.
+      const fallback = line.match(
+        new RegExp(`^(.{10,}?)\\s+(${numberPattern})\\s+(${unitPattern})?\\s*(${numberPattern})(?:\\s+${numberPattern})?.*$`, 'i')
+      );
+
+      if (fallback && !isGenericInvoiceNoise(fallback[1])) {
+        const description = normalizeGenericDescription(fallback[1]);
+        const quantity = parseItalianNumber(fallback[2]);
+        const unit = fallback[3] || 'PZ';
+        const price = parseItalianNumber(fallback[4]);
+
+        if (description.length >= 8 && quantity > 0) {
+          const generatedCode = `IMP-${description
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^A-Z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 28)}`;
+
+          parsed = {
+            code: generatedCode,
+            description,
+            quantity,
+            unit,
+            price,
+          };
+        }
+      }
+    }
+
+    if (!parsed) continue;
+
+    const code = String(parsed.code || '').trim();
+    const description = normalizeGenericDescription(parsed.description);
+    const quantity = Number(parsed.quantity || 0);
+    const unit = String(parsed.unit || 'PZ').trim().toUpperCase();
+    const price = Number(parsed.price || 0);
+
+    if (!code || !description || quantity <= 0) continue;
+    if (!looksLikeGenericInvoiceCode(code) && !code.startsWith('IMP-')) continue;
+    if (description.length < 3) continue;
+
+    rows.push([
+      code,
+      description,
+      quantity,
+      unit,
+      price,
+      '',
+      '',
+      '',
+      '',
+    ]);
+  }
+
+  if (!rows.length) return [];
+
+  // Deduplica righe uguali codice+descrizione sommando quantità.
+  const grouped = new Map();
+
+  rows.forEach((row) => {
+    const key = `${String(row[0]).toLowerCase()}|${String(row[1]).toLowerCase()}`;
+
+    if (!grouped.has(key)) {
+      grouped.set(key, [...row]);
+      return;
+    }
+
+    const existing = grouped.get(key);
+    existing[2] = Number(existing[2] || 0) + Number(row[2] || 0);
+
+    if (!Number(existing[4] || 0) && Number(row[4] || 0)) {
+      existing[4] = row[4];
+    }
+  });
+
+  return [header, ...Array.from(grouped.values())];
+}
+
+
 function parseBoschInvoiceTextToRows(text = '') {
   const lines = String(text || '')
     .split(/\r?\n/)
@@ -344,6 +574,9 @@ function normalizeTextParserRows(data) {
   if (extractedText) {
     const boschRows = parseBoschInvoiceTextToRows(extractedText);
     if (boschRows.length > 0) return boschRows;
+
+    const genericRows = parseGenericInvoiceTextToRows(extractedText);
+    if (genericRows.length > 0) return genericRows;
   }
 
   return [];

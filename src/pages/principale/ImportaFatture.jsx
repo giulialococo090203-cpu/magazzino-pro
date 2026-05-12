@@ -807,7 +807,7 @@ export default function ImportaFatture() {
   };
 
   const getCachedParsedFile = async (file) => {
-    const cacheKey = `invoice_parse_cache_v1_${file.name}_${file.size}_${file.lastModified}`;
+    const cacheKey = `invoice_parse_cache_v2_${file.name}_${file.size}_${file.lastModified}`;
 
     try {
       const cached = localStorage.getItem(cacheKey);
