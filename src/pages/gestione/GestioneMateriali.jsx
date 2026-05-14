@@ -91,6 +91,13 @@ export default function GestioneMateriali() {
   };
 
   const handleSave = async () => {
+    console.log('[GestioneMateriali.handleSave] START', {
+      editItem,
+      form,
+      isNewCat,
+      newCatName,
+    });
+
     if (!form.code.trim() || !form.description.trim()) {
       setError('Codice e descrizione sono obbligatori');
       return;
@@ -121,12 +128,19 @@ export default function GestioneMateriali() {
         });
         await adminLogStore.create({ action: 'Modifica materiale', entity: 'materiale', entityId: editItem.id, details: `Materiale "${form.code}" modificato`, userId: user.id, userName: user.fullName });
       } else {
+        console.log('[GestioneMateriali.handleSave] CREATE BRANCH', {
+          form,
+          categoryId,
+        });
+
         const created = await materialStore.create({
           ...form,
           category: categoryId,
           quantity: 0,
           minThreshold: Number(form.minThreshold) || 0,
         });
+
+        console.log('[GestioneMateriali.handleSave] CREATED MATERIAL', created);
         await adminLogStore.create({ action: 'Nuovo materiale', entity: 'materiale', details: `Materiale "${form.code}" creato`, userId: user.id, userName: user.fullName });
         
         const initialQty = Number(form.quantity) || 0;
@@ -145,7 +159,8 @@ export default function GestioneMateriali() {
       await refresh();
       setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      console.error('[GestioneMateriali.handleSave] ERROR', err);
+      setError(err.message || 'Errore durante il salvataggio materiale.');
     }
   };
 
