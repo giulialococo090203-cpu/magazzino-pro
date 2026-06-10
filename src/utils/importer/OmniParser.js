@@ -3,7 +3,7 @@ import mammoth from 'mammoth';
 
 const PDF_TEXT_PARSER_URL =
   import.meta.env.VITE_PDF_TEXT_PARSER_URL ||
-  '/api/pdf-parse';
+  'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
@@ -733,7 +733,7 @@ async function callPdfTextParser(file) {
     });
   } catch {
     throw new Error(
-      'Connessione al parser PDF non riuscita. Se da terminale il parser risponde correttamente, controlla il proxy Cloudflare /api/pdf-parse o svuota cache del browser.'
+      'Connessione al parser PDF non riuscita. Se da terminale il parser risponde correttamente, controlla VITE_PDF_PARSER_URL o svuota cache del browser.'
     );
   }
 

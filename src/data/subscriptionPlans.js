@@ -151,7 +151,38 @@ export function hasPlanFeature(userOrPlan, feature) {
   return PLAN_FEATURES[plan]?.has(feature) || false;
 }
 
-export function getPlanLabel(plan) {
-  const normalized = normalizeSubscriptionPlan(plan);
+export function getPlanLabel(planOrUser) {
+  if (planOrUser && typeof planOrUser === 'object') {
+    const role = String(planOrUser.role || planOrUser.ruolo || '').toLowerCase();
+    const companyId = String(
+      planOrUser.azienda_id ||
+      planOrUser.companyId ||
+      planOrUser.company_id ||
+      ''
+    ).toLowerCase();
+
+    if (role === 'datore' && companyId === 'cl_thermoservice') {
+      return 'Enterprise';
+    }
+
+    const userPlan =
+      planOrUser.piano ||
+      planOrUser.plan ||
+      planOrUser.subscription_plan ||
+      planOrUser.abbonamento ||
+      planOrUser.azienda?.piano ||
+      planOrUser.company?.plan ||
+      '';
+
+    const normalizedUserPlan = String(userPlan || '').toLowerCase();
+
+    if (SUBSCRIPTION_PLANS[normalizedUserPlan]) {
+      return SUBSCRIPTION_PLANS[normalizedUserPlan].label;
+    }
+
+    return role === 'datore' ? 'Enterprise' : 'Base';
+  }
+
+  const normalized = String(planOrUser || '').toLowerCase();
   return SUBSCRIPTION_PLANS[normalized]?.label || 'Base';
 }
