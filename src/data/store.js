@@ -1191,17 +1191,40 @@ export const categoryStore = {
 
   async create(category) {
     const companyId = getCurrentCompanyId();
+    const name = String(category?.name || category?.nome || '').trim();
+
+    if (!companyId) {
+      throw new Error(
+        'Azienda corrente non identificata. Effettua nuovamente il login.'
+      );
+    }
+
+    if (!name) {
+      throw new Error('Il nome della categoria è obbligatorio.');
+    }
+
+    const payload = {
+      ...mapCategory.toRow({
+        ...category,
+        name,
+        description: String(
+          category?.description || category?.descrizione || ''
+        ).trim(),
+      }),
+      azienda_id: companyId,
+    };
 
     const { data, error } = await supabase
       .from('categorie')
-      .insert({
-        ...mapCategory.toRow(category),
-        azienda_id: companyId,
-      })
+      .insert(payload)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(
+        `Creazione categoria non riuscita: ${error.message || 'errore Supabase sconosciuto'}`
+      );
+    }
 
     notifySupabaseUsageChanged();
 
@@ -1209,15 +1232,37 @@ export const categoryStore = {
   },
 
   async update(id, updates) {
+    const companyId = getCurrentCompanyId();
+    const name = String(updates?.name || updates?.nome || '').trim();
+
+    if (!companyId) {
+      throw new Error(
+        'Azienda corrente non identificata. Effettua nuovamente il login.'
+      );
+    }
+
+    if (!name) {
+      throw new Error('Il nome della categoria è obbligatorio.');
+    }
+
     const { data, error } = await supabase
       .from('categorie')
-      .update(mapCategory.toRow(updates))
+      .update(
+        mapCategory.toRow({
+          ...updates,
+          name,
+        })
+      )
       .eq('id', id)
-      .eq('azienda_id', getCurrentCompanyId())
+      .eq('azienda_id', companyId)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(
+        `Modifica categoria non riuscita: ${error.message || 'errore Supabase sconosciuto'}`
+      );
+    }
 
     notifySupabaseUsageChanged();
 
@@ -1225,13 +1270,25 @@ export const categoryStore = {
   },
 
   async delete(id) {
+    const companyId = getCurrentCompanyId();
+
+    if (!companyId) {
+      throw new Error(
+        'Azienda corrente non identificata. Effettua nuovamente il login.'
+      );
+    }
+
     const { error } = await supabase
       .from('categorie')
       .delete()
       .eq('id', id)
-      .eq('azienda_id', getCurrentCompanyId());
+      .eq('azienda_id', companyId);
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(
+        `Eliminazione categoria non riuscita: ${error.message || 'errore Supabase sconosciuto'}`
+      );
+    }
 
     notifySupabaseUsageChanged();
   },
@@ -1421,11 +1478,6 @@ export const materialStore = {
       .single();
 
     if (error) {
-      console.error('[materialStore.create] Supabase error:', error);
-      console.error('[materialStore.create] Supabase error JSON:', JSON.stringify(error, null, 2));
-      console.error('[materialStore.create] Payload:', row);
-      console.error('[materialStore.create] Payload JSON:', JSON.stringify(row, null, 2));
-
       // Se il codice esiste già nella stessa azienda, aggiorno invece di bloccare l'import fattura.
       if (
         String(error.code || '') === '23505' ||
@@ -1519,9 +1571,6 @@ export const materialStore = {
     if (!payload || Object.keys(payload).length === 0) {
       throw new Error('Nessun dato materiale da aggiornare.');
     }
-
-    console.log('[materialStore.update] id:', id);
-    console.log('[materialStore.update] payload:', payload);
 
     const { data, error } = await supabase
       .from('materiali')

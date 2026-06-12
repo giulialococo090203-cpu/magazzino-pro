@@ -2,6 +2,8 @@
 // SUBSCRIPTION PLANS - Gestione funzionalità per abbonamento
 // ============================================================
 
+import { isSuperAdminUser } from './permissions';
+
 export const SUBSCRIPTION_PLANS = {
   base: {
     label: 'Base',
@@ -132,57 +134,92 @@ export function normalizeSubscriptionPlan(plan) {
   return 'base';
 }
 
-export function getUserPlan(user) {
-  return normalizeSubscriptionPlan(
+function getUserCompanyId(user = {}) {
+  return String(
+    user?.azienda_id ||
+      user?.companyId ||
+      user?.company_id ||
+      user?.selectedCompany?.id ||
+      user?.selectedCompany?.companyId ||
+      user?.selectedCompany?.company_id ||
+      user?.azienda?.id ||
+      user?.company?.id ||
+      ''
+  )
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * SINGOLA FUNZIONE CENTRALE per risolvere il piano di abbonamento.
+ *
+ * Priorità:
+ * 1. Super admin / programmatori → sempre 'enterprise'
+ * 2. Azienda nota con piano hardcoded (cl_thermoservice → enterprise)
+ * 3. Piano letto da companyProfile (reale da Supabase)
+ * 4. Piano letto dal profilo utente / selectedCompany
+ * 5. Fallback 'base'
+ */
+export function resolveSubscriptionPlan(userOrPlan) {
+  if (typeof userOrPlan === 'string') {
+    return normalizeSubscriptionPlan(userOrPlan);
+  }
+
+  const user = userOrPlan || {};
+
+  // Super admin e programmatori: accesso enterprise completo
+  if (isSuperAdminUser(user)) {
+    return 'enterprise';
+  }
+
+  const companyId = getUserCompanyId(user);
+
+  /*
+   * CL Thermoservice è configurata come azienda Enterprise.
+   * Questo controllo evita che una vecchia sessione locale con piano
+   * mancante o "base" nasconda le funzionalità Enterprise.
+   */
+  if (companyId === 'cl_thermoservice') {
+    return 'enterprise';
+  }
+
+  const rawPlan =
     user?.subscriptionPlan ||
-      user?.plan ||
-      user?.piano ||
-      user?.selectedCompany?.plan ||
-      user?.selectedCompany?.piano
-  );
+    user?.subscription_plan ||
+    user?.plan ||
+    user?.piano ||
+    user?.abbonamento ||
+    user?.selectedCompany?.subscriptionPlan ||
+    user?.selectedCompany?.subscription_plan ||
+    user?.selectedCompany?.plan ||
+    user?.selectedCompany?.piano ||
+    user?.azienda?.piano ||
+    user?.company?.plan ||
+    user?.company?.piano ||
+    '';
+
+  return normalizeSubscriptionPlan(rawPlan);
+}
+
+export function getUserPlan(user) {
+  return resolveSubscriptionPlan(user);
 }
 
 export function hasPlanFeature(userOrPlan, feature) {
-  const plan =
-    typeof userOrPlan === 'string'
-      ? normalizeSubscriptionPlan(userOrPlan)
-      : getUserPlan(userOrPlan);
+  if (!feature) return true;
 
-  return PLAN_FEATURES[plan]?.has(feature) || false;
+  // Super admin e programmatori bypassano tutti i controlli di piano
+  if (userOrPlan && typeof userOrPlan === 'object' && isSuperAdminUser(userOrPlan)) {
+    return true;
+  }
+
+  const plan = resolveSubscriptionPlan(userOrPlan);
+
+  return Boolean(PLAN_FEATURES[plan]?.has(feature));
 }
 
 export function getPlanLabel(planOrUser) {
-  if (planOrUser && typeof planOrUser === 'object') {
-    const role = String(planOrUser.role || planOrUser.ruolo || '').toLowerCase();
-    const companyId = String(
-      planOrUser.azienda_id ||
-      planOrUser.companyId ||
-      planOrUser.company_id ||
-      ''
-    ).toLowerCase();
+  const plan = resolveSubscriptionPlan(planOrUser);
 
-    if (role === 'datore' && companyId === 'cl_thermoservice') {
-      return 'Enterprise';
-    }
-
-    const userPlan =
-      planOrUser.piano ||
-      planOrUser.plan ||
-      planOrUser.subscription_plan ||
-      planOrUser.abbonamento ||
-      planOrUser.azienda?.piano ||
-      planOrUser.company?.plan ||
-      '';
-
-    const normalizedUserPlan = String(userPlan || '').toLowerCase();
-
-    if (SUBSCRIPTION_PLANS[normalizedUserPlan]) {
-      return SUBSCRIPTION_PLANS[normalizedUserPlan].label;
-    }
-
-    return role === 'datore' ? 'Enterprise' : 'Base';
-  }
-
-  const normalized = String(planOrUser || '').toLowerCase();
-  return SUBSCRIPTION_PLANS[normalized]?.label || 'Base';
+  return SUBSCRIPTION_PLANS[plan]?.label || SUBSCRIPTION_PLANS.base.label;
 }

@@ -10,6 +10,7 @@ export default function GestioneCategorie() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const refresh = async () => {
@@ -18,6 +19,9 @@ export default function GestioneCategorie() {
       setCategories(cats);
     } catch (err) {
       console.error('Errore refresh categorie:', err);
+      setError(
+        err?.message || 'Impossibile caricare le categorie.'
+      );
     }
   };
   useEffect(() => { refresh(); }, []);
@@ -36,31 +40,96 @@ export default function GestioneCategorie() {
     setShowModal(true);
   };
 
+  const writeAuditLogSafely = async (payload) => {
+    try {
+      await adminLogStore.create(payload);
+    } catch (logError) {
+      console.warn('Registro modifiche non aggiornato:', logError);
+    }
+  };
+
   const handleSave = async () => {
-    if (!form.name.trim()) { setError('Il nome è obbligatorio'); return; }
+    const cleanName = form.name.trim();
+
+    if (!cleanName) {
+      setError('Il nome è obbligatorio');
+      return;
+    }
+
+    setError('');
+    setSaving(true);
+
     try {
       if (editItem) {
-        await categoryStore.update(editItem.id, form);
-        await adminLogStore.create({ action: 'Modifica categoria', entity: 'categoria', entityId: editItem.id, details: `Categoria "${form.name}" modificata`, userId: user.id, userName: user.fullName });
+        const updated = await categoryStore.update(editItem.id, {
+          ...form,
+          name: cleanName,
+        });
+
+        await writeAuditLogSafely({
+          action: 'Modifica categoria',
+          entity: 'categoria',
+          entityId: updated?.id || editItem.id,
+          details: `Categoria "${cleanName}" modificata`,
+          userId: user?.id || null,
+          userName: user?.fullName || user?.username || 'Utente',
+        });
       } else {
-        await categoryStore.create(form);
-        await adminLogStore.create({ action: 'Nuova categoria', entity: 'categoria', details: `Categoria "${form.name}" creata`, userId: user.id, userName: user.fullName });
+        const created = await categoryStore.create({
+          ...form,
+          name: cleanName,
+        });
+
+        await writeAuditLogSafely({
+          action: 'Nuova categoria',
+          entity: 'categoria',
+          entityId: created?.id || null,
+          details: `Categoria "${cleanName}" creata`,
+          userId: user?.id || null,
+          userName: user?.fullName || user?.username || 'Utente',
+        });
       }
+
       await refresh();
       setShowModal(false);
+      setEditItem(null);
+      setForm({ name: '', description: '' });
     } catch (err) {
-      setError(err.message);
+      console.error('Errore salvataggio categoria:', err);
+      setError(
+        err?.message || 'Errore durante il salvataggio della categoria.'
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (cat) => {
+    setError('');
+    setSaving(true);
+
     try {
       await categoryStore.delete(cat.id);
-      await adminLogStore.create({ action: 'Eliminazione categoria', entity: 'categoria', entityId: cat.id, details: `Categoria "${cat.name}" eliminata`, userId: user.id, userName: user.fullName });
+
+      await writeAuditLogSafely({
+        action: 'Eliminazione categoria',
+        entity: 'categoria',
+        entityId: cat.id,
+        details: `Categoria "${cat.name}" eliminata`,
+        userId: user?.id || null,
+        userName: user?.fullName || user?.username || 'Utente',
+      });
+
       setConfirmDelete(null);
       await refresh();
     } catch (err) {
       console.error('Errore eliminazione categoria:', err);
+      setError(
+        err?.message || 'Errore durante l’eliminazione della categoria.'
+      );
+      setConfirmDelete(null);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -125,7 +194,9 @@ export default function GestioneCategorie() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Annulla</button>
-              <button className="btn btn-primary" onClick={handleSave}>{editItem ? 'Salva Modifiche' : 'Crea Categoria'}</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Salvataggio...' : editItem ? 'Salva Modifiche' : 'Crea Categoria'}
+              </button>
             </div>
           </div>
         </div>
@@ -145,7 +216,13 @@ export default function GestioneCategorie() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>Annulla</button>
-              <button className="btn btn-danger" onClick={() => handleDelete(confirmDelete)}>Elimina</button>
+              <button
+                className="btn btn-danger"
+                onClick={() => handleDelete(confirmDelete)}
+                disabled={saving}
+              >
+                {saving ? 'Eliminazione...' : 'Elimina'}
+              </button>
             </div>
           </div>
         </div>

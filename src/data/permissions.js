@@ -14,13 +14,13 @@ export const PERMISSIONS = [
   {
     key: 'canExportInventory',
     label: 'Esporta inventario',
-    description: 'Può esportare l’inventario in Excel, CSV o PDF',
+    description: 'Può esportare l\u2019inventario in Excel, CSV o PDF',
     group: 'Magazzino',
   },
   {
     key: 'canManageReorderProposals',
     label: 'Riordino automatico',
-    description: 'Può generare proposte d’ordine dai materiali sotto soglia',
+    description: 'Può generare proposte d\u2019ordine dai materiali sotto soglia',
     group: 'Magazzino',
   },
   {
@@ -69,7 +69,7 @@ export const PERMISSIONS = [
     key: 'canImportInvoices',
     label: 'Importa fatture / archivio fatture',
     description:
-      'Può importare fatture, inserire componenti manualmente e vedere l’archivio dei documenti caricati',
+      'Può importare fatture, inserire componenti manualmente e vedere l\u2019archivio dei documenti caricati',
     group: 'Fatture',
   },
   {
@@ -105,7 +105,7 @@ export const PERMISSIONS = [
   {
     key: 'canManageMaterials',
     label: 'Anagrafica materiali',
-    description: 'Può modificare l’anagrafica completa dei materiali',
+    description: 'Può modificare l\u2019anagrafica completa dei materiali',
     group: 'Gestione',
   },
   {
@@ -214,8 +214,81 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     canManageUsers: true,
     canViewAuditLog: true,
   },
+
+  // Ruoli super admin: permessi identici al datore (massimi)
+  sviluppatore: {
+    canViewDashboard: true,
+    canViewInventory: true,
+    canExportInventory: true,
+    canManageReorderProposals: true,
+    canPhysicalInventory: true,
+    canMoveIn: true,
+    canMoveOut: true,
+    canReintegrate: true,
+    canRectify: true,
+    canViewHistory: true,
+    canExportMovements: true,
+    canImportInvoices: true,
+    canManageCategories: true,
+    canManageThresholds: true,
+    canManagePriceSettings: true,
+    canViewNotifications: true,
+    canDeleteNotifications: true,
+    canManageMaterials: true,
+    canManageUsers: true,
+    canViewAuditLog: true,
+  },
+
+  super_admin: {
+    canViewDashboard: true,
+    canViewInventory: true,
+    canExportInventory: true,
+    canManageReorderProposals: true,
+    canPhysicalInventory: true,
+    canMoveIn: true,
+    canMoveOut: true,
+    canReintegrate: true,
+    canRectify: true,
+    canViewHistory: true,
+    canExportMovements: true,
+    canImportInvoices: true,
+    canManageCategories: true,
+    canManageThresholds: true,
+    canManagePriceSettings: true,
+    canViewNotifications: true,
+    canDeleteNotifications: true,
+    canManageMaterials: true,
+    canManageUsers: true,
+    canViewAuditLog: true,
+  },
+
+  admin_tecnico: {
+    canViewDashboard: true,
+    canViewInventory: true,
+    canExportInventory: true,
+    canManageReorderProposals: true,
+    canPhysicalInventory: true,
+    canMoveIn: true,
+    canMoveOut: true,
+    canReintegrate: true,
+    canRectify: true,
+    canViewHistory: true,
+    canExportMovements: true,
+    canImportInvoices: true,
+    canManageCategories: true,
+    canManageThresholds: true,
+    canManagePriceSettings: true,
+    canViewNotifications: true,
+    canDeleteNotifications: true,
+    canManageMaterials: true,
+    canManageUsers: true,
+    canViewAuditLog: true,
+  },
 };
 
+/**
+ * Normalizza il ruolo utente verso uno dei valori canonici.
+ */
 export function normalizeRole(role) {
   const normalized = String(role || '').trim().toLowerCase();
 
@@ -225,6 +298,25 @@ export function normalizeRole(role) {
   if (normalized === 'operatore') return 'magazziniere';
 
   return normalized || 'operaio';
+}
+
+/**
+ * Restituisce true se il ruolo è un super admin / programmatore.
+ */
+export function isSuperAdminRole(role) {
+  const r = String(role || '').trim().toLowerCase();
+  return r === 'sviluppatore' || r === 'super_admin' || r === 'admin_tecnico';
+}
+
+/**
+ * Restituisce true se l'utente è un super admin o programmatore
+ * (basato su ruolo e/o email di fallback).
+ */
+export function isSuperAdminUser(user = {}) {
+  return (
+    isSuperAdminRole(user?.role) ||
+    String(user?.email || '').trim().toLowerCase() === 'giulia@gmail.com'
+  );
 }
 
 export function getDefaultPermissionsByRole(role) {
@@ -237,6 +329,12 @@ export function getDefaultPermissionsByRole(role) {
 
 export function getEffectivePermissions(user) {
   const role = normalizeRole(user?.role);
+
+  // Super admin / programmatore: tutti i permessi, nessuna restrizione
+  if (isSuperAdminRole(role)) {
+    return { ...DEFAULT_ROLE_PERMISSIONS.datore };
+  }
+
   const base = getDefaultPermissionsByRole(role);
   const custom =
     user?.permissions && typeof user.permissions === 'object'
@@ -244,20 +342,14 @@ export function getEffectivePermissions(user) {
       : {};
 
   if (role === 'datore') {
+    /*
+     * Il datore conserva sempre tutti i permessi del ruolo.
+     * Eventuali valori personalizzati non possono togliere
+     * le funzionalità principali dell'account aziendale.
+     */
     return {
-      ...DEFAULT_ROLE_PERMISSIONS.datore,
       ...custom,
-      canViewDashboard: true,
-      canManageUsers: true,
-      canRectify: true,
-      canViewHistory: true,
-      canExportMovements: true,
-      canImportInvoices: true,
-      canManageReorderProposals: true,
-      canPhysicalInventory: true,
-      canManagePriceSettings: true,
-      canViewNotifications: true,
-      canDeleteNotifications: true,
+      ...DEFAULT_ROLE_PERMISSIONS.datore,
     };
   }
 
@@ -268,6 +360,9 @@ export function getEffectivePermissions(user) {
 }
 
 export function hasPermission(user, permissionKey) {
+  // Super admin e programmatori bypassano sempre i controlli
+  if (isSuperAdminUser(user)) return true;
+
   const permissions = getEffectivePermissions(user);
   return Boolean(permissions?.[permissionKey]);
 }

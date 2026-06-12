@@ -1,5 +1,5 @@
 // ============================================================
-// AUTHSTORE.JS - Firebase Auth + profilo utente Firestore
+// AUTHSTORE.JS - Firebase Auth + profilo utente Firestore/Supabase
 // ============================================================
 
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -151,6 +151,25 @@ async function getSupabaseUserProfile(firebaseUser, email) {
   return null;
 }
 
+async function getSupabaseCompanyProfile(companyId) {
+  const cleanCompanyId = readString(companyId);
+
+  if (!cleanCompanyId) return null;
+
+  const { data, error } = await supabase
+    .from('aziende')
+    .select('id, nome, codice, piano, attiva, stato_abbonamento')
+    .eq('id', cleanCompanyId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('Profilo azienda Supabase non leggibile:', error);
+    return null;
+  }
+
+  return data || null;
+}
+
 export const authStore = {
   async authenticate(email, password) {
     const cleanEmail = readString(email);
@@ -174,13 +193,6 @@ export const authStore = {
 
     if (userSnap.exists()) {
       profile = userSnap.data() || {};
-
-      console.log('Profilo utente Firestore:', {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        profile,
-        companyIdLetto: getCompanyIdFromProfile(profile),
-      });
     } else {
       profile = await getSupabaseUserProfile(firebaseUser, cleanEmail);
 
@@ -192,16 +204,38 @@ export const authStore = {
           `Utente autenticato, ma profilo applicazione non trovato né in Firestore né in Supabase. UID: ${firebaseUser.uid}`
         );
       }
-
-      console.log('Profilo utente Supabase:', {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        profile,
-        companyIdLetto: getCompanyIdFromProfile(profile),
-      });
     }
 
-    const appUser = normalizeUserProfile(firebaseUser, profile);
+    let appUser = normalizeUserProfile(firebaseUser, profile);
+
+    const companyProfile = await getSupabaseCompanyProfile(appUser.companyId);
+
+    const companyPlan =
+      companyProfile?.piano ||
+      profile?.subscriptionPlan ||
+      profile?.subscription_plan ||
+      profile?.plan ||
+      profile?.piano ||
+      'base';
+
+    appUser = {
+      ...appUser,
+      azienda_id: appUser.companyId,
+      plan: companyPlan,
+      piano: companyPlan,
+      subscriptionPlan: companyPlan,
+      company: companyProfile
+        ? {
+            id: companyProfile.id,
+            name: companyProfile.nome,
+            nome: companyProfile.nome,
+            code: companyProfile.codice,
+            codice: companyProfile.codice,
+            plan: companyPlan,
+            piano: companyPlan,
+          }
+        : null,
+    };
 
     if (!appUser.active) {
       await signOut(firebaseAuth);
@@ -223,13 +257,33 @@ export const authStore = {
       await signOut(firebaseAuth);
       localStorage.removeItem(CURRENT_USER_KEY);
 
-      throw new Error('Questo utente non appartiene all’azienda selezionata.');
+      throw new Error('Questo utente non appartiene all\u2019azienda selezionata.');
     }
+
+    const effectiveSelectedCompany = selectedCompany
+      ? {
+          ...selectedCompany,
+          plan: selectedCompany.plan || selectedCompany.piano || companyPlan,
+          piano: selectedCompany.piano || selectedCompany.plan || companyPlan,
+        }
+      : companyProfile
+        ? {
+            id: companyProfile.id,
+            companyId: companyProfile.id,
+            company_id: companyProfile.id,
+            name: companyProfile.nome,
+            nome: companyProfile.nome,
+            code: companyProfile.codice,
+            codice: companyProfile.codice,
+            plan: companyPlan,
+            piano: companyPlan,
+          }
+        : null;
 
     const userWithCompany = {
       ...appUser,
-      selectedCompany: selectedCompany || null,
-      programmerMode: isProgrammerCompany(selectedCompany),
+      selectedCompany: effectiveSelectedCompany,
+      programmerMode: isProgrammerCompany(effectiveSelectedCompany),
     };
 
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithCompany));
