@@ -461,22 +461,32 @@ export default function Layout({ children }) {
     : baseNavSections;
 
   const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
+  const visibleSectionsKey = visibleSections
+    .map((navSection) => navSection.title)
+    .join('|');
 
   useEffect(() => {
     setMobileOpenSection(null);
 
     if (!activeSectionTitle) return;
 
-    setOpenSections(() => {
+    setOpenSections((previous) => {
       const next = {};
 
       visibleSections.forEach((navSection) => {
         next[navSection.title] = navSection.title === activeSectionTitle;
       });
 
-      return next;
+      const previousKeys = Object.keys(previous);
+      const nextKeys = Object.keys(next);
+
+      const isUnchanged =
+        previousKeys.length === nextKeys.length &&
+        nextKeys.every((key) => previous[key] === next[key]);
+
+      return isUnchanged ? previous : next;
     });
-  }, [activeSectionTitle, location.pathname, visibleSections]);
+  }, [activeSectionTitle, location.pathname, visibleSectionsKey]);
 
   const toggleSection = (title) => {
     setOpenSections((prev) => {
