@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import {
   materialStore,
   movementStore,
-  priceHistoryStore,
   adminLogStore,
 } from '../../data/store';
 import { useAuth } from '../../App';
@@ -39,17 +38,7 @@ function writeRendicontazioneCache(patch) {
   }
 }
 
-function getDefaultRendicontazioneRange() {
-  const today = new Date();
-  const from = new Date();
 
-  from.setDate(from.getDate() - 30);
-
-  return {
-    dateFrom: from.toISOString().slice(0, 10),
-    dateTo: today.toISOString().slice(0, 10),
-  };
-}
 
 
 function formatCurrency(value = 0) {
@@ -129,7 +118,7 @@ export default function RendicontazioneEconomica() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     try {
       setLoading(false);
       setError('');
@@ -169,11 +158,11 @@ export default function RendicontazioneEconomica() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period, selectedYear, selectedMonth]);
 
   useEffect(() => {
     refresh();
-  }, [period, selectedYear, selectedMonth]);
+  }, [refresh]);
 
   const materialById = useMemo(
     () => new Map(materials.map((material) => [String(material.id), material])),

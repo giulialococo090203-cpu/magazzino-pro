@@ -30,41 +30,6 @@ function getVariation(current = 0, previous = 0) {
 
   if (prev <= 0) return null;
 
-  const deleteSingleRow = async (row) => {
-    if (!row?.id) return;
-
-    const label = `${row.code || ''} ${row.description || ''}`.trim() || 'questa riga';
-
-    const firstConfirm = window.confirm(
-      `Vuoi eliminare questa riga dallo storico prezzi?\n\n${label}`
-    );
-
-    if (!firstConfirm) return;
-
-    const secondConfirm = window.confirm(
-      'Conferma definitiva: questa riga verrà eliminata dallo storico prezzi e non potrà essere recuperata.'
-    );
-
-    if (!secondConfirm) return;
-
-    try {
-      setDeleting(true);
-
-      await priceHistoryStore.delete(row.id);
-
-      setRows((prev) => prev.filter((item) => item.id !== row.id));
-      setSelectedIds((prev) => prev.filter((id) => id !== row.id));
-
-      alert('Riga storico prezzi eliminata.');
-    } catch (err) {
-      console.error('Errore eliminazione riga storico prezzi:', err);
-      alert(err?.message || 'Errore durante l’eliminazione della riga.');
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-
   return ((curr - prev) / prev) * 100;
 }
 
@@ -186,6 +151,40 @@ export default function StoricoPrezzi() {
     }
 
     setSelectedIds((prev) => [...new Set([...prev, ...filteredIds])]);
+  };
+
+  const deleteSingleRow = async (row) => {
+    if (!row?.id) return;
+
+    const label = `${row.code || ''} ${row.description || ''}`.trim() || 'questa riga';
+
+    const firstConfirm = window.confirm(
+      `Vuoi eliminare questa riga dallo storico prezzi?\n\n${label}`
+    );
+
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm(
+      'Conferma definitiva: questa riga verrà eliminata dallo storico prezzi e non potrà essere recuperata.'
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      setDeleting(true);
+
+      await priceHistoryStore.delete(row.id);
+
+      setRows((prev) => prev.filter((item) => item.id !== row.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== row.id));
+
+      alert('Riga storico prezzi eliminata.');
+    } catch (err) {
+      console.error('Errore eliminazione riga storico prezzi:', err);
+      alert(err?.message || 'Errore durante l’eliminazione della riga.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const deleteSelectedRows = async () => {

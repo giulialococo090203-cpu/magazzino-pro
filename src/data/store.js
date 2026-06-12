@@ -3418,7 +3418,7 @@ if (typeof window !== 'undefined' && !window.__WM_STORE_PERF_PATCHED__) {
       patchStorePerf('movementStore', movementStore);
       patchStorePerf('notificationStore', notificationStore);
       patchStorePerf('userStore', userStore);
-      patchStorePerf('logStore', typeof logStore !== 'undefined' ? logStore : null);
+      patchStorePerf('adminLogStore', typeof adminLogStore !== 'undefined' ? adminLogStore : null);
       patchStorePerf('invoiceImportStore', typeof invoiceImportStore !== 'undefined' ? invoiceImportStore : null);
       patchStorePerf('reorderProposalStore', typeof reorderProposalStore !== 'undefined' ? reorderProposalStore : null);
       patchStorePerf('statsStore', typeof statsStore !== 'undefined' ? statsStore : null);

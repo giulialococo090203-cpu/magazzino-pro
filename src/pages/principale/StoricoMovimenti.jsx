@@ -110,7 +110,7 @@ function formatReason(r) {
 function sanitizeFileName(value) {
   return String(value || '')
     .trim()
-    .replace(/[^\w\-]+/g, '_')
+    .replace(/[^\w-]+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '');
 }
@@ -549,7 +549,6 @@ export default function StoricoMovimenti() {
 
     if (userLabel) filterDescriptions.push(`Utente: ${userLabel}`);
     if (selectedOperatorLabel) filterDescriptions.push(`Operatore: ${selectedOperatorLabel}`);
-    if (selectedOperatorLabel) filterDescriptions.push(`Operatore: ${selectedOperatorLabel}`);
     if (categoryLabel) filterDescriptions.push(`Categoria: ${categoryLabel}`);
     if (materialLabel) {
       filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
@@ -600,7 +599,6 @@ export default function StoricoMovimenti() {
         fillColor: PDF_COLORS.graphite,
         textColor: PDF_COLORS.white,
         lineColor: PDF_COLORS.orange,
-        textColor: PDF_COLORS.white,
         fontStyle: 'bold',
       },
       alternateRowStyles: {
@@ -687,6 +685,7 @@ export default function StoricoMovimenti() {
     const materialLabel = materials.find((m) => String(m.id) === String(filterMaterial));
 
     if (userLabel) filterDescriptions.push(`Utente: ${userLabel}`);
+    if (selectedOperatorLabel) filterDescriptions.push(`Operatore: ${selectedOperatorLabel}`);
     if (categoryLabel) filterDescriptions.push(`Categoria: ${categoryLabel}`);
     if (materialLabel) {
       filterDescriptions.push(`Materiale: ${materialLabel.code} - ${materialLabel.description}`);
@@ -753,7 +752,6 @@ export default function StoricoMovimenti() {
           fillColor: PDF_COLORS.graphite,
           textColor: PDF_COLORS.white,
           lineColor: PDF_COLORS.orange,
-          textColor: PDF_COLORS.white,
           fontStyle: 'bold',
         },
         alternateRowStyles: {

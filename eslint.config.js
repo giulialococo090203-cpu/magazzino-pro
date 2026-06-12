@@ -24,6 +24,24 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+  {
+    files: [
+      '*.js',
+      'scripts/**/*.js',
+      'functions/**/*.js',
+      'server.js',
+      'check_*.js',
+      'seed_*.js',
+      'reset_*.js',
+      'create_test_*.js'
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
 ])

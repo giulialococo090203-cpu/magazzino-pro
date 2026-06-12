@@ -1,4 +1,4 @@
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../App';
 import { notificationStore } from '../data/store';
 import {
@@ -360,7 +360,6 @@ function getActiveSectionTitle(pathname, sections) {
 
 export default function Layout({ children }) {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -444,16 +443,22 @@ export default function Layout({ children }) {
     .toUpperCase()
     .slice(0, 2);
 
-  const visibleSections = programmerMode
-    ? PROGRAMMER_NAV_SECTIONS
-    : NAV_SECTIONS.map((navSection) => {
-        const visibleItems = navSection.items.filter((item) =>
-          hasPermission(user, item.permission) &&
-          (!item.feature || hasPlanFeature(user, item.feature))
-        );
+  const isSuperCompanyContext =
+    String(user?.selectedCompany?.id || '').trim().toLowerCase() === 'programmatore' ||
+    String(user?.selectedCompany?.code || '').trim().toUpperCase() === 'PROGRAMMATORE';
 
-        return { ...navSection, items: visibleItems };
-      }).filter((navSection) => navSection.items.length > 0);
+  const baseNavSections = NAV_SECTIONS.map((navSection) => {
+    const visibleItems = navSection.items.filter((item) =>
+      hasPermission(user, item.permission) &&
+      (!item.feature || hasPlanFeature(user, item.feature))
+    );
+
+    return { ...navSection, items: visibleItems };
+  }).filter((navSection) => navSection.items.length > 0);
+
+  const visibleSections = programmerMode
+    ? (isSuperCompanyContext ? PROGRAMMER_NAV_SECTIONS : [...PROGRAMMER_NAV_SECTIONS, ...baseNavSections])
+    : baseNavSections;
 
   const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
 
@@ -462,7 +467,7 @@ export default function Layout({ children }) {
 
     if (!activeSectionTitle) return;
 
-    setOpenSections((prev) => {
+    setOpenSections(() => {
       const next = {};
 
       visibleSections.forEach((navSection) => {
@@ -471,7 +476,7 @@ export default function Layout({ children }) {
 
       return next;
     });
-  }, [activeSectionTitle, location.pathname]);
+  }, [activeSectionTitle, location.pathname, visibleSections]);
 
   const toggleSection = (title) => {
     setOpenSections((prev) => {

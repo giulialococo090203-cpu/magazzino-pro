@@ -47,7 +47,7 @@ function sanitizeFileName(value) {
     .trim()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\w\-]+/g, '_')
+    .replace(/[^\w-]+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '');
 }
@@ -508,7 +508,6 @@ export default function RiordinoAutomatico() {
         fillColor: PDF_COLORS.graphite,
         textColor: PDF_COLORS.white,
         lineColor: PDF_COLORS.orange,
-        textColor: PDF_COLORS.white,
         fontStyle: 'bold',
       },
       alternateRowStyles: {

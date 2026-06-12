@@ -128,51 +128,6 @@ async function firebaseCreateOrSignInUser(env, { email, password, fullName }) {
   throw new Error(code || 'Errore creazione utente Firebase.');
 }
 
-async function firestoreSetUser(env, uid, profile, idToken) {
-  const projectId = env.VITE_FIREBASE_PROJECT_ID || env.FIREBASE_PROJECT_ID;
-
-  if (!projectId) {
-    throw new Error('FIREBASE_PROJECT_ID non configurato nel backend.');
-  }
-
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=active&updateMask.fieldPaths=companyId&updateMask.fieldPaths=company_id&updateMask.fieldPaths=email&updateMask.fieldPaths=fullName&updateMask.fieldPaths=nome&updateMask.fieldPaths=role&updateMask.fieldPaths=ruolo&updateMask.fieldPaths=permissions&updateMask.fieldPaths=permessi&updateMask.fieldPaths=createdAt&updateMask.fieldPaths=updatedAt`;
-
-  const now = new Date().toISOString();
-
-  const body = {
-    fields: {
-      active: { booleanValue: true },
-      companyId: { stringValue: profile.companyId },
-      company_id: { stringValue: profile.companyId },
-      email: { stringValue: profile.email },
-      fullName: { stringValue: profile.fullName },
-      nome: { stringValue: profile.fullName },
-      role: { stringValue: profile.role },
-      ruolo: { stringValue: profile.role },
-      permissions: { mapValue: { fields: {} } },
-      permessi: { mapValue: { fields: {} } },
-      createdAt: { timestampValue: now },
-      updatedAt: { timestampValue: now },
-    },
-  };
-
-  const response = await fetch(url, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${idToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(payload?.error?.message || 'Errore salvataggio profilo Firestore.');
-  }
-
-  return payload;
-}
 
 async function supabaseRequest(env, path, options = {}) {
   const url = `${env.VITE_SUPABASE_URL}/rest/v1/${path}`;
@@ -312,7 +267,6 @@ export async function onRequestPost(context) {
     });
 
     const uid = firebaseUser.localId;
-    const newUserIdToken = firebaseUser.idToken;
 
     // Non scrivo il profilo Firestore da qui: alcune regole Firestore lo bloccano.
     // La fonte compatibile per l'app resta Supabase "utenti", collegata al Firebase uid.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { companyStore } from '../../data/store';
+import { authStore } from '../../data/authStore';
 import { useAuth } from '../../App';
 import FaIcon from '../../components/FaIcon';
 import { firebaseAuth } from '../../firebaseClient';
@@ -614,6 +615,24 @@ export default function GestioneAziende() {
     }
   };
 
+  const handleEnterCompany = (company) => {
+    try {
+      companyStore.setSelected(company);
+      const currentUser = authStore.getCurrentUser();
+      if (currentUser) {
+        // Forza l'impostazione dell'azienda ma mantieni il flag programmerMode vero
+        currentUser.selectedCompany = { ...company };
+        currentUser.programmerMode = true;
+        authStore.setCurrentUser(currentUser);
+        // Forza un full reload in modo che l'app reinizializzi layout e contesti
+        window.location.href = '/';
+      }
+    } catch (err) {
+      console.error('Errore entrata in azienda:', err);
+      setError('Impossibile entrare nel contesto aziendale.');
+    }
+  };
+
   if (!allowed) {
     return (
       <div className="animate-slideUp">
@@ -970,6 +989,10 @@ export default function GestioneAziende() {
 
                         <button className="btn btn-sm btn-secondary" onClick={() => startEdit(company)}>
                           Modifica
+                        </button>
+
+                        <button className="btn btn-sm btn-primary" onClick={() => handleEnterCompany(company)}>
+                          <FaIcon name="login" className="ui-inline-icon" /> Entra
                         </button>
 
                         <button className="btn btn-sm btn-secondary" onClick={() => openOwnerCreator(company)}>

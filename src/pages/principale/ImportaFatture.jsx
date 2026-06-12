@@ -211,7 +211,7 @@ export default function ImportaFatture() {
   const [lastFile, setLastFile] = useState(null);
 
   const [scanDetected, setScanDetected] = useState(false);
-  const [scanMessage, setScanMessage] = useState('');
+  const [, setScanMessage] = useState('');
   const [scanRows, setScanRows] = useState([createEmptyRow()]);
 
   const [invoiceRecord, setInvoiceRecord] = useState(null);
@@ -586,7 +586,7 @@ export default function ImportaFatture() {
           brand: brand || existing?.brand || recognition.bestMatch?.original?.brand || 'Da assegnare',
           minThreshold: existing?.minThreshold || 10,
           location: location || existing?.location || 'A1-01',
-          supplier: chooseImportedSupplier(typeof supplierFromRow !== 'undefined' ? supplierFromRow : row?.[8], brand, existing?.supplier),
+          supplier: chooseImportedSupplier(row?.[8], brand, existing?.supplier),
           notes: `Import: ${currentFileName}`,
           existingMaterial: existing,
         };

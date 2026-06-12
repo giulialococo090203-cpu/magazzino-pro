@@ -696,9 +696,7 @@ export default function Dashboard() {
     ? getRemainingBytes(supabaseUsage.totalBytes)
     : getUsageLimitBytes();
 
-  if (!datoreView) {
-    return <Navigate to="/inventario" replace />;
-  }
+
 
   const dashboardOperatorSuggestions = useMemo(() => {
     const fromUsers = Array.isArray(users)
@@ -756,6 +754,10 @@ export default function Dashboard() {
       ),
     ].sort((a, b) => a.localeCompare(b));
   }, [movements]);
+
+  if (!datoreView) {
+    return <Navigate to="/inventario" replace />;
+  }
 
   return (
     <div className="animate-slideUp dashboard-tech-page">
