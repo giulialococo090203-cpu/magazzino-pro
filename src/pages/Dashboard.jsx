@@ -1,12 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import {
-  statsStore,
   materialStore,
   categoryStore,
   movementStore,
   notificationStore,
-  userStore,
 } from '../data/store';
 import { useAuth } from '../App';
 import { FEATURES, hasPlanFeature } from '../data/subscriptionPlans';
@@ -55,7 +53,7 @@ function readDashboardFastCache() {
   }
 }
 
-function writeDashboardFastCache(patch) {
+function _writeDashboardFastCache(patch) {
   try {
     const prev = readDashboardFastCache();
     localStorage.setItem(
@@ -144,7 +142,7 @@ export default function Dashboard() {
   const canUseClientOperatorMonitoring = hasPlanFeature(user, FEATURES.CLIENTS_OPERATORS);
   const canUseBackupMonitor = hasPlanFeature(user, FEATURES.BACKUP);
 
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalMaterials: 0,
     totalCategories: 0,
@@ -158,7 +156,7 @@ export default function Dashboard() {
   const [categories, setCategories] = useState(() => readDashboardFastCache().categories || []);
   const [notifications, setNotifications] = useState(() => readDashboardFastCache().notifications || []);
   const [movements, setMovements] = useState(() => readDashboardFastCache().movements || []);
-  const [users, setUsers] = useState([]);
+  const [users, _setUsers] = useState([]);
   const [mostMoved, setMostMoved] = useState(() => readDashboardFastCache().mostMoved || []);
   const [entriesVsExits, setEntriesVsExits] = useState(() => readDashboardFastCache().entriesVsExits || []);
 
@@ -599,7 +597,7 @@ export default function Dashboard() {
       .slice(0, 8);
   }, [searchComponent, materials]);
 
-  const operatorSuggestions = useMemo(() => {
+  const _operatorSuggestions = useMemo(() => {
     const q = safeLower(searchOperator.trim());
 
     const fromUsers = users.map((u) => ({
@@ -648,7 +646,7 @@ export default function Dashboard() {
       .slice(0, 30);
   }, [searchOperator, users, movements]);
 
-  const clientSuggestions = useMemo(() => {
+  const _clientSuggestions = useMemo(() => {
     const q = safeLower(searchClient.trim());
 
     const allClients = [

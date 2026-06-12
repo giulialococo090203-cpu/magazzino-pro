@@ -5,7 +5,6 @@ import {
   PERMISSIONS,
   groupPermissions,
   getDefaultPermissionsByRole,
-  getEffectivePermissions,
   normalizeRole,
 } from '../../data/permissions';
 import Icon from '../../components/Icon';

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState } from 'react';
 
 const UNIT_OPTIONS = [
@@ -123,7 +124,6 @@ function UnitDropdown({ value, onChange }) {
 }
 
 export default function ScanInvoiceFallback({
-  fileName,
   rows,
   showInstallerPrice = false,
   onChangeRow,

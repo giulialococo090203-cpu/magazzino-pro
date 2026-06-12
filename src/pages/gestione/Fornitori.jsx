@@ -91,7 +91,7 @@ function isInvoiceMovement(movement) {
 
 function sanitizeSheetName(value = '') {
   return String(value || 'Fornitore')
-    .replace(/[\\/?*\[\]:]/g, ' ')
+    .replace(/[\\/?*[\]:]/g, ' ')
     .slice(0, 31)
     .trim() || 'Fornitore';
 }

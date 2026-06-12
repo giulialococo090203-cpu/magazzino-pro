@@ -40,7 +40,7 @@ const hashPassword = async (password) => {
 
 // --- Utils ---
 const clean = (obj) =>
-  Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
 const normalizeRole = (role) => {
   const normalized = String(role || '').trim().toLowerCase();
