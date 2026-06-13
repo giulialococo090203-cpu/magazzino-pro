@@ -120,14 +120,41 @@ export function getCurrentCompanyId() {
   const currentUser = readJsonStorage('wm_current_user');
   const selectedCompany = getSelectedCompany();
 
-  return (
+  const companyId =
+    selectedCompany?.id ||
+    selectedCompany?.companyId ||
+    selectedCompany?.company_id ||
+    currentUser?.selectedCompany?.id ||
+    currentUser?.selectedCompany?.companyId ||
+    currentUser?.selectedCompany?.company_id ||
     currentUser?.companyId ||
     currentUser?.company_id ||
     currentUser?.aziendaId ||
     currentUser?.azienda_id ||
-    selectedCompany?.id ||
-    DEFAULT_COMPANY_ID
-  );
+    DEFAULT_COMPANY_ID;
+
+  console.log('[getCurrentCompanyId]', {
+    companyId,
+    selectedCompanyId:
+      selectedCompany?.id ||
+      selectedCompany?.companyId ||
+      selectedCompany?.company_id ||
+      null,
+    userCompanyId:
+      currentUser?.companyId ||
+      currentUser?.company_id ||
+      currentUser?.aziendaId ||
+      currentUser?.azienda_id ||
+      null,
+    userSelectedCompanyId:
+      currentUser?.selectedCompany?.id ||
+      currentUser?.selectedCompany?.companyId ||
+      currentUser?.selectedCompany?.company_id ||
+      null,
+    email: currentUser?.email || null,
+  });
+
+  return companyId;
 }
 
 function normalizeCompanyMaxUsers(value) {
@@ -1330,6 +1357,17 @@ export const materialStore = {
     const pageSize = 1000;
 
     const companyId = getCurrentCompanyId();
+
+    const {
+      data: authContext,
+      error: authContextError,
+    } = await supabase.rpc('debug_firebase_auth_context');
+
+    console.log('[POSTGRES AUTH CONTEXT]', {
+      authContext,
+      authContextError,
+      frontendCompanyId: companyId,
+    });
 
     const { count, error: countError } = await supabase
       .from('materiali')

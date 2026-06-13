@@ -34,3 +34,4 @@ backups/
 .env*.local
 .dev.vars
 .wrangler/
+firebase-service-account.json

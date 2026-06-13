@@ -114,41 +114,46 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
   };
 }
 
-async function getSupabaseUserProfile(firebaseUser, email) {
-  const uid = firebaseUser?.uid || '';
-  const cleanEmail = readString(email).toLowerCase();
+async function getSupabaseUserProfile(firebaseUser) {
+  if (!firebaseUser) return null;
 
-  if (!uid && !cleanEmail) return null;
+  const token = await firebaseUser.getIdToken(true);
+  const selectedCompany = readSelectedCompany();
+  const companyId = readString(
+    selectedCompany?.id ||
+    selectedCompany?.companyId ||
+    selectedCompany?.company_id
+  );
 
-  if (uid) {
-    const { data, error } = await supabase
-      .from('utenti')
-      .select('*')
-      .eq('auth_uid', uid)
-      .maybeSingle();
+  const response = await fetch('/api/auth/profile', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ companyId }),
+  });
 
-    if (error) {
-      console.warn('Profilo Supabase non leggibile tramite auth_uid:', error);
-    }
+  const responseText = await response.text();
 
-    if (data) return data;
+  let payload = null;
+
+  try {
+    payload = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    payload = null;
   }
 
-  if (cleanEmail) {
-    const { data, error } = await supabase
-      .from('utenti')
-      .select('*')
-      .eq('email', cleanEmail)
-      .maybeSingle();
+  if (!response.ok) {
+    console.warn(
+      'Profilo Supabase non leggibile tramite API protetta:',
+      payload?.message || responseText
+    );
 
-    if (error) {
-      console.warn('Profilo Supabase non leggibile tramite email:', error);
-    }
-
-    if (data) return data;
+    return null;
   }
 
-  return null;
+  return payload?.profile || null;
 }
 
 async function getSupabaseCompanyProfile(companyId) {
@@ -194,7 +199,7 @@ export const authStore = {
     if (userSnap.exists()) {
       profile = userSnap.data() || {};
     } else {
-      profile = await getSupabaseUserProfile(firebaseUser, cleanEmail);
+      profile = await getSupabaseUserProfile(firebaseUser);
 
       if (!profile) {
         await signOut(firebaseAuth);
