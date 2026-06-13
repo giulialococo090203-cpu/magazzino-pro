@@ -32,3 +32,4 @@ dist-ssr
 backups/
 .vercel
 .env*.local
+.dev.vars

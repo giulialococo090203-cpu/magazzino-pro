@@ -204,6 +204,11 @@ export default function GestioneUtenti() {
       return;
     }
 
+    if (form.password.trim() && form.password.trim().length < 6) {
+      setError('La password deve contenere almeno 6 caratteri');
+      return;
+    }
+
     try {
       const cleanPermissions =
         normalizeRole(form.role) === 'datore'

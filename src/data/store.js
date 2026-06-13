@@ -7,11 +7,11 @@ import { INITIAL_UNITS } from './initialData';
 
 const ADMIN_CREATE_USER_URL =
   import.meta.env.VITE_ADMIN_CREATE_USER_URL ||
-  'https://pdf-parser-vercel-wheat.vercel.app/api/admin/create-user';
+  '/api/admin/create-user';
 
 const ADMIN_DELETE_USER_URL =
   import.meta.env.VITE_ADMIN_DELETE_USER_URL ||
-  'https://pdf-parser-vercel-wheat.vercel.app/api/admin/delete-user';
+  '/api/admin/delete-user';
 const ADMIN_UPDATE_COMPANY_URL =
   import.meta.env.VITE_ADMIN_UPDATE_COMPANY_URL ||
   '/api/admin/update-company';
@@ -1913,15 +1913,43 @@ export const movementStore = {
 
 export const userStore = {
   async getAll() {
-    const { data, error } = await supabase
-      .from('utenti')
-      .select('*')
-      .eq('azienda_id', getCurrentCompanyId())
-      .order('nome');
+    const currentFirebaseUser = firebaseAuth.currentUser;
 
-    if (error) throw error;
+    if (!currentFirebaseUser) {
+      throw new Error('Sessione Firebase non valida.');
+    }
 
-    return data.map(mapUser.toModel);
+    const companyId = getCurrentCompanyId();
+    const token = await currentFirebaseUser.getIdToken(true);
+
+    const response = await fetch('/api/admin/list-users', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ companyId }),
+    });
+
+    const responseText = await response.text();
+
+    let payload = null;
+    try {
+      payload = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        payload?.message ||
+        responseText ||
+        `Errore caricamento utenti (${response.status}).`
+      );
+    }
+
+    const users = Array.isArray(payload?.users) ? payload.users : [];
+    return users.map(mapUser.toModel);
   },
 
   async authenticate(email, password) {
