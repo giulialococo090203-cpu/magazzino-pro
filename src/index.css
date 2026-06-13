@@ -15336,3 +15336,55 @@ body .app-layout .dashboard-monitoring-table {
   width: 100% !important;
 }
 
+
+/* Correzione layout: il contenuto segue l'espansione della sidebar */
+@media (min-width: 641px) {
+  .main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-width: 0;
+    transition:
+      margin-left 0.22s ease,
+      width 0.22s ease;
+  }
+
+  .sidebar:hover ~ .main-content,
+  .sidebar:focus-within ~ .main-content {
+    margin-left: var(--sidebar-expanded-width);
+    width: calc(100% - var(--sidebar-expanded-width));
+  }
+
+  .page-content {
+    min-width: 0;
+    overflow-x: auto;
+  }
+}
+
+/* ============================================================
+   FIX DEFINITIVO SIDEBAR DESKTOP
+   Il contenuto segue realmente la sidebar aperta.
+   ============================================================ */
+@media (min-width: 641px) {
+  .app-layout:not(.is-mobile) .main-content {
+    margin-left: 86px !important;
+    width: calc(100% - 86px) !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    transition:
+      margin-left 220ms ease,
+      width 220ms ease !important;
+  }
+
+  .app-layout:not(.is-mobile) .sidebar:hover ~ .main-content,
+  .app-layout:not(.is-mobile) .sidebar:focus-within ~ .main-content {
+    margin-left: 310px !important;
+    width: calc(100% - 310px) !important;
+  }
+
+  .app-layout:not(.is-mobile) .page-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    overflow-x: auto !important;
+  }
+}
