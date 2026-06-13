@@ -508,7 +508,7 @@ return (
       <aside className="sidebar">
         <div className="sidebar-header">
           <Link to={programmerMode ? '/super/aziende' : getDefaultRouteForUser(user)} className="sidebar-logo">
-            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/optimized/workspace-logo.webp" alt="WorkSpace" />
+            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/workspace-logo.png" alt="WorkSpace" />
             <div className="sidebar-logo-text">
               <h1>WorkSpace</h1>
               <span>{programmerMode ? 'Controllo Software' : 'Gestione Magazzino'}</span>

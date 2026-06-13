@@ -207,7 +207,7 @@ export default function Login({ onLogin }) {
       <main className="mobile-login-view mobile-login-stable-final">
         <section className="mobile-login-phone">
           <div className="mobile-login-top">
-            <div className="workspace-logo-shell workspace-logo-shell-mobile"><img className="workspace-logo-img workspace-logo-img-mobile" src="/optimized/workspace-logo.webp" alt="WorkSpace" /></div>
+            <div className="workspace-logo-shell workspace-logo-shell-mobile"><img className="workspace-logo-img workspace-logo-img-mobile" src="/workspace-logo.png" alt="WorkSpace" /></div>
             <div className="mobile-login-title">WorkSpace</div>
           </div>
 
@@ -232,7 +232,7 @@ export default function Login({ onLogin }) {
     <main className="login-page login-redesign-page login-desktop-view">
       <div className="login-redesign-card">
         <section className="login-redesign-brand" aria-label="WorkSpace">
-          <div className="workspace-logo-shell workspace-logo-shell-big"><img className="workspace-logo-img workspace-logo-img-big" src="/optimized/workspace-logo.webp" alt="WorkSpace" /></div>
+          <div className="workspace-logo-shell workspace-logo-shell-big"><img className="workspace-logo-img workspace-logo-img-big" src="/workspace-logo.png" alt="WorkSpace" /></div>
 
           <div className="login-redesign-brand-content">
             <div className="login-redesign-kicker"></div>
@@ -243,7 +243,7 @@ export default function Login({ onLogin }) {
 
         <section className="login-redesign-form-panel">
           <div className="login-redesign-heading">
-            <div className="workspace-logo-shell workspace-logo-shell-small"><img className="workspace-logo-img workspace-logo-img-small" src="/optimized/workspace-logo.webp" alt="WorkSpace" /></div>
+            <div className="workspace-logo-shell workspace-logo-shell-small"><img className="workspace-logo-img workspace-logo-img-small" src="/workspace-logo.png" alt="WorkSpace" /></div>
             <div>
               <h2>Accedi</h2>
               <p>Centro operativo aziendale</p>
