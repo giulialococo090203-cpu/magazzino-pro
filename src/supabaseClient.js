@@ -1,45 +1,60 @@
-// ============================================================
-// SUPABASECLIENT.JS
-//
-// Firebase Auth gestisce il login.
-// Ogni richiesta Supabase riceve esplicitamente il Firebase
-// ID Token nell'header Authorization.
-//
-// Questo permette alle policy RLS di leggere:
-//   role: "authenticated"
-//   azienda_id
-//   app_role
-// ============================================================
-
 import { createClient } from '@supabase/supabase-js';
+import { onAuthStateChanged } from 'firebase/auth';
 import { firebaseAuth } from './firebaseClient';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Configurazione Supabase mancante: controlla VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.'
-  );
+  throw new Error('Configurazione Supabase mancante.');
 }
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
 
-async function firebaseAuthenticatedFetch(input, init = {}) {
-  const firebaseUser = firebaseAuth.currentUser;
+let firebaseAuthReadyPromise = null;
 
-  let token = null;
-
-  if (firebaseUser) {
-    try {
-      token = await firebaseUser.getIdToken();
-    } catch (error) {
-      console.error(
-        'Impossibile recuperare il token Firebase per Supabase:',
-        error
-      );
-    }
+function waitForFirebaseAuthReady() {
+  if (firebaseAuth.currentUser) {
+    return Promise.resolve(firebaseAuth.currentUser);
   }
+
+  if (!firebaseAuthReadyPromise) {
+    firebaseAuthReadyPromise = new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(
+        firebaseAuth,
+        (user) => {
+          unsubscribe();
+          resolve(user);
+        },
+        (error) => {
+          console.error('Errore inizializzazione Firebase Auth:', error);
+          unsubscribe();
+          resolve(null);
+        }
+      );
+    });
+  }
+
+  return firebaseAuthReadyPromise;
+}
+
+async function getFirebaseToken() {
+  const user = firebaseAuth.currentUser || await waitForFirebaseAuthReady();
+
+  if (!user) {
+    return null;
+  }
+
+  try {
+    return await user.getIdToken();
+  } catch (error) {
+    console.error('Errore recupero token Firebase:', error);
+    return null;
+  }
+}
+
+async function firebaseAuthenticatedFetch(input, init = {}) {
+  const token = await getFirebaseToken();
 
   const sourceHeaders =
     init.headers ||

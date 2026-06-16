@@ -1752,7 +1752,7 @@ export const movementStore = {
       supabase
         .from('movimenti')
         .select(
-          '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
+          '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
         )
         .eq('azienda_id', companyId)
     );
@@ -1762,7 +1762,7 @@ export const movementStore = {
     const { data, error } = await supabase
       .from('movimenti')
       .select(
-        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
+        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
       )
       .eq('materiale_id', materialId)
       .eq('azienda_id', getCurrentCompanyId())
@@ -1825,7 +1825,7 @@ export const movementStore = {
       .from('movimenti')
       .insert(payload)
       .select(
-        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
+        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
       )
       .single();
 
@@ -1839,7 +1839,7 @@ export const movementStore = {
   async getRecent(limit = 10) {
     const { data, error } = await supabase
       .from('movimenti')
-      .select('*, materiali(codice, descrizione, categoria_id), utenti(nome, username)')
+      .select('*, materiali(codice, descrizione, categoria_id)')
       .eq('azienda_id', getCurrentCompanyId())
       .order('data_movimento', { ascending: false })
       .limit(limit);
@@ -1853,7 +1853,7 @@ export const movementStore = {
     let query = supabase
       .from('movimenti')
       .select(
-        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima), utenti(nome, username)'
+        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
       )
       .eq('azienda_id', getCurrentCompanyId());
 

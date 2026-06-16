@@ -540,9 +540,11 @@ export default function ImportaFatture() {
               { materials: trainingData, categories }
             );
 
-        if (!existing && recognition.bestMatch?.type === 'material') {
-          existing = recognition.bestMatch.original;
-        }
+        // IMPORTANTE:
+        // Un codice articolo nuovo non deve mai essere convertito automaticamente
+        // in un materiale esistente solo perché la descrizione è simile.
+        // L'abbinamento a materiali esistenti è ammesso solo per codice identico.
+        // Il riconoscimento fuzzy resta utile per suggerire categorie, non per sovrascrivere il materiale.
 
         let catId =
           existing?.category ||
