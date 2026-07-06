@@ -94,6 +94,7 @@ export default function GestioneUtenti() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const permissionGroups = useMemo(() => groupPermissions(), []);
@@ -194,6 +195,9 @@ export default function GestioneUtenti() {
   };
 
   const handleSave = async () => {
+    // Protezione doppio click durante il salvataggio (evita utenti duplicati).
+    if (saving) return;
+
     if (!form.username.trim() || !form.fullName.trim() || !form.role) {
       setError('Username, nome completo e ruolo sono obbligatori');
       return;
@@ -210,6 +214,8 @@ export default function GestioneUtenti() {
     }
 
     try {
+      setSaving(true);
+
       const cleanPermissions =
         normalizeRole(form.role) === 'datore'
           ? {}
@@ -268,6 +274,8 @@ export default function GestioneUtenti() {
     } catch (err) {
       console.error('Errore salvataggio utente:', err);
       setError(err.message || 'Errore durante il salvataggio utente');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -782,8 +790,8 @@ export default function GestioneUtenti() {
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                 Annulla
               </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                {editItem ? 'Salva Modifiche' : 'Crea Utente'}
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Salvataggio…' : editItem ? 'Salva Modifiche' : 'Crea Utente'}
               </button>
             </div>
           </div>

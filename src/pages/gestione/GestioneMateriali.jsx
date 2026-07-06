@@ -23,6 +23,7 @@ export default function GestioneMateriali() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
   const [deletingSelected, setDeletingSelected] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [isNewCat, setIsNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
 
@@ -91,6 +92,9 @@ export default function GestioneMateriali() {
   };
 
   const handleSave = async () => {
+    // Protezione doppio click durante il salvataggio.
+    if (saving) return;
+
     if (!form.code.trim() || !form.description.trim()) {
       setError('Codice e descrizione sono obbligatori');
       return;
@@ -105,8 +109,10 @@ export default function GestioneMateriali() {
     }
 
     try {
+      setSaving(true);
+
       let categoryId = form.category;
-      
+
       // Se è una nuova categoria, creiamola prima
       if (isNewCat) {
         const newCat = await categoryStore.create({ name: newCatName.trim(), description: 'Creata durante inserimento materiale' });
@@ -146,6 +152,8 @@ export default function GestioneMateriali() {
       setShowModal(false);
     } catch (err) {
       setError(err.message || 'Errore durante il salvataggio materiale.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -407,7 +415,9 @@ export default function GestioneMateriali() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Annulla</button>
-              <button className="btn btn-primary" onClick={handleSave}>{editItem ? 'Salva Modifiche' : 'Crea Materiale'}</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Salvataggio…' : editItem ? 'Salva Modifiche' : 'Crea Materiale'}
+              </button>
             </div>
           </div>
         </div>

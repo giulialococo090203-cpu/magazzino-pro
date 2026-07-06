@@ -130,6 +130,7 @@ export default function MovimentiForm() {
   const [authorizedBy, setAuthorizedBy] = useState('');
   const [operatorName, setOperatorName] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -337,12 +338,17 @@ export default function MovimentiForm() {
   };
 
   const confirmMovement = async () => {
+    // Protezione doppio click: un movimento già in salvataggio non deve ripartire.
+    if (saving) return;
+
     try {
       if (!canUsePage) {
         setError('Non hai i permessi per registrare movimenti di magazzino.');
         setShowConfirm(false);
         return;
       }
+
+      setSaving(true);
 
       await movementStore.create({
         materialId: selectedMaterial,
@@ -360,13 +366,26 @@ export default function MovimentiForm() {
       setSuccess(config.successMsg);
       setShowConfirm(false);
 
-      const updatedMats = await materialStore.getAll();
-      setMaterials(Array.isArray(updatedMats) ? updatedMats : []);
+      // Aggiorna solo il materiale movimentato invece di ricaricare
+      // tutto il magazzino (getAll da migliaia di righe).
+      try {
+        const updatedMaterial = await materialStore.getById(selectedMaterial);
+
+        if (updatedMaterial?.id) {
+          setMaterials((prev) =>
+            prev.map((m) => (m.id === updatedMaterial.id ? updatedMaterial : m))
+          );
+        }
+      } catch {
+        // Il refresh del singolo materiale non è critico: il movimento è già salvato.
+      }
 
       setTimeout(resetFormAfterSuccess, 2500);
     } catch (err) {
       setError(err?.message || 'Errore durante il salvataggio del movimento.');
       setShowConfirm(false);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -838,9 +857,19 @@ export default function MovimentiForm() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowConfirm(false)}>Annulla</button>
-              <button className={`btn ${config.btnClass}`} onClick={confirmMovement}>
-                ✓ Conferma
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowConfirm(false)}
+                disabled={saving}
+              >
+                Annulla
+              </button>
+              <button
+                className={`btn ${config.btnClass}`}
+                onClick={confirmMovement}
+                disabled={saving}
+              >
+                {saving ? 'Salvataggio…' : '✓ Conferma'}
               </button>
             </div>
           </div>
