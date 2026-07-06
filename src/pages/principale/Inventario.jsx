@@ -53,13 +53,25 @@ function canSeeListPrice(role) {
     'magazziniere',
     'datore',
     'admin',
+    // Super admin / programmatore: stessi permessi del datore.
+    'sviluppatore',
+    'super_admin',
+    'admin_tecnico',
   ].includes(normalizeRole(role));
 }
 
 function canSeeInstallerPrice(role) {
-  return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
-    normalizeRole(role)
-  );
+  return [
+    'segretaria',
+    'segreteria',
+    'magazziniere',
+    'datore',
+    'admin',
+    // Super admin / programmatore: stessi permessi del datore.
+    'sviluppatore',
+    'super_admin',
+    'admin_tecnico',
+  ].includes(normalizeRole(role));
 }
 
 function formatCurrency(value) {
@@ -110,6 +122,13 @@ export default function Inventario() {
   const [exportFormat, setExportFormat] = useState('excel');
   const [totalMaterials, setTotalMaterials] = useState(0);
   const [loadingMaterials, setLoadingMaterials] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  // Contatore richieste: scarta le risposte arrivate fuori ordine
+  // (es. l'utente digita velocemente e una pagina "vecchia" arriva dopo quella nuova).
+  const requestIdRef = useRef(0);
+  const isFirstMaterialsLoad = useRef(true);
 
   const searchWrapRef = useRef(null);
   const tableScrollRef = useRef(null);
@@ -125,49 +144,63 @@ export default function Inventario() {
 
   const installerPriceLabel = priceSettings.installerPriceLabel || 'Prezzo installatore';
 
-  const loadMaterialsPage = async () => {
+  const PAGE_SIZE = 200;
+
+  // Carica una pagina di materiali da Supabase (ricerca e filtri lato server).
+  // reset=true ricarica dall'inizio (cambio ricerca/filtri), altrimenti accoda la pagina successiva.
+  const loadMaterialsPage = async ({ reset = false, offset = 0 } = {}) => {
+    const requestId = ++requestIdRef.current;
+
     try {
-      setLoadingMaterials(true);
+      if (reset) {
+        setLoadingMaterials(true);
+      } else {
+        setLoadingMore(true);
+      }
 
-      const allRows = await materialStore.getAll();
-
-      const cleanSearch = String(search || '').trim().toLowerCase();
-
-      const filteredRows = allRows.filter((material) => {
-        const matchesSearch =
-          !cleanSearch ||
-          [
-            material.code,
-            material.description,
-            material.brand,
-            material.supplier,
-            material.location,
-          ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes(cleanSearch));
-
-        const matchesCategory = !filterCategory || material.category === filterCategory;
-        const matchesStatus = !filterStatus || material.status === filterStatus;
-
-        return matchesSearch && matchesCategory && matchesStatus;
+      const page = await materialStore.getPage({
+        search,
+        categoryId: filterCategory,
+        status: filterStatus,
+        limit: PAGE_SIZE,
+        offset: reset ? 0 : offset,
       });
 
-      setTotalMaterials(filteredRows.length);
-      setMaterials(filteredRows);
+      // Risposta obsoleta: nel frattempo è partita una richiesta più recente.
+      if (requestId !== requestIdRef.current) return;
+
+      setTotalMaterials(page.total);
+
+      setMaterials((prev) => {
+        if (reset) return page.rows;
+
+        // Accoda evitando duplicati (protegge da offset leggermente sfasati).
+        const knownIds = new Set(prev.map((m) => m.id));
+        return [...prev, ...page.rows.filter((m) => !knownIds.has(m.id))];
+      });
     } catch (err) {
       console.error('Errore caricamento materiali:', err);
     } finally {
-      setLoadingMaterials(false);
+      if (requestId === requestIdRef.current) {
+        setLoadingMaterials(false);
+        setLoadingMore(false);
+      }
     }
   };
 
-  const refresh = async () => {
+  const loadMore = () => {
+    if (loadingMaterials || loadingMore) return;
+    if (materials.length >= totalMaterials) return;
+
+    loadMaterialsPage({ reset: false, offset: materials.length });
+  };
+
+  const loadCategories = async () => {
     try {
       const cats = await categoryStore.getAll();
       setCategories(Array.isArray(cats) ? cats : []);
-      await loadMaterialsPage({ reset: true });
     } catch (err) {
-      console.error('Errore durante il refresh:', err);
+      console.error('Errore caricamento categorie:', err);
     }
   };
 
@@ -182,7 +215,7 @@ export default function Inventario() {
   };
 
   useEffect(() => {
-    refresh();
+    loadCategories();
     loadPriceSettings();
   }, []);
 
@@ -214,15 +247,21 @@ export default function Inventario() {
     if (q !== null) setSearch(q);
   }, [searchParams]);
 
+  // Unico punto di caricamento materiali: primo render immediato,
+  // poi debounce sui cambi di ricerca/filtri. Niente doppio caricamento al mount.
   useEffect(() => {
+    if (isFirstMaterialsLoad.current) {
+      isFirstMaterialsLoad.current = false;
+      loadMaterialsPage({ reset: true });
+      return;
+    }
+
     const timer = window.setTimeout(() => {
       loadMaterialsPage({ reset: true });
-    }, 250);
+    }, 300);
 
     return () => window.clearTimeout(timer);
   }, [search, filterCategory, filterStatus]);
-
-
 
   useEffect(() => {
     async function loadMovements() {
@@ -278,8 +317,41 @@ export default function Inventario() {
       .slice(0, 8);
   }, [search, materials, categoryNameById]);
 
-  const buildExportRows = () => {
-    return filtered.map((m) => {
+  // Recupera TUTTI i risultati filtrati (tutte le pagine) per l'esportazione,
+  // così l'export non è limitato alle sole righe già caricate in tabella.
+  const EXPORT_MAX_ROWS = 20000;
+
+  const fetchAllFilteredRows = async () => {
+    const all = [];
+    const limit = 500;
+    let offset = 0;
+
+    for (;;) {
+      const page = await materialStore.getPage({
+        search,
+        categoryId: filterCategory,
+        status: filterStatus,
+        limit,
+        offset,
+      });
+
+      all.push(...page.rows);
+      offset += page.rows.length;
+
+      if (
+        page.rows.length < limit ||
+        offset >= Number(page.total || 0) ||
+        all.length >= EXPORT_MAX_ROWS
+      ) {
+        break;
+      }
+    }
+
+    return all;
+  };
+
+  const buildExportRows = (rows) => {
+    return rows.map((m) => {
       const row = {
         Codice: m.code || '',
         Descrizione: m.description || '',
@@ -306,8 +378,8 @@ export default function Inventario() {
     });
   };
 
-  const exportExcel = () => {
-    const data = buildExportRows();
+  const exportExcel = (rows) => {
+    const data = buildExportRows(rows);
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
 
@@ -315,8 +387,8 @@ export default function Inventario() {
     XLSX.writeFile(wb, getExportFileName('xlsx'));
   };
 
-  const exportCSV = () => {
-    const data = buildExportRows();
+  const exportCSV = (exportRows) => {
+    const data = buildExportRows(exportRows);
 
     if (data.length === 0) {
       downloadTextFile('', getExportFileName('csv'), 'text/csv;charset=utf-8;');
@@ -335,7 +407,7 @@ export default function Inventario() {
     downloadTextFile(csvContent, getExportFileName('csv'), 'text/csv;charset=utf-8;');
   };
 
-  const exportPDF = () => {
+  const exportPDF = (rows) => {
     const doc = new jsPDF({ orientation: 'landscape' });
 
     doc.setFontSize(18);
@@ -349,7 +421,7 @@ export default function Inventario() {
       14,
       28
     );
-    doc.text(`Totale materiali esportati: ${filtered.length}`, 14, 34);
+    doc.text(`Totale materiali esportati: ${rows.length}`, 14, 34);
 
     const head = ['Codice', 'Descrizione', 'Marca', 'Categoria', 'Qtà', 'UM'];
 
@@ -358,7 +430,7 @@ export default function Inventario() {
 
     head.push('Stato', 'Posizione', 'Fornitore');
 
-    const tableData = filtered.map((m) => {
+    const tableData = rows.map((m) => {
       const row = [
         m.code || '',
         m.description || '',
@@ -397,21 +469,26 @@ export default function Inventario() {
     doc.save(getExportFileName('pdf'));
   };
 
-  const handleExport = () => {
-    if (!canExportInventory) return;
+  const handleExport = async () => {
+    if (!canExportInventory || exporting) return;
 
-    if (exportFormat === 'excel') {
-      exportExcel();
-      return;
-    }
+    try {
+      setExporting(true);
 
-    if (exportFormat === 'csv') {
-      exportCSV();
-      return;
-    }
+      const rows = await fetchAllFilteredRows();
 
-    if (exportFormat === 'pdf') {
-      exportPDF();
+      if (exportFormat === 'excel') {
+        exportExcel(rows);
+      } else if (exportFormat === 'csv') {
+        exportCSV(rows);
+      } else if (exportFormat === 'pdf') {
+        exportPDF(rows);
+      }
+    } catch (err) {
+      console.error('Errore esportazione inventario:', err);
+      alert('Errore durante l’esportazione. Riprova.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -457,8 +534,12 @@ export default function Inventario() {
               <option value="pdf">PDF (.pdf)</option>
             </select>
 
-            <button onClick={handleExport} className="btn btn-secondary">
-              ⬇️ Esporta inventario
+            <button
+              onClick={handleExport}
+              className="btn btn-secondary"
+              disabled={exporting}
+            >
+              {exporting ? 'Esportazione in corso…' : '⬇️ Esporta inventario'}
             </button>
           </div>
         )}
@@ -474,7 +555,7 @@ export default function Inventario() {
           <input
             type="text"
             className="form-control"
-            placeholder="Cerca per codice, descrizione, marca o categoria..."
+            placeholder="Cerca per codice, descrizione, marca, fornitore o posizione..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -677,6 +758,20 @@ export default function Inventario() {
           </tbody>
         </table>
       </div>
+
+      {!loadingMaterials && materials.length < totalMaterials && (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore
+              ? 'Caricamento…'
+              : `Carica altri (${materials.length} di ${totalMaterials})`}
+          </button>
+        </div>
+      )}
 
       {detailMaterial && (
         <div className="modal-overlay" onClick={() => setDetailMaterial(null)}>

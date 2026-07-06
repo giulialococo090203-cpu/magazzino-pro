@@ -48,15 +48,31 @@ function normalizeRole(role) {
 }
 
 function canImportInvoices(role) {
-  return ['segretaria', 'segreteria', 'magazziniere', 'datore', 'admin'].includes(
-    normalizeRole(role)
-  );
+  return [
+    'segretaria',
+    'segreteria',
+    'magazziniere',
+    'datore',
+    'admin',
+    // Super admin / programmatore: stessi permessi del datore.
+    'sviluppatore',
+    'super_admin',
+    'admin_tecnico',
+  ].includes(normalizeRole(role));
 }
 
 function canViewInstallerPrice(role) {
-  return ['datore', 'segretaria', 'segreteria', 'magazziniere', 'admin'].includes(
-    normalizeRole(role)
-  );
+  return [
+    'datore',
+    'segretaria',
+    'segreteria',
+    'magazziniere',
+    'admin',
+    // Super admin / programmatore: stessi permessi del datore.
+    'sviluppatore',
+    'super_admin',
+    'admin_tecnico',
+  ].includes(normalizeRole(role));
 }
 
 function createImportRowId() {
@@ -674,9 +690,11 @@ export default function ImportaFatture() {
             { materials: trainingData, categories: categories }
           );
 
-      if (!existing && recognition.bestMatch?.type === 'material') {
-        existing = recognition.bestMatch.original;
-      }
+      // IMPORTANTE (stessa regola del percorso di elaborazione principale):
+      // Un codice articolo nuovo non deve mai essere convertito automaticamente
+      // in un materiale esistente solo perché la descrizione è simile.
+      // L'abbinamento a materiali esistenti è ammesso solo per codice identico.
+      // Il riconoscimento fuzzy resta utile per suggerire categorie, non per sovrascrivere il materiale.
 
       let catId =
         existing?.category ||
@@ -1036,6 +1054,9 @@ export default function ImportaFatture() {
   };
 
   const handleConfirmImport = async () => {
+    // Protezione doppio click / doppio invio: un import già in corso non deve ripartire.
+    if (loading) return;
+
     setLoading(true);
     setImportError(null);
     setAssistantAdvice(null);
@@ -1067,6 +1088,13 @@ export default function ImportaFatture() {
       setLoadingProgress({ current: i + 1, total: itemsToProcess.length });
 
       try {
+        const itemQty = Number(item.quantity);
+
+        if (!Number.isFinite(itemQty) || itemQty <= 0) {
+          errors.push(`${item.code}: quantità non valida (${item.quantity})`);
+          continue;
+        }
+
         if (item.isNew && !item.existingMaterial) {
           const dbCheck = await materialStore.getByCode(item.code);
           if (dbCheck) {
@@ -1593,6 +1621,7 @@ export default function ImportaFatture() {
               <thead>
                 <tr>
                   <th style={{ width: 40 }}>✓</th>
+                  <th>Tipo</th>
                   <th>Codice</th>
                   <th>Descrizione</th>
                   <th>Marca</th>
@@ -1603,6 +1632,7 @@ export default function ImportaFatture() {
                   {showInstallerPrice && <th>Installatore -10% +22%</th>}
                   <th>Totale Netto</th>
                   <th>Posizione</th>
+                  <th>Fornitore</th>
                   <th>Categoria</th>
                 </tr>
               </thead>
@@ -1639,6 +1669,21 @@ export default function ImportaFatture() {
                           onChange={(e) => updateItem(idx, 'selected', e.target.checked)}
                           style={{ width: 18, height: 18 }}
                         />
+                      </td>
+
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        <span
+                          className={`status-badge ${
+                            item.isNew ? 'status-sotto_soglia' : 'status-disponibile'
+                          }`}
+                          title={
+                            item.isNew
+                              ? 'Codice nuovo: verrà creato un nuovo materiale'
+                              : 'Codice già in anagrafica: verrà aggiornata la quantità'
+                          }
+                        >
+                          {item.isNew ? 'Nuovo' : 'Esistente'}
+                        </span>
                       </td>
 
                       <td>
@@ -1727,6 +1772,15 @@ export default function ImportaFatture() {
                           value={item.location}
                           onChange={(e) => updateItem(idx, 'location', e.target.value)}
                           style={{ width: 110 }}
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          className="form-control"
+                          value={item.supplier || ''}
+                          onChange={(e) => updateItem(idx, 'supplier', e.target.value)}
+                          style={{ minWidth: 140 }}
                         />
                       </td>
 
@@ -1824,11 +1878,21 @@ export default function ImportaFatture() {
               </ul>
             </div>
             <div className="btn-group">
-              <button className="btn btn-secondary" onClick={() => setStep(2)}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setStep(2)}
+                disabled={loading}
+              >
                 ← Modifica
               </button>
-              <button className="btn btn-success btn-lg" onClick={handleConfirmImport}>
-                ✓ Conferma Importazione
+              <button
+                className="btn btn-success btn-lg"
+                onClick={handleConfirmImport}
+                disabled={loading}
+              >
+                {loading
+                  ? `Importazione in corso… (${loadingProgress.current}/${loadingProgress.total})`
+                  : '✓ Conferma Importazione'}
               </button>
             </div>
           </div>

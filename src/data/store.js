@@ -133,27 +133,6 @@ export function getCurrentCompanyId() {
     currentUser?.azienda_id ||
     DEFAULT_COMPANY_ID;
 
-  console.log('[getCurrentCompanyId]', {
-    companyId,
-    selectedCompanyId:
-      selectedCompany?.id ||
-      selectedCompany?.companyId ||
-      selectedCompany?.company_id ||
-      null,
-    userCompanyId:
-      currentUser?.companyId ||
-      currentUser?.company_id ||
-      currentUser?.aziendaId ||
-      currentUser?.azienda_id ||
-      null,
-    userSelectedCompanyId:
-      currentUser?.selectedCompany?.id ||
-      currentUser?.selectedCompany?.companyId ||
-      currentUser?.selectedCompany?.company_id ||
-      null,
-    email: currentUser?.email || null,
-  });
-
   return companyId;
 }
 
@@ -1358,17 +1337,6 @@ export const materialStore = {
 
     const companyId = getCurrentCompanyId();
 
-    const {
-      data: authContext,
-      error: authContextError,
-    } = await supabase.rpc('debug_firebase_auth_context');
-
-    console.log('[POSTGRES AUTH CONTEXT]', {
-      authContext,
-      authContextError,
-      frontendCompanyId: companyId,
-    });
-
     const { count, error: countError } = await supabase
       .from('materiali')
       .select('id', { count: 'exact', head: true })
@@ -1416,16 +1384,25 @@ export const materialStore = {
       .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
-      const q = cleanSearch.replace(/[%_]/g, '\\$&');
-      query = query.or(
-        [
-          `codice.ilike.%${q}%`,
-          `descrizione.ilike.%${q}%`,
-          `marca.ilike.%${q}%`,
-          `fornitore.ilike.%${q}%`,
-          `posizione_scaffale.ilike.%${q}%`,
-        ].join(',')
-      );
+      // Escapa i jolly di ilike e neutralizza i caratteri riservati della
+      // sintassi .or() di PostgREST (virgole, parentesi, virgolette),
+      // che altrimenti romperebbero la query.
+      const q = cleanSearch
+        .replace(/[%_]/g, '\\$&')
+        .replace(/[,()"']/g, ' ')
+        .trim();
+
+      if (q) {
+        query = query.or(
+          [
+            `codice.ilike.%${q}%`,
+            `descrizione.ilike.%${q}%`,
+            `marca.ilike.%${q}%`,
+            `fornitore.ilike.%${q}%`,
+            `posizione_scaffale.ilike.%${q}%`,
+          ].join(',')
+        );
+      }
     }
 
     if (categoryId) {
@@ -1619,7 +1596,6 @@ export const materialStore = {
       .maybeSingle();
 
     if (error) {
-      console.error('[materialStore.update] Supabase error:', error);
       throw new Error(error.message || 'Errore aggiornamento materiale.');
     }
 
@@ -2580,16 +2556,25 @@ export const invoiceImportStore = {
       .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
-      const q = cleanSearch.replace(/[%_]/g, '\\$&');
-      query = query.or(
-        [
-          `codice.ilike.%${q}%`,
-          `descrizione.ilike.%${q}%`,
-          `marca.ilike.%${q}%`,
-          `fornitore.ilike.%${q}%`,
-          `posizione_scaffale.ilike.%${q}%`,
-        ].join(',')
-      );
+      // Escapa i jolly di ilike e neutralizza i caratteri riservati della
+      // sintassi .or() di PostgREST (virgole, parentesi, virgolette),
+      // che altrimenti romperebbero la query.
+      const q = cleanSearch
+        .replace(/[%_]/g, '\\$&')
+        .replace(/[,()"']/g, ' ')
+        .trim();
+
+      if (q) {
+        query = query.or(
+          [
+            `codice.ilike.%${q}%`,
+            `descrizione.ilike.%${q}%`,
+            `marca.ilike.%${q}%`,
+            `fornitore.ilike.%${q}%`,
+            `posizione_scaffale.ilike.%${q}%`,
+          ].join(',')
+        );
+      }
     }
 
     if (categoryId) {
@@ -2976,16 +2961,25 @@ export const reorderProposalStore = {
       .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
-      const q = cleanSearch.replace(/[%_]/g, '\\$&');
-      query = query.or(
-        [
-          `codice.ilike.%${q}%`,
-          `descrizione.ilike.%${q}%`,
-          `marca.ilike.%${q}%`,
-          `fornitore.ilike.%${q}%`,
-          `posizione_scaffale.ilike.%${q}%`,
-        ].join(',')
-      );
+      // Escapa i jolly di ilike e neutralizza i caratteri riservati della
+      // sintassi .or() di PostgREST (virgole, parentesi, virgolette),
+      // che altrimenti romperebbero la query.
+      const q = cleanSearch
+        .replace(/[%_]/g, '\\$&')
+        .replace(/[,()"']/g, ' ')
+        .trim();
+
+      if (q) {
+        query = query.or(
+          [
+            `codice.ilike.%${q}%`,
+            `descrizione.ilike.%${q}%`,
+            `marca.ilike.%${q}%`,
+            `fornitore.ilike.%${q}%`,
+            `posizione_scaffale.ilike.%${q}%`,
+          ].join(',')
+        );
+      }
     }
 
     if (categoryId) {
@@ -3432,64 +3426,3 @@ export const statsStore = {
   },
 };
 
-// DEBUG PERFORMANCE STORE - temporaneo per beta test
-if (typeof window !== 'undefined' && !window.__WM_STORE_PERF_PATCHED__) {
-  window.__WM_STORE_PERF_PATCHED__ = true;
-
-  const patchStorePerf = (storeName, storeObject) => {
-    if (!storeObject || typeof storeObject !== 'object') return;
-
-    Object.keys(storeObject).forEach((key) => {
-      const original = storeObject[key];
-
-      if (typeof original !== 'function') return;
-      if (original.__perfWrapped) return;
-
-      const wrapped = async function wrappedStoreCall(...args) {
-        const label = `[STORE PERF] ${storeName}.${key}`;
-        const start = performance.now();
-
-        try {
-          const result = await original.apply(this, args);
-          const end = performance.now();
-          const ms = Math.round(end - start);
-
-          let count = '';
-          if (Array.isArray(result)) count = ` | rows=${result.length}`;
-          if (result && Array.isArray(result.data)) count = ` | rows=${result.data.length}`;
-
-          if (ms >= 300) {
-            console.warn(`${label} ${ms}ms${count}`, args);
-          } else {
-            console.info(`${label} ${ms}ms${count}`, args);
-          }
-
-          return result;
-        } catch (error) {
-          const end = performance.now();
-          console.error(`${label} ERRORE ${Math.round(end - start)}ms`, error);
-          throw error;
-        }
-      };
-
-      wrapped.__perfWrapped = true;
-      storeObject[key] = wrapped;
-    });
-  };
-
-  setTimeout(() => {
-    try {
-      patchStorePerf('materialStore', materialStore);
-      patchStorePerf('categoryStore', categoryStore);
-      patchStorePerf('movementStore', movementStore);
-      patchStorePerf('notificationStore', notificationStore);
-      patchStorePerf('userStore', userStore);
-      patchStorePerf('adminLogStore', typeof adminLogStore !== 'undefined' ? adminLogStore : null);
-      patchStorePerf('invoiceImportStore', typeof invoiceImportStore !== 'undefined' ? invoiceImportStore : null);
-      patchStorePerf('reorderProposalStore', typeof reorderProposalStore !== 'undefined' ? reorderProposalStore : null);
-      patchStorePerf('statsStore', typeof statsStore !== 'undefined' ? statsStore : null);
-    } catch (error) {
-      console.warn('[STORE PERF] patch non applicata completamente', error);
-    }
-  }, 0);
-}
