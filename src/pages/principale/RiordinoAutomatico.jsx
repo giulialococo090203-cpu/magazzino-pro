@@ -5,21 +5,10 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const PDF_COLORS = {
-  graphite: [17, 23, 34],
-  graphite2: [31, 41, 55],
-  orange: [255, 106, 24],
-  orangeDark: [217, 67, 8],
-  cream: [255, 249, 243],
-  cream2: [245, 238, 231],
-  border: [214, 220, 229],
-  text: [17, 24, 39],
-  muted: [102, 112, 133],
-  white: [255, 255, 255],
-};
-
 
 import Icon from '../../components/Icon';
+import { PDF_COLORS } from '../../utils/pdfTheme';
+import ComposizioneOrdine from './ComposizioneOrdine';
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('it-IT', {
@@ -97,6 +86,7 @@ export default function RiordinoAutomatico() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [ordineAperto, setOrdineAperto] = useState(false);
 
   const refresh = async () => {
     try {
@@ -357,7 +347,7 @@ export default function RiordinoAutomatico() {
             fontStyle: 'bold',
           },
           alternateRowStyles: {
-            fillColor: [248, 250, 252],
+            fillColor: PDF_COLORS.cream,
           },
           columnStyles: {
             0: { cellWidth: 22 },
@@ -511,7 +501,7 @@ export default function RiordinoAutomatico() {
         fontStyle: 'bold',
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252],
+        fillColor: PDF_COLORS.cream,
       },
     });
 
@@ -544,8 +534,16 @@ export default function RiordinoAutomatico() {
           <button className="btn btn-secondary" onClick={saveProposal} disabled={rowsToExport.length === 0}>
             <Icon name="backup" className="ui-inline-icon" aria-hidden="true" /> Salva proposta
           </button>
-          <button className="btn btn-primary" onClick={exportPDF} disabled={rowsToExport.length === 0}>
+          <button className="btn btn-secondary" onClick={exportPDF} disabled={rowsToExport.length === 0}>
             <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> PDF
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setOrdineAperto(true)}
+            disabled={rowsToExport.length === 0}
+          >
+            <Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /> Prepara
+            ordine
           </button>
         </div>
       </div>
@@ -790,6 +788,20 @@ export default function RiordinoAutomatico() {
           Righe selezionate: {selectedRows.length}. Le esportazioni useranno solo queste righe.
         </div>
       )}
+      {ordineAperto && (
+        <ComposizioneOrdine
+          righeIniziali={rowsToExport}
+          materiali={materials}
+          fornitorePredefinito={filterSupplier}
+          user={user}
+          onChiudi={() => setOrdineAperto(false)}
+          onSalvato={() => {
+            setSuccess('Ordine salvato tra le proposte.');
+            setTimeout(() => setSuccess(''), 4000);
+          }}
+        />
+      )}
+
     </div>
   );
 }

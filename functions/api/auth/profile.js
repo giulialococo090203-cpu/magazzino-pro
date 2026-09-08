@@ -116,9 +116,11 @@ export async function onRequestPost(context) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
+    // Azienda unica: l'id non arriva più dal client.
+    await request.json().catch(() => ({}));
+
     const companyId = String(
-      body?.companyId || body?.company_id || ''
+      env.AZIENDA_ID || env.VITE_AZIENDA_ID || 'cl_thermoservice'
     ).trim();
 
     let path =
@@ -143,17 +145,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    if (profiles.length > 1 && !companyId) {
-      return jsonResponse(
-        {
-          ok: false,
-          message: 'Utente associato a più aziende. Seleziona prima l’azienda.',
-        },
-        409
-      );
-    }
-
-    const profile = profiles[0];
+    const profile = profiles.find((row) => row.attivo !== false) || profiles[0];
 
     if (profile.attivo === false) {
       return jsonResponse(

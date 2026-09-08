@@ -1,3 +1,5 @@
+import { isProgrammerEmail } from '../config/azienda';
+
 export const PERMISSIONS = [
   {
     key: 'canViewDashboard',
@@ -313,10 +315,15 @@ export function isSuperAdminRole(role) {
  * (basato su ruolo e/o email di fallback).
  */
 export function isSuperAdminUser(user = {}) {
-  return (
-    isSuperAdminRole(user?.role) ||
-    String(user?.email || '').trim().toLowerCase() === 'giulia@gmail.com'
-  );
+  return isSuperAdminRole(user?.role) || isProgrammerEmail(user?.email);
+}
+
+/**
+ * Alias esplicito: l'utente può accedere alla parte programmatore/supporto.
+ * L'accesso effettivo richiede comunque il codice d'accesso.
+ */
+export function isProgrammerUser(user = {}) {
+  return isSuperAdminUser(user);
 }
 
 export function getDefaultPermissionsByRole(role) {

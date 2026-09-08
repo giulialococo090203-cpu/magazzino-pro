@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "npx wrangler pages dev --port 8788 -- npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -108,38 +108,6 @@ async function assertUserCanManageCompany(env, firebaseUser, companyId) {
   }
 }
 
-async function assertCompanyLimit(env, companyId) {
-  const companies = await supabaseRequest(
-    env,
-    `aziende?id=eq.${encodeURIComponent(companyId)}` +
-      `&select=id,max_utenti`
-  );
-
-  const company = Array.isArray(companies) ? companies[0] : null;
-
-  if (!company) {
-    throw new Error('Azienda non trovata.');
-  }
-
-  const maxUsers = Number(company.max_utenti || 0);
-
-  if (!maxUsers) return;
-
-  const users = await supabaseRequest(
-    env,
-    `utenti?azienda_id=eq.${encodeURIComponent(companyId)}` +
-      `&attivo=eq.true&select=id`
-  );
-
-  const currentCount = Array.isArray(users) ? users.length : 0;
-
-  if (currentCount >= maxUsers) {
-    throw new Error(
-      `Limite utenti raggiunto (${currentCount}/${maxUsers}).`
-    );
-  }
-}
-
 async function createFirebaseUser(env, email, password, fullName) {
   const apiKey = env.VITE_FIREBASE_API_KEY || env.FIREBASE_API_KEY;
 
@@ -218,7 +186,7 @@ export async function onRequestPost(context) {
     const body = await request.json();
 
     const companyId = String(
-      body?.companyId || body?.company_id || ''
+      env.AZIENDA_ID || env.VITE_AZIENDA_ID || 'cl_thermoservice'
     ).trim();
 
     const email = normalizeEmail(body?.email);
@@ -244,7 +212,6 @@ export async function onRequestPost(context) {
 
     const firebaseCaller = await verifyFirebaseUser(env, token);
     await assertUserCanManageCompany(env, firebaseCaller, companyId);
-    await assertCompanyLimit(env, companyId);
 
     const firebaseCreated = await createFirebaseUser(
       env,

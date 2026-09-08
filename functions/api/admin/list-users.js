@@ -132,17 +132,12 @@ export async function onRequestPost(context) {
       );
     }
 
-    const body = await request.json();
-    const companyId = String(
-      body?.companyId || body?.company_id || ''
-    ).trim();
+    await request.json().catch(() => ({}));
 
-    if (!companyId) {
-      return jsonResponse(
-        { ok: false, message: 'ID azienda mancante.' },
-        400
-      );
-    }
+    // Azienda unica: l'id è fissato lato server.
+    const companyId = String(
+      env.AZIENDA_ID || env.VITE_AZIENDA_ID || 'cl_thermoservice'
+    ).trim();
 
     const firebaseUser = await verifyFirebaseUser(env, token);
     await assertUserCanManageCompany(env, firebaseUser, companyId);

@@ -168,35 +168,13 @@ async function supabaseRequest(env, path, options = {}) {
 async function assertCompanyExists(env, companyId) {
   const rows = await supabaseRequest(
     env,
-    `aziende?id=eq.${encodeURIComponent(companyId)}&select=id,nome,codice,max_utenti`
+    `aziende?id=eq.${encodeURIComponent(companyId)}&select=id,nome`
   );
 
   const company = Array.isArray(rows) ? rows[0] : null;
 
   if (!company) {
     throw new Error('Azienda non trovata.');
-  }
-
-  return company;
-}
-
-async function assertCompanyLimitNotReached(env, companyId) {
-  const company = await assertCompanyExists(env, companyId);
-  const maxUsers = Number(company.max_utenti || 0);
-
-  if (!maxUsers || maxUsers <= 0) return company;
-
-  const rows = await supabaseRequest(
-    env,
-    `utenti?azienda_id=eq.${encodeURIComponent(companyId)}&attivo=eq.true&select=id`
-  );
-
-  const count = Array.isArray(rows) ? rows.length : 0;
-
-  if (count >= maxUsers) {
-    throw new Error(
-      `Non è possibile aggiungere nuovi utenti: è stato raggiunto il limite consentito dall’abbonamento attivo (${count}/${maxUsers}).`
-    );
   }
 
   return company;
@@ -231,17 +209,15 @@ export async function onRequestPost(context) {
 
     const body = await request.json();
 
-    const companyId = String(body?.companyId || body?.company_id || '').trim();
+    const companyId = String(
+      env.AZIENDA_ID || env.VITE_AZIENDA_ID || 'cl_thermoservice'
+    ).trim();
     const email = normalizeEmail(body?.email);
     const password = String(body?.password || '').trim();
     const fullName = String(body?.fullName || body?.nome || '').trim();
 
     if (!companyId) {
       return jsonResponse({ ok: false, message: 'ID azienda mancante.' }, 400);
-    }
-
-    if (companyId === 'programmatore') {
-      return jsonResponse({ ok: false, message: 'Non puoi creare un datore per l’ambiente programmatore.' }, 400);
     }
 
     if (!email) {
@@ -256,7 +232,7 @@ export async function onRequestPost(context) {
       return jsonResponse({ ok: false, message: 'Nome completo datore obbligatorio.' }, 400);
     }
 
-    const company = await assertCompanyLimitNotReached(env, companyId);
+    const company = await assertCompanyExists(env, companyId);
 
     const role = normalizeRole('datore');
 

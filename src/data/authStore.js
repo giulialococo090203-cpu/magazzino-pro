@@ -1,68 +1,37 @@
 // ============================================================
-// AUTHSTORE.JS - Firebase Auth + profilo utente Firestore/Supabase
+// AUTHSTORE.JS - Firebase Auth + profilo utente (azienda unica)
+// ------------------------------------------------------------
+// Il login richiede solo email e password.
+// Non esiste più la selezione dell'azienda: tutti gli utenti
+// appartengono all'unica azienda configurata.
 // ============================================================
 
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firebaseAuth, firebaseDb } from '../firebaseClient';
-import { supabase } from '../supabaseClient';
-import { normalizeRole } from './permissions';
+import { normalizeRole, isSuperAdminUser } from './permissions';
+import { AZIENDA_ID, AZIENDA_NOME } from '../config/azienda';
 
 const CURRENT_USER_KEY = 'wm_current_user';
-const SELECTED_COMPANY_KEY = 'wm_selected_company';
 
-// Per ora abbiamo una sola azienda iniziale.
-// Quando aggiungeremo altre aziende, questo valore verrà sempre letto dal profilo utente.
-const DEFAULT_COMPANY_ID = 'cl_thermoservice';
+// Chiavi di sessioni precedenti (multi-azienda) da ripulire.
+const LEGACY_KEYS = ['wm_selected_company'];
+
+function clearLegacyKeys() {
+  LEGACY_KEYS.forEach((key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // ignora
+    }
+  });
+}
 
 function readString(value) {
   return String(value || '').trim();
 }
 
-function readSelectedCompany() {
-  try {
-    const raw = localStorage.getItem(SELECTED_COMPANY_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    localStorage.removeItem(SELECTED_COMPANY_KEY);
-    return null;
-  }
-}
-
-function isProgrammerCompany(company = {}) {
-  const id = String(company.id || '').trim().toLowerCase();
-  const code = String(company.code || company.codice || '').trim().toUpperCase();
-
-  return id === 'programmatore' || code === 'PROGRAMMATORE';
-}
-
-function isSuperAdminUser(user = {}) {
-  const role = String(user.role || '').trim().toLowerCase();
-  const email = String(user.email || '').trim().toLowerCase();
-
-  return (
-    role === 'sviluppatore' ||
-    role === 'super_admin' ||
-    role === 'admin_tecnico' ||
-    email === 'giulia@gmail.com'
-  );
-}
-
-function getCompanyIdFromProfile(profile = {}) {
-  return (
-    readString(profile.companyId) ||
-    readString(profile.company_id) ||
-    readString(profile.company) ||
-    readString(profile.aziendaId) ||
-    readString(profile.azienda_id) ||
-    readString(profile.idAzienda) ||
-    readString(profile.companyID)
-  );
-}
-
 function normalizeUserProfile(firebaseUser, profile = {}) {
-  const companyId = getCompanyIdFromProfile(profile) || DEFAULT_COMPANY_ID;
-
   const email = readString(profile.email) || readString(firebaseUser.email);
 
   const fullName =
@@ -73,10 +42,7 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
     email ||
     'Utente';
 
-  const username =
-    readString(profile.username) ||
-    email ||
-    firebaseUser.uid;
+  const username = readString(profile.username) || email || firebaseUser.uid;
 
   const role = normalizeRole(profile.role || profile.ruolo || 'operaio');
 
@@ -95,12 +61,14 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
         : {};
 
   return {
-    id: firebaseUser.uid,
+    id: profile.id || firebaseUser.uid,
     uid: firebaseUser.uid,
     authUid: firebaseUser.uid,
 
-    companyId,
-    company_id: companyId,
+    companyId: AZIENDA_ID,
+    company_id: AZIENDA_ID,
+    azienda_id: AZIENDA_ID,
+    companyName: AZIENDA_NOME,
 
     username,
     email,
@@ -118,12 +86,6 @@ async function getSupabaseUserProfile(firebaseUser) {
   if (!firebaseUser) return null;
 
   const token = await firebaseUser.getIdToken(true);
-  const selectedCompany = readSelectedCompany();
-  const companyId = readString(
-    selectedCompany?.id ||
-    selectedCompany?.companyId ||
-    selectedCompany?.company_id
-  );
 
   const response = await fetch('/api/auth/profile', {
     method: 'POST',
@@ -131,7 +93,7 @@ async function getSupabaseUserProfile(firebaseUser) {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ companyId }),
+    body: JSON.stringify({ companyId: AZIENDA_ID }),
   });
 
   const responseText = await response.text();
@@ -156,25 +118,6 @@ async function getSupabaseUserProfile(firebaseUser) {
   return payload?.profile || null;
 }
 
-async function getSupabaseCompanyProfile(companyId) {
-  const cleanCompanyId = readString(companyId);
-
-  if (!cleanCompanyId) return null;
-
-  const { data, error } = await supabase
-    .from('aziende')
-    .select('id, nome, codice, piano, attiva, stato_abbonamento')
-    .eq('id', cleanCompanyId)
-    .maybeSingle();
-
-  if (error) {
-    console.warn('Profilo azienda Supabase non leggibile:', error);
-    return null;
-  }
-
-  return data || null;
-}
-
 export const authStore = {
   async authenticate(email, password) {
     const cleanEmail = readString(email);
@@ -182,6 +125,8 @@ export const authStore = {
     if (!cleanEmail || !password) {
       throw new Error('Email e password sono obbligatorie.');
     }
+
+    clearLegacyKeys();
 
     const credential = await signInWithEmailAndPassword(
       firebaseAuth,
@@ -191,56 +136,33 @@ export const authStore = {
 
     const firebaseUser = credential.user;
 
-    const userRef = doc(firebaseDb, 'users', firebaseUser.uid);
-    const userSnap = await getDoc(userRef);
-
     let profile = null;
 
-    if (userSnap.exists()) {
-      profile = userSnap.data() || {};
-    } else {
-      profile = await getSupabaseUserProfile(firebaseUser);
+    try {
+      const userRef = doc(firebaseDb, 'users', firebaseUser.uid);
+      const userSnap = await getDoc(userRef);
 
-      if (!profile) {
-        await signOut(firebaseAuth);
-        localStorage.removeItem(CURRENT_USER_KEY);
-
-        throw new Error(
-          `Utente autenticato, ma profilo applicazione non trovato né in Firestore né in Supabase. UID: ${firebaseUser.uid}`
-        );
+      if (userSnap.exists()) {
+        profile = userSnap.data() || {};
       }
+    } catch (error) {
+      console.warn('Profilo Firestore non leggibile:', error);
     }
 
-    let appUser = normalizeUserProfile(firebaseUser, profile);
+    if (!profile) {
+      profile = await getSupabaseUserProfile(firebaseUser);
+    }
 
-    const companyProfile = await getSupabaseCompanyProfile(appUser.companyId);
+    if (!profile) {
+      await signOut(firebaseAuth);
+      localStorage.removeItem(CURRENT_USER_KEY);
 
-    const companyPlan =
-      companyProfile?.piano ||
-      profile?.subscriptionPlan ||
-      profile?.subscription_plan ||
-      profile?.plan ||
-      profile?.piano ||
-      'base';
+      throw new Error(
+        `Utente autenticato, ma profilo applicazione non trovato. UID: ${firebaseUser.uid}`
+      );
+    }
 
-    appUser = {
-      ...appUser,
-      azienda_id: appUser.companyId,
-      plan: companyPlan,
-      piano: companyPlan,
-      subscriptionPlan: companyPlan,
-      company: companyProfile
-        ? {
-            id: companyProfile.id,
-            name: companyProfile.nome,
-            nome: companyProfile.nome,
-            code: companyProfile.codice,
-            codice: companyProfile.codice,
-            plan: companyPlan,
-            piano: companyPlan,
-          }
-        : null,
-    };
+    const appUser = normalizeUserProfile(firebaseUser, profile);
 
     if (!appUser.active) {
       await signOut(firebaseAuth);
@@ -249,51 +171,14 @@ export const authStore = {
       throw new Error('Account non attivo.');
     }
 
-    const selectedCompany = readSelectedCompany();
-
-    if (isProgrammerCompany(selectedCompany)) {
-      if (!isSuperAdminUser(appUser)) {
-        await signOut(firebaseAuth);
-        localStorage.removeItem(CURRENT_USER_KEY);
-
-        throw new Error('Accesso programmatore non autorizzato.');
-      }
-    } else if (selectedCompany?.id && appUser.companyId !== selectedCompany.id) {
-      await signOut(firebaseAuth);
-      localStorage.removeItem(CURRENT_USER_KEY);
-
-      throw new Error('Questo utente non appartiene all\u2019azienda selezionata.');
-    }
-
-    const effectiveSelectedCompany = selectedCompany
-      ? {
-          ...selectedCompany,
-          plan: selectedCompany.plan || selectedCompany.piano || companyPlan,
-          piano: selectedCompany.piano || selectedCompany.plan || companyPlan,
-        }
-      : companyProfile
-        ? {
-            id: companyProfile.id,
-            companyId: companyProfile.id,
-            company_id: companyProfile.id,
-            name: companyProfile.nome,
-            nome: companyProfile.nome,
-            code: companyProfile.codice,
-            codice: companyProfile.codice,
-            plan: companyPlan,
-            piano: companyPlan,
-          }
-        : null;
-
-    const userWithCompany = {
+    const finalUser = {
       ...appUser,
-      selectedCompany: effectiveSelectedCompany,
-      programmerMode: isProgrammerCompany(effectiveSelectedCompany),
+      isProgrammer: isSuperAdminUser(appUser),
     };
 
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithCompany));
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(finalUser));
 
-    return userWithCompany;
+    return finalUser;
   },
 
   getCurrentUser() {
@@ -317,7 +202,13 @@ export const authStore = {
 
   async logout() {
     localStorage.removeItem(CURRENT_USER_KEY);
-    localStorage.removeItem(SELECTED_COMPANY_KEY);
+    clearLegacyKeys();
+
+    try {
+      sessionStorage.removeItem('wm_programmer_unlocked');
+    } catch {
+      // ignora
+    }
 
     try {
       await signOut(firebaseAuth);

@@ -296,27 +296,37 @@ export const levenshtein = (a, b) => {
 
   if (s1.length === 0) return s2.length;
   if (s2.length === 0) return s1.length;
+  if (s1 === s2) return 0;
 
-  const matrix = [];
+  /*
+   * Versione a due righe: usa memoria costante invece di costruire
+   * l'intera matrice. Sulle migliaia di confronti di un'importazione
+   * fattura fa la differenza fra secondi e millisecondi.
+   */
+  let precedente = new Array(s1.length + 1);
+  let corrente = new Array(s1.length + 1);
 
-  for (let i = 0; i <= s2.length; i++) matrix[i] = [i];
-  for (let j = 0; j <= s1.length; j++) matrix[0][j] = j;
+  for (let j = 0; j <= s1.length; j++) precedente[j] = j;
 
   for (let i = 1; i <= s2.length; i++) {
+    corrente[0] = i;
+
     for (let j = 1; j <= s1.length; j++) {
-      if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
+      const costo = s2.charAt(i - 1) === s1.charAt(j - 1) ? 0 : 1;
+
+      corrente[j] = Math.min(
+        precedente[j - 1] + costo,
+        corrente[j - 1] + 1,
+        precedente[j] + 1
+      );
     }
+
+    const scambio = precedente;
+    precedente = corrente;
+    corrente = scambio;
   }
 
-  return matrix[s2.length][s1.length];
+  return precedente[s1.length];
 };
 
 export const calculateSimilarity = (s1, s2) => {
@@ -330,6 +340,14 @@ export const calculateSimilarity = (s1, s2) => {
   const shorter = a.length > b.length ? b : a;
 
   if (!longer.length) return 1;
+
+  /*
+   * Se le due stringhe hanno lunghezze molto diverse la somiglianza non
+   * potra' comunque superare questo rapporto: inutile calcolare la
+   * distanza carattere per carattere.
+   */
+  const rapporto = shorter.length / longer.length;
+  if (rapporto < 0.55) return rapporto;
 
   return (longer.length - levenshtein(longer, shorter)) / longer.length;
 };
@@ -367,19 +385,6 @@ export const calculateSemanticSimilarity = (s1, s2) => {
   return union === 0 ? 0 : intersection / union;
 };
 
-function tokenOverlapScore(inputTokens, targetText) {
-  const target = normalize(targetText);
-  if (!inputTokens.length || !target) return 0;
-
-  let hits = 0;
-
-  inputTokens.forEach((token) => {
-    if (target.includes(token)) hits++;
-  });
-
-  return hits / inputTokens.length;
-}
-
 function detectCategoryByKeywords(inputTokens, categoryName) {
   const keywords = KEYWORDS_DICTIONARY[categoryName] || [];
 
@@ -404,6 +409,121 @@ function getConfidenceFromScore(bestMatch) {
   if (bestMatch.score >= 25) return 'da_confermare';
 
   return 'none';
+}
+
+
+/* ============================================================
+   INDICE DEI MATERIALI
+   ------------------------------------------------------------
+   Confrontare ogni riga di fattura con l'intero magazzino, e
+   rinormalizzare ogni volta gli stessi testi, e' il motivo per cui
+   il riconoscimento era lento. Qui il magazzino viene preparato una
+   volta sola (per ogni elenco di materiali) e messo in due indici:
+   uno per codice e uno per parola. Ogni riga confronta cosi' poche
+   decine di candidati invece di migliaia.
+   ============================================================ */
+
+const CACHE_INDICE = new WeakMap();
+const MAX_CANDIDATI = 320;
+
+function preparaMateriale(mat) {
+  const codice = safeString(mat.code);
+
+  return {
+    mat,
+    normCode: normalizeCode(codice),
+    normDesc: normalize(mat.description),
+    normBrand: normalize(mat.brand || ''),
+    testoRicerca: normalize(`${mat.description || ''} ${mat.brand || ''}`),
+  };
+}
+
+function costruisciIndice(materials) {
+  const preparati = materials.map(preparaMateriale);
+  const perCodice = new Map();
+  const perToken = new Map();
+  const perPrefissoCodice = new Map();
+
+  preparati.forEach((voce, posizione) => {
+    if (voce.normCode) {
+      if (!perCodice.has(voce.normCode)) perCodice.set(voce.normCode, []);
+      perCodice.get(voce.normCode).push(posizione);
+
+      const prefisso = voce.normCode.slice(0, 4);
+      if (prefisso) {
+        if (!perPrefissoCodice.has(prefisso)) perPrefissoCodice.set(prefisso, []);
+        perPrefissoCodice.get(prefisso).push(posizione);
+      }
+    }
+
+    new Set(voce.testoRicerca.split(/\s+/).filter((parola) => parola.length > 2))
+      .forEach((parola) => {
+        if (!perToken.has(parola)) perToken.set(parola, []);
+        perToken.get(parola).push(posizione);
+      });
+  });
+
+  return { preparati, perCodice, perToken, perPrefissoCodice };
+}
+
+function ottieniIndice(materials) {
+  if (!Array.isArray(materials) || materials.length === 0) return null;
+
+  let indice = CACHE_INDICE.get(materials);
+
+  if (!indice) {
+    indice = costruisciIndice(materials);
+    CACHE_INDICE.set(materials, indice);
+  }
+
+  return indice;
+}
+
+/** Materiali che vale la pena confrontare con questa riga di documento. */
+function selezionaCandidati(indice, normInputCode, inputTokens) {
+  const punteggi = new Map();
+
+  const aggiungi = (posizione, peso) => {
+    punteggi.set(posizione, (punteggi.get(posizione) || 0) + peso);
+  };
+
+  if (normInputCode) {
+    (indice.perCodice.get(normInputCode) || []).forEach((p) => aggiungi(p, 100));
+    (indice.perPrefissoCodice.get(normInputCode.slice(0, 4)) || []).forEach((p) => aggiungi(p, 6));
+  }
+
+  inputTokens.forEach((token) => {
+    if (token.length <= 2) return;
+
+    const lista = indice.perToken.get(token);
+    if (!lista) return;
+
+    // Le parole molto comuni aiutano poco a distinguere: pesano meno.
+    const peso = lista.length > 400 ? 1 : 4;
+    lista.forEach((p) => aggiungi(p, peso));
+  });
+
+  if (punteggi.size === 0) {
+    // Nessun aggancio: confronta comunque, ma solo su un numero limitato.
+    return indice.preparati.slice(0, MAX_CANDIDATI);
+  }
+
+  return [...punteggi.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_CANDIDATI)
+    .map(([posizione]) => indice.preparati[posizione]);
+}
+
+function tokenOverlapNormalizzato(inputTokens, testoNormalizzato) {
+  if (!inputTokens.length || !testoNormalizzato) return 0;
+
+  let colpi = 0;
+
+  inputTokens.forEach((token) => {
+    if (testoNormalizzato.includes(token)) colpi++;
+  });
+
+  return colpi / inputTokens.length;
 }
 
 export const aggressiveMatch = (inputData, { materials = [], categories = [] } = {}) => {
@@ -431,13 +551,18 @@ export const aggressiveMatch = (inputData, { materials = [], categories = [] } =
 
   const candidates = [];
 
-  materials.forEach((mat) => {
+  const indice = ottieniIndice(materials);
+  const candidatiMateriali = indice
+    ? selezionaCandidati(indice, normInputCode, inputTokens)
+    : [];
+
+  candidatiMateriali.forEach((voce) => {
+    const mat = voce.mat;
     let score = 0;
 
-    const matCode = safeString(mat.code);
-    const normMatCode = normalizeCode(matCode);
-    const normMatDesc = normalize(mat.description);
-    const normMatBrand = normalize(mat.brand || '');
+    const normMatCode = voce.normCode;
+    const normMatDesc = voce.normDesc;
+    const normMatBrand = voce.normBrand;
 
     if (normInputCode && normMatCode) {
       if (normInputCode === normMatCode) {
@@ -466,7 +591,7 @@ export const aggressiveMatch = (inputData, { materials = [], categories = [] } =
       const semanticSim = calculateSemanticSimilarity(normInputDesc, normMatDesc);
       score += semanticSim * 36;
 
-      const overlap = tokenOverlapScore(inputTokens, `${mat.description || ''} ${mat.brand || ''}`);
+      const overlap = tokenOverlapNormalizzato(inputTokens, voce.testoRicerca);
       score += overlap * 58;
     }
 
@@ -484,6 +609,7 @@ export const aggressiveMatch = (inputData, { materials = [], categories = [] } =
         name: mat.description,
         code: mat.code,
         score: Math.min(220, score),
+        codiceIdentico: Boolean(normInputCode) && normInputCode === normMatCode,
         original: mat,
       });
     }
@@ -524,7 +650,18 @@ export const aggressiveMatch = (inputData, { materials = [], categories = [] } =
     }
   });
 
-  const sorted = candidates.sort((a, b) => b.score - a.score);
+  /*
+   * A parita' di punteggio vince il materiale col codice identico:
+   * e' l'unico abbinamento di cui ci si puo' fidare davvero.
+   */
+  const sorted = candidates.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+
+    const codiceA = a.codiceIdentico ? 1 : 0;
+    const codiceB = b.codiceIdentico ? 1 : 0;
+
+    return codiceB - codiceA;
+  });
 
   const unique = [];
   const seen = new Set();

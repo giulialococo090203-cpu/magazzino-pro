@@ -7,7 +7,6 @@ import {
   notificationStore,
 } from '../data/store';
 import { useAuth } from '../App';
-import { FEATURES, hasPlanFeature } from '../data/subscriptionPlans';
 import {
   getSupabaseUsageMonitor,
   formatBytes,
@@ -26,6 +25,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import Icon from '../components/Icon';
 import FaIcon from '../components/FaIcon';
 import SafeIcon from '../components/SafeIcon';
+import { AZIENDA_NOME } from '../config/azienda';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -136,11 +136,13 @@ function getUsageColor(percent) {
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const canUseImportInvoices = hasPlanFeature(user, FEATURES.INVOICES_IMPORT);
-  const canUseHistory = hasPlanFeature(user, FEATURES.HISTORY_BASE);
-  const canUseAdvancedHistory = hasPlanFeature(user, FEATURES.HISTORY_ADVANCED);
-  const canUseClientOperatorMonitoring = hasPlanFeature(user, FEATURES.CLIENTS_OPERATORS);
-  const canUseBackupMonitor = hasPlanFeature(user, FEATURES.BACKUP);
+  // Azienda unica: tutte le funzionalità sono disponibili,
+  // l'accesso è regolato solo dai permessi utente.
+  const canUseImportInvoices = true;
+  const canUseHistory = true;
+  const canUseAdvancedHistory = true;
+  const canUseClientOperatorMonitoring = true;
+  const canUseBackupMonitor = true;
 
   const [_loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -759,14 +761,25 @@ export default function Dashboard() {
 
   return (
     <div className="animate-slideUp dashboard-tech-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title"><SafeIcon name="dashboard" className="ui-title-icon" />Dashboard</h1>
-          <p className="page-subtitle">
-            Piattaforma operativa · Benvenuto, {user?.fullName || user?.username}
+      <header className="home-hero">
+        <div className="home-hero-content">
+          <p className="home-hero-kicker">Pianifica · Organizza · Realizza</p>
+
+          <h1 className="home-hero-title">
+            Benvenuto, {user?.fullName || user?.username}
+          </h1>
+
+          <p className="home-hero-subtitle">
+            Panoramica operativa di {AZIENDA_NOME} ·{' '}
+            {new Date().toLocaleDateString('it-IT', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
           </p>
         </div>
-      </div>
+      </header>
 
       <div className="kpi-grid">
         <div className="kpi-card">

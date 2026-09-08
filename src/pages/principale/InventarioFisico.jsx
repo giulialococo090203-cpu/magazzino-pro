@@ -5,22 +5,10 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const PDF_COLORS = {
-  graphite: [17, 23, 34],
-  graphite2: [31, 41, 55],
-  orange: [255, 106, 24],
-  orangeDark: [217, 67, 8],
-  cream: [255, 249, 243],
-  cream2: [245, 238, 231],
-  border: [214, 220, 229],
-  text: [17, 24, 39],
-  muted: [102, 112, 133],
-  white: [255, 255, 255],
-};
-
 
 import Icon from '../../components/Icon';
 import FaIcon from '../../components/FaIcon';
+import { PDF_COLORS } from '../../utils/pdfTheme';
 
 function formatDateTime() {
   return new Date().toLocaleString('it-IT', {

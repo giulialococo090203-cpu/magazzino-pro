@@ -3,6 +3,7 @@
 // ============================================================
 
 import { supabase } from '../supabaseClient';
+import { AZIENDA_ID, AZIENDA_NOME } from '../config/azienda';
 import { INITIAL_UNITS } from './initialData';
 
 const ADMIN_CREATE_USER_URL =
@@ -12,31 +13,12 @@ const ADMIN_CREATE_USER_URL =
 const ADMIN_DELETE_USER_URL =
   import.meta.env.VITE_ADMIN_DELETE_USER_URL ||
   '/api/admin/delete-user';
-const ADMIN_UPDATE_COMPANY_URL =
-  import.meta.env.VITE_ADMIN_UPDATE_COMPANY_URL ||
-  '/api/admin/update-company';
 
-const ADMIN_DELETE_COMPANY_URL =
-  import.meta.env.VITE_ADMIN_DELETE_COMPANY_URL ||
-  '/api/admin/delete-company';
-
-const ADMIN_CREATE_COMPANY_URL =
-  import.meta.env.VITE_ADMIN_CREATE_COMPANY_URL ||
-  '/api/admin/create-company';
-
+const ADMIN_UPDATE_USER_URL =
+  import.meta.env.VITE_ADMIN_UPDATE_USER_URL ||
+  '/api/admin/update-user';
 import { authStore } from './authStore';
 import { firebaseAuth } from '../firebaseClient';
-
-// --- Auth Helper ---
-const hashPassword = async (password) => {
-  if (!password) return null;
-
-  const msgUint8 = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-};
 
 // --- Utils ---
 const clean = (obj) =>
@@ -99,98 +81,30 @@ function isValidSupabaseUuid(value) {
   );
 }
 
-const DEFAULT_COMPANY_ID = 'cl_thermoservice';
-const SELECTED_COMPANY_KEY = 'wm_selected_company';
-
-function readJsonStorage(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    localStorage.removeItem(key);
-    return null;
-  }
-}
-
-export function getSelectedCompany() {
-  return readJsonStorage(SELECTED_COMPANY_KEY);
-}
+// ============================================================
+// AZIENDA UNICA
+// ------------------------------------------------------------
+// Non esiste più il multi-azienda: l'app lavora sempre e solo
+// sull'azienda configurata in src/config/azienda.js.
+// ============================================================
 
 export function getCurrentCompanyId() {
-  const currentUser = readJsonStorage('wm_current_user');
-  const selectedCompany = getSelectedCompany();
-
-  const companyId =
-    selectedCompany?.id ||
-    selectedCompany?.companyId ||
-    selectedCompany?.company_id ||
-    currentUser?.selectedCompany?.id ||
-    currentUser?.selectedCompany?.companyId ||
-    currentUser?.selectedCompany?.company_id ||
-    currentUser?.companyId ||
-    currentUser?.company_id ||
-    currentUser?.aziendaId ||
-    currentUser?.azienda_id ||
-    DEFAULT_COMPANY_ID;
-
-  return companyId;
-}
-
-function normalizeCompanyMaxUsers(value) {
-  if (value === undefined) return undefined;
-  if (value === null) return null;
-
-  const text = String(value).trim();
-
-  if (!text) return null;
-
-  const number = Number(text);
-
-  if (!Number.isFinite(number) || number <= 0) {
-    return null;
-  }
-
-  return Math.floor(number);
+  return AZIENDA_ID;
 }
 
 function normalizeCompany(row = {}) {
   return {
-    id: row.id,
-    companyId: row.id,
-    company_id: row.id,
+    id: row.id || AZIENDA_ID,
 
-    name: row.nome,
-    nome: row.nome,
-
-    code: row.codice,
-    codice: row.codice,
+    name: row.nome || AZIENDA_NOME,
+    nome: row.nome || AZIENDA_NOME,
 
     logoUrl: row.logo_url || '',
-    logo_url: row.logo_url || '',
 
     active: row.attiva !== false,
     attiva: row.attiva !== false,
 
-    subscriptionStatus: row.stato_abbonamento || 'attivo',
-    stato_abbonamento: row.stato_abbonamento || 'attivo',
-
-    plan: row.piano || 'pro',
-    piano: row.piano || 'pro',
-
-    subscriptionStartDate: row.data_inizio_abbonamento || null,
-    data_inizio_abbonamento: row.data_inizio_abbonamento || null,
-
-    subscriptionEndDate: row.data_scadenza_abbonamento || null,
-    data_scadenza_abbonamento: row.data_scadenza_abbonamento || null,
-
-    maxUsers: row.max_utenti ?? null,
-    max_utenti: row.max_utenti ?? null,
-
     lastAccessAt: row.ultimo_accesso || null,
-    ultimo_accesso: row.ultimo_accesso || null,
-
-    suspensionReason: row.sospesa_motivo || '',
-    sospesa_motivo: row.sospesa_motivo || '',
 
     notes: row.note || '',
     note: row.note || '',
@@ -200,450 +114,41 @@ function normalizeCompany(row = {}) {
   };
 }
 
-function isCompanySubscriptionExpired(company) {
-  const endDate = company?.subscriptionEndDate || company?.data_scadenza_abbonamento;
-
-  if (!endDate) return false;
-
-  const end = new Date(`${endDate}T23:59:59`);
-  return !Number.isNaN(end.getTime()) && end < new Date();
-}
-
-function assertCompanyCanAccess(company) {
-  if (!company?.id) {
-    throw new Error('Azienda non valida.');
-  }
-
-  if (company.active === false || company.attiva === false) {
-    throw new Error('Azienda disattivata. Contattare l’amministratore del servizio.');
-  }
-
-  const status = String(company.subscriptionStatus || company.stato_abbonamento || 'attivo')
-    .trim()
-    .toLowerCase();
-
-  if (['sospeso', 'scaduto', 'disattivato'].includes(status)) {
-    throw new Error(
-      company.suspensionReason ||
-        company.sospesa_motivo ||
-        'Accesso aziendale momentaneamente sospeso. Contattare l’amministratore del servizio.'
-    );
-  }
-
-  if (isCompanySubscriptionExpired(company)) {
-    throw new Error('Abbonamento aziendale scaduto. Contattare l’amministratore del servizio.');
-  }
-
-  return true;
-}
-
 export const companyStore = {
-  async getAll() {
-    const { data, error } = await supabase
-      .from('aziende')
-      .select('*')
-      .order('nome');
+  /**
+   * Dati dell'unica azienda gestita dall'applicazione.
+   * Se la riga non esiste ancora su Supabase restituisce comunque
+   * i dati di configurazione locali, così l'app non si blocca.
+   */
+  async getCurrent() {
+    try {
+      const { data, error } = await supabase
+        .from('aziende')
+        .select('*')
+        .eq('id', AZIENDA_ID)
+        .maybeSingle();
 
-    if (error) throw error;
+      if (error) throw error;
 
-    const companies = (Array.isArray(data) ? data : []).map(normalizeCompany);
-
-    const companyIds = companies
-      .map((company) => company.id)
-      .filter(Boolean)
-      .filter((id) => id !== 'programmatore');
-
-    if (companyIds.length === 0) {
-      return companies;
+      return normalizeCompany(data || {});
+    } catch (error) {
+      console.warn('Dati azienda non leggibili, uso configurazione locale:', error);
+      return normalizeCompany({});
     }
-
-    const { data: usersData, error: usersError } = await supabase
-      .from('utenti')
-      .select('azienda_id, attivo')
-      .in('azienda_id', companyIds);
-
-    if (usersError) {
-      console.warn('Conteggio utenti aziende non disponibile:', usersError);
-      return companies;
-    }
-
-    const counts = new Map();
-
-    (Array.isArray(usersData) ? usersData : []).forEach((row) => {
-      const companyId = row.azienda_id;
-      if (!companyId) return;
-
-      const current = counts.get(companyId) || { totalUsers: 0, activeUsers: 0 };
-
-      current.totalUsers += 1;
-
-      if (row.attivo !== false) {
-        current.activeUsers += 1;
-      }
-
-      counts.set(companyId, current);
-    });
-
-    return companies.map((company) => {
-      const count = counts.get(company.id) || { totalUsers: 0, activeUsers: 0 };
-
-      return {
-        ...company,
-        totalUsers: count.totalUsers,
-        activeUsers: count.activeUsers,
-      };
-    });
   },
 
-  async getByCode(code) {
-    const cleanCode = String(code || '').trim().toUpperCase();
-
-    if (!cleanCode) {
-      throw new Error('Inserisci il codice azienda.');
-    }
-
-    const { data, error } = await supabase
-      .from('aziende')
-      .select('*')
-      .eq('codice', cleanCode)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    if (!data) {
-      throw new Error('Codice azienda non trovato.');
-    }
-
-    const company = normalizeCompany(data);
-
-    assertCompanyCanAccess(company);
-
+  /** Aggiorna la data di ultimo accesso (non bloccante). */
+  async touchLastAccess() {
     try {
       await supabase
         .from('aziende')
         .update({ ultimo_accesso: new Date().toISOString() })
-        .eq('id', company.id);
-    } catch {
-      // Non bloccare il login se l'aggiornamento ultimo_accesso fallisce.
+        .eq('id', AZIENDA_ID);
+    } catch (error) {
+      console.warn('Ultimo accesso azienda non aggiornato:', error);
     }
-
-    return company;
-  },
-
-  async create(company) {
-    const name = String(company.name || company.nome || '').trim();
-    const code = String(company.code || company.codice || '')
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9_-]+/g, '');
-
-    if (!name) {
-      throw new Error('Nome azienda obbligatorio.');
-    }
-
-    if (!code) {
-      throw new Error('Codice azienda obbligatorio.');
-    }
-
-    const id =
-      company.id ||
-      `cl_${code.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
-
-    const payload = {
-      id,
-      nome: name,
-      codice: code,
-      logo_url: company.logoUrl || company.logo_url || null,
-      attiva: company.active !== undefined ? Boolean(company.active) : true,
-      stato_abbonamento: company.subscriptionStatus || company.stato_abbonamento || 'attivo',
-      piano: company.plan || company.piano || 'pro',
-      data_inizio_abbonamento:
-        company.subscriptionStartDate || company.data_inizio_abbonamento || null,
-      data_scadenza_abbonamento:
-        company.subscriptionEndDate || company.data_scadenza_abbonamento || null,
-      max_utenti:
-        company.maxUsers !== undefined
-          ? normalizeCompanyMaxUsers(company.maxUsers)
-          : company.max_utenti !== undefined
-            ? normalizeCompanyMaxUsers(company.max_utenti)
-            : null,
-      sospesa_motivo: company.suspensionReason || company.sospesa_motivo || null,
-      note: company.notes || company.note || null,
-    };
-
-    const currentFirebaseUser = firebaseAuth.currentUser;
-
-    if (!currentFirebaseUser) {
-      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
-    }
-
-    const token = await currentFirebaseUser.getIdToken(true);
-
-    const response = await fetch(ADMIN_CREATE_COMPANY_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        company: payload,
-      }),
-    });
-
-    const responseText = await response.text();
-
-    let result = null;
-    try {
-      result = responseText ? JSON.parse(responseText) : null;
-    } catch {
-      result = null;
-    }
-
-    if (!response.ok || result?.ok === false) {
-      throw new Error(
-        result?.message ||
-          responseText ||
-          `Errore creazione azienda (${response.status}).`
-      );
-    }
-
-    return normalizeCompany(result.company);
-  },
-
-  async update(id, updates) {
-    if (!id) {
-      throw new Error('ID azienda mancante.');
-    }
-
-    const payload = clean({
-      nome:
-        updates.name !== undefined
-          ? updates.name
-          : updates.nome !== undefined
-            ? updates.nome
-            : undefined,
-
-      codice:
-        updates.code !== undefined || updates.codice !== undefined
-          ? String(updates.code || updates.codice || '')
-              .trim()
-              .toUpperCase()
-              .replace(/[^A-Z0-9_-]+/g, '')
-          : undefined,
-
-      logo_url:
-        updates.logoUrl !== undefined
-          ? updates.logoUrl || null
-          : updates.logo_url !== undefined
-            ? updates.logo_url || null
-            : undefined,
-
-      attiva:
-        updates.active !== undefined
-          ? Boolean(updates.active)
-          : updates.attiva !== undefined
-            ? Boolean(updates.attiva)
-            : undefined,
-
-      stato_abbonamento:
-        updates.subscriptionStatus !== undefined
-          ? updates.subscriptionStatus
-          : updates.stato_abbonamento !== undefined
-            ? updates.stato_abbonamento
-            : undefined,
-
-      piano:
-        updates.plan !== undefined
-          ? updates.plan
-          : updates.piano !== undefined
-            ? updates.piano
-            : undefined,
-
-      data_inizio_abbonamento:
-        updates.subscriptionStartDate !== undefined
-          ? updates.subscriptionStartDate || null
-          : updates.data_inizio_abbonamento !== undefined
-            ? updates.data_inizio_abbonamento || null
-            : undefined,
-
-      data_scadenza_abbonamento:
-        updates.subscriptionEndDate !== undefined
-          ? updates.subscriptionEndDate || null
-          : updates.data_scadenza_abbonamento !== undefined
-            ? updates.data_scadenza_abbonamento || null
-            : undefined,
-
-      max_utenti:
-        updates.maxUsers !== undefined
-          ? normalizeCompanyMaxUsers(updates.maxUsers)
-          : updates.max_utenti !== undefined
-            ? normalizeCompanyMaxUsers(updates.max_utenti)
-            : undefined,
-
-      sospesa_motivo:
-        updates.suspensionReason !== undefined
-          ? updates.suspensionReason || null
-          : updates.sospesa_motivo !== undefined
-            ? updates.sospesa_motivo || null
-            : undefined,
-
-      note:
-        updates.notes !== undefined
-          ? updates.notes || null
-          : updates.note !== undefined
-            ? updates.note || null
-            : undefined,
-
-      updated_at: new Date().toISOString(),
-    });
-
-    const currentFirebaseUser = firebaseAuth.currentUser;
-
-    if (!currentFirebaseUser) {
-      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
-    }
-
-    const token = await currentFirebaseUser.getIdToken(true);
-
-    const response = await fetch(ADMIN_UPDATE_COMPANY_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id,
-        updates: payload,
-      }),
-    });
-
-    const responseText = await response.text();
-
-    let result = null;
-    try {
-      result = responseText ? JSON.parse(responseText) : null;
-    } catch {
-      result = null;
-    }
-
-    if (!response.ok || result?.ok === false) {
-      throw new Error(
-        result?.message ||
-          responseText ||
-          `Errore aggiornamento azienda (${response.status}).`
-      );
-    }
-
-    return normalizeCompany(result.company);
-  },
-
-  async delete(id) {
-    const cleanId = String(id || '').trim();
-
-    if (!cleanId) {
-      throw new Error('ID azienda mancante.');
-    }
-
-    if (cleanId === 'programmatore') {
-      throw new Error('L’ambiente programmatore non può essere eliminato.');
-    }
-
-    const currentFirebaseUser = firebaseAuth.currentUser;
-
-    if (!currentFirebaseUser) {
-      throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come programmatore.');
-    }
-
-    const token = await currentFirebaseUser.getIdToken(true);
-
-    const response = await fetch(ADMIN_DELETE_COMPANY_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: cleanId,
-      }),
-    });
-
-    const responseText = await response.text();
-
-    let result = null;
-    try {
-      result = responseText ? JSON.parse(responseText) : null;
-    } catch {
-      result = null;
-    }
-
-    if (!response.ok || result?.ok === false) {
-      throw new Error(
-        result?.message ||
-          responseText ||
-          `Errore eliminazione azienda (${response.status}).`
-      );
-    }
-
-    notifySupabaseUsageChanged();
-
-    return result;
-  },
-
-  setSelected(company) {
-    if (!company?.id) {
-      throw new Error('Azienda non valida.');
-    }
-
-    localStorage.setItem(SELECTED_COMPANY_KEY, JSON.stringify(company));
-    return company;
-  },
-
-  getSelected() {
-    return getSelectedCompany();
-  },
-
-  clearSelected() {
-    localStorage.removeItem(SELECTED_COMPANY_KEY);
   },
 };
-
-
-async function assertCompanyUserLimitNotReached(companyId) {
-  const cleanCompanyId = String(companyId || '').trim();
-
-  if (!cleanCompanyId || cleanCompanyId === 'programmatore') {
-    return;
-  }
-
-  const { data: company, error: companyError } = await supabase
-    .from('aziende')
-    .select('id, nome, codice, max_utenti')
-    .eq('id', cleanCompanyId)
-    .maybeSingle();
-
-  if (companyError) throw companyError;
-
-  const maxUsers = Number(company?.max_utenti || 0);
-
-  if (!maxUsers || maxUsers <= 0) {
-    return;
-  }
-
-  const { count, error: countError } = await supabase
-    .from('utenti')
-    .select('id', { count: 'exact', head: true })
-    .eq('azienda_id', cleanCompanyId)
-    .eq('attivo', true);
-
-  if (countError) throw countError;
-
-  if (Number(count || 0) >= maxUsers) {
-    throw new Error(
-      `Non è possibile aggiungere nuovi utenti: è stato raggiunto il limite consentito dall’abbonamento attivo (${count}/${maxUsers}). ` +
-        'Per aumentare il numero di utenti disponibili, contattare l’amministratore del servizio.'
-    );
-  }
-}
 
 
 function notifySupabaseUsageChanged() {
@@ -665,13 +170,7 @@ async function createFirebaseUserFromAdmin(user) {
 
   const token = await currentFirebaseUser.getIdToken(true);
 
-  const currentAppUser = authStore.getCurrentUser();
-  const companyId =
-    user.companyId ||
-    user.company_id ||
-    currentAppUser?.companyId ||
-    currentAppUser?.company_id ||
-    'cl_thermoservice';
+  const companyId = AZIENDA_ID;
 
   const response = await fetch(ADMIN_CREATE_USER_URL, {
     method: 'POST',
@@ -716,57 +215,50 @@ async function createFirebaseUserFromAdmin(user) {
 }
 
 
-async function deleteFirebaseUserFromAdmin(user) {
+async function callAdminApi(url, payload) {
   const currentFirebaseUser = firebaseAuth.currentUser;
 
   if (!currentFirebaseUser) {
-    throw new Error('Sessione Firebase non valida. Esci e accedi di nuovo come datore.');
+    throw new Error('Sessione scaduta. Esci e accedi di nuovo.');
   }
 
   const token = await currentFirebaseUser.getIdToken(true);
 
-  const currentAppUser = authStore.getCurrentUser();
-  const companyId =
-    user?.companyId ||
-    user?.company_id ||
-    currentAppUser?.companyId ||
-    currentAppUser?.company_id ||
-    'cl_thermoservice';
-
-  const response = await fetch(ADMIN_DELETE_USER_URL, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      uid: user?.authUid || user?.uid || '',
-      email: user?.email || user?.username || '',
-      companyId,
-    }),
+    body: JSON.stringify(payload),
   });
+
+  if (response.status === 404) {
+    throw new Error(
+      'Funzioni server non attive: avvia l’app con "npm run dev:api" invece di "npm run dev", ' +
+      'oppure usa il sito pubblicato.'
+    );
+  }
 
   const responseText = await response.text();
 
-  let payload = null;
+  let data = null;
+
   try {
-    payload = responseText ? JSON.parse(responseText) : null;
+    data = responseText ? JSON.parse(responseText) : null;
   } catch {
-    payload = null;
+    data = null;
   }
 
-  if (!response.ok) {
-    const message =
-      payload?.detail ||
-      payload?.message ||
-      responseText ||
-      `Errore eliminazione utente Firebase (${response.status}).`;
-
-    throw new Error(message);
+  if (!response.ok || data?.ok === false) {
+    throw new Error(
+      data?.message || responseText || `Errore richiesta (${response.status}).`
+    );
   }
 
-  return payload;
+  return data;
 }
+
 
 // --- Field Mappings DB Snake Case <-> App Camel Case ---
 
@@ -1378,9 +870,14 @@ export const materialStore = {
     const safeLimit = Math.max(1, Math.min(Number(limit || 200), 500));
     const safeOffset = Math.max(0, Number(offset || 0));
 
+    /*
+     * Il conteggio esatto costa quanto la ricerca stessa: serve solo alla
+     * prima pagina, per sapere quanti risultati ci sono in tutto. Sulle
+     * pagine successive lo saltiamo e la ricerca diventa piu' rapida.
+     */
     let query = supabase
       .from('materiali')
-      .select('*', { count: 'exact' })
+      .select('*', safeOffset === 0 ? { count: 'exact' } : undefined)
       .eq('azienda_id', getCurrentCompanyId());
 
     if (cleanSearch) {
@@ -1421,7 +918,8 @@ export const materialStore = {
 
     return {
       rows: (Array.isArray(data) ? data : []).map(mapMaterial.toModel),
-      total: Number(count || 0),
+      // null quando il conteggio non e' stato richiesto (pagine successive)
+      total: count === null || count === undefined ? null : Number(count),
       limit: safeLimit,
       offset: safeOffset,
     };
@@ -1991,15 +1489,7 @@ export const userStore = {
       throw new Error('Password obbligatoria per creare un nuovo utente.');
     }
 
-    const currentAppUser = authStore.getCurrentUser();
-    const companyId =
-      user.companyId ||
-      user.company_id ||
-      currentAppUser?.companyId ||
-      currentAppUser?.company_id ||
-      getCurrentCompanyId();
-
-    await assertCompanyUserLimitNotReached(companyId);
+    const companyId = AZIENDA_ID;
 
     // 1. Crea o aggiorna l'utente in Firebase Auth + Firestore tramite backend Vercel.
     const created = await createFirebaseUserFromAdmin({
@@ -2008,78 +1498,14 @@ export const userStore = {
       company_id: companyId,
     });
 
-    // 2. Mantiene una copia compatibile nella vecchia tabella Supabase "utenti",
-    // così la schermata Gestione Utenti continua a mostrare subito il nuovo utente.
-    const compatibilityUser = {
-      ...user,
-      companyId,
-      company_id: companyId,
-      username: user.username || created.email,
-      fullName: user.fullName || created.fullName,
-      email: created.email,
-      role: normalizeRole(user.role || created.role),
-      active: user.active !== undefined ? Boolean(user.active) : true,
-      permissions:
-        user.permissions && typeof user.permissions === 'object'
-          ? user.permissions
-          : {},
-    };
-
-    const row = mapUser.toRow(compatibilityUser);
-
-    if (row.password) {
-      row.password = await hashPassword(row.password);
-    }
-
-    let supabaseUser = null;
-
-    try {
-      const { data: existing, error: existingError } = await supabase
-        .from('utenti')
-        .select('id')
-        .eq('username', row.username)
-        .eq('azienda_id', companyId)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-
-      if (existing?.id) {
-        const { data, error } = await supabase
-          .from('utenti')
-          .update({
-            ...row,
-            attivo: row.attivo ?? true,
-            permessi: row.permessi ?? {},
-          })
-          .eq('id', existing.id)
-          .eq('azienda_id', companyId)
-          .select()
-          .single();
-
-        if (error) throw error;
-        supabaseUser = data;
-      } else {
-        const { data, error } = await supabase
-          .from('utenti')
-          .insert({
-            ...row,
-            attivo: row.attivo ?? true,
-            permessi: row.permessi ?? {},
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        supabaseUser = data;
-      }
-    } catch (error) {
-      console.warn('Utente creato in Firebase, ma copia Supabase non salvata:', error);
-    }
-
+    /*
+     * L'API server-side ha gia' creato sia l'account Firebase sia il
+     * profilo nella tabella "utenti": qui basta restituire il risultato.
+     */
     notifySupabaseUsageChanged();
 
-    if (supabaseUser) {
-      return mapUser.toModel(supabaseUser);
+    if (created?.user) {
+      return mapUser.toModel(created.user);
     }
 
     return {
@@ -2088,34 +1514,38 @@ export const userStore = {
       authUid: created.uid,
       companyId: created.companyId,
       company_id: created.companyId,
-      username: compatibilityUser.username,
+      username: user.username || created.email,
       email: created.email,
       fullName: created.fullName,
       role: normalizeRole(created.role),
       active: true,
-      permissions: compatibilityUser.permissions,
+      permissions:
+        user.permissions && typeof user.permissions === 'object'
+          ? user.permissions
+          : {},
       createdAt: new Date().toISOString(),
     };
   },
 
   async update(id, updates) {
-    const row = mapUser.toRow(updates);
+    /*
+     * La tabella "utenti" non e' scrivibile direttamente dal browser:
+     * l'aggiornamento passa dall'API server-side, che verifica che chi
+     * lo richiede sia il datore dell'azienda o il programmatore.
+     */
+    const payload = await callAdminApi(ADMIN_UPDATE_USER_URL, {
+      userId: id,
+      updates: {
+        fullName: updates.fullName,
+        username: updates.username,
+        email: updates.email,
+        role: updates.role,
+        active: updates.active,
+        permissions: updates.permissions,
+      },
+    });
 
-    if (row.password) {
-      row.password = await hashPassword(row.password);
-    }
-
-    const { data, error } = await supabase
-      .from('utenti')
-      .update(row)
-      .eq('id', id)
-      .eq('azienda_id', getCurrentCompanyId())
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    const updatedUser = mapUser.toModel(data);
+    const updatedUser = mapUser.toModel(payload.user);
 
     const currentUser = this.getCurrentUser();
     if (currentUser?.id === updatedUser.id) {
@@ -2128,30 +1558,12 @@ export const userStore = {
   },
 
   async delete(id) {
-    const { data: existingUser, error: readError } = await supabase
-      .from('utenti')
-      .select('*')
-      .eq('id', id)
-      .eq('azienda_id', getCurrentCompanyId())
-      .maybeSingle();
-
-    if (readError) throw readError;
-
-    if (existingUser) {
-      try {
-        await deleteFirebaseUserFromAdmin(mapUser.toModel(existingUser));
-      } catch (error) {
-        console.warn('Utente non eliminato da Firebase/Auth oppure già assente:', error);
-      }
-    }
-
-    const { error } = await supabase
-      .from('utenti')
-      .delete()
-      .eq('id', id)
-      .eq('azienda_id', getCurrentCompanyId());
-
-    if (error) throw error;
+    /*
+     * Anche l'eliminazione passa dall'API server-side.
+     * L'account Firebase resta, ma senza profilo applicativo
+     * non puo' piu' accedere.
+     */
+    await callAdminApi(ADMIN_DELETE_USER_URL, { userId: id });
 
     notifySupabaseUsageChanged();
   },
@@ -3016,9 +2428,21 @@ export const reorderProposalStore = {
     return mapReorderProposal.toModel(data);
   },
 
+  /**
+   * Quantita' della riga: se e' stata decisa a mano nel modulo d'ordine
+   * si usa quella, altrimenti si calcola dalla soglia.
+   */
+  getRowQty(material, multiplier = 2) {
+    const decisa = Number(material?.suggestedQty || 0);
+
+    if (decisa > 0) return decisa;
+
+    return this.getSuggestedQty(material, multiplier);
+  },
+
   async createFromMaterials({ materials = [], user, notes = '', multiplier = 2 } = {}) {
     const validMaterials = (materials || []).filter(
-      (m) => this.getSuggestedQty(m, multiplier) > 0
+      (m) => this.getRowQty(m, multiplier) > 0
     );
 
     if (validMaterials.length === 0) {
@@ -3038,7 +2462,7 @@ export const reorderProposalStore = {
 
     for (const [supplierName, groupMaterials] of Object.entries(supplierGroups)) {
       const totalQty = groupMaterials.reduce(
-        (sum, material) => sum + this.getSuggestedQty(material, multiplier),
+        (sum, material) => sum + this.getRowQty(material, multiplier),
         0
       );
 
@@ -3079,10 +2503,10 @@ export const reorderProposalStore = {
           unit: material.unit,
           currentQty: material.quantity,
           minThreshold: material.minThreshold,
-          suggestedQty: this.getSuggestedQty(material, multiplier),
+          suggestedQty: this.getRowQty(material, multiplier),
           supplier: supplierName,
           location: material.location,
-          notes: '',
+          notes: material.rowNotes || '',
         })
       );
 

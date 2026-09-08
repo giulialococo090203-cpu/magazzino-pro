@@ -1,0 +1,7 @@
+# Le rotte dell'applicazione sono gestite da React Router:
+# ogni indirizzo non corrispondente a un file deve servire index.html,
+# altrimenti aprire o ricaricare /programmatore, /inventario, ecc.
+# darebbe pagina non trovata.
+# Le funzioni in functions/api hanno comunque la precedenza.
+
+/*    /index.html   200

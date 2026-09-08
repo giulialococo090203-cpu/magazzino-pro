@@ -14,21 +14,9 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const PDF_COLORS = {
-  graphite: [17, 23, 34],
-  graphite2: [31, 41, 55],
-  orange: [255, 106, 24],
-  orangeDark: [217, 67, 8],
-  cream: [255, 249, 243],
-  cream2: [245, 238, 231],
-  border: [214, 220, 229],
-  text: [17, 24, 39],
-  muted: [102, 112, 133],
-  white: [255, 255, 255],
-};
-
 
 import Icon from '../../components/Icon';
+import { PDF_COLORS } from '../../utils/pdfTheme';
 
 function formatStatus(status) {
   const labels = {
@@ -130,6 +118,14 @@ export default function Inventario() {
   const requestIdRef = useRef(0);
   const isFirstMaterialsLoad = useRef(true);
 
+  /*
+   * Memoria delle ricerche gia' eseguite: tornare su un termine appena
+   * digitato (o cancellare una lettera) mostra i risultati all'istante,
+   * senza aspettare di nuovo il server.
+   */
+  const cacheRicercheRef = useRef(new Map());
+  const [ricercaApplicata, setRicercaApplicata] = useState('');
+
   const searchWrapRef = useRef(null);
   const tableScrollRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -148,12 +144,28 @@ export default function Inventario() {
 
   // Carica una pagina di materiali da Supabase (ricerca e filtri lato server).
   // reset=true ricarica dall'inizio (cambio ricerca/filtri), altrimenti accoda la pagina successiva.
+  const chiaveCache = (posizione) =>
+    `${search.trim().toLowerCase()}|${filterCategory}|${filterStatus}|${posizione}`;
+
   const loadMaterialsPage = async ({ reset = false, offset = 0 } = {}) => {
     const requestId = ++requestIdRef.current;
+    const chiave = chiaveCache(reset ? 0 : offset);
+    const inMemoria = cacheRicercheRef.current.get(chiave);
+
+    // Risultato gia' visto: lo mostriamo subito, poi lo riallineiamo col server.
+    if (reset && inMemoria) {
+      setMaterials(inMemoria.rows);
+
+      if (inMemoria.total !== null && inMemoria.total !== undefined) {
+        setTotalMaterials(inMemoria.total);
+      }
+
+      setRicercaApplicata(search);
+    }
 
     try {
       if (reset) {
-        setLoadingMaterials(true);
+        setLoadingMaterials(!inMemoria);
       } else {
         setLoadingMore(true);
       }
@@ -169,7 +181,18 @@ export default function Inventario() {
       // Risposta obsoleta: nel frattempo è partita una richiesta più recente.
       if (requestId !== requestIdRef.current) return;
 
-      setTotalMaterials(page.total);
+      if (page.total !== null && page.total !== undefined) {
+        setTotalMaterials(page.total);
+      }
+
+      cacheRicercheRef.current.set(chiave, { rows: page.rows, total: page.total });
+
+      if (cacheRicercheRef.current.size > 40) {
+        const piuVecchia = cacheRicercheRef.current.keys().next().value;
+        cacheRicercheRef.current.delete(piuVecchia);
+      }
+
+      setRicercaApplicata(search);
 
       setMaterials((prev) => {
         if (reset) return page.rows;
@@ -258,7 +281,7 @@ export default function Inventario() {
 
     const timer = window.setTimeout(() => {
       loadMaterialsPage({ reset: true });
-    }, 300);
+    }, 140);
 
     return () => window.clearTimeout(timer);
   }, [search, filterCategory, filterStatus]);
@@ -297,9 +320,46 @@ export default function Inventario() {
 
   const getCategoryName = (id) => categoryNameById.get(id) || id;
 
+  const corrispondeAlTesto = (materiale, q) =>
+    materiale.code?.toLowerCase().includes(q) ||
+    materiale.description?.toLowerCase().includes(q) ||
+    materiale.brand?.toLowerCase().includes(q) ||
+    materiale.supplier?.toLowerCase().includes(q) ||
+    materiale.location?.toLowerCase().includes(q) ||
+    getCategoryName(materiale.category)?.toLowerCase().includes(q);
+
+  /*
+   * Quanto un materiale "somiglia" al testo cercato: codice identico prima
+   * di tutto, poi codice che inizia col testo, poi il resto. Serve a far
+   * comparire per primo il materiale che si sta effettivamente cercando.
+   */
+  const rilevanza = (materiale, q) => {
+    const codice = (materiale.code || '').toLowerCase();
+    const descrizione = (materiale.description || '').toLowerCase();
+
+    if (codice === q) return 0;
+    if (codice.startsWith(q)) return 1;
+    if (descrizione.startsWith(q)) return 2;
+    if (codice.includes(q)) return 3;
+
+    return 4;
+  };
+
   const filtered = useMemo(() => {
-    return materials;
-  }, [materials]);
+    const q = search.trim().toLowerCase();
+    const applicata = ricercaApplicata.trim().toLowerCase();
+
+    if (!q) return materials;
+
+    /*
+     * Mentre il server sta ancora rispondendo, restringiamo subito le righe
+     * gia' a schermo: la lista reagisce mentre si digita, senza attese.
+     */
+    const base =
+      q !== applicata ? materials.filter((m) => corrispondeAlTesto(m, q)) : materials;
+
+    return [...base].sort((a, b) => rilevanza(a, q) - rilevanza(b, q));
+  }, [materials, search, ricercaApplicata, categoryNameById]);
 
   const suggestions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -307,13 +367,8 @@ export default function Inventario() {
     if (!q) return [];
 
     return materials
-      .filter(
-        (m) =>
-          m.code?.toLowerCase().includes(q) ||
-          m.description?.toLowerCase().includes(q) ||
-          m.brand?.toLowerCase().includes(q) ||
-          getCategoryName(m.category)?.toLowerCase().includes(q)
-      )
+      .filter((m) => corrispondeAlTesto(m, q))
+      .sort((a, b) => rilevanza(a, q) - rilevanza(b, q))
       .slice(0, 8);
   }, [search, materials, categoryNameById]);
 
@@ -462,7 +517,7 @@ export default function Inventario() {
         fontStyle: 'bold',
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252],
+        fillColor: PDF_COLORS.cream,
       },
     });
 

@@ -5,11 +5,12 @@ import {
   hasPermission,
   getDefaultRouteForUser,
   normalizeRole,
+  isProgrammerUser,
 } from '../data/permissions';
+import { AZIENDA_NOME } from '../config/azienda';
 import { useState, useEffect } from 'react';
-import FaIcon from './FaIcon';
+import ThemeToggle from './ThemeToggle';
 import SafeIcon from './SafeIcon';
-import { FEATURES, hasPlanFeature, getPlanLabel } from '../data/subscriptionPlans';
 
 const SIDEBAR_ICON_MAP = {
   inventory_2: 'inventory',
@@ -69,42 +70,36 @@ const NAV_SECTIONS = [
         label: 'Giacenza',
         icon: 'inventory_2',
         permission: 'canViewInventory',
-        feature: FEATURES.INVENTORY,
       },
       {
         path: '/movimento/entrata',
         label: 'Carico Materiale',
         icon: 'move_to_inbox',
         permission: 'canMoveIn',
-        feature: FEATURES.MOVE_IN,
       },
       {
         path: '/movimento/uscita',
         label: 'Scarica Materiale',
         icon: 'outbox',
         permission: 'canMoveOut',
-        feature: FEATURES.MOVE_OUT,
       },
       {
         path: '/movimento/reintegro',
         label: 'Reintegra Materiale',
         icon: 'sync',
         permission: 'canReintegrate',
-        feature: FEATURES.REINTEGRATE,
       },
       {
         path: '/movimento/rettifica',
         label: 'Rettifica Magazzino',
         icon: 'edit_square',
         permission: 'canRectify',
-        feature: FEATURES.RECTIFY,
       },
       {
         path: '/storico',
         label: 'Storico Movimenti',
         icon: 'calendar_month',
         permission: 'canViewHistory',
-        feature: FEATURES.HISTORY_BASE,
       },
     ],
   },
@@ -117,35 +112,30 @@ const NAV_SECTIONS = [
         label: 'Riordino Automatico',
         icon: 'shopping_cart',
         permission: 'canManageReorderProposals',
-        feature: FEATURES.REORDER,
       },
       {
         path: '/proposte-ordine',
         label: 'Proposte Ordine',
         icon: 'request_quote',
         permission: 'canManageReorderProposals',
-        feature: FEATURES.REORDER_ARCHIVE,
       },
       {
         path: '/importa',
         label: 'Importa / Inserisci',
         icon: 'upload_file',
         permission: 'canImportInvoices',
-        feature: FEATURES.INVOICES_IMPORT,
       },
       {
         path: '/fatture',
         label: 'Archivio Fatture',
         icon: 'folder_open',
         permission: 'canImportInvoices',
-        feature: FEATURES.INVOICES_ARCHIVE,
       },
       {
         path: '/gestione/fornitori',
         label: 'Fornitori',
         icon: 'factory',
         permission: 'canManageMaterials',
-        feature: FEATURES.SUPPLIERS,
       },
     ],
   },
@@ -158,21 +148,18 @@ const NAV_SECTIONS = [
         label: 'Inventario Fisico',
         icon: 'fact_check',
         permission: 'canPhysicalInventory',
-        feature: FEATURES.PHYSICAL_INVENTORY,
       },
       {
         path: '/controllo/soglie',
         label: 'Soglie Scorta',
         icon: 'settings',
         permission: 'canManageThresholds',
-        feature: FEATURES.NOTIFICATIONS,
       },
       {
         path: '/controllo/notifiche',
         label: 'Notifiche',
         icon: 'notifications',
         permission: 'canViewNotifications',
-        feature: FEATURES.NOTIFICATIONS,
         badge: true,
       },
     ],
@@ -186,28 +173,24 @@ const NAV_SECTIONS = [
         label: 'Dashboard',
         icon: 'analytics',
         permission: 'canViewDashboard',
-        feature: FEATURES.DASHBOARD,
       },
       {
         path: '/gestione/rendicontazione',
         label: 'Rendicontazione',
         icon: 'receipt_long',
         permission: 'canManageMaterials',
-        feature: FEATURES.ECONOMIC_REPORTING,
       },
       {
         path: '/gestione/storico-prezzi',
         label: 'Storico Prezzi',
         icon: 'trending_up',
         permission: 'canManagePriceSettings',
-        feature: FEATURES.PRICE_HISTORY,
       },
       {
         path: '/gestione/prezzi',
         label: 'Impostazioni Prezzi',
         icon: 'euro',
         permission: 'canManagePriceSettings',
-        feature: FEATURES.PRICE_SETTINGS,
       },
     ],
   },
@@ -220,65 +203,75 @@ const NAV_SECTIONS = [
         label: 'Anagrafica Materiali',
         icon: 'construction',
         permission: 'canManageMaterials',
-        feature: FEATURES.INVENTORY,
       },
       {
         path: '/gestione/categorie',
         label: 'Categorie',
         icon: 'sell',
         permission: 'canManageCategories',
-        feature: FEATURES.CATEGORIES,
       },
       {
         path: '/gestione/utenti',
         label: 'Utenti',
         icon: 'manage_accounts',
         permission: 'canManageUsers',
-        feature: FEATURES.USERS_BASE,
       },
       {
         path: '/gestione/backup',
         label: 'Backup Sistema',
         icon: 'backup',
         permission: 'canManageUsers',
-        feature: FEATURES.BACKUP,
       },
       {
         path: '/gestione/log',
         label: 'Registro modifiche',
         icon: 'history_edu',
         permission: 'canViewAuditLog',
-        feature: FEATURES.AUDIT_LOG,
       },
     ],
   },
 ];
 
+/* Voce presente nel menu dell'applicazione per entrare nell'area tecnica. */
 const PROGRAMMER_NAV_SECTIONS = [
   {
-    title: 'Controllo Software',
+    title: 'Programmatore',
     icon: 'admin_panel_settings',
     items: [
       {
-        path: '/super/aziende',
-        label: 'Monitoraggio Aziendale',
-        icon: 'business_center',
+        path: '/programmatore',
+        label: 'Area di supporto',
+        icon: 'admin_panel_settings',
       },
     ],
   },
 ];
 
-function isProgrammerMode(user) {
-  const selectedCompany = user?.selectedCompany || {};
-  const companyId = String(selectedCompany.id || '').trim().toLowerCase();
-  const companyCode = String(selectedCompany.code || selectedCompany.codice || '').trim().toUpperCase();
-
-  return (
-    Boolean(user?.programmerMode) ||
-    companyId === 'programmatore' ||
-    companyCode === 'PROGRAMMATORE'
-  );
-}
+/*
+ * Menu dell'area programmatore: e' un ambiente a se'. Qui non compaiono
+ * le sezioni dell'applicazione aziendale, ma soltanto gli strumenti
+ * tecnici, piu' il rientro all'applicazione.
+ */
+const PROGRAMMER_CONSOLE_SECTIONS = [
+  {
+    title: 'Diagnostica',
+    icon: 'fact_check',
+    items: [
+      { path: '/programmatore/stato', label: 'Stato app', icon: 'fact_check' },
+      { path: '/programmatore/andamento', label: 'Andamento', icon: 'analytics' },
+      { path: '/programmatore/integrita', label: 'Integrità dati', icon: 'construction' },
+    ],
+  },
+  {
+    title: 'Interventi',
+    icon: 'settings',
+    items: [
+      { path: '/programmatore/manutenzione', label: 'Manutenzione', icon: 'settings' },
+      { path: '/programmatore/utenti', label: 'Utenti e accessi', icon: 'manage_accounts' },
+      { path: '/programmatore/codice', label: 'Codice d’accesso', icon: 'admin_panel_settings' },
+    ],
+  },
+];
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
@@ -305,7 +298,13 @@ const PAGE_TITLES = {
   '/controllo': 'Dashboard',
   '/controllo/soglie': 'Soglie Scorta',
   '/controllo/notifiche': 'Centro Notifiche',
-  '/super/aziende': 'Monitoraggio Aziendale',
+  '/programmatore': 'Pannello Programmatore',
+  '/programmatore/stato': 'Stato applicazione',
+  '/programmatore/andamento': 'Andamento',
+  '/programmatore/integrita': 'Integrità dati',
+  '/programmatore/manutenzione': 'Manutenzione',
+  '/programmatore/utenti': 'Utenti e accessi',
+  '/programmatore/codice': 'Codice d’accesso',
 };
 
 const SECTION_NAMES = {
@@ -320,7 +319,7 @@ const SECTION_NAMES = {
   '/importa': 'Fatture',
   '/fatture': 'Fatture',
   '/gestione': 'Configurazione',
-  '/super': 'Programmatore',
+  '/programmatore': 'Programmatore',
   '/controllo': 'Controllo Datore',
   '/': 'Generale',
 };
@@ -367,8 +366,8 @@ export default function Layout({ children }) {
   const [openSections, setOpenSections] = useState({});
   const [mobileOpenSection, setMobileOpenSection] = useState(null);
 
-  const programmerMode = isProgrammerMode(user);
-  const canSeeNotifications = !programmerMode && hasPermission(user, 'canViewNotifications');
+  const isProgrammer = isProgrammerUser(user);
+  const canSeeNotifications = hasPermission(user, 'canViewNotifications');
 
   useEffect(() => {
     if (!canSeeNotifications) {
@@ -421,10 +420,8 @@ export default function Layout({ children }) {
   }, []);
 
 
-  const section = programmerMode ? 'Programmatore' : getSection(location.pathname);
-  const pageTitle = programmerMode
-    ? 'Monitoraggio Aziendale'
-    : PAGE_TITLES[location.pathname] || 'Magazzino';
+  const section = getSection(location.pathname);
+  const pageTitle = PAGE_TITLES[location.pathname] || 'Magazzino';
 
   const today = new Date().toLocaleDateString('it-IT', {
     weekday: 'long',
@@ -443,22 +440,23 @@ export default function Layout({ children }) {
     .toUpperCase()
     .slice(0, 2);
 
-  const isSuperCompanyContext =
-    String(user?.selectedCompany?.id || '').trim().toLowerCase() === 'programmatore' ||
-    String(user?.selectedCompany?.code || '').trim().toUpperCase() === 'PROGRAMMATORE';
-
   const baseNavSections = NAV_SECTIONS.map((navSection) => {
     const visibleItems = navSection.items.filter((item) =>
-      hasPermission(user, item.permission) &&
-      (!item.feature || hasPlanFeature(user, item.feature))
+      hasPermission(user, item.permission)
     );
 
     return { ...navSection, items: visibleItems };
   }).filter((navSection) => navSection.items.length > 0);
 
-  const visibleSections = programmerMode
-    ? (isSuperCompanyContext ? PROGRAMMER_NAV_SECTIONS : [...PROGRAMMER_NAV_SECTIONS, ...baseNavSections])
-    : baseNavSections;
+  /*
+   * Dentro l'area programmatore si vedono solo gli strumenti tecnici:
+   * l'applicazione aziendale resta fuori.
+   */
+  const visibleSections = location.pathname.startsWith('/programmatore')
+    ? PROGRAMMER_CONSOLE_SECTIONS
+    : isProgrammer
+      ? [...baseNavSections, ...PROGRAMMER_NAV_SECTIONS]
+      : baseNavSections;
 
   const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
   const visibleSectionsKey = visibleSections
@@ -503,15 +501,24 @@ export default function Layout({ children }) {
     });
   };
 
-return (
-    <div className={`app-layout ${isMobile ? "is-mobile" : ""}`}>
+const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
+
+  return (
+    <div
+      className={`app-layout ${isMobile ? 'is-mobile' : ''} ${
+        inAreaProgrammatore ? 'area-programmatore' : ''
+      }`}
+    >
       <aside className="sidebar">
         <div className="sidebar-header">
-          <Link to={programmerMode ? '/super/aziende' : getDefaultRouteForUser(user)} className="sidebar-logo">
-            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/workspace-logo.png" alt="WorkSpace" />
+          <Link
+            to={inAreaProgrammatore ? '/programmatore/stato' : getDefaultRouteForUser(user)}
+            className="sidebar-logo"
+          >
+            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/logo.png" alt="WorkSpace" />
             <div className="sidebar-logo-text">
               <h1>WorkSpace</h1>
-              <span>{programmerMode ? 'Controllo Software' : 'Gestione Magazzino'}</span>
+              <span>{inAreaProgrammatore ? 'Console tecnica' : AZIENDA_NOME}</span>
             </div>
           </Link>
         </div>
@@ -564,6 +571,13 @@ return (
           );
         })}
 
+        {inAreaProgrammatore && (
+          <Link to={getDefaultRouteForUser(user)} className="prog-exit-link">
+            <span className="prog-exit-arrow" aria-hidden="true">←</span>
+            Torna all’applicazione
+          </Link>
+        )}
+
         <div className="sidebar-user">
           <div className="sidebar-user-info">
             <div className="sidebar-avatar" title={displayName}>
@@ -573,8 +587,9 @@ return (
             <div className="sidebar-user-details">
               <div className="sidebar-user-name">{displayName}</div>
               <div className="sidebar-user-role">
-                {programmerMode ? 'Programmatore' : `${getRoleLabel(user?.role)} · Piano ${getPlanLabel(user)}`
-                }
+                {isProgrammer
+                  ? `${getRoleLabel(user?.role)} · Programmatore`
+                  : getRoleLabel(user?.role)}
               </div>
             </div>
 
@@ -662,12 +677,20 @@ return (
           </div>
 
           <div className="header-right">
-
             <span className="header-date" style={{ textTransform: 'capitalize' }}>
               {today}
             </span>
+
+            <ThemeToggle />
           </div>
         </header>
+
+        {inAreaProgrammatore && (
+          <div className="prog-ribbon">
+            <span className="prog-ribbon-dot" />
+            Area programmatore — supporto tecnico
+          </div>
+        )}
 
         <div className="page-content animate-fadeIn" key={location.pathname}>
           {children}
