@@ -75,7 +75,10 @@ async function callProgrammerApi(action, payload = {}) {
 
   if (!response.ok || data?.ok === false) {
     throw new Error(
-      data?.message || text || `Errore richiesta programmatore (${response.status}).`
+      data?.message ||
+        data?.detail ||
+        text ||
+        `Errore richiesta programmatore (${response.status}).`
     );
   }
 
@@ -408,7 +411,12 @@ export const systemStore = {
     const parserStart = now();
 
     try {
-      const esito = await callProgrammerApi('check-pdf-service');
+      // L'indirizzo del servizio lo conosce l'app: lo passiamo al
+      // server, cosi' il controllo funziona anche se online non e'
+      // stata configurata la stessa variabile.
+      const esito = await callProgrammerApi('check-pdf-service', {
+        url: import.meta.env.VITE_PDF_PARSER_URL || '',
+      });
 
       checks.push({
         key: 'pdf_parser',

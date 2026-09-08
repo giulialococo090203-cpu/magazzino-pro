@@ -75,3 +75,30 @@ Chi viene creato dalla gestione utenti riceve ora il ruolo automaticamente.
 Se la variabile `FIREBASE_SERVICE_ACCOUNT` non e' configurata, la creazione
 riesce lo stesso ma l'app lo segnala, cosi' non si scopre il problema dalla
 persona che chiama dicendo che non vede niente.
+
+---
+
+# Pubblicare il sito con un nome nuovo
+
+Il nome `magazzino-pro` fa parte del progetto Cloudflare e non si puo'
+rinominare: si crea un progetto nuovo e si pubblica li'.
+
+    npx wrangler pages project create workspace --production-branch=main
+    bash scripts/configura-cloudflare.sh workspace
+    npm run build
+    npx wrangler pages deploy dist --project-name=workspace --branch=main
+
+Gli indirizzi `.pages.dev` sono unici in tutto il mondo, non solo nel tuo
+account: se `workspace` risulta gia' preso, il primo comando lo dice e
+basta ripetere i quattro passaggi con un altro nome (per esempio
+`workspace-thermoservice`), tenendolo uguale in tutti e quattro.
+
+Il secondo comando carica sul nuovo progetto le variabili che le funzioni
+`/api/...` si aspettano di trovare. Senza, il sito si apre ma la console
+programmatore e la gestione utenti non funzionano.
+
+Se in futuro vuoi l'indirizzo esatto `workspace` senza il suffisso, la
+strada e' un dominio tuo (Cloudflare > il progetto > Custom domains).
+
+Il vecchio progetto va lasciato acceso finche' non hai verificato il nuovo,
+poi si puo' eliminare dal pannello Cloudflare.

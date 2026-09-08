@@ -409,12 +409,22 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'check-pdf-service') {
-      const parserUrl = env.VITE_PDF_PARSER_URL || env.PDF_PARSER_URL;
+      // Se la variabile non e' impostata sul server, usiamo l'indirizzo
+      // che l'app ci passa: e' lo stesso che usa per leggere le fatture,
+      // e la richiesta arriva qui solo da un programmatore gia'
+      // riconosciuto.
+      const indicato = String(body?.url || '').trim();
+
+      const parserUrl =
+        env.VITE_PDF_PARSER_URL ||
+        env.PDF_PARSER_URL ||
+        (indicato.startsWith('https://') ? indicato : '');
 
       if (!parserUrl) {
         return jsonResponse({
           ok: false,
-          detail: 'Indirizzo del servizio non configurato (VITE_PDF_PARSER_URL).',
+          detail:
+            'Indirizzo del servizio non configurato: aggiungi VITE_PDF_PARSER_URL alle variabili del sito.',
         });
       }
 
