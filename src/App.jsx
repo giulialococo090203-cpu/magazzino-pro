@@ -44,6 +44,7 @@ import Notifiche from './pages/controllo/Notifiche';
 // Pagine - Programmatore (supporto tecnico)
 import AccessoProgrammatore from './pages/programmatore/AccessoProgrammatore';
 import PannelloProgrammatore from './pages/programmatore/PannelloProgrammatore';
+import DatiAzienda from './pages/programmatore/DatiAzienda';
 
 import './index.css';
 
@@ -91,7 +92,7 @@ function ProtectedMovementRoute({ user }) {
  * Route della parte programmatore: riservata al supporto tecnico
  * e protetta dal codice d'accesso.
  */
-function ProgrammerRoute({ user, unlocked, onUnlocked }) {
+function ProgrammerRoute({ user, unlocked, onUnlocked, children }) {
   if (!isProgrammerUser(user)) {
     return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
@@ -100,7 +101,7 @@ function ProgrammerRoute({ user, unlocked, onUnlocked }) {
     return <AccessoProgrammatore onUnlocked={onUnlocked} />;
   }
 
-  return <PannelloProgrammatore />;
+  return children;
 }
 
 function App() {
@@ -425,13 +426,28 @@ function App() {
             />
 
             <Route
+              path="/programmatore/dati/:pagina"
+              element={
+                <ProgrammerRoute
+                  user={currentUser}
+                  unlocked={programmerUnlocked}
+                  onUnlocked={() => setProgrammerUnlocked(true)}
+                >
+                  <DatiAzienda />
+                </ProgrammerRoute>
+              }
+            />
+
+            <Route
               path="/programmatore/:sezione"
               element={
                 <ProgrammerRoute
                   user={currentUser}
                   unlocked={programmerUnlocked}
                   onUnlocked={() => setProgrammerUnlocked(true)}
-                />
+                >
+                  <PannelloProgrammatore />
+                </ProgrammerRoute>
               }
             />
 

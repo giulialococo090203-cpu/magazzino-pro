@@ -257,6 +257,18 @@ const PROGRAMMER_CONSOLE_SECTIONS = [
     ],
   },
   {
+    title: 'Dati azienda',
+    icon: 'inventory_2',
+    items: [
+      { path: '/programmatore/dati/giacenza', label: 'Giacenza', icon: 'inventory_2' },
+      { path: '/programmatore/dati/movimenti', label: 'Movimenti', icon: 'calendar_month' },
+      { path: '/programmatore/dati/ordini', label: 'Ordini', icon: 'shopping_cart' },
+      { path: '/programmatore/dati/fatture', label: 'Fatture', icon: 'folder_open' },
+      { path: '/programmatore/dati/utenti', label: 'Utenti', icon: 'manage_accounts' },
+      { path: '/programmatore/dati/registro', label: 'Registro modifiche', icon: 'history_edu' },
+    ],
+  },
+  {
     title: 'Interventi',
     icon: 'settings',
     items: [
@@ -300,6 +312,12 @@ const PAGE_TITLES = {
   '/programmatore/manutenzione': 'Manutenzione',
   '/programmatore/utenti': 'Utenti e accessi',
   '/programmatore/codice': 'Codice d’accesso',
+  '/programmatore/dati/giacenza': 'Dati · Giacenza',
+  '/programmatore/dati/movimenti': 'Dati · Movimenti',
+  '/programmatore/dati/ordini': 'Dati · Ordini',
+  '/programmatore/dati/fatture': 'Dati · Fatture',
+  '/programmatore/dati/utenti': 'Dati · Utenti',
+  '/programmatore/dati/registro': 'Dati · Registro modifiche',
 };
 
 const SECTION_NAMES = {

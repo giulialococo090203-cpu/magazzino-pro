@@ -16796,3 +16796,21 @@ body .mobile-login-stable-final .mobile-login-top .mobile-login-title {
   font-size: 12px;
   white-space: nowrap;
 }
+
+/* Dati aziendali visti dalla console tecnica */
+.prog-dati-avviso {
+  display: block;
+  padding: 11px 16px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(var(--danger-rgb), 0.4);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--border-radius-md);
+  background: rgba(var(--danger-rgb), 0.09);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.prog-dati-avviso strong {
+  color: var(--danger-text);
+}
