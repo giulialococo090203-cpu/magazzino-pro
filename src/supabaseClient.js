@@ -24,11 +24,19 @@ function waitForFirebaseAuthReady() {
         firebaseAuth,
         (user) => {
           unsubscribe();
+          // Se il primo stato arriva "vuoto" non lo consideriamo
+          // definitivo: la sessione potrebbe essere ancora in ripristino
+          // e altrimenti resteremmo senza token per tutta la visita.
+          if (!user) {
+            firebaseAuthReadyPromise = null;
+          }
+
           resolve(user);
         },
         (error) => {
           console.error('Errore inizializzazione Firebase Auth:', error);
           unsubscribe();
+          firebaseAuthReadyPromise = null;
           resolve(null);
         }
       );

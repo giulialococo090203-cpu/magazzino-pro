@@ -1,3 +1,5 @@
+import { impostaRuoloAuthenticated } from '../_googleAuth.js';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -220,6 +222,20 @@ export async function onRequestPost(context) {
       fullName
     );
 
+    // Senza il ruolo "authenticated" il nuovo utente entrerebbe
+    // nell'app e troverebbe tutti gli elenchi vuoti: Supabase lo
+    // tratterebbe come un visitatore anonimo.
+    let avvisoRuolo = null;
+
+    try {
+      await impostaRuoloAuthenticated(env, firebaseCreated.localId);
+    } catch (error) {
+      avvisoRuolo =
+        `Utente creato, ma il ruolo non e' stato assegnato (${error.message}). ` +
+        'Aprilo dalla console programmatore e usa "Ripristina accessi", ' +
+        'altrimenti vedra\u2019 le pagine vuote.';
+    }
+
     const existingRows = await supabaseRequest(
       env,
       `utenti?azienda_id=eq.${encodeURIComponent(companyId)}` +
@@ -275,6 +291,7 @@ export async function onRequestPost(context) {
       companyId,
       company_id: companyId,
       user: savedUser,
+      warning: avvisoRuolo,
     });
   } catch (error) {
     console.error('Errore create-user:', error);

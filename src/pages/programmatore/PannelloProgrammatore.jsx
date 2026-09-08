@@ -64,6 +64,7 @@ export default function PannelloProgrammatore() {
   const [integrity, setIntegrity] = useState(null);
   const [integrityLoading, setIntegrityLoading] = useState(false);
   const [repairing, setRepairing] = useState(false);
+  const [ripristinoAccessi, setRipristinoAccessi] = useState(false);
 
   const [config, setConfig] = useState(null);
   const [newCode, setNewCode] = useState('');
@@ -258,6 +259,34 @@ export default function PannelloProgrammatore() {
       showError(error?.message || 'Riparazione non riuscita.');
     } finally {
       setRepairing(false);
+    }
+  };
+
+  /*
+   * Supabase riconosce un utente solo se nel token Firebase c'e' il
+   * ruolo "authenticated". Se manca, la persona entra nell'app e trova
+   * tutte le pagine vuote, senza nessun errore. Questo bottone lo
+   * riscrive su tutti gli account.
+   */
+  const handleRipristinaAccessi = async () => {
+    try {
+      setRipristinoAccessi(true);
+
+      const esito = await systemStore.repairFirebaseRoles();
+
+      showFeedback(
+        esito?.sistemati
+          ? `Accessi ripristinati su ${formatNumber(esito.sistemati)} account su ${formatNumber(
+              esito.totale
+            )}. Chi era gia\u2019 dentro deve uscire e rientrare.`
+          : `Nessun intervento necessario: tutti i ${formatNumber(
+              esito?.totale || 0
+            )} account sono a posto.`
+      );
+    } catch (error) {
+      showError(error?.message || 'Ripristino non riuscito.');
+    } finally {
+      setRipristinoAccessi(false);
     }
   };
 
@@ -602,6 +631,15 @@ export default function PannelloProgrammatore() {
 
                 <button
                   type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleRipristinaAccessi}
+                  disabled={ripristinoAccessi}
+                >
+                  {ripristinoAccessi ? 'Ripristino...' : 'Ripristina accessi'}
+                </button>
+
+                <button
+                  type="button"
                   className="btn btn-primary btn-sm"
                   onClick={handleRepairOrphans}
                   disabled={repairing}
@@ -615,7 +653,9 @@ export default function PannelloProgrammatore() {
               <p className="text-muted text-sm">
                 Qui trovi i dati incoerenti che possono far comportare male l’app.
                 “Ripara record orfani” riassegna all’azienda i record salvati senza
-                riferimento aziendale.
+                riferimento aziendale. “Ripristina accessi” serve quando qualcuno
+                entra e trova le pagine vuote: rimette agli account il permesso di
+                lettura che Supabase si aspetta di trovare nel token.
               </p>
 
               <div className="table-container">

@@ -30,7 +30,8 @@ export const MONITORED_TABLES = [
   { table: 'storico_prezzi', label: 'Storico prezzi', critical: false },
   { table: 'proposte_ordine', label: 'Proposte ordine', critical: false },
   { table: 'sessioni_inventario', label: 'Sessioni inventario', critical: false },
-  { table: 'impostazioni', label: 'Impostazioni', critical: false },
+  // "impostazioni" non ha la colonna id: la chiave primaria e' chiave+azienda.
+  { table: 'impostazioni', label: 'Impostazioni', critical: false, colonna: 'chiave' },
 ];
 
 function now() {
@@ -266,6 +267,47 @@ export const systemStore = {
         : 'Nessuna sessione Firebase attiva.',
     });
 
+    // 1-bis. Identita' vista dal database
+    //
+    // Supabase capisce chi sta chiedendo i dati leggendo il token di
+    // Firebase. Se nel token manca l'informazione "role" la richiesta
+    // viene trattata come anonima: nessun errore, ma tutti gli elenchi
+    // tornano vuoti. Questo controllo lo rende visibile subito.
+    const identitaStart = now();
+
+    try {
+      const { data, error } = await supabase.rpc('identita_sessione');
+
+      if (error) throw error;
+
+      const identita = data || {};
+      const riconosciuta = identita.ruolo_database === 'authenticated';
+
+      checks.push({
+        key: 'identita_database',
+        label: 'Identita riconosciuta dal database',
+        ok: riconosciuta,
+        critical: true,
+        ms: Math.round(now() - identitaStart),
+        detail: riconosciuta
+          ? `Riconosciuto come ${identita.email_token || 'utente'}${
+              identita.e_programmatore ? ' (programmatore)' : ''
+            }.`
+          : 'Il database ti tratta come visitatore anonimo: il token Firebase non porta il ruolo "authenticated", percio\u2019 gli elenchi risultano vuoti. Si risolve con: node scripts/ripristina-ruolo-firebase.mjs --apply',
+      });
+    } catch (error) {
+      checks.push({
+        key: 'identita_database',
+        label: 'Identita riconosciuta dal database',
+        ok: false,
+        critical: true,
+        ms: Math.round(now() - identitaStart),
+        detail:
+          error?.message ||
+          'Controllo non disponibile: manca la migration 20260908_identita_sessione.sql.',
+      });
+    }
+
     // 2. Tabelle dati
     for (const item of MONITORED_TABLES) {
       const start = now();
@@ -273,7 +315,7 @@ export const systemStore = {
       try {
         const query = supabase
           .from(item.table)
-          .select('id', { count: 'exact', head: true });
+          .select(item.colonna || 'id', { count: 'exact', head: true });
 
         const { count, error } = await query.eq('azienda_id', AZIENDA_ID);
 
@@ -359,30 +401,30 @@ export const systemStore = {
     }
 
     // 5. Servizio di lettura PDF (parser fatture)
-    const parserUrl = import.meta.env.VITE_PDF_PARSER_URL;
+    // Il servizio di lettura PDF vive su un altro dominio e non accetta
+    // chiamate diverse da quelle dell'importazione fatture: interrogato
+    // dal browser risponde sempre "Load failed" anche quando funziona.
+    // Il controllo lo fa quindi il server, dove il blocco non esiste.
+    const parserStart = now();
 
-    if (parserUrl) {
-      const parserStart = now();
+    try {
+      const esito = await callProgrammerApi('check-pdf-service');
 
-      try {
-        const response = await fetch(parserUrl, { method: 'GET' });
-
-        checks.push({
-          key: 'pdf_parser',
-          label: 'Servizio lettura PDF',
-          ok: response.ok || response.status === 405 || response.status === 404,
-          ms: Math.round(now() - parserStart),
-          detail: `Risposta HTTP ${response.status}.`,
-        });
-      } catch (error) {
-        checks.push({
-          key: 'pdf_parser',
-          label: 'Servizio lettura PDF',
-          ok: false,
-          ms: Math.round(now() - parserStart),
-          detail: error?.message || 'Servizio non raggiungibile.',
-        });
-      }
+      checks.push({
+        key: 'pdf_parser',
+        label: 'Servizio lettura PDF',
+        ok: Boolean(esito?.ok),
+        ms: Math.round(now() - parserStart),
+        detail: esito?.detail || 'Servizio raggiungibile.',
+      });
+    } catch (error) {
+      checks.push({
+        key: 'pdf_parser',
+        label: 'Servizio lettura PDF',
+        ok: false,
+        ms: Math.round(now() - parserStart),
+        detail: error?.message || 'Servizio non raggiungibile.',
+      });
     }
 
     // 6. API programmatore
@@ -609,6 +651,16 @@ export const systemStore = {
    */
   async repairOrphanRecords() {
     return callProgrammerApi('repair-orphans');
+  },
+
+  /**
+   * Riconsegna a tutti gli account Firebase il ruolo "authenticated".
+   *
+   * Senza quel ruolo il token resta valido ma Supabase risponde come a
+   * un visitatore anonimo: l'utente entra nell'app e trova tutto vuoto.
+   */
+  async repairFirebaseRoles() {
+    return callProgrammerApi('repair-firebase-roles');
   },
 };
 

@@ -6,6 +6,8 @@
 // le operazioni di supporto usando la service role di Supabase.
 // ============================================================
 
+import { ripristinaRuoloAuthenticated } from '../_googleAuth.js';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -404,6 +406,43 @@ export async function onRequestPost(context) {
       }
 
       return jsonResponse({ ok: true, repaired });
+    }
+
+    if (action === 'check-pdf-service') {
+      const parserUrl = env.VITE_PDF_PARSER_URL || env.PDF_PARSER_URL;
+
+      if (!parserUrl) {
+        return jsonResponse({
+          ok: false,
+          detail: 'Indirizzo del servizio non configurato (VITE_PDF_PARSER_URL).',
+        });
+      }
+
+      try {
+        const risposta = await fetch(parserUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ping: true }),
+        });
+
+        // Il servizio risponde male a una chiamata vuota: va benissimo.
+        // Quello che conta e' che risponda.
+        return jsonResponse({
+          ok: risposta.status < 500,
+          detail: `Servizio raggiungibile (risposta HTTP ${risposta.status}).`,
+        });
+      } catch (error) {
+        return jsonResponse({
+          ok: false,
+          detail: error?.message || 'Servizio non raggiungibile.',
+        });
+      }
+    }
+
+    if (action === 'repair-firebase-roles') {
+      const esito = await ripristinaRuoloAuthenticated(env);
+
+      return jsonResponse({ ok: true, ...esito });
     }
 
     return jsonResponse({ ok: false, message: `Azione non riconosciuta: ${action}` }, 400);
