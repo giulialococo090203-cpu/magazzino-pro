@@ -31,16 +31,6 @@ function getTodayFileName() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function sanitizeFileName(value) {
-  return String(value || '')
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\w-]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
-}
-
 function csvEscape(value) {
   const raw = String(value ?? '');
   return `"${raw.replace(/"/g, '""')}"`;
@@ -87,6 +77,9 @@ export default function RiordinoAutomatico() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [ordineAperto, setOrdineAperto] = useState(false);
+  const [righeOrdine, setRigheOrdine] = useState([]);
+  const [fornitoreOrdine, setFornitoreOrdine] = useState('');
+  const [menuEsportaAperto, setMenuEsportaAperto] = useState(false);
 
   const refresh = async () => {
     try {
@@ -421,94 +414,19 @@ export default function RiordinoAutomatico() {
     }
   };
 
+  /** Apre il modulo d'ordine con le righe scelte. */
+  const apriOrdine = (righe, fornitore = '') => {
+    if (!righe || righe.length === 0) return;
+
+    setRigheOrdine(righe);
+    setFornitoreOrdine(fornitore === 'Senza fornitore' ? '' : fornitore);
+    setOrdineAperto(true);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setFilterSupplier('');
     setFilterCategory('');
-  };
-
-  const exportSupplierPDF = async (supplierName) => {
-    const originalSupplier = filterSupplier;
-
-    setFilterSupplier(supplierName);
-
-    const supplierRows = reorderRows.filter(
-      (row) => String(row.supplier || '').trim() === String(supplierName || '').trim()
-    );
-
-    if (supplierRows.length === 0) {
-      alert('Nessun materiale trovato per questo fornitore.');
-      setFilterSupplier(originalSupplier);
-      return;
-    }
-
-    const safeSupplier = sanitizeFileName(supplierName || 'Senza_fornitore');
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.text(`Proposta Ordine - ${supplierName || 'Senza fornitore'}`, 14, 18);
-
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Generato il ${formatDateTime()}`, 14, 25);
-    doc.text(`Righe: ${supplierRows.length}`, 14, 30);
-
-    const supplierTotal = supplierRows.reduce(
-      (sum, row) => sum + Number(row.estimatedTotal || 0),
-      0
-    );
-
-    doc.text(`Totale stimato: ${formatCurrency(supplierTotal)}`, 14, 35);
-
-    autoTable(doc, {
-      startY: 42,
-      head: [[
-        'Codice',
-        'Descrizione',
-        'Marca',
-        'Categoria',
-        'Qtà att.',
-        'Soglia',
-        'Da ordinare',
-        'UM',
-        'Prezzo netto',
-        'Totale',
-        'Posizione',
-      ]],
-      body: supplierRows.map((m) => [
-        m.code || '',
-        m.description || '',
-        m.brand || '',
-        getCategoryName(m.category),
-        Number(m.quantity || 0),
-        Number(m.minThreshold || 0),
-        Number(m.suggestedQty || 0),
-        m.unit || '',
-        formatCurrency(m.netPrice),
-        formatCurrency(m.estimatedTotal),
-        m.location || '',
-      ]),
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-        overflow: 'linebreak',
-      },
-      headStyles: {
-        fillColor: PDF_COLORS.graphite,
-        textColor: PDF_COLORS.white,
-        lineColor: PDF_COLORS.orange,
-        fontStyle: 'bold',
-      },
-      alternateRowStyles: {
-        fillColor: PDF_COLORS.cream,
-      },
-    });
-
-    doc.save(`Proposta_Ordine_${safeSupplier}_${getTodayFileName()}.pdf`);
-
-    await logExport(`PDF fornitore ${supplierName}`);
-    setFilterSupplier(originalSupplier);
   };
 
   return (
@@ -517,33 +435,49 @@ export default function RiordinoAutomatico() {
         <div>
           <h1 className="page-title"><Icon name="shopping_cart" className="ui-title-icon" aria-hidden="true" />Riordino Automatico</h1>
           <p className="page-subtitle">
-            Genera proposte d’ordine dai materiali sotto soglia o esauriti
+            I materiali scesi sotto la soglia minima, raccolti per fornitore e pronti da ordinare
           </p>
         </div>
 
-        <div className="btn-group">
-          <button className="btn btn-secondary" onClick={refresh}>
+        <div className="riordino-azioni">
+          <button className="btn btn-ghost btn-sm" onClick={refresh} title="Ricarica i materiali">
             ↻ Aggiorna
           </button>
-          <button className="btn btn-secondary" onClick={exportExcel} disabled={rowsToExport.length === 0}>
-            <Icon name="analytics" className="ui-inline-icon" aria-hidden="true" /> Excel
-          </button>
-          <button className="btn btn-secondary" onClick={exportCSV} disabled={rowsToExport.length === 0}>
-             CSV
-          </button>
-          <button className="btn btn-secondary" onClick={saveProposal} disabled={rowsToExport.length === 0}>
-            <Icon name="backup" className="ui-inline-icon" aria-hidden="true" /> Salva proposta
-          </button>
-          <button className="btn btn-secondary" onClick={exportPDF} disabled={rowsToExport.length === 0}>
-            <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> PDF
-          </button>
+
+          <div className="riordino-menu-esporta">
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setMenuEsportaAperto((aperto) => !aperto)}
+              disabled={rowsToExport.length === 0}
+            >
+              Esporta elenco ▾
+            </button>
+
+            {menuEsportaAperto && (
+              <div className="riordino-menu-voci">
+                <button type="button" onClick={() => { setMenuEsportaAperto(false); exportExcel(); }}>
+                  Excel
+                </button>
+                <button type="button" onClick={() => { setMenuEsportaAperto(false); exportCSV(); }}>
+                  CSV
+                </button>
+                <button type="button" onClick={() => { setMenuEsportaAperto(false); exportPDF(); }}>
+                  PDF dell’elenco
+                </button>
+                <button type="button" onClick={() => { setMenuEsportaAperto(false); saveProposal(); }}>
+                  Salva senza compilare l’ordine
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             className="btn btn-primary"
-            onClick={() => setOrdineAperto(true)}
+            onClick={() => apriOrdine(rowsToExport, filterSupplier)}
             disabled={rowsToExport.length === 0}
           >
             <Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /> Prepara
-            ordine
+            ordine ({rowsToExport.length})
           </button>
         </div>
       </div>
@@ -603,7 +537,7 @@ export default function RiordinoAutomatico() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
-          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Filtri proposta</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Restringi l’elenco</h3>
           <button className="btn btn-sm btn-ghost" onClick={clearFilters}>
             Azzera filtri
           </button>
@@ -647,21 +581,11 @@ export default function RiordinoAutomatico() {
               </select>
             </div>
 
-            <div className="filter-group">
-              <label>Copertura:</label>
-              <select value={multiplier} onChange={(e) => setMultiplier(Number(e.target.value))}>
-                <option value={1}>Fino alla soglia minima</option>
-                <option value={1.5}>Soglia x 1,5</option>
-                <option value={2}>Soglia x 2</option>
-                <option value={3}>Soglia x 3</option>
-                <option value={4}>Soglia x 4</option>
-              </select>
-            </div>
           </div>
 
           <div className="text-xs text-muted" style={{ marginTop: 12 }}>
-            La quantità proposta viene calcolata così: quantità obiettivo meno quantità attuale.
-            Puoi esportare tutte le righe filtrate oppure selezionare solo alcune righe.
+            I filtri restringono l’elenco qui sotto. Le quantità si scelgono più avanti, e comunque
+            si possono cambiare una per una nel modulo d’ordine.
           </div>
         </div>
       </div>
@@ -669,32 +593,103 @@ export default function RiordinoAutomatico() {
       {Object.keys(groupedBySupplier).length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-header">
-            <h3 className="card-title"><Icon name="factory" className="ui-inline-icon" aria-hidden="true" /> Proposte rapide per fornitore</h3>
+            <h3 className="card-title">
+              <Icon name="factory" className="ui-inline-icon" aria-hidden="true" /> Ordini da
+              preparare, fornitore per fornitore
+            </h3>
+            <span className="text-sm text-muted">
+              Un ordine per fornitore: scegli da chi vuoi partire
+            </span>
           </div>
 
           <div className="card-body">
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="riordino-fornitori">
               {Object.entries(groupedBySupplier)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([supplier, items]) => {
-                  const total = items.reduce((sum, row) => sum + Number(row.estimatedTotal || 0), 0);
+                  const total = items.reduce(
+                    (sum, row) => sum + Number(row.estimatedTotal || 0),
+                    0
+                  );
+                  const pezzi = items.reduce(
+                    (sum, row) => sum + Number(row.suggestedQty || 0),
+                    0
+                  );
 
                   return (
-                    <button
-                      key={supplier}
-                      type="button"
-                      className="btn btn-sm btn-secondary"
-                      onClick={() => exportSupplierPDF(supplier === 'Senza fornitore' ? '' : supplier)}
-                      title="Genera PDF solo per questo fornitore"
-                    >
-                      <Icon name="upload_file" className="ui-inline-icon" aria-hidden="true" /> {supplier} · {items.length} righe · {formatCurrency(total)}
-                    </button>
+                    <article className="riordino-fornitore" key={supplier}>
+                      <header>
+                        <h4>{supplier}</h4>
+                        <span>{formatCurrency(total)}</span>
+                      </header>
+
+                      <p className="riordino-fornitore-dati">
+                        {items.length} {items.length === 1 ? 'materiale' : 'materiali'} ·{' '}
+                        {pezzi} pezzi da ordinare
+                      </p>
+
+                      <div className="riordino-fornitore-azioni">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => apriOrdine(items, supplier)}
+                        >
+                          Prepara ordine
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() =>
+                            setFilterSupplier(supplier === 'Senza fornitore' ? '' : supplier)
+                          }
+                        >
+                          Vedi solo questi
+                        </button>
+                      </div>
+                    </article>
                   );
                 })}
             </div>
           </div>
         </div>
       )}
+
+      <div className="riordino-barra-tabella">
+        <div className="riordino-selezione">
+          <button type="button" className="btn btn-sm btn-secondary" onClick={toggleAllVisible}>
+            {filteredRows.length > 0 &&
+            filteredRows.every((row) => selectedIds.includes(row.id))
+              ? 'Togli la selezione'
+              : 'Seleziona tutti'}
+          </button>
+
+          <span className="text-sm">
+            {selectedRows.length > 0 ? (
+              <>
+                <strong>{selectedRows.length}</strong> materiali selezionati: l’ordine conterrà
+                solo questi
+              </>
+            ) : (
+              <>
+                Nessuna selezione: l’ordine conterrà tutti i{' '}
+                <strong>{filteredRows.length}</strong> materiali dell’elenco
+              </>
+            )}
+          </span>
+        </div>
+
+        <label className="riordino-copertura">
+          <span>Quantità da ordinare</span>
+          <select value={multiplier} onChange={(e) => setMultiplier(Number(e.target.value))}>
+            <option value={1}>fino alla soglia minima</option>
+            <option value={1.5}>soglia × 1,5</option>
+            <option value={2}>soglia × 2</option>
+            <option value={3}>soglia × 3</option>
+            <option value={4}>soglia × 4</option>
+          </select>
+        </label>
+      </div>
 
       <div className="table-container">
         <table className="data-table">
@@ -790,9 +785,9 @@ export default function RiordinoAutomatico() {
       )}
       {ordineAperto && (
         <ComposizioneOrdine
-          righeIniziali={rowsToExport}
+          righeIniziali={righeOrdine}
           materiali={materials}
-          fornitorePredefinito={filterSupplier}
+          fornitorePredefinito={fornitoreOrdine}
           user={user}
           onChiudi={() => setOrdineAperto(false)}
           onSalvato={() => {

@@ -513,6 +513,10 @@ const mapReorderProposalRow = {
     currentQty: Number(row.quantita_attuale || 0),
     minThreshold: Number(row.soglia_minima || 0),
     suggestedQty: Number(row.quantita_consigliata || 0),
+    unitPrice: row.prezzo_unitario === null || row.prezzo_unitario === undefined
+      ? null
+      : Number(row.prezzo_unitario),
+    lineDiscount: Number(row.sconto_riga || 0),
     supplier: row.fornitore || 'Senza fornitore',
     location: row.posizione || '',
     notes: row.note || '',
@@ -531,6 +535,8 @@ const mapReorderProposalRow = {
       quantita_attuale: model.currentQty || 0,
       soglia_minima: model.minThreshold || 0,
       quantita_consigliata: model.suggestedQty || 0,
+      prezzo_unitario: model.unitPrice ?? null,
+      sconto_riga: model.lineDiscount ?? null,
       fornitore: model.supplier || 'Senza fornitore',
       posizione: model.location || null,
       note: model.notes || null,
@@ -2504,13 +2510,38 @@ export const reorderProposalStore = {
           currentQty: material.quantity,
           minThreshold: material.minThreshold,
           suggestedQty: this.getRowQty(material, multiplier),
+          unitPrice: material.unitPrice ?? null,
+          lineDiscount: material.lineDiscount ?? null,
           supplier: supplierName,
           location: material.location,
           notes: material.rowNotes || '',
         })
       );
 
-      const { error: rowsError } = await supabase.from('righe_proposta_ordine').insert(rows);
+      let { error: rowsError } = await supabase.from('righe_proposta_ordine').insert(rows);
+
+      /*
+       * Le colonne del prezzo sono state aggiunte dopo: se il database non le
+       * ha ancora (migration 20260908_prezzi_proposte_ordine.sql non eseguita),
+       * si salva comunque l'ordine, solo senza importi.
+       */
+      if (rowsError && /prezzo_unitario|sconto_riga|schema cache/i.test(rowsError.message || '')) {
+        const righeSenzaPrezzi = rows.map((riga) => {
+          const copia = { ...riga };
+          delete copia.prezzo_unitario;
+          delete copia.sconto_riga;
+          return copia;
+        });
+
+        console.warn(
+          'Colonne prezzo non presenti: ordine salvato senza importi. ' +
+            'Esegui supabase/migrations/20260908_prezzi_proposte_ordine.sql.'
+        );
+
+        ({ error: rowsError } = await supabase
+          .from('righe_proposta_ordine')
+          .insert(righeSenzaPrezzi));
+      }
 
       if (rowsError) throw rowsError;
 

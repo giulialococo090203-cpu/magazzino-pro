@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { reorderProposalStore } from '../../data/store';
 import Icon from '../../components/Icon';
+import { generaPdfOrdine } from '../../utils/ordinePdf';
 import FaIcon from '../../components/FaIcon';
 
 function formatDate(value) {
@@ -172,6 +173,65 @@ export default function ArchivioProposteOrdine() {
     }
   };
 
+  /**
+   * Ricostruisce il documento d'ordine da una proposta salvata.
+   * Gli importi compaiono se erano stati indicati al momento dell'ordine.
+   */
+  const scaricaOrdine = (proposal) => {
+    const righe = (proposal.rows || []).map((riga) => ({
+      codice: riga.code || '',
+      descrizione: riga.description || '',
+      unita: riga.unit || '',
+      quantita: Number(riga.suggestedQty || 0),
+      prezzo: Number(riga.unitPrice || 0),
+      sconto: Number(riga.lineDiscount || 0),
+      note: riga.notes || '',
+    }));
+
+    const imponibile = righe.reduce(
+      (somma, riga) =>
+        somma + riga.quantita * riga.prezzo * (1 - Number(riga.sconto || 0) / 100),
+      0
+    );
+
+    const iva = imponibile * 0.22;
+
+    generaPdfOrdine({
+      testata: {
+        numero: proposal.number || 'ORDINE',
+        data: proposal.createdAt,
+        consegnaRichiesta: '',
+        riferimentoInterno: proposal.userName || '',
+        fornitore: proposal.supplier || '',
+        fornitoreReferente: '',
+        fornitoreEmail: '',
+        fornitoreTelefono: '',
+        fornitoreIndirizzo: '',
+        destinatario: '',
+        indirizzoConsegna: '',
+        referenteConsegna: '',
+        telefonoConsegna: '',
+        orariConsegna: '',
+        pagamento: '—',
+        spedizione: '—',
+        porto: '—',
+        iva: 22,
+        scontoGenerale: 0,
+        speseTrasporto: 0,
+        note: proposal.notes || '',
+      },
+      righe,
+      totali: {
+        imponibileLordo: imponibile,
+        scontoGenerale: 0,
+        trasporto: 0,
+        imponibile,
+        iva,
+        totale: imponibile + iva,
+      },
+    });
+  };
+
   const changeStatus = async (proposal, nextStatus) => {
     try {
       setSavingId(proposal.id);
@@ -224,7 +284,8 @@ export default function ArchivioProposteOrdine() {
         <div>
           <h1 className="page-title"><Icon name="request_quote" className="ui-title-icon" aria-hidden="true" />Proposte Ordine</h1>
           <p className="page-subtitle">
-            Archivio delle proposte generate dal riordino automatico, divise per fornitore.
+            Gli ordini preparati: quelli ancora da inviare, quelli mandati al fornitore e quelli
+            già arrivati
           </p>
         </div>
 
@@ -238,39 +299,51 @@ export default function ArchivioProposteOrdine() {
       {error && <div className="login-error" style={{ marginBottom: 16 }}>{error}</div>}
 
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
-        <div className="kpi-card">
-          <div className="kpi-icon blue"><Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /></div>
-          <div className="kpi-content">
-            <div className="kpi-label">Proposte</div>
-            <div className="kpi-value">{totals.proposals}</div>
-            <div className="kpi-detail">visualizzate</div>
+        <div className="kpi-card warning">
+          <div className="kpi-icon yellow">
+            <Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" />
           </div>
-        </div>
-
-        <div className="kpi-card">
-          <div className="kpi-icon yellow">🟡</div>
           <div className="kpi-content">
-            <div className="kpi-label">Aperte</div>
+            <div className="kpi-label">Da inviare</div>
             <div className="kpi-value">{totals.open}</div>
-            <div className="kpi-detail">da gestire</div>
+            <div className="kpi-detail">ordini ancora aperti</div>
           </div>
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon green"><Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" /></div>
+          <div className="kpi-icon blue">
+            <Icon name="upload" className="ui-inline-icon" aria-hidden="true" />
+          </div>
           <div className="kpi-content">
-            <div className="kpi-label">Righe</div>
+            <div className="kpi-label">Inviati</div>
+            <div className="kpi-value">
+              {filtered.filter((proposta) => proposta.status === 'inviata').length}
+            </div>
+            <div className="kpi-detail">in attesa di consegna</div>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <div className="kpi-icon green">
+            <Icon name="check_circle" className="ui-inline-icon" aria-hidden="true" />
+          </div>
+          <div className="kpi-content">
+            <div className="kpi-label">Completati</div>
+            <div className="kpi-value">
+              {filtered.filter((proposta) => proposta.status === 'completata').length}
+            </div>
+            <div className="kpi-detail">merce arrivata</div>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <div className="kpi-icon blue">
+            <Icon name="inventory_2" className="ui-inline-icon" aria-hidden="true" />
+          </div>
+          <div className="kpi-content">
+            <div className="kpi-label">Materiali</div>
             <div className="kpi-value">{totals.rows}</div>
-            <div className="kpi-detail">materiali proposti</div>
-          </div>
-        </div>
-
-        <div className="kpi-card">
-          <div className="kpi-icon purple">🔢</div>
-          <div className="kpi-content">
-            <div className="kpi-label">Quantità</div>
-            <div className="kpi-value">{totals.quantity}</div>
-            <div className="kpi-detail">pezzi totali</div>
+            <div className="kpi-detail">{totals.quantity} pezzi in totale</div>
           </div>
         </div>
       </div>
@@ -420,30 +493,70 @@ export default function ArchivioProposteOrdine() {
                   <td>{proposal.totalQuantity || 0}</td>
                   <td>{proposal.userName || '—'}</td>
                   <td>
-                    <div className="table-actions">
+                    <div className="ordine-azioni-riga">
                       <button
-                        className="btn btn-sm btn-ghost"
+                        className="btn btn-sm btn-secondary"
                         onClick={() => setSelectedProposal(proposal)}
+                        title="Vedi i materiali dell’ordine"
                       >
-                        👁️
+                        Dettaglio
                       </button>
 
-                      <select
-                        value={proposal.status || 'aperta'}
-                        onChange={(e) => changeStatus(proposal, e.target.value)}
-                        disabled={savingId === proposal.id}
-                        style={{ maxWidth: 130 }}
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => scaricaOrdine(proposal)}
+                        title="Ristampa il documento d’ordine"
                       >
-                        <option value="aperta">Aperta</option>
-                        <option value="inviata">Inviata</option>
-                        <option value="completata">Completata</option>
-                        <option value="annullata">Annullata</option>
-                      </select>
+                        PDF
+                      </button>
+
+                      {proposal.status === 'aperta' && (
+                        <button
+                          className="btn btn-sm btn-primary"
+                          onClick={() => changeStatus(proposal, 'inviata')}
+                          disabled={savingId === proposal.id}
+                        >
+                          Segna inviato
+                        </button>
+                      )}
+
+                      {proposal.status === 'inviata' && (
+                        <button
+                          className="btn btn-sm btn-success"
+                          onClick={() => changeStatus(proposal, 'completata')}
+                          disabled={savingId === proposal.id}
+                        >
+                          Merce arrivata
+                        </button>
+                      )}
+
+                      {proposal.status === 'completata' && (
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => changeStatus(proposal, 'aperta')}
+                          disabled={savingId === proposal.id}
+                          title="Riapri l’ordine"
+                        >
+                          Riapri
+                        </button>
+                      )}
+
+                      {proposal.status !== 'annullata' && proposal.status !== 'completata' && (
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => changeStatus(proposal, 'annullata')}
+                          disabled={savingId === proposal.id}
+                          title="Annulla l’ordine"
+                        >
+                          Annulla
+                        </button>
+                      )}
 
                       <button
                         className="btn btn-sm btn-ghost text-danger"
                         onClick={() => deleteProposal(proposal)}
                         disabled={savingId === proposal.id}
+                        title="Elimina definitivamente"
                       >
                         <Icon name="delete" className="ui-inline-icon" aria-hidden="true" />
                       </button>

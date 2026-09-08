@@ -323,3 +323,41 @@ modulo d'ordine (`src/pages/principale/ComposizioneOrdine.jsx`):
 I colori di tutti i PDF generati dall'applicazione sono ora centralizzati in
 `src/utils/pdfTheme.js` e seguono la palette: intestazioni antracite, linee e
 totali verde oliva, righe alternate color crema, avvisi bordeaux.
+
+## Riordino e proposte: percorso riorganizzato
+
+Le due pagine facevano le stesse cose in modi diversi e senza un ordine.
+
+**Riordino Automatico** — prima aveva sei pulsanti tutti uguali in alto
+(Excel, CSV, Salva proposta, PDF, Aggiorna, Prepara ordine), la "Copertura"
+— che cambia le quantità — nascosta tra i filtri, e una fila di bottoni
+"proposte rapide" che scaricavano un PDF senza dirlo. Adesso:
+
+- una sola azione principale, **Prepara ordine (N)**; le esportazioni stanno
+  in un menu unico "Esporta elenco";
+- i fornitori sono **schede**, non bottoni: nome, materiali, pezzi, valore, e
+  il pulsante per preparare l'ordine di quel fornitore;
+- la scelta della quantità è uscita dai filtri ed è sopra la tabella, con
+  l'etichetta "Quantità da ordinare";
+- una barra dice sempre cosa finirà nell'ordine: i materiali selezionati
+  oppure, se non se ne seleziona nessuno, tutti quelli in elenco.
+
+**Proposte Ordine** — prima lo stato si cambiava da una tendina dentro la
+tabella e non si poteva ristampare nulla. Adesso:
+
+- indicatori per stato: da inviare, inviati, completati, materiali;
+- lo stato si cambia con un pulsante che dice cosa succede — *Segna inviato*,
+  *Merce arrivata*, *Riapri*, *Annulla*;
+- ogni ordine ha il suo **PDF ristampabile**, identico a quello inviato al
+  fornitore.
+
+Il documento d'ordine è ora in un unico file (`src/utils/ordinePdf.js`),
+usato sia dal modulo di composizione sia dall'archivio.
+
+### Una migration facoltativa
+
+`supabase/migrations/20260908_prezzi_proposte_ordine.sql` aggiunge due
+colonne (`prezzo_unitario`, `sconto_riga`) alle righe delle proposte: senza
+di esse gli ordini si salvano lo stesso, ma il PDF ristampato dall'archivio
+non può mostrare gli importi. Il codice se ne accorge da solo e salva senza
+prezzi finché la migration non viene eseguita.
