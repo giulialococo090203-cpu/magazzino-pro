@@ -16,6 +16,11 @@ const corsHeaders = {
 
 const CONFIG_ID = 'app';
 
+// Indirizzo del servizio che legge le fatture PDF. Serve solo come
+// ultima rete al controllo di diagnostica, quando ne' le variabili del
+// sito ne' l'app hanno passato un indirizzo.
+const PDF_PARSER_PREDEFINITO = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
+
 const TABLES_WITH_COMPANY = [
   'categorie',
   'materiali',
@@ -409,42 +414,38 @@ export async function onRequestPost(context) {
     }
 
     if (action === 'check-pdf-service') {
-      // Se la variabile non e' impostata sul server, usiamo l'indirizzo
-      // che l'app ci passa: e' lo stesso che usa per leggere le fatture,
-      // e la richiesta arriva qui solo da un programmatore gia'
-      // riconosciuto.
+      // L'indirizzo puo' arrivare da tre parti: dalle variabili del
+      // sito, dall'app che ce lo passa (lo conosce, e' lo stesso che
+      // usa per leggere le fatture) oppure, come ultima rete, da qui.
       const indicato = String(body?.url || '').trim();
 
       const parserUrl =
         env.VITE_PDF_PARSER_URL ||
         env.PDF_PARSER_URL ||
-        (indicato.startsWith('https://') ? indicato : '');
-
-      if (!parserUrl) {
-        return jsonResponse({
-          ok: false,
-          detail:
-            'Indirizzo del servizio non configurato: aggiungi VITE_PDF_PARSER_URL alle variabili del sito.',
-        });
-      }
+        (indicato.startsWith('https://') ? indicato : '') ||
+        PDF_PARSER_PREDEFINITO;
 
       try {
+        // Una chiamata senza allegato: il servizio risponde che manca
+        // il file. E' la risposta giusta - vuol dire che e' vivo.
         const risposta = await fetch(parserUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ping: true }),
         });
 
-        // Il servizio risponde male a una chiamata vuota: va benissimo.
-        // Quello che conta e' che risponda.
+        const attivo = risposta.status < 500;
+
         return jsonResponse({
-          ok: risposta.status < 500,
-          detail: `Servizio raggiungibile (risposta HTTP ${risposta.status}).`,
+          ok: attivo,
+          detail: attivo
+            ? 'Servizio attivo e raggiungibile.'
+            : `Il servizio risponde ma e’ in errore (HTTP ${risposta.status}).`,
         });
       } catch (error) {
         return jsonResponse({
           ok: false,
-          detail: error?.message || 'Servizio non raggiungibile.',
+          detail: `Servizio non raggiungibile: ${error?.message || 'nessuna risposta'}.`,
         });
       }
     }
