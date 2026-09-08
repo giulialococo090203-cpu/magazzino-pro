@@ -16710,3 +16710,89 @@ body .mobile-login-stable-final .mobile-login-top .mobile-login-title {
   gap: 6px;
   flex-wrap: wrap;
 }
+
+/* ============================================================
+   ORDINI — le due sezioni sotto un'unica voce
+   ============================================================ */
+
+.ordini-sezioni {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.ordini-sezione {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.ordini-sezione:hover {
+  color: var(--text);
+}
+
+.ordini-sezione.attiva {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(31, 35, 33, 0.12);
+}
+
+.ordini-sezione-conteggio {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ordini-sezione.attiva .ordini-sezione-conteggio {
+  background: var(--primary);
+  color: var(--on-accent);
+}
+
+@media (max-width: 640px) {
+  .ordini-sezioni {
+    display: flex;
+    width: 100%;
+  }
+
+  .ordini-sezione {
+    flex: 1;
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+}
+
+/* Intestazione ridotta alle sole azioni, quando la pagina è dentro "Ordini" */
+.page-header-solo-azioni {
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+/* Azioni degli ordini: una riga sola, niente pulsanti che vanno a capo */
+.ordine-azioni-riga {
+  flex-wrap: nowrap;
+}
+
+.ordine-azioni-riga .btn {
+  padding: 5px 9px;
+  font-size: 12px;
+  white-space: nowrap;
+}

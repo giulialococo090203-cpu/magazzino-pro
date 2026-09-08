@@ -44,7 +44,7 @@ function statusStyle(status = '') {
   return { background: 'var(--warning-50)', color: 'var(--warning-700)' };
 }
 
-export default function ArchivioProposteOrdine() {
+export default function ArchivioProposteOrdine({ incorporato = false, onConteggio }) {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState('');
@@ -101,6 +101,13 @@ export default function ArchivioProposteOrdine() {
       { proposals: 0, rows: 0, quantity: 0, open: 0 }
     );
   }, [filtered]);
+
+  // Numero di ordini ancora da inviare: lo mostra la linguetta della sezione.
+  useEffect(() => {
+    if (typeof onConteggio === 'function') {
+      onConteggio(proposals.filter((proposta) => proposta.status === 'aperta').length);
+    }
+  }, [proposals, onConteggio]);
 
   const filteredIds = useMemo(() => filtered.map((proposal) => proposal.id), [filtered]);
 
@@ -279,15 +286,20 @@ export default function ArchivioProposteOrdine() {
   };
 
   return (
-    <div className="animate-slideUp">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title"><Icon name="request_quote" className="ui-title-icon" aria-hidden="true" />Proposte Ordine</h1>
-          <p className="page-subtitle">
-            Gli ordini preparati: quelli ancora da inviare, quelli mandati al fornitore e quelli
-            già arrivati
-          </p>
-        </div>
+    <div className={incorporato ? '' : 'animate-slideUp'}>
+      <div className={`page-header ${incorporato ? 'page-header-solo-azioni' : ''}`}>
+        {!incorporato && (
+          <div>
+            <h1 className="page-title">
+              <Icon name="request_quote" className="ui-title-icon" aria-hidden="true" />
+              Proposte Ordine
+            </h1>
+            <p className="page-subtitle">
+              Gli ordini preparati: quelli ancora da inviare, quelli mandati al fornitore e quelli
+              già arrivati
+            </p>
+          </div>
+        )}
 
         <div className="btn-group">
           <button className="btn btn-secondary" onClick={loadData} disabled={loading}>
@@ -439,7 +451,7 @@ export default function ArchivioProposteOrdine() {
               <th>Righe</th>
               <th>Quantità</th>
               <th>Utente</th>
-              <th>Azioni</th>
+              <th style={{ minWidth: 250 }}>Azioni</th>
             </tr>
           </thead>
 
@@ -499,7 +511,7 @@ export default function ArchivioProposteOrdine() {
                         onClick={() => setSelectedProposal(proposal)}
                         title="Vedi i materiali dell’ordine"
                       >
-                        Dettaglio
+                        Apri
                       </button>
 
                       <button
@@ -515,8 +527,9 @@ export default function ArchivioProposteOrdine() {
                           className="btn btn-sm btn-primary"
                           onClick={() => changeStatus(proposal, 'inviata')}
                           disabled={savingId === proposal.id}
+                          title="Segna l’ordine come inviato al fornitore"
                         >
-                          Segna inviato
+                          Inviato
                         </button>
                       )}
 
@@ -525,8 +538,9 @@ export default function ArchivioProposteOrdine() {
                           className="btn btn-sm btn-success"
                           onClick={() => changeStatus(proposal, 'completata')}
                           disabled={savingId === proposal.id}
+                          title="La merce è arrivata: chiudi l’ordine"
                         >
-                          Merce arrivata
+                          Arrivata
                         </button>
                       )}
 

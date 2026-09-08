@@ -64,7 +64,7 @@ function getRowTotal(material, suggestedQty) {
   return Number(material.netPrice || 0) * Number(suggestedQty || 0);
 }
 
-export default function RiordinoAutomatico() {
+export default function RiordinoAutomatico({ incorporato = false, onConteggio }) {
   const { user } = useAuth();
 
   const [materials, setMaterials] = useState([]);
@@ -125,6 +125,10 @@ export default function RiordinoAutomatico() {
       .filter((m) => Number(m.suggestedQty || 0) > 0);
   }, [materials, multiplier]);
 
+  useEffect(() => {
+    if (typeof onConteggio === 'function') onConteggio(reorderRows.length);
+  }, [reorderRows.length, onConteggio]);
+
   const suppliers = useMemo(() => {
     return [
       ...new Set(
@@ -169,6 +173,16 @@ export default function RiordinoAutomatico() {
       return groups;
     }, {});
   }, [rowsToExport]);
+
+  /*
+   * Un ordine si manda a un fornitore solo: se nella selezione ce n'e' piu'
+   * d'uno, il pulsante principale non prepara un unico ordine da 800 righe
+   * ma rimanda alle schede dei fornitori.
+   */
+  const fornitoriCoinvolti = useMemo(
+    () => new Set(rowsToExport.map((riga) => String(riga.supplier || '').trim() || 'Senza fornitore')),
+    [rowsToExport]
+  );
 
   const totalEstimated = useMemo(() => {
     return rowsToExport.reduce((sum, row) => sum + Number(row.estimatedTotal || 0), 0);
@@ -418,6 +432,22 @@ export default function RiordinoAutomatico() {
   const apriOrdine = (righe, fornitore = '') => {
     if (!righe || righe.length === 0) return;
 
+    const fornitoriRighe = new Set(
+      righe.map((riga) => String(riga.supplier || '').trim() || 'Senza fornitore')
+    );
+
+    if (fornitoriRighe.size > 1) {
+      setError(
+        `Nella selezione ci sono ${fornitoriRighe.size} fornitori diversi. ` +
+          'Un ordine si manda a un fornitore solo: scegline uno dalle schede qui sotto, ' +
+          'oppure filtra l’elenco per fornitore.'
+      );
+
+      document.querySelector('.riordino-fornitori')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => setError(''), 8000);
+      return;
+    }
+
     setRigheOrdine(righe);
     setFornitoreOrdine(fornitore === 'Senza fornitore' ? '' : fornitore);
     setOrdineAperto(true);
@@ -430,14 +460,19 @@ export default function RiordinoAutomatico() {
   };
 
   return (
-    <div className="animate-slideUp">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title"><Icon name="shopping_cart" className="ui-title-icon" aria-hidden="true" />Riordino Automatico</h1>
-          <p className="page-subtitle">
-            I materiali scesi sotto la soglia minima, raccolti per fornitore e pronti da ordinare
-          </p>
-        </div>
+    <div className={incorporato ? '' : 'animate-slideUp'}>
+      <div className={`page-header ${incorporato ? 'page-header-solo-azioni' : ''}`}>
+        {!incorporato && (
+          <div>
+            <h1 className="page-title">
+              <Icon name="shopping_cart" className="ui-title-icon" aria-hidden="true" />
+              Riordino Automatico
+            </h1>
+            <p className="page-subtitle">
+              I materiali scesi sotto la soglia minima, raccolti per fornitore e pronti da ordinare
+            </p>
+          </div>
+        )}
 
         <div className="riordino-azioni">
           <button className="btn btn-ghost btn-sm" onClick={refresh} title="Ricarica i materiali">
@@ -476,8 +511,10 @@ export default function RiordinoAutomatico() {
             onClick={() => apriOrdine(rowsToExport, filterSupplier)}
             disabled={rowsToExport.length === 0}
           >
-            <Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" /> Prepara
-            ordine ({rowsToExport.length})
+            <Icon name="request_quote" className="ui-inline-icon" aria-hidden="true" />{' '}
+            {fornitoriCoinvolti.size > 1
+              ? 'Prepara ordine…'
+              : `Prepara ordine (${rowsToExport.length})`}
           </button>
         </div>
       </div>

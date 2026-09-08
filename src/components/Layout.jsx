@@ -108,15 +108,9 @@ const NAV_SECTIONS = [
     icon: 'receipt_long',
     items: [
       {
-        path: '/riordino',
-        label: 'Riordino Automatico',
+        path: '/ordini',
+        label: 'Ordini',
         icon: 'shopping_cart',
-        permission: 'canManageReorderProposals',
-      },
-      {
-        path: '/proposte-ordine',
-        label: 'Proposte Ordine',
-        icon: 'request_quote',
         permission: 'canManageReorderProposals',
       },
       {
@@ -276,8 +270,9 @@ const PROGRAMMER_CONSOLE_SECTIONS = [
 const PAGE_TITLES = {
   '/': 'Dashboard',
   '/inventario': 'Giacenza',
-  '/riordino': 'Riordino Automatico',
-  '/proposte-ordine': 'Proposte Ordine',
+  '/ordini': 'Ordini',
+  '/ordini/da-ordinare': 'Ordini · Da ordinare',
+  '/ordini/preparati': 'Ordini · Preparati',
   '/inventario-fisico': 'Inventario Fisico',
   '/movimento/entrata': 'Carico Materiale',
   '/movimento/uscita': 'Scarica Materiale',
@@ -311,8 +306,7 @@ const SECTION_NAMES = {
   '/controllo/notifiche': 'Notifiche',
   '/controllo/soglie': 'Configurazione',
   '/inventario-fisico': 'Magazzino',
-  '/riordino': 'Magazzino',
-  '/proposte-ordine': 'Magazzino',
+  '/ordini': 'Acquisti',
   '/inventario': 'Magazzino',
   '/movimento': 'Magazzino',
   '/storico': 'Magazzino',

@@ -361,3 +361,22 @@ colonne (`prezzo_unitario`, `sconto_riga`) alle righe delle proposte: senza
 di esse gli ordini si salvano lo stesso, ma il PDF ristampato dall'archivio
 non può mostrare gli importi. Il codice se ne accorge da solo e salva senza
 prezzi finché la migration non viene eseguita.
+
+## Una voce sola: Ordini
+
+Riordino Automatico e Proposte Ordine erano due voci di menu che sembravano
+fare la stessa cosa. Adesso sono **una sola voce, "Ordini"**, con due sezioni
+nella stessa pagina:
+
+- **Da ordinare** — i materiali sotto soglia, raccolti per fornitore, da cui
+  si prepara l'ordine;
+- **Ordini preparati** — quelli da inviare, inviati e completati, con il PDF
+  ristampabile.
+
+Accanto al nome di ogni sezione c'è il numero che conta davvero: quanti
+materiali mancano e quanti ordini sono ancora da inviare.
+
+La sezione viene caricata alla prima apertura e poi resta pronta: passare
+dall'una all'altra non ricarica i dati e non fa perdere quello che si stava
+selezionando. I vecchi indirizzi `/riordino` e `/proposte-ordine` portano
+automaticamente alla sezione giusta di `/ordini`.

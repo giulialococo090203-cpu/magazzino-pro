@@ -23,8 +23,7 @@ import MovimentiForm from './pages/principale/MovimentiForm';
 import StoricoMovimenti from './pages/principale/StoricoMovimenti';
 import ImportaFatture from './pages/principale/ImportaFatture';
 import ArchivioFatture from './pages/principale/ArchivioFatture';
-import RiordinoAutomatico from './pages/principale/RiordinoAutomatico';
-import ArchivioProposteOrdine from './pages/principale/ArchivioProposteOrdine';
+import Ordini from './pages/principale/Ordini';
 import InventarioFisico from './pages/principale/InventarioFisico';
 
 // Pagine - Gestione
@@ -247,21 +246,28 @@ function App() {
             />
 
             <Route
-              path="/riordino"
+              path="/ordini"
               element={
                 <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
-                  <RiordinoAutomatico />
+                  <Ordini />
                 </ProtectedRoute>
               }
             />
 
             <Route
-              path="/proposte-ordine"
+              path="/ordini/:sezione"
               element={
                 <ProtectedRoute user={currentUser} permission="canManageReorderProposals">
-                  <ArchivioProposteOrdine />
+                  <Ordini />
                 </ProtectedRoute>
               }
+            />
+
+            {/* Vecchi indirizzi separati: portano alla voce unica */}
+            <Route path="/riordino" element={<Navigate to="/ordini/da-ordinare" replace />} />
+            <Route
+              path="/proposte-ordine"
+              element={<Navigate to="/ordini/preparati" replace />}
             />
 
             <Route
