@@ -21,11 +21,16 @@
 --   Nessun dato di altri utenti.
 -- ============================================================
 
+-- NOTA: volutamente SENZA security definer.
+-- Serve a sapere con quale ruolo sta arrivando la richiesta, e dentro
+-- una funzione "security definer" il ruolo diventerebbe quello del
+-- proprietario della funzione: risponderebbe sempre di si', anche
+-- quando la sessione e' anonima. Le due funzioni che interroga sono
+-- gia' security definer per conto loro.
 create or replace function public.identita_sessione()
 returns jsonb
 language sql
 stable
-security definer
 set search_path = public
 as $fn$
   select jsonb_build_object(
