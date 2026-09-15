@@ -1,8 +1,28 @@
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-const PDF_TEXT_PARSER_URL =
+/*
+ * LETTURA DEI PDF: PRIMA DALLA PORTA DI CASA
+ *
+ * Il servizio che legge le fatture vive su un altro dominio. Un
+ * browser, per motivi di sicurezza, chiede prima il permesso a quel
+ * dominio: se l'indirizzo da cui arriva la richiesta non e' nella sua
+ * lista, blocca tutto e l'app si ritrova con "connessione non
+ * riuscita". Succede ogni volta che il sito cambia indirizzo.
+ *
+ * Per questo la richiesta passa prima da /api/pdf-parse, che e' una
+ * funzione di questo stesso sito: per il browser e' casa propria,
+ * quindi nessun permesso da chiedere. E' lei a girare il file al
+ * servizio, da server a server, dove quel controllo non esiste.
+ *
+ * L'indirizzo diretto resta come riserva: serve quando si lavora con
+ * "npm run dev", che non attiva le funzioni /api.
+ */
+const PDF_PARSER_INTERNO = '/api/pdf-parse';
+
+const PDF_PARSER_DIRETTO =
   import.meta.env.VITE_PDF_TEXT_PARSER_URL ||
+  import.meta.env.VITE_PDF_PARSER_URL ||
   'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
 function getFileExtension(fileName = '') {
@@ -711,30 +731,47 @@ async function parseDocFile(file) {
   return lines.map((line) => [line]);
 }
 
-function buildPdfParserUrl() {
-  if (PDF_TEXT_PARSER_URL.startsWith('/')) {
-    return PDF_TEXT_PARSER_URL;
-  }
+async function inviaPdfAlParser(indirizzo, file) {
+  const modulo = new FormData();
+  modulo.append('file', file);
 
-  return PDF_TEXT_PARSER_URL;
+  return fetch(indirizzo, {
+    method: 'POST',
+    body: modulo,
+    cache: 'no-store',
+  });
 }
 
 async function callPdfTextParser(file) {
-  const formData = new FormData();
-  formData.append('file', file);
+  let response = null;
+  let erroreInterno = null;
 
-  let response;
-
+  // 1. La funzione di questo stesso sito.
   try {
-    response = await fetch(buildPdfParserUrl(), {
-      method: 'POST',
-      body: formData,
-      cache: 'no-store',
-    });
-  } catch {
-    throw new Error(
-      'Connessione al parser PDF non riuscita. Se da terminale il parser risponde correttamente, controlla VITE_PDF_PARSER_URL o svuota cache del browser.'
-    );
+    response = await inviaPdfAlParser(PDF_PARSER_INTERNO, file);
+
+    // 404/405 vuol dire che le funzioni /api non sono attive
+    // (tipico di "npm run dev"): si passa all'indirizzo diretto.
+    if (response.status === 404 || response.status === 405) {
+      response = null;
+    }
+  } catch (error) {
+    erroreInterno = error;
+    response = null;
+  }
+
+  // 2. Riserva: il servizio esterno, chiamato direttamente.
+  if (!response) {
+    try {
+      response = await inviaPdfAlParser(PDF_PARSER_DIRETTO, file);
+    } catch (error) {
+      throw new Error(
+        'Non riesco a raggiungere il servizio che legge i PDF. ' +
+          'Se il sito e\u2019 appena stato pubblicato con un indirizzo nuovo, ' +
+          'aggiungilo alla lista degli indirizzi ammessi del servizio. ' +
+          `(${error?.message || erroreInterno?.message || 'nessuna risposta'})`
+      );
+    }
   }
 
   const responseText = await response.text();
@@ -764,7 +801,7 @@ async function callPdfTextParser(file) {
         payload?.error ||
           payload?.message ||
           payload?.detail ||
-          `Parser PDF non disponibile (${response.status}).`
+          `Il servizio che legge i PDF ha risposto con un errore (${response.status}).`
       );
     }
   }
