@@ -25,6 +25,15 @@ const PDF_PARSER_DIRETTO =
   import.meta.env.VITE_PDF_PARSER_URL ||
   'https://pdf-parser-vercel-wheat.vercel.app/parse';
 
+/*
+ * Il servizio PDF si spegne quando nessuno lo usa e al primo risveglio
+ * impiega circa 5 secondi. Svegliarlo quando si apre la pagina di
+ * importazione fa si' che, alla scelta del file, sia gia' pronto.
+ */
+export function warmUpPdfParser() {
+  fetch(PDF_PARSER_INTERNO, { method: 'GET', cache: 'no-store' }).catch(() => {});
+}
+
 function getFileExtension(fileName = '') {
   return fileName.split('.').pop()?.toLowerCase() || '';
 }

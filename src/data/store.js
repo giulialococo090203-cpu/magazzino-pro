@@ -832,40 +832,35 @@ export const materialStore = {
 
   async getAll() {
     const pageSize = 1000;
-
     const companyId = getCurrentCompanyId();
 
-    const { count, error: countError } = await supabase
-      .from('materiali')
-      .select('id', { count: 'exact', head: true })
-      .eq('azienda_id', companyId);
+    const fetchPage = (from) =>
+      supabase
+        .from('materiali')
+        .select('*')
+        .eq('azienda_id', companyId)
+        .order('codice')
+        .range(from, from + pageSize - 1);
 
-    if (countError) throw countError;
+    // Il conteggio non blocca più la prima pagina: partono insieme.
+    const [countRes, firstPage] = await Promise.all([
+      supabase.from('materiali').select('id', { count: 'exact', head: true }).eq('azienda_id', companyId),
+      fetchPage(0),
+    ]);
 
-    const total = Number(count || 0);
+    if (countRes.error) throw countRes.error;
+    if (firstPage.error) throw firstPage.error;
 
-    if (total === 0) return [];
+    const total = Number(countRes.count || 0);
+    const allRows = [...(firstPage.data || [])];
 
-    const pages = [];
-
-    for (let from = 0; from < total; from += pageSize) {
-      pages.push(
-        supabase
-          .from('materiali')
-          .select('*')
-          .eq('azienda_id', companyId)
-          .order('codice')
-          .range(from, from + pageSize - 1)
-      );
-    }
-
-    const results = await Promise.all(pages);
-
-    const allRows = [];
-
-    for (const result of results) {
-      if (result.error) throw result.error;
-      allRows.push(...(Array.isArray(result.data) ? result.data : []));
+    if (total > pageSize) {
+      const rest = [];
+      for (let from = pageSize; from < total; from += pageSize) rest.push(fetchPage(from));
+      for (const result of await Promise.all(rest)) {
+        if (result.error) throw result.error;
+        allRows.push(...(Array.isArray(result.data) ? result.data : []));
+      }
     }
 
     return allRows.map(mapMaterial.toModel);
@@ -1818,9 +1813,10 @@ export const invoiceImportStore = {
     const currentName = normalizeInvoiceName(file.name);
     const currentSize = Number(file.size || 0);
 
+    // Solo le colonne usate dal confronto e dal messaggio all'utente.
     const { data, error } = await supabase
       .from('fatture_importate')
-      .select('*')
+      .select('id, nome_file, nome_file_originale, dimensione_file, created_at')
       .eq('azienda_id', getCurrentCompanyId())
       .order('created_at', { ascending: false })
       .limit(500);

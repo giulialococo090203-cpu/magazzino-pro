@@ -10,12 +10,66 @@ import {
 } from '../../data/store';
 import { useAuth } from '../../App';
 import { normalize, aggressiveMatch } from '../../utils/classificationEngine';
-import { parseFile } from '../../utils/importer/OmniParser';
+import { parseFile, warmUpPdfParser } from '../../utils/importer/OmniParser';
 import { findBestMapping } from '../../utils/importer/HeuristicAnalysis';
 import ScanInvoiceFallback, {
   createEmptyRow,
 } from '../../components/import/ScanInvoiceFallback.jsx';
 import Icon from '../../components/Icon';
+
+/*
+ * Tracciamento dell'importazione: a fine lettura stampa in console
+ * quanto e' durata ogni fase e quando e' partita, cosi' si vede subito
+ * quale tratto sta sul percorso critico. I blocchi JavaScript lunghi
+ * (oltre 200 ms) compaiono come righe "blocco JS".
+ */
+function createImportTrace(fileName) {
+  const start = performance.now();
+  const phases = [];
+  const since = () => Math.round(performance.now() - start);
+  let observer = null;
+  let closed = false;
+
+  try {
+    observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        if (entry.duration < 200) return;
+        const from = Math.round(entry.startTime - start);
+        const duration = Math.round(entry.duration);
+        phases.push({ fase: 'blocco JS', inizio_ms: from, fine_ms: from + duration, durata_ms: duration, esito: '' });
+      });
+    });
+    observer.observe({ type: 'longtask' });
+  } catch {
+    observer = null;
+  }
+
+  return {
+    track(name, promise) {
+      const from = since();
+      const end = (esito) => {
+        const to = since();
+        phases.push({ fase: name, inizio_ms: from, fine_ms: to, durata_ms: to - from, esito });
+      };
+      promise.then(() => end('ok'), () => end('errore'));
+      return promise;
+    },
+    mark(name) {
+      const at = since();
+      phases.push({ fase: name, inizio_ms: at, fine_ms: at, durata_ms: 0, esito: '' });
+    },
+    done(esito) {
+      if (closed) return;
+      closed = true;
+      // i tempi ancora in volo (es. salvataggio) arrivano dopo: si legge la tabella a fine giro
+      setTimeout(() => {
+        observer?.disconnect();
+        console.info(`Import "${fileName}": ${esito} dopo ${since()} ms`);
+        console.table([...phases].sort((a, b) => a.inizio_ms - b.inizio_ms));
+      }, 0);
+    },
+  };
+}
 
 const MAX_FILE_SIZE_MB = 15;
 
@@ -250,10 +304,14 @@ export default function ImportaFatture() {
   }, [allMaterials]);
 
   useEffect(() => {
+    warmUpPdfParser();
+
     async function loadData() {
       try {
-        const cats = await categoryStore.getAll();
-        const materials = await materialStore.getAll();
+        const [cats, materials] = await Promise.all([
+          categoryStore.getAll(),
+          materialStore.getAll(),
+        ]);
 
         setCategories(Array.isArray(cats) ? cats : []);
         setAllMaterials(Array.isArray(materials) ? materials : []);
@@ -491,7 +549,10 @@ export default function ImportaFatture() {
     );
   };
 
-  const markInvoiceAsAnalyzedSafe = async (invoice, count) => {
+  // `invoice` puo' essere anche la promessa del salvataggio ancora in corso:
+  // l'anteprima non la aspetta, serve solo qui per aggiornare lo stato.
+  const markInvoiceAsAnalyzedSafe = async (invoiceOrPromise, count) => {
+    const invoice = await Promise.resolve(invoiceOrPromise).catch(() => null);
     if (!invoice?.id) return;
 
     try {
@@ -519,9 +580,10 @@ export default function ImportaFatture() {
   const buildParsedItemsFromPdfRows = async (
     rows,
     currentFileName = fileName,
-    invoice = invoiceRecord
+    invoice = invoiceRecord,
+    materialsSource = null
   ) => {
-    const trainingData = await materialStore.getAll();
+    const trainingData = await (materialsSource || materialStore.getAll());
     const materialByCode = new Map(
       trainingData
         .filter((material) => material?.code)
@@ -629,10 +691,11 @@ export default function ImportaFatture() {
     rows,
     mapping,
     currentFileName = fileName,
-    invoice = invoiceRecord
+    invoice = invoiceRecord,
+    materialsSource = null
   ) => {
     const processed = [];
-    const trainingData = await materialStore.getAll();
+    const trainingData = await (materialsSource || materialStore.getAll());
     const materialByCode = new Map(
       trainingData
         .filter((material) => material?.code)
@@ -892,8 +955,27 @@ export default function ImportaFatture() {
     setInvoiceRecord(null);
     setStorageWarning('');
 
+    const trace = createImportTrace(file.name);
+
+    // Lettura del file e anagrafica materiali sono solo letture: partono
+    // subito, mentre si controlla se la fattura e' gia' in archivio.
+    // Il salvataggio invece aspetta la risposta sul duplicato.
+    let parsePromise = null;
     try {
-      const duplicateInvoice = await invoiceImportStore.findDuplicateFile(file);
+      validateFileBeforeImport(file);
+      parsePromise = trace.track('lettura file', getCachedParsedFile(file));
+      parsePromise.catch(() => {}); // l'errore vero riemerge sull'await
+    } catch {
+      // file non valido: l'errore viene mostrato piu' sotto
+    }
+    const materialsPromise = trace.track('anagrafica materiali', materialStore.getAll());
+    materialsPromise.catch(() => {});
+
+    try {
+      const duplicateInvoice = await trace.track(
+        'controllo duplicato',
+        invoiceImportStore.findDuplicateFile(file)
+      );
 
       if (duplicateInvoice) {
         const duplicateDate = duplicateInvoice.createdAt
@@ -921,23 +1003,27 @@ export default function ImportaFatture() {
           });
 
           if (e.target) e.target.value = '';
+          trace.done('annullato: duplicato');
           return;
         }
+
+        trace.mark('conferma duplicato');
       }
     } catch (duplicateError) {
       console.warn('Controllo duplicato fattura non riuscito:', duplicateError);
     }
 
     let uploadedInvoice = null;
+    let uploadPromise = null;
 
     try {
       validateFileBeforeImport(file);
 
-      uploadedInvoice = await uploadInvoiceFileSafe(file);
+      uploadPromise = trace.track('salvataggio archivio', uploadInvoiceFileSafe(file));
 
       setStep(2);
 
-      const parsed = await getCachedParsedFile(file);
+      const parsed = await (parsePromise || getCachedParsedFile(file));
 
       if (parsed?.scanDetected) {
         setScanDetected(true);
@@ -945,6 +1031,7 @@ export default function ImportaFatture() {
         setRawWorkbookData([]);
         setScanRows([createEmptyRow()]);
         setStep(6);
+        trace.done('documento scansionato');
         return;
       }
 
@@ -958,7 +1045,8 @@ export default function ImportaFatture() {
       const extension = getFileExtension(file.name);
 
       if (extension === 'pdf') {
-        await buildParsedItemsFromPdfRows(data.slice(1), file.name, uploadedInvoice);
+        await buildParsedItemsFromPdfRows(data.slice(1), file.name, uploadPromise, materialsPromise);
+        trace.done('completato');
         return;
       }
 
@@ -969,16 +1057,23 @@ export default function ImportaFatture() {
           data.slice(analysis.headerRowIndex + 1),
           analysis.mapping,
           file.name,
-          uploadedInvoice
+          uploadPromise,
+          materialsPromise
         );
+        trace.done('completato');
       } else {
         setStep(3);
+        trace.done('mappatura manuale');
       }
     } catch (err) {
       console.error('OmniParser Error:', err);
       setImportError(err.message || 'Errore durante la lettura del file.');
       setAssistantAdvice(buildImportAssistantMessage(err, file));
+      if (!uploadedInvoice && uploadPromise) {
+        uploadedInvoice = await uploadPromise.catch(() => null);
+      }
       await markInvoiceAsErrorSafe(uploadedInvoice, err.message || 'Errore durante la lettura del file.');
+      trace.done('errore');
       setStep(1);
     }
   };

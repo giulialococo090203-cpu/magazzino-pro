@@ -5,6 +5,20 @@ export async function onRequestOptions({ request }) {
   });
 }
 
+// Sveglia il servizio PDF (vedi warmUpPdfParser): nessun file, risposta vuota.
+export async function onRequestGet({ request }) {
+  try {
+    await fetch('https://pdf-parser-vercel-wheat.vercel.app/health');
+  } catch {
+    // il risveglio e' solo un aiuto: se fallisce, la lettura vera riprova
+  }
+
+  return new Response(null, {
+    status: 204,
+    headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' },
+  });
+}
+
 export async function onRequestPost({ request }) {
   try {
     const parserUrl = 'https://pdf-parser-vercel-wheat.vercel.app/parse';
