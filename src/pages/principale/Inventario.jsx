@@ -598,7 +598,7 @@ export default function Inventario() {
               className="btn btn-secondary"
               disabled={exporting}
             >
-              {exporting ? 'Esportazione in corso…' : '⬇️ Esporta inventario'}
+              {exporting ? 'Esportazione in corso…' : 'Esporta inventario'}
             </button>
           </div>
         )}
@@ -798,7 +798,7 @@ export default function Inventario() {
                       onClick={() => setDetailMaterial(m)}
                       title="Dettagli"
                     >
-                      👁️
+                      <Icon name="eye" className="ui-inline-icon" aria-hidden="true" />
                     </button>
                   </td>
                 </tr>

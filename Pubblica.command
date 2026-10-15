@@ -8,6 +8,9 @@
 
 cd "$(dirname "$0")" || exit 1
 
+# Descrizione delle modifiche che verranno salvate su GitHub.
+MESSAGGIO="Nuova grafica sobria (barra laterale con voci, testi e tabelle puliti, icone al posto delle emoji) e caricamento materiali piu robusto: pagine a gruppi con nuovo tentativo automatico"
+
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz
 
@@ -49,7 +52,7 @@ echo
 echo "4/4  Salvataggio su GitHub..."
 git add index.html public/_headers src Pubblica.command
 if ! git diff --cached --quiet; then
-  git commit -m "Avvio piu' veloce e senza schermo bianco: pagine caricate su richiesta, controlli in background, protezione dagli errori"
+  git commit -m "$MESSAGGIO"
 fi
 git push || echo "Push su GitHub non riuscito (il sito online e' comunque aggiornato)."
 

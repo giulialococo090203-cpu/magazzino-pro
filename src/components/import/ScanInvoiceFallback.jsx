@@ -147,7 +147,7 @@ export default function ScanInvoiceFallback({
   return (
     <div className="card animate-fadeIn">
       <div className="card-header" style={{ background: 'var(--warning-50)' }}>
-        <h3 className="card-title">✍️ Inserimento manuale componenti</h3>
+        <h3 className="card-title">Inserimento manuale componenti</h3>
         <p className="text-sm mt-1">
           Inserisci manualmente i componenti. Il fornitore è obbligatorio per collegare il carico alla sezione Fornitori.
         </p>

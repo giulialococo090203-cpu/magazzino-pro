@@ -10,43 +10,75 @@ import {
 import { AZIENDA_NOME } from '../config/azienda';
 import { useState, useEffect } from 'react';
 import ThemeToggle from './ThemeToggle';
-import SafeIcon from './SafeIcon';
+import Icon from './Icon';
 
-const SIDEBAR_ICON_MAP = {
-  inventory_2: 'inventory',
-  move_to_inbox: 'download',
-  outbox: 'upload',
-  sync: 'backup',
-  edit_square: 'check',
-  calendar_month: 'chart',
-
-  receipt_long: 'receipt',
-  shopping_cart: 'inventory',
-  request_quote: 'receipt',
-  upload_file: 'upload',
-  folder_open: 'folder',
-  factory: 'inventory',
-
-  fact_check: 'check',
-  settings: 'settings',
-  notifications: 'bell',
-
-  analytics: 'chart',
-  trending_up: 'chart',
-  euro: 'euro',
-
-  construction: 'inventory',
-  sell: 'inventory',
-  manage_accounts: 'users',
-  backup: 'backup',
-  history_edu: 'receipt',
-
-  admin_panel_settings: 'settings',
-  business_center: 'inventory',
+/*
+ * Ogni voce ha la sua icona: prima molte voci diverse (Ordini, Fornitori,
+ * Anagrafica, Categorie...) mostravano la stessa scatola.
+ */
+const NAV_ICONS = {
+  '/inventario': 'inventory_2',
+  '/movimento/entrata': 'move_to_inbox',
+  '/movimento/uscita': 'outbox',
+  '/movimento/reintegro': 'sync',
+  '/movimento/rettifica': 'edit_square',
+  '/storico': 'history',
+  '/ordini': 'shopping_cart',
+  '/importa': 'upload_file',
+  '/fatture': 'folder_open',
+  '/gestione/fornitori': 'factory',
+  '/inventario-fisico': 'assignment',
+  '/controllo/soglie': 'straighten',
+  '/controllo/notifiche': 'notifications',
+  '/': 'dashboard',
+  '/gestione/rendicontazione': 'bar_chart',
+  '/gestione/storico-prezzi': 'trending_up',
+  '/gestione/prezzi': 'euro',
+  '/gestione/materiali': 'box',
+  '/gestione/categorie': 'tag',
+  '/gestione/utenti': 'manage_accounts',
+  '/gestione/backup': 'database',
+  '/gestione/log': 'history_edu',
+  '/programmatore': 'shield',
+  '/programmatore/stato': 'check_circle',
+  '/programmatore/andamento': 'analytics',
+  '/programmatore/integrita': 'construction',
+  '/programmatore/dati/giacenza': 'inventory_2',
+  '/programmatore/dati/movimenti': 'history',
+  '/programmatore/dati/ordini': 'shopping_cart',
+  '/programmatore/dati/fatture': 'folder_open',
+  '/programmatore/dati/utenti': 'manage_accounts',
+  '/programmatore/dati/registro': 'history_edu',
+  '/programmatore/manutenzione': 'settings',
+  '/programmatore/utenti': 'users',
+  '/programmatore/codice': 'lock',
 };
 
-function SidebarIcon({ name, className = '' }) {
-  return <SafeIcon name={SIDEBAR_ICON_MAP[name] || 'dashboard'} className={className} size={22} />;
+const SECTION_ICONS = {
+  Magazzino: 'inventory_2',
+  'Acquisti e Fatture': 'request_quote',
+  Controllo: 'assignment',
+  Analisi: 'bar_chart',
+  Configurazione: 'settings',
+  Programmatore: 'shield',
+  Diagnostica: 'check_circle',
+  'Dati azienda': 'database',
+  Interventi: 'construction',
+};
+
+const SECTION_SHORT = {
+  'Acquisti e Fatture': 'Acquisti',
+  Configurazione: 'Impostazioni',
+  Programmatore: 'Supporto',
+  'Dati azienda': 'Dati',
+};
+
+function NavIcon({ path, fallback, className = '' }) {
+  return <Icon name={NAV_ICONS[path] || fallback || 'inventory_2'} className={className} />;
+}
+
+function SectionIcon({ section, className = '' }) {
+  return <Icon name={SECTION_ICONS[section.title] || section.icon} className={className} />;
 }
 
 function getRoleLabel(role) {
@@ -361,13 +393,6 @@ function isActivePath(currentPath, itemPath) {
   return currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
 }
 
-function getActiveSectionTitle(pathname, sections) {
-  const activeSection = sections.find((navSection) =>
-    navSection.items.some((item) => isActivePath(pathname, item.path))
-  );
-
-  return activeSection?.title || sections[0]?.title || '';
-}
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -375,7 +400,6 @@ export default function Layout({ children }) {
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [openSections, setOpenSections] = useState({});
   const [mobileOpenSection, setMobileOpenSection] = useState(null);
 
   const isProgrammer = isProgrammerUser(user);
@@ -470,145 +494,90 @@ export default function Layout({ children }) {
       ? [...baseNavSections, ...PROGRAMMER_NAV_SECTIONS]
       : baseNavSections;
 
-  const activeSectionTitle = getActiveSectionTitle(location.pathname, visibleSections);
-  const visibleSectionsKey = visibleSections
-    .map((navSection) => navSection.title)
-    .join('|');
-
   useEffect(() => {
     setMobileOpenSection(null);
+  }, [location.pathname]);
 
-    if (!activeSectionTitle) return;
-
-    setOpenSections((previous) => {
-      const next = {};
-
-      visibleSections.forEach((navSection) => {
-        next[navSection.title] = navSection.title === activeSectionTitle;
-      });
-
-      const previousKeys = Object.keys(previous);
-      const nextKeys = Object.keys(next);
-
-      const isUnchanged =
-        previousKeys.length === nextKeys.length &&
-        nextKeys.every((key) => previous[key] === next[key]);
-
-      return isUnchanged ? previous : next;
-    });
-  }, [activeSectionTitle, location.pathname, visibleSectionsKey]);
-
-  const toggleSection = (title) => {
-    setOpenSections((prev) => {
-      const isCurrentlyOpen = !!prev[title];
-      const next = {};
-
-      visibleSections.forEach((navSection) => {
-        next[navSection.title] = false;
-      });
-
-      next[title] = !isCurrentlyOpen;
-
-      return next;
-    });
-  };
 
 const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
 
   return (
     <div
-      className={`app-layout ${isMobile ? 'is-mobile' : ''} ${
+      className={`app-layout ws-layout ${isMobile ? 'is-mobile' : ''} ${
         inAreaProgrammatore ? 'area-programmatore' : ''
       }`}
     >
-      <aside className="sidebar">
-        <div className="sidebar-header">
+      {!isMobile && (
+        <aside className="ws-sidebar" aria-label="Menu principale">
           <Link
             to={inAreaProgrammatore ? '/programmatore/stato' : getDefaultRouteForUser(user)}
-            className="sidebar-logo"
+            className="ws-brand"
           >
-            <img className="workspace-logo-img workspace-logo-img-sidebar" src="/logo.png" alt="WorkSpace" />
-            <div className="sidebar-logo-text">
-              <h1>WorkSpace</h1>
+            <img className="ws-brand-logo" src="/logo.png" alt="" />
+            <span className="ws-brand-text">
+              <strong>WorkSpace</strong>
               <span>{inAreaProgrammatore ? 'Console tecnica' : AZIENDA_NOME}</span>
-            </div>
+            </span>
           </Link>
-        </div>
 
-        {visibleSections.map((navSection) => {
-          const isOpen = openSections[navSection.title];
-          const hasActiveItem = navSection.items.some((item) =>
-            isActivePath(location.pathname, item.path)
-          );
+          <nav className="ws-nav">
+            {visibleSections.map((navSection) => (
+              <div className="ws-nav-group" key={navSection.title}>
+                <div className="ws-nav-title">{navSection.title}</div>
 
-          return (
-            <div
-              className={`sidebar-section sidebar-section-accordion ${isOpen ? 'open' : 'closed'} ${hasActiveItem ? 'has-active' : ''}`}
-              key={navSection.title}
-            >
-              <button
-                type="button"
-                className="sidebar-section-toggle"
-                onClick={() => toggleSection(navSection.title)}
-                aria-expanded={!!isOpen}
-              >
-                <span className="sidebar-section-toggle-left">
-                  <span className="sidebar-section-icon"><SidebarIcon name={navSection.icon} /></span>
-                  <span>{navSection.title}</span>
-                </span>
+                {navSection.items.map((item) => {
+                  const attivo = isActivePath(location.pathname, item.path);
 
-                <span className="sidebar-section-chevron">{isOpen ? '⌃' : '⌄'}</span>
-              </button>
-
-              {isOpen && (
-                <nav className="sidebar-nav sidebar-nav-collapsible">
-                  {navSection.items.map((item) => (
+                  return (
                     <Link
                       key={item.path}
                       to={item.path}
-                      className={`sidebar-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
+                      className={`ws-nav-link ${attivo ? 'is-active' : ''}`}
+                      aria-current={attivo ? 'page' : undefined}
                       title={item.label}
                     >
-                      <span className="sidebar-link-icon"><SidebarIcon name={item.icon} /></span>
-                      <span>{item.label}</span>
+                      <NavIcon path={item.path} fallback={item.icon} className="ws-nav-icon" />
+                      <span className="ws-nav-label">{item.label}</span>
 
                       {item.badge && unreadCount > 0 && (
-                        <span className="sidebar-badge">{unreadCount}</span>
+                        <span className="ws-nav-badge">{unreadCount}</span>
                       )}
                     </Link>
-                  ))}
-                </nav>
-              )}
-            </div>
-          );
-        })}
+                  );
+                })}
+              </div>
+            ))}
 
-        {inAreaProgrammatore && (
-          <Link to={getDefaultRouteForUser(user)} className="prog-exit-link">
-            <span className="prog-exit-arrow" aria-hidden="true">←</span>
-            Torna all’applicazione
-          </Link>
-        )}
+            {inAreaProgrammatore && (
+              <Link
+                to={getDefaultRouteForUser(user)}
+                className="ws-nav-link ws-nav-exit"
+                title="Torna all’applicazione"
+              >
+                <span className="ws-nav-icon ws-nav-arrow" aria-hidden="true">←</span>
+                <span className="ws-nav-label">Torna all’applicazione</span>
+              </Link>
+            )}
+          </nav>
 
-        <div className="sidebar-user">
-          <div className="sidebar-user-info">
-            <div className="sidebar-avatar" title={displayName}>
-              {initials}
-            </div>
+          <div className="ws-user">
+            <span className="ws-avatar" aria-hidden="true">{initials}</span>
 
-            <div className="sidebar-user-details">
-              <div className="sidebar-user-name">{displayName}</div>
-              <div className="sidebar-user-role">
+            <span className="ws-user-text">
+              <strong>{displayName}</strong>
+              <span>
                 {isProgrammer
                   ? `${getRoleLabel(user?.role)} · Programmatore`
                   : getRoleLabel(user?.role)}
-              </div>
-            </div>
+              </span>
+            </span>
 
-            <button className="sidebar-logout" onClick={logout} title="Esci"><span aria-hidden="true" className="logout-symbol">⏻</span></button>
+            <button type="button" className="ws-logout" onClick={logout} title="Esci" aria-label="Esci">
+              <Icon name="logout" />
+            </button>
           </div>
-        </div>
-      </aside>
+        </aside>
+      )}
       {isMobile && (
         <>
           {mobileOpenSection && (
@@ -628,7 +597,7 @@ const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
                     className={`mobile-section-drawer-link ${isActivePath(location.pathname, item.path) ? 'active' : ''}`}
                   >
                     <span className="mobile-section-drawer-icon">
-                      <SidebarIcon name={item.icon} />
+                      <NavIcon path={item.path} fallback={item.icon} />
                     </span>
                     <span>{item.label}</span>
                   </Link>
@@ -659,7 +628,10 @@ const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
                   }
                 >
                   <span className="mobile-bottom-nav-icon">
-                    <SidebarIcon name={navSection.icon} />
+                    <SectionIcon section={navSection} />
+                  </span>
+                  <span className="mobile-bottom-nav-label">
+                    {SECTION_SHORT[navSection.title] || navSection.title}
                   </span>
                 </button>
               );
@@ -672,7 +644,10 @@ const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
               title="Esci"
               aria-label="Esci"
             >
-              <span aria-hidden="true" className="logout-symbol">⏻</span>
+              <span className="mobile-bottom-nav-icon">
+                <Icon name="logout" />
+              </span>
+              <span className="mobile-bottom-nav-label">Esci</span>
             </button>
           </nav>
         </>

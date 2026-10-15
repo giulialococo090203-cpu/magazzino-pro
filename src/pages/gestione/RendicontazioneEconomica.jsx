@@ -584,7 +584,7 @@ export default function RendicontazioneEconomica() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon purple">🔁</div>
+          <div className="kpi-icon purple"><Icon name="sync" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Righe economiche periodo</div>
             <div className="kpi-value">{report.movementsCount}</div>

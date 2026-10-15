@@ -134,7 +134,7 @@ export default function ImpostazioniPrezzi() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon">🔒</div>
+              <div className="empty-state-icon"><Icon name="lock" className="ui-inline-icon" aria-hidden="true" /></div>
               <div className="empty-state-title">Accesso non consentito</div>
               <div className="empty-state-text">
                 Solo il datore può modificare le formule dei prezzi.

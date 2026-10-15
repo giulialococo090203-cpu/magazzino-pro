@@ -366,7 +366,7 @@ export default function DashboardControllo() {
 
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="card-header">
-          <h3 className="card-title">🔎 Monitoraggio Datore</h3>
+          <h3 className="card-title"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /> Monitoraggio Datore</h3>
         </div>
 
         <div className="card-body">
@@ -565,7 +565,7 @@ export default function DashboardControllo() {
               <tr>
                 <td colSpan="10" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">🔎</div>
+                    <div className="empty-state-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun movimento trovato</div>
                     <div className="empty-state-text">Prova a cambiare i filtri del monitoraggio</div>
                   </div>

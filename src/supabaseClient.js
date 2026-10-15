@@ -11,7 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
 
-const LIMITE_LETTURA_MS = 30000;
+const LIMITE_LETTURA_MS = 60000;
 
 /*
  * Contatore che aumenta a ogni scrittura sul database (inserimento,
@@ -99,8 +99,11 @@ async function firebaseAuthenticatedFetch(input, init = {}) {
   /*
    * Le letture dal database non possono restare in attesa per sempre:
    * con la rete del cellulare instabile la pagina restava su
-   * "Caricamento..." senza mai finire. Dopo 30 secondi la richiesta
-   * viene interrotta e la pagina puo' mostrare l'errore o riprovare.
+   * "Caricamento..." senza mai finire. Se il server non inizia a
+   * rispondere entro 60 secondi la richiesta viene interrotta e la
+   * pagina puo' mostrare l'errore o riprovare. Il limite vale solo
+   * per l'attesa della risposta, non per lo scaricamento dei dati:
+   * con una rete lenta un elenco lungo arriva comunque.
    * Caricamenti di file e scritture non hanno questo limite.
    */
   const lettura = (method === 'GET' || method === 'HEAD') && url.includes('/rest/v1/');

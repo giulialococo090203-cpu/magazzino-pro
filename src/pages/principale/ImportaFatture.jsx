@@ -1341,7 +1341,7 @@ export default function ImportaFatture() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon">🔒</div>
+              <div className="empty-state-icon"><Icon name="lock" className="ui-inline-icon" aria-hidden="true" /></div>
               <div className="empty-state-title">Accesso non consentito</div>
               <div className="empty-state-text">
                 Il tuo ruolo non può caricare fatture o inserire componenti manualmente.
@@ -1461,7 +1461,7 @@ export default function ImportaFatture() {
         >
           <div className="card-body" style={{ padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-              <div style={{ fontSize: 28 }}>🤖</div>
+              <div style={{ fontSize: 28 }}><Icon name="file" className="ui-inline-icon" aria-hidden="true" /></div>
               <div style={{ flex: 1 }}>
                 <h3 style={{ marginBottom: 8, fontWeight: 800 }}>
                   {assistantAdvice?.title || 'Assistente importazione'}
@@ -1567,7 +1567,7 @@ export default function ImportaFatture() {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: 28, marginBottom: 8 }}>✍️</div>
+              <div style={{ fontSize: 28, marginBottom: 8 }}><Icon name="pencil" className="ui-inline-icon" aria-hidden="true" /></div>
               <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>
                 Inserimento manuale componenti
               </h3>
@@ -1604,7 +1604,7 @@ export default function ImportaFatture() {
       {step === 3 && rawWorkbookData && (
         <div className="card animate-fadeIn">
           <div className="card-header" style={{ background: 'var(--warning-50)' }}>
-            <h3 className="card-title">🛡️ Mappatura Manuale</h3>
+            <h3 className="card-title">Mappatura manuale</h3>
             <p className="text-sm mt-1">
               L'auto-rilevamento è fallito. Indica quali colonne contengono i dati:
             </p>
@@ -1694,7 +1694,7 @@ export default function ImportaFatture() {
             <h3 className="card-title"><Icon name="assignment" className="ui-inline-icon" aria-hidden="true" /> Materiali rilevati da: {fileName}</h3>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-sm btn-outline-primary" onClick={applyAllSuggestions}>
-                🪄 Applica Suggerimenti Auto
+                Applica suggerimenti
               </button>
               <button className="btn btn-sm btn-success" onClick={startManualInsert}>
                 + Aggiungi manualmente

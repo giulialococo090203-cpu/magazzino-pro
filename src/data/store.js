@@ -58,6 +58,67 @@ async function letturaMemorizzata(chiave, carica) {
   }
 }
 
+/*
+ * Esegue una lettura e, se fallisce per un problema passeggero
+ * (rete instabile, database momentaneamente lento), riprova fino
+ * a due volte con una breve pausa. Gli errori veri (permessi,
+ * colonne inesistenti) si ripresentano uguali e vengono segnalati.
+ */
+async function conRiprova(esegui, tentativi = 3) {
+  let ultimoErrore = null;
+
+  for (let tentativo = 0; tentativo < tentativi; tentativo += 1) {
+    if (tentativo > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 700 * tentativo));
+    }
+
+    try {
+      const { data, error } = await esegui();
+
+      if (!error) return Array.isArray(data) ? data : [];
+
+      ultimoErrore = error;
+    } catch (errore) {
+      ultimoErrore = errore;
+    }
+  }
+
+  throw ultimoErrore;
+}
+
+/*
+ * Scarica una tabella intera a pagine da 1000 righe, al massimo
+ * tre pagine per volta, finche' arriva una pagina incompleta.
+ *
+ * Prima si chiedeva al database il conteggio esatto e poi si
+ * lanciavano tutte le pagine insieme (7 richieste pesanti in
+ * contemporanea per l'anagrafica materiali): con una connessione
+ * lenta o un database sotto carico bastava che una sola fallisse
+ * per mostrare "Errore durante il caricamento".
+ */
+async function scaricaTutto(costruisciQuery, { pageSize = 1000, parallele = 3 } = {}) {
+  const righe = [];
+  let inizio = 0;
+
+  for (;;) {
+    const partenze = Array.from({ length: parallele }, (_, i) => inizio + i * pageSize);
+
+    const pagine = await Promise.all(
+      partenze.map((da) =>
+        conRiprova(() => costruisciQuery().range(da, da + pageSize - 1))
+      )
+    );
+
+    for (const pagina of pagine) {
+      righe.push(...pagina);
+
+      if (pagina.length < pageSize) return righe;
+    }
+
+    inizio += parallele * pageSize;
+  }
+}
+
 export function svuotaMemoriaLetture() {
   memoriaLetture.clear();
 }
@@ -744,13 +805,13 @@ export const categoryStore = {
   async _caricaTutte() {
     const companyId = getCurrentCompanyId();
 
-    const { data, error } = await supabase
-      .from('categorie')
-      .select('*')
-      .eq('azienda_id', companyId)
-      .order('nome');
-
-    if (error) throw error;
+    const data = await conRiprova(() =>
+      supabase
+        .from('categorie')
+        .select('*')
+        .eq('azienda_id', companyId)
+        .order('nome')
+    );
 
     return data.map(mapCategory.toModel);
   },
@@ -897,39 +958,18 @@ export const materialStore = {
   },
 
   async _caricaTutti() {
-    const pageSize = 1000;
     const companyId = getCurrentCompanyId();
 
-    const fetchPage = (from) =>
+    const righe = await scaricaTutto(() =>
       supabase
         .from('materiali')
         .select('*')
         .eq('azienda_id', companyId)
         .order('codice')
-        .range(from, from + pageSize - 1);
+        .order('id')
+    );
 
-    // Il conteggio non blocca più la prima pagina: partono insieme.
-    const [countRes, firstPage] = await Promise.all([
-      supabase.from('materiali').select('id', { count: 'exact', head: true }).eq('azienda_id', companyId),
-      fetchPage(0),
-    ]);
-
-    if (countRes.error) throw countRes.error;
-    if (firstPage.error) throw firstPage.error;
-
-    const total = Number(countRes.count || 0);
-    const allRows = [...(firstPage.data || [])];
-
-    if (total > pageSize) {
-      const rest = [];
-      for (let from = pageSize; from < total; from += pageSize) rest.push(fetchPage(from));
-      for (const result of await Promise.all(rest)) {
-        if (result.error) throw result.error;
-        allRows.push(...(Array.isArray(result.data) ? result.data : []));
-      }
-    }
-
-    return allRows.map(mapMaterial.toModel);
+    return righe.map(mapMaterial.toModel);
   },
 
   async getPage({ search = '', categoryId = '', status = '', limit = 200, offset = 0 } = {}) {

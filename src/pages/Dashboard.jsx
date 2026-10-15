@@ -1051,7 +1051,7 @@ export default function Dashboard() {
       {canUseClientOperatorMonitoring && (
         <>
           <h2 className="section-title" style={{ marginTop: 28 }}>
-            <span className="icon">🔎</span> Monitoraggio Datore
+            <span className="icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></span> Monitoraggio Datore
           </h2>
 
           <div
@@ -1261,7 +1261,7 @@ export default function Dashboard() {
               <tr>
                 <td colSpan="11" style={{ padding: 40 }}>
                   <div className="empty-state">
-                    <div className="empty-state-icon">🔎</div>
+                    <div className="empty-state-icon"><Icon name="search" className="ui-inline-icon" aria-hidden="true" /></div>
                     <div className="empty-state-title">Nessun movimento trovato</div>
                     <div className="empty-state-text">
                       Prova a cambiare i filtri del monitoraggio
@@ -1437,7 +1437,7 @@ export default function Dashboard() {
             <div className="card-body" style={{ paddingTop: 0 }}>
               <div className="kpi-grid" style={{ marginBottom: 16 }}>
                 <div className="kpi-card">
-                  <div className="kpi-icon blue">🗄️</div>
+                  <div className="kpi-icon blue"><Icon name="database" className="ui-inline-icon" aria-hidden="true" /></div>
                   <div className="kpi-content">
                     <div className="kpi-label">Database</div>
                     <div className="kpi-value">

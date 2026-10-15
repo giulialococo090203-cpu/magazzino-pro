@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+// Rifinitura grafica: va caricata per ultima, dopo tutti gli altri stili.
+import './styles/rifinitura.css'
 import { inizializzaTema } from './utils/theme'
 import { ProtezioneErrori, ricaricaPerNuovaVersione } from './components/ProtezioneErrori'
 

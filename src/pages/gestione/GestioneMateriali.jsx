@@ -480,7 +480,7 @@ export default function GestioneMateriali() {
               <button className="modal-close" onClick={() => setConfirmEmpty(false)}>✕</button>
             </div>
             <div className="modal-body" style={{ textAlign: 'center' }}>
-              <div className="confirm-icon danger">💥</div>
+              <div className="confirm-icon danger"><Icon name="warning" className="ui-inline-icon" aria-hidden="true" /></div>
               <p className="confirm-message">
                 <strong>ATTENZIONE!</strong><br />
                 Stai per eliminare <strong>TUTTI</strong> i materiali, i movimenti e le notifiche.<br />

@@ -94,7 +94,11 @@ export default function RiordinoAutomatico({ incorporato = false, onConteggio })
       setCategories(Array.isArray(cats) ? cats : []);
     } catch (err) {
       console.error('Errore caricamento riordino:', err);
-      setError('Errore durante il caricamento dei materiali sotto soglia.');
+      setError(
+        `Non è stato possibile caricare i materiali sotto soglia${
+          err?.message ? ` (${err.message})` : ''
+        }. Premi “Aggiorna” per riprovare.`
+      );
     }
   };
 

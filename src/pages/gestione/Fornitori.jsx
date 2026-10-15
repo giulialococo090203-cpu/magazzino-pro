@@ -413,7 +413,7 @@ export default function Fornitori() {
         </div>
 
         <div className="kpi-card">
-          <div className="kpi-icon teal">✍️</div>
+          <div className="kpi-icon teal"><Icon name="pencil" className="ui-inline-icon" aria-hidden="true" /></div>
           <div className="kpi-content">
             <div className="kpi-label">Manuali</div>
             <div className="kpi-value">{totals.manual}</div>

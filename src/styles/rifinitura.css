@@ -1,0 +1,1152 @@
+/* ============================================================
+   RIFINITURA GRAFICA — ottobre 2026
+   ------------------------------------------------------------
+   Strato finale, caricato DOPO index.css. Non aggiunge colori
+   nuovi: usa solo le variabili del "SISTEMA DI TEMA", quindi
+   funziona in chiaro e in scuro.
+
+   Obiettivo: un aspetto sobrio da strumento di lavoro.
+   - testo a pesi normali (400/500/600) invece di 800-950
+   - niente sfumature su pulsanti, titoli e barra laterale
+   - ombre quasi assenti, bordi sottili, angoli regolari
+   - intestazioni di tabella chiare invece del nero maiuscolo
+   - barra laterale fissa con le voci scritte
+
+   Molte regole storiche usano !important e selettori come
+   "body .app-layout.is-mobile .btn": qui si usa il prefisso
+   "html body #root", che grazie all'id vince sempre senza
+   dover toccare il foglio originale.
+   ============================================================ */
+
+:root {
+  --ws-radius: 10px;
+  --ws-radius-sm: 7px;
+  --ws-shadow-sm: 0 1px 2px rgba(31, 35, 33, 0.05);
+  --ws-shadow-pop: 0 10px 30px rgba(31, 35, 33, 0.12), 0 1px 3px rgba(31, 35, 33, 0.08);
+  --ws-focus: 0 0 0 3px rgba(var(--primary-rgb), 0.22);
+  --ws-sidebar-w: 236px;
+  --ws-header-h: 56px;
+}
+
+[data-theme='dark'] {
+  --ws-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --ws-shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Base tipografica ---------- */
+
+html body {
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+html body ::selection {
+  background: rgba(var(--primary-rgb), 0.22);
+}
+
+html body h1,
+html body h2,
+html body h3,
+html body h4 {
+  letter-spacing: -0.012em;
+}
+
+/* ---------- Struttura: barra laterale ---------- */
+
+html body #root .ws-layout {
+  --sidebar-width: var(--ws-sidebar-w);
+  background: var(--bg) !important;
+}
+
+html body #root .ws-layout:not(.is-mobile) .main-content {
+  margin-left: var(--ws-sidebar-w) !important;
+  width: auto !important;
+  max-width: none !important;
+}
+
+html body #root .ws-layout .main-content {
+  padding: 0 !important;
+}
+
+#root .ws-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 900;
+  width: var(--ws-sidebar-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  color: var(--text);
+}
+
+#root .ws-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--ws-header-h);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+#root .ws-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+#root .ws-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+#root .ws-brand-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+#root .ws-brand-text span {
+  font-size: 12px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#root .ws-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 16px;
+  scrollbar-width: thin;
+}
+
+#root .ws-nav-group + .ws-nav-group {
+  margin-top: 14px;
+}
+
+#root .ws-nav-title {
+  padding: 0 10px 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.01em;
+}
+
+#root .ws-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--ws-radius-sm);
+  color: var(--text-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+#root .ws-nav-link:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+#root .ws-nav-link.is-active {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+[data-theme='dark'] #root .ws-nav-link.is-active {
+  background: rgba(var(--primary-rgb), 0.2);
+  color: var(--text);
+}
+
+#root .ws-nav-link:focus-visible,
+#root .ws-logout:focus-visible,
+#root .ws-brand:focus-visible {
+  outline: none;
+  box-shadow: var(--ws-focus);
+}
+
+#root .ws-nav-icon {
+  width: 17px !important;
+  height: 17px !important;
+  flex-shrink: 0;
+  stroke-width: 1.8 !important;
+  opacity: 0.9;
+}
+
+#root .ws-nav-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#root .ws-nav-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+#root .ws-nav-exit {
+  margin-top: 14px;
+  border: 1px dashed var(--border-strong);
+}
+
+#root .ws-nav-arrow {
+  display: inline-flex;
+  justify-content: center;
+  font-size: 15px;
+}
+
+#root .ws-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#root .ws-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] #root .ws-avatar {
+  background: rgba(var(--primary-rgb), 0.25);
+  color: var(--text);
+}
+
+#root .ws-user-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+#root .ws-user-text strong {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#root .ws-user-text span {
+  font-size: 12px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#root .ws-logout {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ws-radius-sm);
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+#root .ws-logout:hover {
+  background: var(--surface-2);
+  color: var(--danger);
+}
+
+#root .ws-logout .app-svg-icon {
+  width: 17px !important;
+  height: 17px !important;
+}
+
+/* Schermi medi: barra stretta con sole icone (il nome compare al passaggio). */
+@media (max-width: 1100px) {
+  :root {
+    --ws-sidebar-w: 64px;
+  }
+
+  #root .ws-brand {
+    justify-content: center;
+    padding: 0;
+  }
+
+  #root .ws-brand-text,
+  #root .ws-nav-label,
+  #root .ws-user-text,
+  #root .ws-nav-badge {
+    display: none;
+  }
+
+  #root .ws-nav {
+    padding: 10px 8px;
+  }
+
+  #root .ws-nav-title {
+    height: 1px;
+    padding: 0;
+    margin: 6px 8px 8px;
+    overflow: hidden;
+    background: var(--border);
+    color: transparent;
+  }
+
+  #root .ws-nav-group + .ws-nav-group {
+    margin-top: 4px;
+  }
+
+  #root .ws-nav-link {
+    justify-content: center;
+    height: 38px;
+    padding: 0;
+  }
+
+  #root .ws-user {
+    flex-direction: column;
+    padding: 10px 0;
+  }
+}
+
+/* Area programmatore: stessa struttura, barra scura come segno distintivo. */
+html body #root .area-programmatore .ws-sidebar {
+  background: var(--surface-inverse);
+  border-right-color: transparent;
+  color: var(--sidebar-text);
+}
+
+html body #root .area-programmatore .ws-brand,
+html body #root .area-programmatore .ws-user {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-text);
+}
+
+html body #root .area-programmatore .ws-brand-text span,
+html body #root .area-programmatore .ws-nav-title,
+html body #root .area-programmatore .ws-user-text span {
+  color: var(--sidebar-muted);
+}
+
+html body #root .area-programmatore .ws-nav-link {
+  color: var(--sidebar-muted);
+}
+
+html body #root .area-programmatore .ws-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--sidebar-text);
+}
+
+html body #root .area-programmatore .ws-nav-link.is-active {
+  background: rgba(var(--danger-rgb), 0.35);
+  color: #ffffff;
+}
+
+html body #root .area-programmatore .ws-nav-exit {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+html body #root .area-programmatore .ws-avatar {
+  background: rgba(var(--danger-rgb), 0.4);
+  color: #ffffff;
+}
+
+html body #root .area-programmatore .ws-logout {
+  color: var(--sidebar-muted);
+}
+
+/* ---------- Telefono: barra di navigazione in basso ---------- */
+
+html body #root .mobile-bottom-nav {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: auto !important;
+  min-height: 60px !important;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom)) !important;
+  gap: 2px !important;
+  border-radius: 0 !important;
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: 0 -1px 0 rgba(31, 35, 33, 0.02) !important;
+  justify-content: space-around !important;
+  overflow-x: auto !important;
+}
+
+html body #root .mobile-bottom-nav-item {
+  flex: 1 1 0 !important;
+  min-width: 52px !important;
+  width: auto !important;
+  height: 50px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--text-faint) !important;
+}
+
+html body #root .mobile-bottom-nav-item.active,
+html body #root .mobile-bottom-nav-item.open {
+  color: var(--primary-text) !important;
+  background: var(--primary-soft) !important;
+}
+
+[data-theme='dark'] #root .mobile-bottom-nav-item.active,
+[data-theme='dark'] #root .mobile-bottom-nav-item.open {
+  color: var(--text) !important;
+  background: rgba(var(--primary-rgb), 0.22) !important;
+}
+
+html body #root .mobile-bottom-nav-icon {
+  width: auto !important;
+  height: auto !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+html body #root .mobile-bottom-nav-icon .app-svg-icon {
+  width: 20px !important;
+  height: 20px !important;
+  stroke-width: 1.8 !important;
+  color: currentColor !important;
+}
+
+html body #root .mobile-bottom-nav-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+html body #root .mobile-section-drawer {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--ws-shadow-pop) !important;
+  color: var(--text) !important;
+}
+
+html body #root .mobile-section-drawer {
+  bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  padding: 8px !important;
+}
+
+html body #root .mobile-section-drawer-header {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 4px 6px 8px !important;
+}
+
+html body #root .mobile-section-drawer-header span {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-soft) !important;
+}
+
+html body #root .mobile-section-drawer-header button {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: var(--ws-radius-sm) !important;
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  font-size: 18px !important;
+}
+
+html body #root .mobile-section-drawer-items {
+  gap: 2px !important;
+  padding-top: 6px !important;
+}
+
+html body #root .mobile-section-drawer-link {
+  min-height: 44px !important;
+  border: 0 !important;
+  color: var(--text) !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+  border-radius: var(--ws-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+html body #root .mobile-section-drawer-link.active {
+  background: var(--primary-soft) !important;
+  color: var(--primary-text) !important;
+}
+
+html body #root .mobile-section-drawer-icon .app-svg-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* ---------- Barra superiore ---------- */
+
+html body #root .ws-layout .main-content > .header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+  height: var(--ws-header-h) !important;
+  min-height: var(--ws-header-h) !important;
+  margin: 0 !important;
+  padding: 0 28px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: rgba(var(--bg-rgb, 246, 244, 239), 0.86) !important;
+  background: color-mix(in srgb, var(--bg) 88%, transparent) !important;
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  backdrop-filter: saturate(1.4) blur(10px);
+  box-shadow: none !important;
+}
+
+html body #root .ws-layout .header-breadcrumb {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--text-faint) !important;
+  gap: 8px !important;
+  letter-spacing: 0 !important;
+}
+
+html body #root .ws-layout .header-breadcrumb span:last-child {
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+html body #root .ws-layout .header-date {
+  font-size: 12.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-faint) !important;
+  letter-spacing: 0 !important;
+}
+
+/* ---------- Contenuto pagina ---------- */
+
+html body #root .ws-layout .page-content {
+  padding: 28px 32px 48px !important;
+  max-width: 1480px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+html body #root .ws-layout.is-mobile .page-content {
+  padding: 16px 16px 110px !important;
+}
+
+/* Intestazione della pagina: titolo e azioni, senza riquadro. */
+html body #root .page-header {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 0 22px !important;
+  border-radius: 0 !important;
+  align-items: flex-end !important;
+  gap: 16px !important;
+}
+
+html body #root .page-header::before,
+html body #root .page-header::after,
+html body #root .page-title::before,
+html body #root .page-title::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body #root .page-title {
+  font-size: 22px !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text) !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+html body #root .page-title .ui-title-icon,
+html body #root .page-title .app-svg-icon {
+  width: 20px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--primary) !important;
+  stroke-width: 1.8 !important;
+}
+
+html body #root .page-subtitle {
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  color: var(--text-soft) !important;
+  margin: 4px 0 0 !important;
+}
+
+/* ---------- Riquadri ---------- */
+
+html body #root .card,
+html body #root .kpi-card,
+html body #root .table-container,
+html body #root .chart-container {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--ws-radius) !important;
+  box-shadow: var(--ws-shadow-sm) !important;
+}
+
+html body #root .card::before,
+html body #root .card::after,
+html body #root .kpi-card::before,
+html body #root .kpi-card::after {
+  display: none !important;
+}
+
+html body #root .card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 14px 18px !important;
+}
+
+html body #root .card-title {
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--text) !important;
+  text-transform: none !important;
+}
+
+html body #root .card-title::before,
+html body #root .card-title::after {
+  display: none !important;
+}
+
+html body #root .card-title .app-svg-icon,
+html body #root .card-title .ui-inline-icon {
+  color: var(--text-soft) !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+html body #root .card-body {
+  padding: 18px !important;
+}
+
+/* Indicatori numerici */
+html body #root .kpi-card {
+  padding: 16px 18px !important;
+  transform: none !important;
+}
+
+html body #root .kpi-card:hover {
+  transform: none !important;
+  box-shadow: var(--ws-shadow-sm) !important;
+}
+
+html body #root .kpi-label {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--text-soft) !important;
+}
+
+html body #root .kpi-value {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text) !important;
+  font-variant-numeric: tabular-nums;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html body #root .kpi-detail {
+  font-size: 12.5px !important;
+  font-weight: 400 !important;
+  color: var(--text-faint) !important;
+}
+
+html body #root .kpi-icon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background-image: none !important;
+  font-size: 17px !important;
+}
+
+/* ---------- Pulsanti ---------- */
+
+html body #root .btn {
+  height: 34px;
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: var(--ws-radius-sm) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  gap: 7px !important;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease !important;
+}
+
+html body #root .btn:focus-visible {
+  outline: none !important;
+  box-shadow: var(--ws-focus) !important;
+}
+
+html body #root .btn:disabled,
+html body #root .btn[disabled] {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+html body #root .btn-sm {
+  height: 28px;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12.5px !important;
+}
+
+html body #root .btn-lg {
+  height: 40px;
+  min-height: 40px !important;
+  padding: 0 18px !important;
+  font-size: 14px !important;
+}
+
+html body #root .btn-secondary,
+html body #root .btn:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.btn-ghost):not(.btn-warning):not(.btn-outline-primary) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html body #root .btn-secondary:hover:not(:disabled),
+html body #root .btn:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.btn-ghost):not(.btn-warning):not(.btn-outline-primary):hover:not(:disabled) {
+  background: var(--surface-2) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html body #root .btn-primary {
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: var(--on-accent) !important;
+}
+
+html body #root .btn-primary:hover:not(:disabled) {
+  background: var(--primary-strong) !important;
+  border-color: var(--primary-strong) !important;
+}
+
+html body #root .btn-danger {
+  background: var(--danger) !important;
+  border: 1px solid var(--danger) !important;
+  color: var(--on-accent) !important;
+}
+
+html body #root .btn-danger:hover:not(:disabled) {
+  background: var(--danger-strong) !important;
+}
+
+html body #root .btn-success {
+  background: var(--success) !important;
+  border: 1px solid var(--success) !important;
+  color: var(--on-accent) !important;
+}
+
+html body #root .btn-warning {
+  background: var(--warning) !important;
+  border: 1px solid var(--warning) !important;
+  color: var(--on-accent) !important;
+}
+
+html body #root .btn-outline-primary {
+  background: transparent !important;
+  border: 1px solid var(--primary-border) !important;
+  color: var(--primary-text) !important;
+}
+
+html body #root .btn-outline-primary:hover:not(:disabled) {
+  background: var(--primary-soft) !important;
+}
+
+html body #root .btn-ghost {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--text-soft) !important;
+}
+
+html body #root .btn-ghost:hover:not(:disabled) {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+
+html body #root .btn .app-svg-icon,
+html body #root .btn .ui-inline-icon {
+  width: 15px !important;
+  height: 15px !important;
+  margin: 0 !important;
+}
+
+/* ---------- Campi ---------- */
+
+html body #root .form-control,
+html body #root input.form-control,
+html body #root select.form-control,
+html body #root textarea.form-control {
+  min-height: 34px;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--ws-radius-sm) !important;
+  background-color: var(--surface) !important;
+  box-shadow: none !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  color: var(--text) !important;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+html body #root textarea.form-control {
+  min-height: 80px;
+}
+
+/* Campi senza la classe form-control (es. i filtri Categoria e Stato). */
+html body #root .app-layout input:not([type='checkbox']):not([type='radio']),
+html body #root .app-layout select,
+html body #root .app-layout textarea {
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+html body #root .app-layout select:not(.form-control) {
+  min-height: 34px;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--ws-radius-sm) !important;
+  background-color: var(--surface) !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+  font-size: 13.5px !important;
+}
+
+/* Sul telefono i campi restano a 16px: sotto quella misura iPhone
+   ingrandisce la pagina quando si tocca un campo. */
+html body #root .app-layout.is-mobile input:not([type='checkbox']):not([type='radio']),
+html body #root .app-layout.is-mobile select,
+html body #root .app-layout.is-mobile textarea,
+html body #root .app-layout.is-mobile .form-control {
+  font-size: 16px !important;
+}
+
+html body #root .form-control:hover:not(:focus):not(:disabled) {
+  border-color: var(--border-strong) !important;
+}
+
+html body #root .form-control:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: var(--ws-focus) !important;
+}
+
+html body #root .form-control::placeholder {
+  color: var(--text-faint) !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
+html body #root .form-label,
+html body #root .filter-group label,
+html body #root .filters-row label {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--text-soft) !important;
+}
+
+html body #root .app-layout label {
+  font-weight: 500 !important;
+}
+
+html body #root .form-hint {
+  font-size: 12px !important;
+  color: var(--text-faint) !important;
+}
+
+html body #root .filters-row {
+  gap: 10px !important;
+  margin-bottom: 14px !important;
+  align-items: center !important;
+}
+
+html body #root .search-bar-icon {
+  color: var(--text-faint) !important;
+}
+
+/* ---------- Tabelle ---------- */
+
+html body #root .table-container {
+  overflow: auto !important;
+}
+
+html body #root .data-table {
+  font-size: 13.5px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+html body #root .data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2) !important;
+  background-image: none !important;
+  color: var(--text-soft) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 9px 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  white-space: nowrap;
+  box-shadow: none !important;
+}
+
+html body #root .data-table td {
+  padding: 10px 14px !important;
+  font-weight: 400 !important;
+  color: var(--text) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+  font-variant-numeric: tabular-nums;
+}
+
+html body #root .data-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+html body #root .data-table tbody tr {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body #root .data-table tbody tr:hover td {
+  background: rgba(var(--primary-rgb), 0.045) !important;
+}
+
+html body #root .data-table td.numeric,
+html body #root .data-table th.numeric {
+  text-align: right !important;
+}
+
+/* Barre di scorrimento discrete (al posto della barra verde spessa). */
+html body #root .app-layout *::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+html body #root .app-layout *::-webkit-scrollbar-track {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body #root .app-layout *::-webkit-scrollbar-thumb {
+  background: var(--border-strong) !important;
+  border-radius: 10px !important;
+  border: 3px solid transparent !important;
+  background-clip: padding-box !important;
+  box-shadow: none !important;
+}
+
+html body #root .app-layout *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-faint) !important;
+}
+
+/* ---------- Stato vuoto ---------- */
+
+html body #root .empty-state {
+  padding: 40px 20px !important;
+}
+
+html body #root .empty-state-icon {
+  font-size: 28px !important;
+  opacity: 0.5 !important;
+  filter: grayscale(1);
+  background: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+html body #root .empty-state-icon .app-svg-icon {
+  width: 28px !important;
+  height: 28px !important;
+  stroke-width: 1.6 !important;
+}
+
+html body #root .btn-ghost .app-svg-icon {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+html body #root .empty-state-title {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  color: var(--text) !important;
+}
+
+html body #root .empty-state-text {
+  font-size: 13px !important;
+  color: var(--text-faint) !important;
+}
+
+/* ---------- Finestre ---------- */
+
+html body #root .modal-overlay {
+  background: rgba(20, 23, 21, 0.42) !important;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+html body #root .modal {
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--ws-shadow-pop) !important;
+  background: var(--surface) !important;
+  background-image: none !important;
+}
+
+html body #root .modal-header {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+html body #root .modal-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+html body #root .modal-footer {
+  padding: 12px 20px !important;
+  border-top: 1px solid var(--border) !important;
+  background: var(--surface-2) !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+html body #root .modal-close {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: var(--ws-radius-sm) !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--text-soft) !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+}
+
+html body #root .modal-close:hover {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+
+/* ---------- Messaggi ---------- */
+
+html body #root .alert {
+  border-radius: var(--ws-radius-sm) !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  background-image: none !important;
+}
+
+/* Messaggi d'errore nelle pagine (classe storica "login-error"). */
+html body #root .app-layout .login-error {
+  text-align: left !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+  border-radius: var(--ws-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Testi di servizio ---------- */
+
+html body #root .fw-semibold {
+  font-weight: 600 !important;
+}
+
+html body #root .text-muted {
+  color: var(--text-soft) !important;
+}
+
+/* Animazioni d'ingresso piu' brevi e discrete. */
+html body #root .animate-slideUp,
+html body #root .animate-fadeIn {
+  animation-duration: 0.18s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

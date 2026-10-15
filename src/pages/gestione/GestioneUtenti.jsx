@@ -489,7 +489,7 @@ export default function GestioneUtenti() {
                           onClick={() => toggleActive(u)}
                           title={u.active ? 'Disattiva' : 'Attiva'}
                         >
-                          {u.active ? '🔒' : '🔓'}
+                          <Icon name={u.active ? 'lock' : 'lock_open'} className="ui-inline-icon" aria-hidden="true" />
                         </button>
                       ) : (
                         <button
@@ -498,7 +498,7 @@ export default function GestioneUtenti() {
                           title="Impossibile alterare lo stato del proprio account"
                           style={{ opacity: 0.3 }}
                         >
-                          🔒
+                          <Icon name="lock" className="ui-inline-icon" aria-hidden="true" />
                         </button>
                       )}
 
@@ -645,7 +645,7 @@ export default function GestioneUtenti() {
                 <div className="card-body">
                   {normalizeRole(form.role) === 'datore' ? (
                     <div className="empty-state" style={{ padding: 24 }}>
-                      <div className="empty-state-icon">👑</div>
+                      <div className="empty-state-icon"><Icon name="shield" className="ui-inline-icon" aria-hidden="true" /></div>
                       <div className="empty-state-title">Il datore ha sempre accesso completo</div>
                       <div className="empty-state-text">
                         Per sicurezza, i permessi principali del datore non vengono limitati.

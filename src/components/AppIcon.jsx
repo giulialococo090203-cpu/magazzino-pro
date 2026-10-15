@@ -212,9 +212,59 @@ const PATHS = {
     'M13 7l4 4',
     'M14 4l6 6',
   ],
+  logout: [
+    'M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3',
+    'M10 17l-5-5 5-5',
+    'M5 12h11',
+  ],
+  shield: [
+    'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z',
+  ],
+  eye: [
+    'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z',
+    'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  ],
+  lock: [
+    'M6 11h12v10H6V11Z',
+    'M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11',
+  ],
+  lock_open: [
+    'M6 11h12v10H6V11Z',
+    'M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2',
+  ],
+  info: [
+    'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z',
+    'M12 11v6',
+    'M12 7.5h.01',
+  ],
+  download: [
+    'M12 4v11',
+    'M7 10l5 5 5-5',
+    'M5 20h14',
+  ],
+  close: [
+    'M6 6l12 12',
+    'M18 6L6 18',
+  ],
+  check: [
+    'M5 12.5l4.5 4.5L19 7.5',
+  ],
+  pencil: [
+    'M4 20h4L19 9l-4-4L4 16v4Z',
+    'M13.5 6.5l4 4',
+  ],
+  star: [
+    'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9L12 3Z',
+  ],
 };
 
 const ALIASES = {
+  admin_panel_settings: 'shield',
+  calendar_month: 'history',
+  receipt_long: 'request_quote',
+  fact_check: 'assignment',
+  visibility: 'eye',
+
   entrata: 'move_to_inbox',
   uscita: 'outbox',
   reintegro: 'sync',

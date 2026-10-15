@@ -406,7 +406,7 @@ export default function ArchivioFatture() {
         <div className="card">
           <div className="card-body">
             <div className="empty-state">
-              <div className="empty-state-icon">🔒</div>
+              <div className="empty-state-icon"><Icon name="lock" className="ui-inline-icon" aria-hidden="true" /></div>
               <div className="empty-state-title">Accesso non consentito</div>
               <div className="empty-state-text">
                 Non hai i permessi per vedere l’archivio delle fatture caricate.
@@ -636,7 +636,7 @@ export default function ArchivioFatture() {
                 <tr>
                   <td colSpan={canDelete ? 12 : 11} style={{ padding: 40 }}>
                     <div className="empty-state">
-                      <div className="empty-state-icon">🗂️</div>
+                      <div className="empty-state-icon"><Icon name="folder_open" className="ui-inline-icon" aria-hidden="true" /></div>
                       <div className="empty-state-title">Nessuna fattura trovata</div>
                       <div className="empty-state-text">
                         Carica un documento da Importa / Inserisci oppure modifica i filtri.
@@ -751,7 +751,7 @@ export default function ArchivioFatture() {
                             disabled={actionLoading === `open-${invoice.id}`}
                             title="Apri file"
                           >
-                            👁️
+                            <Icon name="eye" className="ui-inline-icon" aria-hidden="true" />
                           </button>
 
                           <button
@@ -760,7 +760,7 @@ export default function ArchivioFatture() {
                             disabled={actionLoading === `download-${invoice.id}`}
                             title="Scarica file"
                           >
-                            ⬇️
+                            <Icon name="download" className="ui-inline-icon" aria-hidden="true" />
                           </button>
 
                           <button
@@ -768,7 +768,7 @@ export default function ArchivioFatture() {
                             onClick={() => setDetailInvoice(invoice)}
                             title="Dettagli"
                           >
-                            ℹ️
+                            <Icon name="info" className="ui-inline-icon" aria-hidden="true" />
                           </button>
 
                           {canDelete && (
