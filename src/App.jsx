@@ -1,5 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+  useCallback,
+  lazy,
+  Suspense,
+} from 'react';
+import CaricamentoPagina from './components/CaricamentoPagina';
+import { ProtezionePagina } from './components/ProtezioneErrori';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { authStore } from './data/authStore';
 import { systemStore } from './data/systemStore';
@@ -11,40 +22,47 @@ import {
   isProgrammerUser,
 } from './data/permissions';
 
-// Pagine - Login e Generale
+// Login, layout e manutenzione servono subito: restano nel pacchetto iniziale.
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 import Manutenzione from './pages/Manutenzione';
 import Layout from './components/Layout';
 
+/*
+ * Tutte le altre pagine si scaricano solo quando servono.
+ * Prima l'intera applicazione (Excel, PDF, grafici, lettore fatture...)
+ * era un unico file da 2,7 MB: finche' non arrivava tutto lo schermo
+ * restava bianco. Ora all'avvio si scarica solo il necessario.
+ */
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+
 // Pagine - Principale
-import Inventario from './pages/principale/Inventario';
-import MovimentiForm from './pages/principale/MovimentiForm';
-import StoricoMovimenti from './pages/principale/StoricoMovimenti';
-import ImportaFatture from './pages/principale/ImportaFatture';
-import ArchivioFatture from './pages/principale/ArchivioFatture';
-import Ordini from './pages/principale/Ordini';
-import InventarioFisico from './pages/principale/InventarioFisico';
+const Inventario = lazy(() => import('./pages/principale/Inventario'));
+const MovimentiForm = lazy(() => import('./pages/principale/MovimentiForm'));
+const StoricoMovimenti = lazy(() => import('./pages/principale/StoricoMovimenti'));
+const ImportaFatture = lazy(() => import('./pages/principale/ImportaFatture'));
+const ArchivioFatture = lazy(() => import('./pages/principale/ArchivioFatture'));
+const Ordini = lazy(() => import('./pages/principale/Ordini'));
+const InventarioFisico = lazy(() => import('./pages/principale/InventarioFisico'));
 
 // Pagine - Gestione
-import GestioneCategorie from './pages/gestione/GestioneCategorie';
-import GestioneMateriali from './pages/gestione/GestioneMateriali';
-import GestioneUtenti from './pages/gestione/GestioneUtenti';
-import LogModifiche from './pages/gestione/LogModifiche';
-import ImpostazioniPrezzi from './pages/gestione/ImpostazioniPrezzi';
-import StoricoPrezzi from './pages/gestione/StoricoPrezzi';
-import Fornitori from './pages/gestione/Fornitori';
-import BackupSistema from './pages/gestione/BackupSistema';
-import RendicontazioneEconomica from './pages/gestione/RendicontazioneEconomica';
+const GestioneCategorie = lazy(() => import('./pages/gestione/GestioneCategorie'));
+const GestioneMateriali = lazy(() => import('./pages/gestione/GestioneMateriali'));
+const GestioneUtenti = lazy(() => import('./pages/gestione/GestioneUtenti'));
+const LogModifiche = lazy(() => import('./pages/gestione/LogModifiche'));
+const ImpostazioniPrezzi = lazy(() => import('./pages/gestione/ImpostazioniPrezzi'));
+const StoricoPrezzi = lazy(() => import('./pages/gestione/StoricoPrezzi'));
+const Fornitori = lazy(() => import('./pages/gestione/Fornitori'));
+const BackupSistema = lazy(() => import('./pages/gestione/BackupSistema'));
+const RendicontazioneEconomica = lazy(() => import('./pages/gestione/RendicontazioneEconomica'));
 
 // Pagine - Controllo
-import Soglie from './pages/controllo/Soglie';
-import Notifiche from './pages/controllo/Notifiche';
+const Soglie = lazy(() => import('./pages/controllo/Soglie'));
+const Notifiche = lazy(() => import('./pages/controllo/Notifiche'));
 
 // Pagine - Programmatore (supporto tecnico)
-import AccessoProgrammatore from './pages/programmatore/AccessoProgrammatore';
-import PannelloProgrammatore from './pages/programmatore/PannelloProgrammatore';
-import DatiAzienda from './pages/programmatore/DatiAzienda';
+const AccessoProgrammatore = lazy(() => import('./pages/programmatore/AccessoProgrammatore'));
+const PannelloProgrammatore = lazy(() => import('./pages/programmatore/PannelloProgrammatore'));
+const DatiAzienda = lazy(() => import('./pages/programmatore/DatiAzienda'));
 
 import './index.css';
 
@@ -105,8 +123,9 @@ function ProgrammerRoute({ user, unlocked, onUnlocked, children }) {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // L'utente salvato si legge subito: niente schermo bianco all'apertura.
+  const [currentUser, setCurrentUser] = useState(() => authStore.getCurrentUser());
+  const [avvisoLogin, setAvvisoLogin] = useState('');
   const [appStatus, setAppStatus] = useState({ maintenance: false, message: '' });
   const [programmerUnlocked, setProgrammerUnlocked] = useState(() =>
     systemStore.isUnlocked()
@@ -135,25 +154,65 @@ function App() {
   const refreshAppStatus = useCallback(async () => {
     try {
       const status = await systemStore.getPublicStatus();
-      setAppStatus(status);
+
+      // Aggiorna solo se e' cambiato qualcosa: evita di ridisegnare
+      // tutta l'app ogni minuto senza motivo.
+      setAppStatus((precedente) =>
+        precedente.maintenance === status.maintenance &&
+        precedente.message === status.message
+          ? precedente
+          : status
+      );
     } catch {
-      setAppStatus({ maintenance: false, message: '' });
+      // getPublicStatus non lancia errori: qui non si arriva.
     }
   }, []);
 
   useEffect(() => {
-    const user = authStore.getCurrentUser();
-
-    if (user) {
-      setCurrentUser(user);
+    try {
+      if (!localStorage.getItem('wm_units')) {
+        localStorage.setItem('wm_units', JSON.stringify(INITIAL_UNITS));
+      }
+    } catch {
+      // Memoria del browser non disponibile: si usano i valori predefiniti.
     }
 
-    if (!localStorage.getItem('wm_units')) {
-      localStorage.setItem('wm_units', JSON.stringify(INITIAL_UNITS));
-    }
-
-    refreshAppStatus().finally(() => setLoading(false));
+    /*
+     * Prima l'app restava completamente bianca finche' Supabase non
+     * rispondeva sullo stato di manutenzione (con rete lenta anche 10
+     * secondi o piu'). Ora lo stato si controlla in background.
+     */
+    refreshAppStatus();
   }, [refreshAppStatus]);
+
+  /*
+   * Se l'utente salvato non ha piu' una sessione Firebase valida,
+   * si torna al login invece di mostrare pagine vuote.
+   */
+  useEffect(() => {
+    if (!currentUser) return undefined;
+
+    let attivo = true;
+
+    authStore.verificaSessione(currentUser).then(async (esito) => {
+      if (!attivo || esito !== 'assente') return;
+
+      await authStore.logout();
+      systemStore.lock();
+
+      if (!attivo) return;
+
+      setProgrammerUnlocked(false);
+      setAvvisoLogin('La sessione è scaduta: accedi di nuovo.');
+      setCurrentUser(null);
+    });
+
+    return () => {
+      attivo = false;
+    };
+    // Solo al cambio di utente, non a ogni aggiornamento del profilo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     if (!currentUser) return undefined;
@@ -164,6 +223,7 @@ function App() {
   }, [currentUser, refreshAppStatus]);
 
   const login = (user) => {
+    setAvvisoLogin('');
     setCurrentUser(user);
     refreshAppStatus();
   };
@@ -182,8 +242,6 @@ function App() {
     setCurrentUser(null);
   };
 
-  if (loading) return null;
-
   if (!currentUser) {
     return (
       <AuthContext.Provider
@@ -191,7 +249,7 @@ function App() {
       >
         <BrowserRouter>
           <Routes>
-            <Route path="*" element={<Login onLogin={login} />} />
+            <Route path="*" element={<Login onLogin={login} avviso={avvisoLogin} />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>
@@ -227,6 +285,8 @@ function App() {
     >
       <BrowserRouter>
         <Layout>
+          <ProtezionePagina>
+          <Suspense fallback={<CaricamentoPagina />}>
           <Routes>
             <Route
               path="/"
@@ -459,6 +519,8 @@ function App() {
               element={<Navigate to={getDefaultRouteForUser(currentUser)} replace />}
             />
           </Routes>
+          </Suspense>
+          </ProtezionePagina>
         </Layout>
       </BrowserRouter>
     </AuthContext.Provider>

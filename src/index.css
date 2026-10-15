@@ -3,7 +3,7 @@
    Layout professionale adattivo — via di mezzo
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Il font Inter si carica da index.html (in parallelo, non a catena). */
 
 /* ============================================================
    VARIABLES

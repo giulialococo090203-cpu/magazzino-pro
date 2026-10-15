@@ -1,0 +1,14 @@
+# Regole di memoria (cache) per Cloudflare Pages.
+#
+# I file in /assets hanno nel nome un codice che cambia a ogni
+# pubblicazione: si possono tenere in memoria per sempre, cosi' dalla
+# seconda apertura l'app parte quasi istantaneamente.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# La pagina principale invece va sempre ricontrollata, altrimenti
+# dopo un aggiornamento si continuerebbe a vedere la versione vecchia.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache

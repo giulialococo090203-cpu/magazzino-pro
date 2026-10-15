@@ -6,9 +6,8 @@
 // appartengono all'unica azienda configurata.
 // ============================================================
 
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { firebaseAuth, firebaseDb } from '../firebaseClient';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { firebaseAuth, caricaFirestore } from '../firebaseClient';
 import { normalizeRole, isSuperAdminUser } from './permissions';
 import { AZIENDA_ID, AZIENDA_NOME } from '../config/azienda';
 
@@ -25,6 +24,20 @@ function clearLegacyKeys() {
       // ignora
     }
   });
+}
+
+/**
+ * Promessa che si rifiuta dopo `ms` millisecondi: evita che una
+ * richiesta senza risposta lasci il login bloccato per sempre.
+ */
+function conLimiteDiTempo(promessa, ms, messaggio) {
+  let timer;
+
+  const scadenza = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(messaggio)), ms);
+  });
+
+  return Promise.race([promessa, scadenza]).finally(() => clearTimeout(timer));
 }
 
 function readString(value) {
@@ -82,12 +95,23 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
   };
 }
 
+async function fetchConLimite(url, opzioni = {}, ms = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+
+  try {
+    return await fetch(url, { ...opzioni, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getSupabaseUserProfile(firebaseUser) {
   if (!firebaseUser) return null;
 
   const token = await firebaseUser.getIdToken(true);
 
-  const response = await fetch('/api/auth/profile', {
+  const response = await fetchConLimite('/api/auth/profile', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -139,8 +163,15 @@ export const authStore = {
     let profile = null;
 
     try {
-      const userRef = doc(firebaseDb, 'users', firebaseUser.uid);
-      const userSnap = await getDoc(userRef);
+      // Se Firestore non risponde entro 6 secondi si passa al profilo
+      // su Supabase invece di lasciare il login in attesa.
+      const userSnap = await conLimiteDiTempo(
+        caricaFirestore().then(({ db, doc, getDoc }) =>
+          getDoc(doc(db, 'users', firebaseUser.uid))
+        ),
+        6000,
+        'Firestore non ha risposto in tempo'
+      );
 
       if (userSnap.exists()) {
         profile = userSnap.data() || {};
@@ -179,6 +210,56 @@ export const authStore = {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(finalUser));
 
     return finalUser;
+  },
+
+  /**
+   * Controlla che la sessione Firebase esista ancora.
+   *
+   * L'utente salvato nel browser da solo non basta: se la sessione
+   * Firebase e' scaduta o e' stata cancellata (Safari, ad esempio,
+   * svuota i dati dei siti non aperti da qualche giorno) l'app si apriva
+   * lo stesso, ma Supabase rispondeva come a un visitatore anonimo e
+   * tutte le pagine restavano vuote, senza nessun messaggio.
+   *
+   * Restituisce 'valida', 'assente' (bisogna rifare il login) oppure
+   * 'sconosciuta' se Firebase non risponde (rete lenta): in quel caso
+   * non si butta fuori nessuno.
+   */
+  verificaSessione(utenteSalvato, timeoutMs = 10000) {
+    return new Promise((resolve) => {
+      let concluso = false;
+      let smetti = () => {};
+
+      const concludi = (esito) => {
+        if (concluso) return;
+        concluso = true;
+        clearTimeout(timer);
+        setTimeout(() => smetti(), 0);
+        resolve(esito);
+      };
+
+      const timer = setTimeout(() => concludi('sconosciuta'), timeoutMs);
+
+      smetti = onAuthStateChanged(
+        firebaseAuth,
+        (firebaseUser) => {
+          if (!firebaseUser) {
+            concludi('assente');
+            return;
+          }
+
+          const uidSalvato = utenteSalvato?.authUid || utenteSalvato?.uid;
+
+          if (uidSalvato && uidSalvato !== firebaseUser.uid) {
+            concludi('assente');
+            return;
+          }
+
+          concludi('valida');
+        },
+        () => concludi('sconosciuta')
+      );
+    });
   },
 
   getCurrentUser() {

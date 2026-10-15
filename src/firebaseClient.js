@@ -4,7 +4,6 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBDmq1YC4RdYja7SFBw_sJrr0-MP2stdmU',
@@ -17,4 +16,26 @@ const firebaseConfig = {
 
 export const firebaseApp = initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(firebaseApp);
-export const firebaseDb = getFirestore(firebaseApp);
+
+/*
+ * Firestore serve solo al login (lettura del profilo) ed e' una libreria
+ * pesante: la carichiamo solo in quel momento invece che all'apertura.
+ */
+let firestorePromise = null;
+
+export function caricaFirestore() {
+  if (!firestorePromise) {
+    firestorePromise = import('firebase/firestore')
+      .then((modulo) => ({
+        db: modulo.getFirestore(firebaseApp),
+        doc: modulo.doc,
+        getDoc: modulo.getDoc,
+      }))
+      .catch((errore) => {
+        firestorePromise = null;
+        throw errore;
+      });
+  }
+
+  return firestorePromise;
+}

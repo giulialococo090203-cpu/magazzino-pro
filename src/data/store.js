@@ -2,7 +2,65 @@
 // STORE.JS - Data Management Layer (Supabase Integration)
 // ============================================================
 
-import { supabase } from '../supabaseClient';
+import { supabase, versioneDati } from '../supabaseClient';
+
+// ============================================================
+// MEMORIA BREVE DELLE LETTURE PIU' PESANTI
+// ------------------------------------------------------------
+// Quasi tutte le pagine all'apertura scaricano l'intera anagrafica
+// materiali e le categorie. Passando da una pagina all'altra si
+// riscaricava tutto ogni volta, e se due parti della stessa pagina
+// chiedevano gli stessi dati partivano due richieste identiche.
+// Ora:
+//  - richieste uguali in contemporanea ne fanno partire una sola;
+//  - il risultato resta valido per pochi secondi;
+//  - qualsiasi scrittura sul database (da qualunque pagina) lo
+//    invalida subito, quindi dopo un movimento o una modifica si
+//    rileggono sempre i dati aggiornati.
+// ============================================================
+
+const DURATA_MEMORIA_MS = 20000;
+const memoriaLetture = new Map();
+
+function copiaRighe(righe) {
+  return Array.isArray(righe) ? righe.map((riga) => ({ ...riga })) : righe;
+}
+
+async function letturaMemorizzata(chiave, carica) {
+  const versione = versioneDati();
+  const voce = memoriaLetture.get(chiave);
+
+  if (
+    voce &&
+    voce.versione === versione &&
+    (voce.inCorso || Date.now() - voce.ora < DURATA_MEMORIA_MS)
+  ) {
+    return copiaRighe(await voce.promessa);
+  }
+
+  const promessa = carica();
+  const nuovaVoce = { versione, ora: Date.now(), promessa, inCorso: true };
+
+  memoriaLetture.set(chiave, nuovaVoce);
+
+  try {
+    const risultato = await promessa;
+    nuovaVoce.inCorso = false;
+    nuovaVoce.ora = Date.now();
+    return copiaRighe(risultato);
+  } catch (errore) {
+    // Gli errori non si memorizzano: la prossima richiesta riprova.
+    if (memoriaLetture.get(chiave) === nuovaVoce) {
+      memoriaLetture.delete(chiave);
+    }
+
+    throw errore;
+  }
+}
+
+export function svuotaMemoriaLetture() {
+  memoriaLetture.clear();
+}
 import { AZIENDA_ID, AZIENDA_NOME } from '../config/azienda';
 import { INITIAL_UNITS } from './initialData';
 
@@ -679,7 +737,11 @@ const mapInventorySession = {
 // ============================================================
 
 export const categoryStore = {
-  async getAll() {
+  getAll() {
+    return letturaMemorizzata('categorie', () => categoryStore._caricaTutte());
+  },
+
+  async _caricaTutte() {
     const companyId = getCurrentCompanyId();
 
     const { data, error } = await supabase
@@ -830,7 +892,11 @@ export const materialStore = {
     return 'disponibile';
   },
 
-  async getAll() {
+  getAll() {
+    return letturaMemorizzata('materiali', () => materialStore._caricaTutti());
+  },
+
+  async _caricaTutti() {
     const pageSize = 1000;
     const companyId = getCurrentCompanyId();
 

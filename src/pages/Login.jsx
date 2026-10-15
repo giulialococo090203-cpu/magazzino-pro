@@ -18,6 +18,10 @@ function getLoginErrorMessage(err) {
     return 'Password non corretta.';
   }
 
+  if (code.includes('auth/network-request-failed') || code.includes('failed to fetch')) {
+    return 'Connessione assente o troppo lenta. Controlla la rete e riprova.';
+  }
+
   if (code.includes('auth/too-many-requests')) {
     return 'Troppi tentativi. Riprova più tardi.';
   }
@@ -25,7 +29,7 @@ function getLoginErrorMessage(err) {
   return err?.message || 'Errore durante l’accesso.';
 }
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, avviso = '' }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -72,6 +76,7 @@ export default function Login({ onLogin }) {
   const formFields = (
     <>
       {error && <div className="login-error">{error}</div>}
+      {!error && avviso && <div className="login-error">{avviso}</div>}
 
       <label className="login-redesign-field mobile-login-field">
         <span>Email</span>

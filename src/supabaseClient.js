@@ -11,6 +11,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
 
+const LIMITE_LETTURA_MS = 30000;
+
+/*
+ * Contatore che aumenta a ogni scrittura sul database (inserimento,
+ * modifica, cancellazione, caricamento file). Le letture memorizzate
+ * in store.js lo usano per sapere quando i dati vanno riletti.
+ */
+let versioneDatiCorrente = 0;
+
+export function versioneDati() {
+  return versioneDatiCorrente;
+}
+
+export function segnaDatiModificati() {
+  versioneDatiCorrente += 1;
+}
+
 let firebaseAuthReadyPromise = null;
 
 function waitForFirebaseAuthReady() {
@@ -76,10 +93,41 @@ async function firebaseAuthenticatedFetch(input, init = {}) {
     headers.set('Authorization', `Bearer ${supabaseAnonKey}`);
   }
 
-  return nativeFetch(input, {
-    ...init,
-    headers,
-  });
+  const url = typeof input === 'string' ? input : input?.url || String(input);
+  const method = String(init.method || 'GET').toUpperCase();
+
+  /*
+   * Le letture dal database non possono restare in attesa per sempre:
+   * con la rete del cellulare instabile la pagina restava su
+   * "Caricamento..." senza mai finire. Dopo 30 secondi la richiesta
+   * viene interrotta e la pagina puo' mostrare l'errore o riprovare.
+   * Caricamenti di file e scritture non hanno questo limite.
+   */
+  const lettura = (method === 'GET' || method === 'HEAD') && url.includes('/rest/v1/');
+
+  if (method !== 'GET' && method !== 'HEAD') {
+    segnaDatiModificati();
+  }
+
+  if (!lettura || init.signal) {
+    return nativeFetch(input, {
+      ...init,
+      headers,
+    });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LIMITE_LETTURA_MS);
+
+  try {
+    return await nativeFetch(input, {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export const supabase = createClient(

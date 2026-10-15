@@ -92,10 +92,25 @@ export const systemStore = {
 
   async getPublicStatus() {
     try {
-      const { data, error } = await supabase
-        .from(PUBLIC_STATUS_VIEW)
-        .select('*')
-        .maybeSingle();
+      // Controllo leggero: niente tentativi ripetuti e massimo 6 secondi,
+      // cosi' una rete lenta non rallenta l'app.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+
+      let risposta;
+
+      try {
+        risposta = await supabase
+          .from(PUBLIC_STATUS_VIEW)
+          .select('*')
+          .retry(false)
+          .abortSignal(controller.signal)
+          .maybeSingle();
+      } finally {
+        clearTimeout(timer);
+      }
+
+      const { data, error } = risposta;
 
       if (error) throw error;
 

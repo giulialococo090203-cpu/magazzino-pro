@@ -10,9 +10,8 @@ import {
   calcListPrice,
   getPriceSettings,
 } from '../../utils/priceSettings';
-import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// Excel e PDF si caricano solo al momento dell'esportazione:
+// sono librerie pesanti e non servono per aprire la pagina.
 
 
 import Icon from '../../components/Icon';
@@ -433,7 +432,8 @@ export default function Inventario() {
     });
   };
 
-  const exportExcel = (rows) => {
+  const exportExcel = async (rows) => {
+    const XLSX = await import('xlsx');
     const data = buildExportRows(rows);
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
@@ -462,7 +462,11 @@ export default function Inventario() {
     downloadTextFile(csvContent, getExportFileName('csv'), 'text/csv;charset=utf-8;');
   };
 
-  const exportPDF = (rows) => {
+  const exportPDF = async (rows) => {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({ orientation: 'landscape' });
 
     doc.setFontSize(18);
@@ -533,11 +537,11 @@ export default function Inventario() {
       const rows = await fetchAllFilteredRows();
 
       if (exportFormat === 'excel') {
-        exportExcel(rows);
+        await exportExcel(rows);
       } else if (exportFormat === 'csv') {
         exportCSV(rows);
       } else if (exportFormat === 'pdf') {
-        exportPDF(rows);
+        await exportPDF(rows);
       }
     } catch (err) {
       console.error('Errore esportazione inventario:', err);
