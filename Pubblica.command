@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Nuova grafica sobria (barra laterale con voci, testi e tabelle puliti, icone al posto delle emoji) e caricamento materiali piu robusto: pagine a gruppi con nuovo tentativo automatico"
+MESSAGGIO="Telefono: barra in basso senza scorrimento, etichette che stanno nello spazio, data nascosta in alto"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz

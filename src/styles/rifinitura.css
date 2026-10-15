@@ -405,12 +405,12 @@ html body #root .mobile-bottom-nav {
   border-top: 1px solid var(--border) !important;
   box-shadow: 0 -1px 0 rgba(31, 35, 33, 0.02) !important;
   justify-content: space-around !important;
-  overflow-x: auto !important;
+  overflow: hidden !important;
 }
 
 html body #root .mobile-bottom-nav-item {
   flex: 1 1 0 !important;
-  min-width: 52px !important;
+  min-width: 0 !important;
   width: auto !important;
   height: 50px !important;
   display: flex !important;
@@ -457,10 +457,24 @@ html body #root .mobile-bottom-nav-icon .app-svg-icon {
 }
 
 html body #root .mobile-bottom-nav-label {
-  font-size: 10.5px;
+  max-width: 100%;
+  padding: 0 1px;
+  font-size: 9.5px;
+  letter-spacing: -0.01em;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sul telefono la data in alto va a capo e ruba spazio: si nasconde. */
+html body #root .ws-layout.is-mobile .header-date {
+  display: none !important;
+}
+
+html body #root .ws-layout.is-mobile .main-content > .header {
+  padding: 0 16px !important;
 }
 
 html body #root .mobile-section-drawer {

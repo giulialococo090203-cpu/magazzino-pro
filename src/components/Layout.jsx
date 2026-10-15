@@ -68,7 +68,7 @@ const SECTION_ICONS = {
 
 const SECTION_SHORT = {
   'Acquisti e Fatture': 'Acquisti',
-  Configurazione: 'Impostazioni',
+  Configurazione: 'Gestione',
   Programmatore: 'Supporto',
   'Dati azienda': 'Dati',
 };
