@@ -97,7 +97,7 @@ async function conRiprova(esegui, tentativi = 3) {
  * lenta o un database sotto carico bastava che una sola fallisse
  * per mostrare "Errore durante il caricamento".
  */
-async function scaricaTutto(costruisciQuery, { pageSize = 1000, parallele = 3 } = {}) {
+async function scaricaTutto(costruisciQuery, { pageSize = 1000, parallele = 4 } = {}) {
   const righe = [];
   let inizio = 0;
 
@@ -1298,33 +1298,20 @@ export const materialStore = {
 
 export const movementStore = {
   async _fetchAllMovements(buildQuery, { maxRows = 0 } = {}) {
-    const pageSize = maxRows > 0 ? Math.min(1000, maxRows) : 1000;
-    let from = 0;
-    let allRows = [];
+    const ordina = (q) => q.order('data_movimento', { ascending: false }).order('id');
 
-    while (true) {
-      const query = buildQuery()
-        .order('data_movimento', { ascending: false })
-        .range(from, from + pageSize - 1);
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const rows = Array.isArray(data) ? data : [];
-      allRows = allRows.concat(rows);
-
-      if (maxRows > 0 && allRows.length >= maxRows) {
-        allRows = allRows.slice(0, maxRows);
-        break;
-      }
-
-      if (rows.length < pageSize) break;
-
-      from += pageSize;
+    // Pochi movimenti richiesti: basta una sola richiesta.
+    if (maxRows > 0 && maxRows <= 1000) {
+      const righe = await conRiprova(() => ordina(buildQuery()).range(0, maxRows - 1));
+      return righe.map(mapMovement.toModel);
     }
 
-    return allRows.map(mapMovement.toModel);
+    // Tanti movimenti: pagine da 1000 scaricate 4 alla volta, non una dopo l'altra.
+    let righe = await scaricaTutto(() => ordina(buildQuery()));
+
+    if (maxRows > 0 && righe.length > maxRows) righe = righe.slice(0, maxRows);
+
+    return righe.map(mapMovement.toModel);
   },
 
   async getAll() {
@@ -1432,20 +1419,25 @@ export const movementStore = {
   },
 
   async getFiltered({ dateFrom, dateTo, userId, categoryId, materialId, type, limit = 0 } = {}) {
-    let query = supabase
-      .from('movimenti')
-      .select(
-        '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
-      )
-      .eq('azienda_id', getCurrentCompanyId());
+    // La richiesta va ricostruita ogni volta: le pagine partono in parallelo.
+    const costruisci = () => {
+      let query = supabase
+        .from('movimenti')
+        .select(
+          '*, materiali(codice, descrizione, categoria_id, quantita, soglia_minima)'
+        )
+        .eq('azienda_id', getCurrentCompanyId());
 
-    if (dateFrom) query = query.gte('data_movimento', dateFrom);
-    if (dateTo) query = query.lte('data_movimento', `${dateTo}T23:59:59`);
-    if (userId) query = query.eq('utente_id', userId);
-    if (materialId) query = query.eq('materiale_id', materialId);
-    if (type) query = query.eq('tipo_movimento', type);
+      if (dateFrom) query = query.gte('data_movimento', dateFrom);
+      if (dateTo) query = query.lte('data_movimento', `${dateTo}T23:59:59`);
+      if (userId) query = query.eq('utente_id', userId);
+      if (materialId) query = query.eq('materiale_id', materialId);
+      if (type) query = query.eq('tipo_movimento', type);
 
-    let result = await this._fetchAllMovements(() => query, { maxRows: limit });
+      return query;
+    };
+
+    let result = await this._fetchAllMovements(costruisci, { maxRows: limit });
 
     if (categoryId) result = result.filter((m) => m.categoryId === categoryId);
 
@@ -1467,11 +1459,24 @@ export const movementStore = {
   async getMostMoved(limit = 10, days = 30) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
+    const companyId = getCurrentCompanyId();
 
-    const recent = await this.getFiltered({
-      dateFrom: cutoff.toISOString().slice(0, 10),
-      dateTo: new Date().toISOString().slice(0, 10),
-    });
+    // Servono solo materiale e quantita': si scaricano poche colonne.
+    const righe = await scaricaTutto(() =>
+      supabase
+        .from('movimenti')
+        .select('id, materiale_id, quantita, materiali(codice, descrizione)')
+        .eq('azienda_id', companyId)
+        .gte('data_movimento', cutoff.toISOString().slice(0, 10))
+        .order('id')
+    );
+
+    const recent = righe.map((r) => ({
+      materialId: r.materiale_id,
+      materialCode: r.materiali?.codice,
+      materialDescription: r.materiali?.descrizione,
+      quantity: r.quantita,
+    }));
 
     const counts = {};
 
@@ -2434,7 +2439,22 @@ export const reorderProposalStore = {
   },
 
   async getUnderThresholdMaterials({ categoryId = '', supplier = '' } = {}) {
-    const materials = await materialStore.getAll();
+    // Il database restituisce solo i materiali sotto soglia o esauriti,
+    // non tutta l'anagrafica.
+    const companyId = getCurrentCompanyId();
+    const materials = await letturaMemorizzata('materiali-sotto-soglia', async () => {
+      const righe = await scaricaTutto(() =>
+        supabase
+          .from('materiali')
+          .select('*')
+          .eq('azienda_id', companyId)
+          .in('stato_disponibilita', ['sotto_soglia', 'esaurito'])
+          .gt('soglia_minima', 0)
+          .order('codice')
+          .order('id')
+      );
+      return righe.map(mapMaterial.toModel);
+    });
 
     return materials
       .filter((m) => {
@@ -2929,17 +2949,17 @@ export const physicalInventoryStore = {
 
 export const statsStore = {
   async getDashboardStats() {
-    const materials = await materialStore.getAll();
-    const categories = await categoryStore.getAll();
-    const notificationsAll = await notificationStore.getAll();
-    const recentMovements = await movementStore.getRecent(8);
-
     const today = new Date().toISOString().substring(0, 10);
 
-    const todayRows = await movementStore.getFiltered({
-      dateFrom: today,
-      dateTo: today,
-    });
+    // Tutte le letture partono insieme invece che una dopo l'altra.
+    const [materials, categories, notificationsAll, recentMovements, todayRows] =
+      await Promise.all([
+        materialStore.getAll(),
+        categoryStore.getAll(),
+        notificationStore.getAll(),
+        movementStore.getRecent(8),
+        movementStore.getFiltered({ dateFrom: today, dateTo: today }),
+      ]);
 
     const todayMovements = Array.isArray(todayRows) ? todayRows.length : 0;
 
