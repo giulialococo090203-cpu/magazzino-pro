@@ -44,6 +44,7 @@ const NAV_ICONS = {
   '/programmatore/stato': 'check_circle',
   '/programmatore/andamento': 'analytics',
   '/programmatore/integrita': 'construction',
+  '/programmatore/velocita': 'analytics',
   '/programmatore/dati/giacenza': 'inventory_2',
   '/programmatore/dati/movimenti': 'history',
   '/programmatore/dati/ordini': 'shopping_cart',
@@ -300,6 +301,7 @@ const PROGRAMMER_CONSOLE_SECTIONS = [
       { path: '/programmatore/stato', label: 'Stato app', icon: 'fact_check' },
       { path: '/programmatore/andamento', label: 'Andamento', icon: 'analytics' },
       { path: '/programmatore/integrita', label: 'Integrità dati', icon: 'construction' },
+      { path: '/programmatore/velocita', label: 'Test velocità', icon: 'analytics' },
     ],
   },
   {
@@ -355,6 +357,7 @@ const PAGE_TITLES = {
   '/programmatore/stato': 'Stato applicazione',
   '/programmatore/andamento': 'Andamento',
   '/programmatore/integrita': 'Integrità dati',
+  '/programmatore/velocita': 'Test velocità',
   '/programmatore/manutenzione': 'Manutenzione',
   '/programmatore/utenti': 'Utenti e accessi',
   '/programmatore/codice': 'Codice d’accesso',

@@ -1669,3 +1669,27 @@ html body #root .kpi-value {
   font-size: 26px !important;
   white-space: nowrap !important;
 }
+
+/* ===== Test velocità (console programmatore) ===== */
+html body #root .tv .tv-conteggi { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+html body #root .tv .tv-conteggio { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+html body #root .tv .tv-conteggio-label { font-size: 12px; color: var(--text-secondary, #6b6b73); }
+html body #root .tv .tv-conteggio-valore { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+html body #root .tv .tv-riepilogo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+html body #root .tv .tv-riepilogo > div { background: var(--surface, #fff); padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+html body #root .tv .tv-riepilogo span { font-size: 12px; color: var(--text-secondary, #6b6b73); }
+html body #root .tv .tv-riepilogo strong { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+html body #root .tv .tv-barra-riga { display: flex; align-items: center; gap: 10px; }
+html body #root .tv .tv-barra { position: relative; flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2, #f2f2f4); overflow: hidden; min-width: 80px; }
+html body #root .tv .tv-barra-piena { height: 100%; border-radius: 999px; transition: width .4s ease; }
+html body #root .tv .tv-barra-piena.tv-ok { background: #2f9e5b; }
+html body #root .tv .tv-barra-piena.tv-medio { background: #d99a1e; }
+html body #root .tv .tv-barra-piena.tv-lento { background: #d64545; }
+html body #root .tv .tv-barra-attesa { position: absolute; inset: 0; width: 35%; border-radius: 999px; background: var(--primary); opacity: .55; animation: tv-scorri 1s ease-in-out infinite alternate; }
+@keyframes tv-scorri { from { transform: translateX(0); } to { transform: translateX(190%); } }
+html body #root .tv .tv-ms { font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; white-space: nowrap; }
+html body #root .tv .tv-esito { font-weight: 600; font-size: 13px; }
+html body #root .tv .tv-ok { color: #23824a; }
+html body #root .tv .tv-medio { color: #a86f07; }
+html body #root .tv .tv-lento { color: #c23434; }
+html body #root .tv tr.tv-attivo td { background: var(--primary-soft, #eef3fd); }

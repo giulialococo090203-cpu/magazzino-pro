@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Nomi delle persone sempre con le iniziali maiuscole (es. Benvenuto, Roberto Lo Coco); barra laterale chiara, colore guida blu, tabelle senza sovrapposizioni"
+MESSAGGIO="Nomi delle persone sempre con le iniziali maiuscole (es. Benvenuto, Roberto Lo Coco); barra laterale chiara, colore guida blu, tabelle senza sovrapposizioni + pagina Test velocità (programmatore)"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { systemStore } from '../../data/systemStore';
 import { companyStore } from '../../data/store';
@@ -6,10 +6,13 @@ import { AZIENDA_ID, AZIENDA_NOME } from '../../config/azienda';
 import { getSupabaseUsageMonitor, formatBytes, calcPercent } from '../../utils/supabaseUsage';
 import SafeIcon from '../../components/SafeIcon';
 
+const TestVelocita = lazy(() => import('./TestVelocita'));
+
 const SEZIONI = [
   { key: 'stato', label: 'Stato app' },
   { key: 'andamento', label: 'Andamento' },
   { key: 'integrita', label: 'Integrità dati' },
+  { key: 'velocita', label: 'Test velocità' },
   { key: 'manutenzione', label: 'Manutenzione' },
   { key: 'utenti', label: 'Utenti e accessi' },
   { key: 'codice', label: 'Codice d’accesso' },
@@ -383,6 +386,12 @@ export default function PannelloProgrammatore() {
           </button>
         ))}
       </div>
+
+      {tab === 'velocita' && (
+        <Suspense fallback={<div className="text-muted">Caricamento…</div>}>
+          <TestVelocita />
+        </Suspense>
+      )}
 
       {/* ============================ STATO ============================ */}
       {tab === 'stato' && (
