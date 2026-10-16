@@ -967,7 +967,8 @@ export const materialStore = {
         .select('*')
         .eq('azienda_id', companyId)
         .order('codice')
-        .order('id')
+        .order('id'),
+      { parallele: 6 }
     );
 
     return righe.map(mapMaterial.toModel);
@@ -1307,7 +1308,7 @@ export const movementStore = {
     }
 
     // Tanti movimenti: pagine da 1000 scaricate 4 alla volta, non una dopo l'altra.
-    let righe = await scaricaTutto(() => ordina(buildQuery()));
+    let righe = await scaricaTutto(() => ordina(buildQuery()), { parallele: 6 });
 
     if (maxRows > 0 && righe.length > maxRows) righe = righe.slice(0, maxRows);
 
@@ -1457,18 +1458,38 @@ export const movementStore = {
   },
 
   async getMostMoved(limit = 10, days = 30) {
+    // Strada veloce: il conto lo fa il database e restituisce solo i primi.
+    try {
+      const { data, error } = await supabase
+        .rpc('movimenti_piu_movimentati', { giorni: days, limite: limit })
+        .retry(false);
+
+      if (!error && Array.isArray(data)) {
+        return data.map((r) => ({
+          materialId: r.materiale_id,
+          code: r.codice || 'N/A',
+          description: r.descrizione || 'N/A',
+          totalMoved: Number(r.totale || 0),
+        }));
+      }
+    } catch {
+      /* funzione non ancora installata: si usa il calcolo qui sotto */
+    }
+
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const companyId = getCurrentCompanyId();
 
     // Servono solo materiale e quantita': si scaricano poche colonne.
-    const righe = await scaricaTutto(() =>
-      supabase
-        .from('movimenti')
-        .select('id, materiale_id, quantita, materiali(codice, descrizione)')
-        .eq('azienda_id', companyId)
-        .gte('data_movimento', cutoff.toISOString().slice(0, 10))
-        .order('id')
+    const righe = await scaricaTutto(
+      () =>
+        supabase
+          .from('movimenti')
+          .select('id, materiale_id, quantita, materiali(codice, descrizione)')
+          .eq('azienda_id', companyId)
+          .gte('data_movimento', cutoff.toISOString().slice(0, 10))
+          .order('id'),
+      { parallele: 6 }
     );
 
     const recent = righe.map((r) => ({
@@ -1545,7 +1566,8 @@ export const userStore = {
     }
 
     const companyId = getCurrentCompanyId();
-    const token = await currentFirebaseUser.getIdToken(true);
+    // Il token in memoria e' ancora valido: forzarne uno nuovo costava ~0,5 s.
+    const token = await currentFirebaseUser.getIdToken();
 
     const response = await fetch('/api/admin/list-users', {
       method: 'POST',

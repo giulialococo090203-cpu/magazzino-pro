@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Velocita: movimenti e materiali scaricati in parallelo, ordini sotto soglia filtrati dal database, dashboard con letture contemporanee; pagina Test velocita; nomi con iniziali maiuscole; grafica chiara"
+MESSAGGIO="Velocita: letture in parallelo (6 pagine), materiali piu movimentati calcolati dal database, utenti piu rapidi, memoria letture non svuotata dalle funzioni di sola lettura; pagina Test velocita"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz

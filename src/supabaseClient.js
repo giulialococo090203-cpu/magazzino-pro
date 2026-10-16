@@ -108,7 +108,11 @@ async function firebaseAuthenticatedFetch(input, init = {}) {
    */
   const lettura = (method === 'GET' || method === 'HEAD') && url.includes('/rest/v1/');
 
-  if (method !== 'GET' && method !== 'HEAD') {
+  // Le funzioni del database usate dall'app (rpc) sono solo letture:
+  // non devono far buttare via i dati gia' scaricati.
+  const soloLetturaRpc = url.includes('/rest/v1/rpc/');
+
+  if (method !== 'GET' && method !== 'HEAD' && !soloLetturaRpc) {
     segnaDatiModificati();
   }
 
