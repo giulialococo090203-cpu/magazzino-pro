@@ -3,6 +3,7 @@
 // ============================================================
 
 import { supabase, versioneDati } from '../supabaseClient';
+import { nomeProprio } from '../utils/nomi';
 
 // ============================================================
 // MEMORIA BREVE DELLE LETTURE PIU' PESANTI
@@ -300,7 +301,7 @@ async function createFirebaseUserFromAdmin(user) {
     body: JSON.stringify({
       email: String(user.email || user.username || '').trim(),
       password: String(user.password || '').trim(),
-      fullName: String(user.fullName || user.nome || user.username || '').trim(),
+      fullName: nomeProprio(user.fullName || user.nome || user.username || ''),
       role: normalizeRole(user.role || user.ruolo || 'operaio'),
       active: user.active !== undefined ? Boolean(user.active) : true,
       permissions:
@@ -490,7 +491,7 @@ const mapUser = {
   toModel: (row) => ({
     id: row.id,
     username: row.username,
-    fullName: row.nome,
+    fullName: nomeProprio(row.nome),
     email: row.email || '',
     role: normalizeRole(row.ruolo),
     active: row.attivo,

@@ -11,6 +11,7 @@ import { AZIENDA_NOME } from '../config/azienda';
 import { useState, useEffect } from 'react';
 import ThemeToggle from './ThemeToggle';
 import Icon from './Icon';
+import { nomeProprio } from '../utils/nomi';
 
 /*
  * Ogni voce ha la sua icona: prima molte voci diverse (Ordini, Fornitori,
@@ -479,7 +480,7 @@ export default function Layout({ children }) {
     year: 'numeric',
   });
 
-  const displayName = user?.fullName || user?.username || 'Utente';
+  const displayName = nomeProprio(user?.fullName || user?.username) || 'Utente';
 
   const initials = displayName
     .split(' ')

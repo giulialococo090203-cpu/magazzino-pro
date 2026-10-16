@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Barra laterale chiara, colore guida blu, indicatori con icona in alto a destra; tabelle senza testo sovrapposto e descrizioni in grassetto"
+MESSAGGIO="Nomi delle persone sempre con le iniziali maiuscole (es. Benvenuto, Roberto Lo Coco); barra laterale chiara, colore guida blu, tabelle senza sovrapposizioni"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz
@@ -50,7 +50,7 @@ fi
 
 echo
 echo "4/4  Salvataggio su GitHub..."
-git add index.html public/_headers src Pubblica.command .github
+git add index.html public/_headers src scripts/svuota-tutto.sql Pubblica.command .github
 if ! git diff --cached --quiet; then
   git commit -m "$MESSAGGIO"
 fi

@@ -10,6 +10,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebas
 import { firebaseAuth, caricaFirestore } from '../firebaseClient';
 import { normalizeRole, isSuperAdminUser } from './permissions';
 import { AZIENDA_ID, AZIENDA_NOME } from '../config/azienda';
+import { nomeProprio } from '../utils/nomi';
 
 const CURRENT_USER_KEY = 'wm_current_user';
 
@@ -85,7 +86,8 @@ function normalizeUserProfile(firebaseUser, profile = {}) {
 
     username,
     email,
-    fullName,
+    // Iniziali maiuscole, anche se il nome è stato salvato tutto minuscolo.
+    fullName: nomeProprio(fullName),
     role,
     active,
     permissions,
@@ -265,7 +267,12 @@ export const authStore = {
   getCurrentUser() {
     try {
       const data = localStorage.getItem(CURRENT_USER_KEY);
-      return data ? JSON.parse(data) : null;
+      const utente = data ? JSON.parse(data) : null;
+
+      // Sessioni salvate prima della correzione: il nome si sistema qui.
+      if (utente?.fullName) utente.fullName = nomeProprio(utente.fullName);
+
+      return utente;
     } catch {
       localStorage.removeItem(CURRENT_USER_KEY);
       return null;

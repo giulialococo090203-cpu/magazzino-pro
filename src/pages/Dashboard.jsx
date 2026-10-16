@@ -23,6 +23,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import Icon from '../components/Icon';
+import { nomeProprio } from '../utils/nomi';
 import FaIcon from '../components/FaIcon';
 import SafeIcon from '../components/SafeIcon';
 import { AZIENDA_NOME } from '../config/azienda';
@@ -766,7 +767,7 @@ export default function Dashboard() {
           <p className="home-hero-kicker">Pianifica · Organizza · Realizza</p>
 
           <h1 className="home-hero-title">
-            Benvenuto, {user?.fullName || user?.username}
+            Benvenuto, {nomeProprio(user?.fullName || user?.username)}
           </h1>
 
           <p className="home-hero-subtitle">
