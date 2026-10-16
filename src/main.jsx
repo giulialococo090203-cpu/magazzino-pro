@@ -4,6 +4,8 @@ import './index.css'
 import App from './App.jsx'
 // Rifinitura grafica: va caricata per ultima, dopo tutti gli altri stili.
 import './styles/rifinitura.css'
+// Tavolozza neutra (bianco / quasi nero): sostituisce i toni crema.
+import './styles/tema-neutro.css'
 import { inizializzaTema } from './utils/theme'
 import { ProtezioneErrori, ricaricaPerNuovaVersione } from './components/ProtezioneErrori'
 

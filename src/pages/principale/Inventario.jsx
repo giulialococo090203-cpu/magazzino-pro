@@ -129,7 +129,7 @@ export default function Inventario() {
   const tableScrollRef = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
 
-  const VIRTUAL_ROW_HEIGHT = 54;
+  const VIRTUAL_ROW_HEIGHT = 42;
   const VIRTUAL_OVERSCAN = 12;
   const VIRTUAL_VIEWPORT_HEIGHT = 680;
 

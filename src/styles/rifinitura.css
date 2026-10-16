@@ -1362,3 +1362,211 @@ html body #root .riordino-fornitore-azioni {
   margin-top: auto !important;
   padding-top: 6px;
 }
+
+/* ============================================================
+   TERZA PASSATA — stile "gestionale moderno" (riferimenti scelti
+   da Giulia: elenco tipo CRM chiaro, cruscotto tipo Linear scuro)
+   - fondo bianco pieno / quasi nero, grigi neutri (tema-neutro.css)
+   - barra laterale grigio chiarissimo, icone su piastrine colorate
+   - tabelle a griglia con righe e colonne sottili
+   - etichette di stato con fondo e bordo dello stesso colore
+   ============================================================ */
+
+:root {
+  --ws-hover: rgba(0, 0, 0, 0.045);
+  --ws-active: rgba(0, 0, 0, 0.065);
+  --ws-shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme='dark'] {
+  --ws-hover: rgba(255, 255, 255, 0.05);
+  --ws-active: rgba(255, 255, 255, 0.08);
+  --ws-shadow-btn: none;
+  --ws-shadow-sm: none;
+}
+
+/* Barra laterale */
+#root .ws-sidebar {
+  background: var(--surface-2);
+  border-right-color: var(--border);
+}
+
+#root .ws-brand {
+  border-bottom: 0;
+}
+
+#root .ws-brand-logo {
+  border-radius: 8px;
+}
+
+#root .ws-nav-title {
+  font-size: 12px;
+  color: var(--text-faint);
+  padding: 0 10px 6px;
+}
+
+#root .ws-nav-link {
+  height: 34px;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 450;
+  font-size: 14px;
+}
+
+#root .ws-nav-link:hover {
+  background: var(--ws-hover);
+  color: var(--text);
+}
+
+#root .ws-nav-link.is-active,
+[data-theme='dark'] #root .ws-nav-link.is-active {
+  background: var(--ws-active);
+  color: var(--text);
+  font-weight: 500;
+}
+
+#root .ws-nav-tile {
+  --tone: #71717a;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--tone);
+  color: #ffffff;
+}
+
+#root .ws-nav-tile .ws-nav-icon {
+  width: 13px !important;
+  height: 13px !important;
+  stroke-width: 2.2 !important;
+  opacity: 1;
+}
+
+#root .ws-nav-group[data-tone='blue'] .ws-nav-tile { --tone: #3b6fe0; }
+#root .ws-nav-group[data-tone='orange'] .ws-nav-tile { --tone: #e8833a; }
+#root .ws-nav-group[data-tone='green'] .ws-nav-tile { --tone: #2f9e6a; }
+#root .ws-nav-group[data-tone='violet'] .ws-nav-tile { --tone: #7c5cdb; }
+#root .ws-nav-group[data-tone='gray'] .ws-nav-tile { --tone: #6b6b74; }
+#root .ws-nav-group[data-tone='red'] .ws-nav-tile { --tone: #d6455d; }
+
+#root .ws-nav-badge {
+  color: #ffffff;
+}
+
+#root .ws-avatar,
+[data-theme='dark'] #root .ws-avatar {
+  background: #3b6fe0;
+  color: #ffffff;
+}
+
+/* Area programmatore: resta scura con piastrine rosse */
+html body #root .area-programmatore .ws-sidebar {
+  background: #141416;
+}
+
+html body #root .area-programmatore .ws-nav-link {
+  color: #c9c9cf;
+}
+
+html body #root .area-programmatore .ws-nav-link.is-active {
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+}
+
+/* Barra superiore e contenuto: bianco pieno */
+html body #root .ws-layout .main-content > .header {
+  background: var(--bg) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html body #root .ws-layout .header-breadcrumb span:last-child {
+  font-weight: 500 !important;
+}
+
+/* Pulsanti: primario quasi nero (bianco in scuro), secondari con un'ombra leggera */
+html body #root .btn-secondary,
+html body #root .btn:not(.btn-primary):not(.btn-danger):not(.btn-success):not(.btn-ghost):not(.btn-warning):not(.btn-outline-primary) {
+  box-shadow: var(--ws-shadow-btn) !important;
+}
+
+html body #root .btn-danger,
+html body #root .btn-success,
+html body #root .btn-warning {
+  color: #ffffff !important;
+}
+
+/* Riquadri */
+html body #root .card,
+html body #root .kpi-card,
+html body #root .table-container,
+html body #root .chart-container {
+  border-radius: 10px !important;
+}
+
+html body #root .card-header {
+  padding: 14px 18px !important;
+}
+
+html body #root .card-title {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+html body #root .kpi-label {
+  font-size: 13.5px !important;
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+html body #root .kpi-value {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Tabelle a griglia */
+html body #root .data-table th {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  height: 38px;
+  padding: 0 12px !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+html body #root .data-table td {
+  height: 40px;
+  padding: 0 12px !important;
+  border-right: 1px solid var(--border) !important;
+  font-size: 14px !important;
+}
+
+html body #root .data-table th:last-child,
+html body #root .data-table td:last-child {
+  border-right: 0 !important;
+}
+
+html body #root .data-table tbody tr:hover td {
+  background: var(--ws-hover) !important;
+}
+
+/* Etichette di stato: fondo tenue e bordo dello stesso colore */
+html body #root .status-badge,
+html body #root .movement-badge,
+html body #root .badge {
+  height: 22px !important;
+  border-radius: 6px !important;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent) !important;
+  font-size: 12.5px !important;
+}
+
+/* Schede di navigazione interne (Da ordinare / Ordini preparati, ecc.) */
+html body #root .tab.active,
+html body #root .tab-btn.active,
+html body #root [role='tab'][aria-selected='true'] {
+  color: var(--text) !important;
+}

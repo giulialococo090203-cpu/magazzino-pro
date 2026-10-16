@@ -73,6 +73,19 @@ const SECTION_SHORT = {
   'Dati azienda': 'Dati',
 };
 
+/* Colore della piastrina dell'icona, per sezione del menu. */
+const SECTION_TONES = {
+  Magazzino: 'blue',
+  'Acquisti e Fatture': 'orange',
+  Controllo: 'green',
+  Analisi: 'violet',
+  Configurazione: 'gray',
+  Programmatore: 'red',
+  Diagnostica: 'green',
+  'Dati azienda': 'blue',
+  Interventi: 'orange',
+};
+
 function NavIcon({ path, fallback, className = '' }) {
   return <Icon name={NAV_ICONS[path] || fallback || 'inventory_2'} className={className} />;
 }
@@ -522,7 +535,11 @@ const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
 
           <nav className="ws-nav">
             {visibleSections.map((navSection) => (
-              <div className="ws-nav-group" key={navSection.title}>
+              <div
+                className="ws-nav-group"
+                key={navSection.title}
+                data-tone={SECTION_TONES[navSection.title] || 'gray'}
+              >
                 <div className="ws-nav-title">{navSection.title}</div>
 
                 {navSection.items.map((item) => {
@@ -536,7 +553,9 @@ const inAreaProgrammatore = location.pathname.startsWith('/programmatore');
                       aria-current={attivo ? 'page' : undefined}
                       title={item.label}
                     >
-                      <NavIcon path={item.path} fallback={item.icon} className="ws-nav-icon" />
+                      <span className="ws-nav-tile" aria-hidden="true">
+                        <NavIcon path={item.path} fallback={item.icon} className="ws-nav-icon" />
+                      </span>
                       <span className="ws-nav-label">{item.label}</span>
 
                       {item.badge && unreadCount > 0 && (
