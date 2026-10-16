@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Telefono: barra in basso senza scorrimento, etichette che stanno nello spazio, data nascosta in alto"
+MESSAGGIO="Rifinitura grafica: filtri allineati, niente barre colorate e sfumature forzate, caselle e righe di tabella compatte, notifiche a elenco, motivi leggibili; telefono e controllo giornaliero Supabase"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz
@@ -50,7 +50,7 @@ fi
 
 echo
 echo "4/4  Salvataggio su GitHub..."
-git add index.html public/_headers src Pubblica.command
+git add index.html public/_headers src Pubblica.command .github
 if ! git diff --cached --quiet; then
   git commit -m "$MESSAGGIO"
 fi

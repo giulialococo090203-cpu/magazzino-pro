@@ -10584,11 +10584,8 @@ body .app-layout .action-card i {
 }
 
 /* Rimuove background pastello da varianti inline/classi */
-body .app-layout [class*="quick"] [style*="background"],
-body .app-layout [class*="action"] [style*="background"] {
-  background:
-    linear-gradient(135deg, var(--surface-inverse) 0%, var(--surface-inverse) 100%) !important;
-}
+/* (rimossa: sfumatura forzata sugli stili in linea — vedi styles/rifinitura.css) */
+
 
 
 /* ============================================================
@@ -10615,12 +10612,8 @@ body .app-layout .action-card [class*="icon"] {
 }
 
 /* Evita che le regole precedenti forzino il nero sugli inline style */
-body .app-layout [class*="quick"] [style*="background"],
-body .app-layout [class*="action"] [style*="background"] {
-  background:
-    radial-gradient(circle at 30% 20%, rgba(var(--primary-rgb), 0.12), transparent 44%),
-    linear-gradient(135deg, var(--primary-soft) 0%, var(--primary-soft) 100%) !important;
-}
+/* (rimossa: sfumatura forzata sugli stili in linea — vedi styles/rifinitura.css) */
+
 
 /* Icona interna più pulita */
 body .app-layout .quick-action-card svg,
@@ -10720,13 +10713,8 @@ body .app-layout .import-step,
 body .app-layout [class*="step"] {
   border-color: rgba(17,24,39,0.12) !important;
 }
+/* (rimossa: sfumatura forzata sugli stili in linea — vedi styles/rifinitura.css) */
 
-body .app-layout [style*="var(--primary-50)"],
-body .app-layout [style*="var(--primary-25)"],
-body .app-layout [style*="var(--primary-100)"] {
-  background:
-    linear-gradient(135deg, var(--primary-soft) 0%, var(--primary-soft) 100%) !important;
-}
 
 body .app-layout [style*="var(--primary-700)"],
 body .app-layout [style*="var(--primary-600)"],
@@ -10740,12 +10728,8 @@ body .app-layout [style*="var(--primary-400)"] {
 }
 
 /* Stepper importazione */
-body .app-layout .card [style*="var(--primary-50)"],
-body .app-layout .card [style*="var(--primary-25)"] {
-  background:
-    linear-gradient(135deg, rgba(var(--primary-rgb), 0.10), rgba(var(--primary-rgb), 0.92)) !important;
-  color: var(--primary-text) !important;
-}
+/* (rimossa: sfumatura forzata sugli stili in linea — vedi styles/rifinitura.css) */
+
 
 body .app-layout .card [style*="var(--primary-700)"] {
   color: var(--primary-text) !important;
@@ -10759,11 +10743,8 @@ body .app-layout [style*="border: 1px dashed"] {
 }
 
 /* Upload/manual insert panels */
-body .app-layout [style*="background: 'var(--primary-50)'"],
-body .app-layout [style*="background: var(--primary-50)"] {
-  background:
-    linear-gradient(135deg, rgba(var(--primary-rgb), 0.96), rgba(var(--primary-rgb), 0.055)) !important;
-}
+/* (rimossa: sfumatura forzata sugli stili in linea — vedi styles/rifinitura.css) */
+
 
 /* Override Bootstrap/text primary residui */
 body .app-layout .text-primary,

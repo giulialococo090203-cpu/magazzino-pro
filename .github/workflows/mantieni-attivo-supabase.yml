@@ -1,0 +1,50 @@
+name: Mantieni attivo Supabase
+
+# Supabase mette in pausa i progetti gratuiti dopo circa 7 giorni
+# senza attivita'. Questo controllo legge ogni giorno lo stato
+# dell'app dal database: basta per tenerlo sveglio.
+# Se il database non risponde (per esempio perche' e' gia' in pausa)
+# il controllo fallisce e GitHub manda una email di avviso.
+
+on:
+  schedule:
+    # Ogni giorno alle 05:17 UTC (07:17 in Italia d'estate, 06:17 d'inverno)
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  sveglia:
+    name: Interroga il database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Lettura leggera da Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "Mancano i secret VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY nel repository."
+            exit 1
+          fi
+
+          for tentativo in 1 2 3; do
+            codice=$(curl -s -o risposta.txt -w '%{http_code}' \
+              --max-time 30 \
+              -H "apikey: $SUPABASE_KEY" \
+              "$SUPABASE_URL/rest/v1/stato_app_pubblico?select=*")
+
+            echo "Tentativo $tentativo: risposta $codice"
+
+            if [ "$codice" = "200" ]; then
+              echo "Database attivo."
+              exit 0
+            fi
+
+            sleep 20
+          done
+
+          echo "Il database non risponde. Controlla su supabase.com se il progetto e' in pausa."
+          head -c 500 risposta.txt || true
+          exit 1

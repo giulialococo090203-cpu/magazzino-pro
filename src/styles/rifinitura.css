@@ -1164,3 +1164,201 @@ html body #root .animate-fadeIn {
     transition: none !important;
   }
 }
+
+/* ============================================================
+   SECONDA PASSATA — dettagli emersi guardando le pagine con i dati
+   ============================================================ */
+
+/* Caselle di spunta: prima erano alte 40px (regola generica sui campi)
+   e rendevano ogni riga di tabella altissima. */
+html body #root .app-layout input[type='checkbox'],
+html body #root .app-layout input[type='radio'] {
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+  accent-color: var(--primary);
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+/* Niente barre colorate sul lato sinistro dei riquadri: bordo uniforme. */
+html body #root .riordino-fornitore,
+html body #root .notification-item.unread,
+html body #root .kpi-card.danger,
+html body #root .kpi-card.warning,
+html body #root .prog-dati-avviso {
+  border-left-width: 1px !important;
+  border-left-color: var(--border) !important;
+}
+
+html body #root .riordino-fornitore {
+  border-radius: var(--ws-radius) !important;
+  box-shadow: none !important;
+  background: var(--surface) !important;
+}
+
+/* Notifiche: elenco con separatori invece di riquadri colorati. */
+html body #root .notification-item {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+}
+
+html body #root .notification-item:last-child {
+  border-bottom: 0 !important;
+}
+
+html body #root .notification-item.unread {
+  background: rgba(var(--primary-rgb), 0.045) !important;
+}
+
+/* Indicatori numerici: si distribuiscono sulla riga, senza un riquadro
+   rimasto da solo sotto gli altri. */
+html body #root .kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 18px !important;
+}
+
+/* Filtri dentro i riquadri: etichetta sopra il campo, colonne allineate. */
+html body #root .card-body > .filters-row {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)) !important;
+  gap: 12px 14px !important;
+  align-items: end !important;
+  margin: 0 !important;
+}
+
+html body #root .card-body .filter-group {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+html body #root .card-body .filter-group > input,
+html body #root .card-body .filter-group > select,
+html body #root .card-body .filter-group > .form-control {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* Etichette e pastiglie di stato: piccole e uniformi. */
+html body #root .status-badge,
+html body #root .movement-badge,
+html body #root .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  white-space: nowrap !important;
+}
+
+/* Testo in grassetto nelle tabelle (codici): presente ma non urlato. */
+html body #root .data-table td strong,
+html body #root .data-table td b {
+  font-weight: 500 !important;
+}
+
+html body #root .data-table td {
+  vertical-align: middle !important;
+}
+
+/* Icona della lente nei campi di ricerca. */
+html body #root .search-bar {
+  position: relative !important;
+}
+
+html body #root .search-bar-icon {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  color: var(--text-faint) !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+html body #root .search-bar-icon .app-svg-icon {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+html body #root .search-bar .form-control {
+  padding-left: 36px !important;
+}
+
+/* Aree di caricamento file: tratteggio chiaro, niente sfumature. */
+html body #root .import-dropzone {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1.5px dashed var(--border-strong) !important;
+  border-radius: var(--ws-radius) !important;
+  box-shadow: none !important;
+}
+
+html body #root .import-dropzone:hover {
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), 0.04) !important;
+}
+
+/* Schede (Tutte / Non lette / Da ordinare...): coerenti ovunque. */
+html body #root .tabs,
+html body #root .tab-list {
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Se una pagina toglie apposta il margine interno del riquadro, va rispettato. */
+html body #root .card-body[style*='padding: 0'],
+html body #root .card-body[style*='padding:0'] {
+  padding: 0 !important;
+}
+
+html body #root .card-body .filter-group > input,
+html body #root .card-body .filter-group > select {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Riquadri fornitore negli Ordini: pulsanti sempre allineati in fondo. */
+html body #root .riordino-fornitore {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+html body #root .riordino-fornitore-azioni {
+  margin-top: auto !important;
+  padding-top: 6px;
+}

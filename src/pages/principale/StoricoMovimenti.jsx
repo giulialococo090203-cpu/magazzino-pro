@@ -92,7 +92,13 @@ function formatMovType(t) {
 }
 
 function formatReason(r) {
-  return MOVEMENT_REASONS.find((mr) => mr.value === r)?.label || r || '—';
+  const nota = MOVEMENT_REASONS.find((mr) => mr.value === r)?.label;
+  if (nota) return nota;
+  if (!r) return '—';
+
+  // Valori tecnici (es. "importazione_fattura") resi leggibili: "Importazione fattura".
+  const testo = String(r).replace(/_/g, ' ').trim();
+  return testo.charAt(0).toUpperCase() + testo.slice(1);
 }
 
 function sanitizeFileName(value) {

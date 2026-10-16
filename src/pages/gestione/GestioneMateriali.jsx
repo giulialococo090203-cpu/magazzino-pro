@@ -221,7 +221,7 @@ export default function GestioneMateriali() {
     <div className="animate-slideUp">
       <div className="page-header">
         <div>
-          <h1 className="page-title"><Icon name="construction" className="ui-title-icon" aria-hidden="true" />Gestione Materiali</h1>
+          <h1 className="page-title"><Icon name="box" className="ui-title-icon" aria-hidden="true" />Anagrafica materiali</h1>
           <p className="page-subtitle">Anagrafica completa dei materiali — {materials.length} registrati</p>
         </div>
         <div className="btn-group">
