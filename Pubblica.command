@@ -9,7 +9,7 @@
 cd "$(dirname "$0")" || exit 1
 
 # Descrizione delle modifiche che verranno salvate su GitHub.
-MESSAGGIO="Nuovo stile da gestionale moderno: tavolozza neutra bianco/nero, menu con piastrine colorate, tabelle a griglia, etichette di stato; rifiniture, telefono e controllo giornaliero Supabase"
+MESSAGGIO="Barra laterale scura, colore guida blu, indicatori con icona in alto a destra; tabelle senza testo sovrapposto e descrizioni in grassetto"
 
 # File temporaneo lasciato da Claude durante i controlli.
 rm -f .tmp-claude-repo.tgz

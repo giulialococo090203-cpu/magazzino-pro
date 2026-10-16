@@ -753,9 +753,9 @@ export default function Inventario() {
                 {virtualRows.map((m) => (
                 <tr key={m.id} style={{ height: VIRTUAL_ROW_HEIGHT }}>
                   <td>
-                    <strong>{m.code}</strong>
+                    <span className="cella-codice">{m.code}</span>
                   </td>
-                  <td>{m.description}</td>
+                  <td className="cella-nome" title={m.description}>{m.description}</td>
                   <td>{m.brand}</td>
                   <td>{getCategoryName(m.category)}</td>
                   <td style={{ textAlign: 'center' }}>

@@ -1070,12 +1070,12 @@ export default function StoricoMovimenti() {
                   </td>
 
                   <td>
-                    <strong>{mov.materialCode}</strong>
+                    <span className="cella-codice">{mov.materialCode}</span>
                   </td>
 
                   <td>
                     <div
-                      className="text-sm"
+                      className="cella-nome"
                       title={mov.materialDescription}
                       style={{
                         maxWidth: 180,

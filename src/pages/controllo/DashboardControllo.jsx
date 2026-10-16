@@ -591,7 +591,7 @@ export default function DashboardControllo() {
                     </td>
                     <td>{mov.type}</td>
                     <td><strong>{mov.materialCode}</strong></td>
-                    <td>{mov.materialDescription}</td>
+                    <td className="cella-nome" title={mov.materialDescription}>{mov.materialDescription}</td>
                     <td>{mov.quantity}</td>
                     <td>{mov.previousQty ?? '—'}</td>
                     <td>{mov.newQty ?? '—'}</td>

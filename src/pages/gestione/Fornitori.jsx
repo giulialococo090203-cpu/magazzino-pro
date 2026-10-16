@@ -482,7 +482,7 @@ export default function Fornitori() {
             ) : (
               filteredSuppliers.map((row) => (
                 <tr key={row.supplier}>
-                  <td><strong>{row.supplier}</strong></td>
+                  <td className="cella-nome">{row.supplier}</td>
                   <td style={{ fontWeight: 800 }}>{row.invoiceCount}</td>
                   <td style={{ fontWeight: 800 }}>{row.manualCount}</td>
                   <td>{row.movementCount}</td>

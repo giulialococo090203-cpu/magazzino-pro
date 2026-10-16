@@ -174,8 +174,8 @@ export default function Soglie() {
               <tbody>
                 {filtered.map(m => (
                   <tr key={m.id}>
-                    <td><strong>{m.code}</strong></td>
-                    <td className="text-sm">{m.description}</td>
+                    <td><span className="cella-codice">{m.code}</span></td>
+                    <td className="cella-nome" title={m.description}>{m.description}</td>
                     <td className="text-sm">{getCatName(m.category)}</td>
                     <td style={{ textAlign: 'center', fontWeight: 700, color: m.quantity === 0 ? 'var(--danger-600)' : m.quantity <= m.minThreshold ? 'var(--warning-600)' : 'var(--gray-800)' }}>{m.quantity}</td>
                     <td style={{ textAlign: 'center' }}>

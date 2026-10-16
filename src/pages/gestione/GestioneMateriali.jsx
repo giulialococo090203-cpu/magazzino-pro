@@ -314,8 +314,8 @@ export default function GestioneMateriali() {
                     onChange={() => toggleSelected(m.id)}
                   />
                 </td>
-                <td><strong>{m.code}</strong></td>
-                <td>{m.description}</td>
+                <td><span className="cella-codice">{m.code}</span></td>
+                <td className="cella-nome" title={m.description}>{m.description}</td>
                 <td className="text-sm">{m.brand}</td>
                 <td className="text-sm">{getCategoryName(m.category)}</td>
                 <td style={{ textAlign: 'center', fontWeight: 700 }}>{m.quantity}</td>

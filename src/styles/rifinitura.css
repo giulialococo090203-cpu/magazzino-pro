@@ -1570,3 +1570,186 @@ html body #root .tab-btn.active,
 html body #root [role='tab'][aria-selected='true'] {
   color: var(--text) !important;
 }
+
+/* ============================================================
+   QUARTA PASSATA — secondo riferimento di Giulia (barra laterale
+   scura, contenuto bianco, un colore guida, indicatori con
+   piastrina dell'icona in alto a destra) e correzioni tabelle.
+   ============================================================ */
+
+/* Barra laterale scura in entrambe le modalità */
+#root .ws-sidebar {
+  background: #17181c;
+  border-right: 0;
+  color: #d4d4d8;
+}
+
+#root .ws-brand {
+  color: #ffffff;
+  height: 64px;
+}
+
+#root .ws-brand-text span {
+  color: #8b8b94;
+}
+
+#root .ws-nav-title {
+  color: #6f6f78;
+}
+
+#root .ws-nav-link {
+  color: #c8c8cf;
+  height: 36px;
+  border-radius: 8px;
+}
+
+#root .ws-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+#root .ws-nav-link.is-active,
+[data-theme='dark'] #root .ws-nav-link.is-active {
+  background: rgba(107, 143, 242, 0.18);
+  color: #ffffff;
+}
+
+/* Icone: tratto colorato della sezione, senza piastrina piena */
+#root .ws-nav-tile {
+  background: transparent;
+  color: var(--tone);
+  width: 18px;
+  height: 18px;
+}
+
+#root .ws-nav-tile .ws-nav-icon {
+  width: 17px !important;
+  height: 17px !important;
+  stroke-width: 1.9 !important;
+}
+
+#root .ws-nav-group[data-tone='blue'] .ws-nav-tile { --tone: #7ea0f5; }
+#root .ws-nav-group[data-tone='orange'] .ws-nav-tile { --tone: #f2a462; }
+#root .ws-nav-group[data-tone='green'] .ws-nav-tile { --tone: #5cc79a; }
+#root .ws-nav-group[data-tone='violet'] .ws-nav-tile { --tone: #a58cf0; }
+#root .ws-nav-group[data-tone='gray'] .ws-nav-tile { --tone: #a1a1aa; }
+#root .ws-nav-group[data-tone='red'] .ws-nav-tile { --tone: #f07a8c; }
+
+#root .ws-user {
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+#root .ws-user-text strong {
+  color: #ffffff;
+}
+
+#root .ws-user-text span {
+  color: #8b8b94;
+}
+
+#root .ws-logout {
+  color: #a1a1aa;
+}
+
+#root .ws-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+#root .ws-nav-exit {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Indicatori numerici: piastrina dell'icona in alto a destra */
+html body #root .kpi-card {
+  position: relative !important;
+  display: block !important;
+  padding: 18px 20px !important;
+}
+
+html body #root .kpi-card .kpi-content {
+  padding-right: 48px;
+}
+
+html body #root .kpi-card .kpi-icon {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: var(--primary-soft) !important;
+  color: var(--primary) !important;
+  border: 0 !important;
+}
+
+html body #root .kpi-card .kpi-icon .app-svg-icon {
+  width: 18px !important;
+  height: 18px !important;
+  color: currentColor !important;
+}
+
+html body #root .kpi-card .kpi-icon:empty {
+  display: none !important;
+}
+
+html body #root .kpi-card .kpi-icon.green { background: var(--success-soft) !important; color: var(--success) !important; }
+html body #root .kpi-card .kpi-icon.red,
+html body #root .kpi-card .kpi-icon.danger { background: var(--danger-soft) !important; color: var(--danger) !important; }
+html body #root .kpi-card .kpi-icon.yellow,
+html body #root .kpi-card .kpi-icon.warning { background: var(--warning-soft) !important; color: var(--warning) !important; }
+
+html body #root .kpi-label {
+  color: var(--text-soft) !important;
+  font-weight: 500 !important;
+}
+
+html body #root .kpi-value {
+  margin-top: 6px !important;
+}
+
+/* Tabelle: niente testo che invade la colonna accanto */
+html body #root .data-table td {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 420px;
+  letter-spacing: 0 !important;
+}
+
+html body #root .data-table td:has(.table-actions, select, input, button, .dropdown, .menu) {
+  overflow: visible !important;
+  max-width: none;
+}
+
+/* Ciò che descrive la riga (nome del materiale, fornitore) in grassetto;
+   il codice resta normale e leggermente più chiaro. */
+html body #root .data-table .cella-nome,
+html body #root .cella-nome {
+  font-weight: 600 !important;
+  color: var(--text) !important;
+}
+
+html body #root .cella-codice {
+  font-weight: 400 !important;
+  color: var(--text-soft) !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pulsante principale: colore guida */
+html body #root .btn-primary {
+  box-shadow: 0 1px 2px rgba(47, 95, 208, 0.25) !important;
+}
+
+html body #root .kpi-value {
+  font-size: 26px !important;
+  white-space: nowrap !important;
+}

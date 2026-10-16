@@ -787,9 +787,9 @@ export default function RiordinoAutomatico({ incorporato = false, onConteggio })
                   </td>
                   <td className="text-sm">{m.supplier || 'Senza fornitore'}</td>
                   <td>
-                    <strong>{m.code}</strong>
+                    <span className="cella-codice">{m.code}</span>
                   </td>
-                  <td className="text-sm">{m.description}</td>
+                  <td className="cella-nome" title={m.description}>{m.description}</td>
                   <td className="text-sm">{m.brand}</td>
                   <td className="text-sm">{getCategoryName(m.category)}</td>
                   <td

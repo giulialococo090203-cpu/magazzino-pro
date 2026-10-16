@@ -3,7 +3,8 @@
    ------------------------------------------------------------
    Sostituisce i toni crema/oliva con grigi neutri (bianco pieno
    in chiaro, quasi nero in scuro), sul modello dei gestionali
-   moderni scelti da Giulia. I colori di stato (verde, giallo,
+   moderni scelti da Giulia. Un solo colore guida, il blu
+   (pulsanti principali, voce attiva, selezioni). I colori di stato (verde, giallo,
    rosso, blu) restano. Generato dai token di index.css: per
    cambiare un colore si modifica qui.
    I selettori :root:not(...) e :root[...] servono a vincere sui
@@ -20,13 +21,13 @@
   --text-faint: #8f8f97;
   --border: #e8e8eb;
   --border-strong: #d6d6db;
-  --primary: #1c1c1f;
-  --primary-rgb: 28, 28, 31;
-  --primary-strong: #000000;
-  --primary-tint: #dedee3;
-  --primary-soft: #f2f2f4;
-  --primary-text: #1c1c1f;
-  --primary-border: #dedee3;
+  --primary: #2f5fd0;
+  --primary-rgb: 47, 95, 208;
+  --primary-strong: #244bab;
+  --primary-tint: #c9d7f8;
+  --primary-soft: #eef3fd;
+  --primary-text: #2449a6;
+  --primary-border: #c9d7f8;
   --primary-25: #fafafd;
   --primary-50: #f3f3f6;
   --primary-100: #ebebee;
@@ -132,13 +133,13 @@
   --text-faint: #71717a;
   --border: #27272b;
   --border-strong: #34343a;
-  --primary: #ececef;
-  --primary-rgb: 236, 236, 239;
-  --primary-strong: #ffffff;
-  --primary-tint: #34343a;
-  --primary-soft: #222226;
-  --primary-text: #ececef;
-  --primary-border: #34343a;
+  --primary: #6b8ff2;
+  --primary-rgb: 107, 143, 242;
+  --primary-strong: #87a5f5;
+  --primary-tint: #2a3756;
+  --primary-soft: #1b2236;
+  --primary-text: #9db6f7;
+  --primary-border: #2a3756;
   --primary-25: #1b1b1d;
   --primary-50: #1e1e20;
   --primary-100: #232325;
@@ -218,6 +219,6 @@
   --balanced-border: #2e2e30;
   --balanced-sidebar: #141416;
   --balanced-sidebar-2: #19191b;
-  --on-accent: #101012;
+  --on-accent: #ffffff;
   color-scheme: dark;
 }

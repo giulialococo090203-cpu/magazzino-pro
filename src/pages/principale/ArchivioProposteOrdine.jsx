@@ -656,8 +656,8 @@ export default function ArchivioProposteOrdine({ incorporato = false, onConteggi
                   <tbody>
                     {(selectedProposal.rows || []).map((row) => (
                       <tr key={row.id}>
-                        <td><strong>{row.code}</strong></td>
-                        <td className="text-sm">{row.description}</td>
+                        <td><span className="cella-codice">{row.code}</span></td>
+                        <td className="cella-nome" title={row.description}>{row.description}</td>
                         <td>{row.brand || '—'}</td>
                         <td>{row.currentQty}</td>
                         <td>{row.minThreshold}</td>
