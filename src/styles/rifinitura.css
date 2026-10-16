@@ -1572,97 +1572,13 @@ html body #root [role='tab'][aria-selected='true'] {
 }
 
 /* ============================================================
-   QUARTA PASSATA — secondo riferimento di Giulia (barra laterale
-   scura, contenuto bianco, un colore guida, indicatori con
-   piastrina dell'icona in alto a destra) e correzioni tabelle.
+   QUARTA PASSATA — secondo riferimento di Giulia (contenuto
+   bianco, un colore guida, indicatori con piastrina dell'icona
+   in alto a destra) e correzioni tabelle. La barra laterale
+   scura è stata provata e scartata: resta chiara.
    ============================================================ */
 
-/* Barra laterale scura in entrambe le modalità */
-#root .ws-sidebar {
-  background: #17181c;
-  border-right: 0;
-  color: #d4d4d8;
-}
-
-#root .ws-brand {
-  color: #ffffff;
-  height: 64px;
-}
-
-#root .ws-brand-text span {
-  color: #8b8b94;
-}
-
-#root .ws-nav-title {
-  color: #6f6f78;
-}
-
-#root .ws-nav-link {
-  color: #c8c8cf;
-  height: 36px;
-  border-radius: 8px;
-}
-
-#root .ws-nav-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-}
-
-#root .ws-nav-link.is-active,
-[data-theme='dark'] #root .ws-nav-link.is-active {
-  background: rgba(107, 143, 242, 0.18);
-  color: #ffffff;
-}
-
-/* Icone: tratto colorato della sezione, senza piastrina piena */
-#root .ws-nav-tile {
-  background: transparent;
-  color: var(--tone);
-  width: 18px;
-  height: 18px;
-}
-
-#root .ws-nav-tile .ws-nav-icon {
-  width: 17px !important;
-  height: 17px !important;
-  stroke-width: 1.9 !important;
-}
-
-#root .ws-nav-group[data-tone='blue'] .ws-nav-tile { --tone: #7ea0f5; }
-#root .ws-nav-group[data-tone='orange'] .ws-nav-tile { --tone: #f2a462; }
-#root .ws-nav-group[data-tone='green'] .ws-nav-tile { --tone: #5cc79a; }
-#root .ws-nav-group[data-tone='violet'] .ws-nav-tile { --tone: #a58cf0; }
-#root .ws-nav-group[data-tone='gray'] .ws-nav-tile { --tone: #a1a1aa; }
-#root .ws-nav-group[data-tone='red'] .ws-nav-tile { --tone: #f07a8c; }
-
-#root .ws-user {
-  margin: 10px;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-#root .ws-user-text strong {
-  color: #ffffff;
-}
-
-#root .ws-user-text span {
-  color: #8b8b94;
-}
-
-#root .ws-logout {
-  color: #a1a1aa;
-}
-
-#root .ws-logout:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-}
-
-#root .ws-nav-exit {
-  border-color: rgba(255, 255, 255, 0.18);
-}
+/* Barra laterale: resta chiara (scelta di Giulia), vedi TERZA PASSATA. */
 
 /* Indicatori numerici: piastrina dell'icona in alto a destra */
 html body #root .kpi-card {
